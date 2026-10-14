@@ -1,0 +1,125 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
+
+<SessionActivityTracker />
+
+<div class="app-layout">
+
+    <button class="mobile-menu-btn"
+            @onclick="ToggleMenu">
+        @(menuOpen ? "✕" : "☰")
+    </button>
+
+    <div class="sidebar-backdrop @(menuOpen ? "show" : "")"
+         @onclick="CloseMenu">
+    </div>
+
+    <aside class="sidebar @(menuOpen ? "show" : "")">
+
+        <NavMenu />
+
+    </aside>
+
+    <main class="main-content">
+
+        @Body
+
+    </main>
+
+    <div class="language-switcher">
+
+        <button type="button"
+                class="language-button @(LocalizationService.CurrentLanguage == "en" ? "active" : "")"
+                @onclick='() => ChangeLanguage("en-US")'>
+            🇬🇧 English
+        </button>
+
+        <button type="button"
+                class="language-button @(LocalizationService.CurrentLanguage == "fa" ? "active" : "")"
+                @onclick='() => ChangeLanguage("fa-IR")'>
+            🇮🇷 فارسی
+        </button>
+
+    </div>
+
+    <InventoryAlertToast />
+
+</div>
+
+@code {
+
+    private bool menuOpen = false;
+
+    protected override void OnInitialized()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged
+            += OnAuthenticationStateChanged;
+
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void ToggleMenu()
+    {
+        menuOpen = !menuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        menuOpen = false;
+    }
+
+    private void OnLocationChanged(
+        object? sender,
+        LocationChangedEventArgs e)
+    {
+        if (menuOpen)
+        {
+            menuOpen = false;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(
+        Task<AuthenticationState> task)
+    {
+        var state = await task;
+
+        if (state.User.Identity?.IsAuthenticated != true)
+        {
+            await InvokeAsync(() =>
+            {
+                Navigation.NavigateTo(
+                    "/Account/Login",
+                    forceLoad: true);
+            });
+        }
+    }
+
+    private void ChangeLanguage(string culture)
+    {
+        var currentUri = new Uri(Navigation.Uri);
+
+        var redirectUri =
+            currentUri.PathAndQuery;
+
+        Navigation.NavigateTo(
+            $"/Culture/Set?culture={Uri.EscapeDataString(culture)}" +
+            $"&redirectUri={Uri.EscapeDataString(redirectUri)}",
+            forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged
+            -= OnAuthenticationStateChanged;
+
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

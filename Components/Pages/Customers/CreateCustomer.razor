@@ -1,0 +1,87 @@
+﻿@page "/customers/create"
+
+@using Microsoft.AspNetCore.Authorization
+@using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Data
+
+@attribute [Authorize]
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
+
+<PageTitle>@LocalizationService["CreateCustomer"]</PageTitle>
+
+<h3>@LocalizationService["CreateCustomer"]</h3>
+
+<EditForm Model="customer"
+          OnValidSubmit="Save">
+
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label class="form-label">
+            @LocalizationService["Code"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="customer.Code" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">
+            @LocalizationService["Name"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="customer.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">
+            @LocalizationService["Phone"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="customer.Phone" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">
+            @LocalizationService["Email"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="customer.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">
+            @LocalizationService["Address"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="customer.Address" />
+    </div>
+
+    <button type="submit"
+            class="btn btn-primary">
+        @LocalizationService["SaveCustomer"]
+    </button>
+
+</EditForm>
+
+@code {
+
+    private Customer customer = new();
+
+    private async Task Save()
+    {
+        Db.Customers.Add(customer);
+
+        await Db.SaveChangesAsync();
+
+        Navigation.NavigateTo("/customers");
+    }
+
+}

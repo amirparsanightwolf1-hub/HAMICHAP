@@ -1,0 +1,155 @@
+﻿@page "/inventory/units"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["Units"]
+</PageTitle>
+
+<h3>
+    @LocalizationService["Units"]
+</h3>
+
+<div class="card mb-3">
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-5">
+
+                <label>
+                    @LocalizationService["Name"]
+                </label>
+
+                <input class="form-control"
+                       @bind="newUnit.Name" />
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>
+                    @LocalizationService["Symbol"]
+                </label>
+
+                <input class="form-control"
+                       @bind="newUnit.Symbol" />
+
+            </div>
+
+            <div class="col-md-2 mt-4">
+
+                <button class="btn btn-primary"
+                        @onclick="Save">
+
+                    @LocalizationService["Add"]
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<table class="table table-bordered table-responsive-cards">
+
+    <thead>
+
+        <tr>
+
+            <th>
+                @LocalizationService["Name"]
+            </th>
+
+            <th>
+                @LocalizationService["Symbol"]
+            </th>
+
+            <th>
+                @LocalizationService["Active"]
+            </th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var unit in units)
+        {
+            <tr>
+
+                <td>
+                    @unit.Name
+                </td>
+
+                <td>
+                    @unit.Symbol
+                </td>
+
+                <td>
+
+                    @if (unit.IsActive)
+                    {
+                        <span>
+                            @LocalizationService["Yes"]
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            @LocalizationService["No"]
+                        </span>
+                    }
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+@code {
+
+    private List<Unit> units = new();
+
+    private Unit newUnit = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    async Task Load()
+    {
+        units = await Db.Units
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+    }
+
+    async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(newUnit.Name))
+            return;
+
+        Db.Units.Add(newUnit);
+
+        await Db.SaveChangesAsync();
+
+        newUnit = new Unit();
+
+        await Load();
+    }
+}

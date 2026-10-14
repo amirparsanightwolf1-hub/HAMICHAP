@@ -1,0 +1,99 @@
+﻿@typeparam TItem
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="searchable-select" @onfocusout="HandleFocusOut" tabindex="-1">
+
+    <input class="form-control"
+           value="@displayText"
+           placeholder="@Placeholder"
+           @oninput="OnInput"
+           @onfocus="OpenDropdown"
+           autocomplete="off" />
+
+    @if (isOpen && filteredItems.Any())
+    {
+        <div class="searchable-select-menu">
+
+            @foreach (var item in filteredItems)
+            {
+                <div class="searchable-select-option"
+                     @onmousedown:preventDefault="true"
+                     @onmousedown="() => SelectItem(item)">
+
+                    @TextSelector(item)
+
+                </div>
+
+            }
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    [Parameter] public List<TItem> Items { get; set; } = new();
+
+    [Parameter] public Func<TItem, string> TextSelector { get; set; } = _ => "";
+
+    [Parameter] public Func<TItem, int> ValueSelector { get; set; } = _ => 0;
+
+    [Parameter] public int Value { get; set; }
+
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "-- Select --";
+
+    private string searchText = "";
+    private string displayText = "";
+    private bool isOpen;
+
+    private List<TItem> filteredItems => string.IsNullOrWhiteSpace(searchText)
+        ? Items
+        : Items.Where(i => TextSelector(i)
+                .Contains(searchText, StringComparison.OrdinalIgnoreCase))
+               .ToList();
+
+    protected override void OnParametersSet()
+    {
+        // Keep the displayed text in sync when Value changes externally
+        // (e.g. resetting the form) and the dropdown isn't currently open.
+        if (!isOpen)
+        {
+            var match = Items.FirstOrDefault(i => ValueSelector(i) == Value);
+            displayText = match != null ? TextSelector(match) : "";
+        }
+    }
+
+    private void OpenDropdown()
+    {
+        isOpen = true;
+        searchText = "";
+    }
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        searchText = e.Value?.ToString() ?? "";
+        displayText = searchText;
+        isOpen = true;
+    }
+
+    private async Task SelectItem(TItem item)
+    {
+        displayText = TextSelector(item);
+        isOpen = false;
+        searchText = "";
+
+        await ValueChanged.InvokeAsync(ValueSelector(item));
+    }
+
+    private void HandleFocusOut()
+    {
+        // Small delay so the onmousedown selection fires before we close.
+        isOpen = false;
+
+        var match = Items.FirstOrDefault(i => ValueSelector(i) == Value);
+        displayText = match != null ? TextSelector(match) : "";
+    }
+}

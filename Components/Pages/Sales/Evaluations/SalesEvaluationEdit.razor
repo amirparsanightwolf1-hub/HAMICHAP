@@ -1,0 +1,304 @@
+﻿@page "/sales/evaluations/edit/{Id:long}"
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Models.Shared.Services
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject SalesEvaluationService EvaluationService
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>@LocalizationService["SalesEvaluation"]</h3>
+
+@if (loading)
+{
+    <p>@LocalizationService["Loading"]...</p>
+}
+else if (evaluation == null)
+{
+    <div class="alert alert-danger">
+        @LocalizationService["SalesEvaluationNotFound"]
+    </div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-4">
+                    <strong>@LocalizationService["RequestNumber"]</strong>
+                    <div>@evaluation.SalesRequest.RequestNumber</div>
+                </div>
+
+                <div class="col-md-4">
+                    <strong>@LocalizationService["Customer"]</strong>
+                    <div>@evaluation.SalesRequest.Customer.Name</div>
+                </div>
+
+                <div class="col-md-4">
+                    <strong>@LocalizationService["Status"]</strong>
+                    <div>
+                        @LocalizationService.TranslateEnum(evaluation.Status)
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <strong>@LocalizationService["MaterialAvailability"]</strong>
+        </div>
+
+        <div class="card-body p-0">
+
+            <table class="table table-striped mb-0">
+
+                <thead>
+                    <tr>
+                        <th>@LocalizationService["Item"]</th>
+                        <th>@LocalizationService["RequiredQuantity"]</th>
+                        <th>@LocalizationService["AvailableQuantity"]</th>
+                        <th>@LocalizationService["ShortageQuantity"]</th>
+                        <th>@LocalizationService["Availability"]</th>
+                        <th>@LocalizationService["Notes"]</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var line in evaluation.Lines)
+                    {
+                        <tr>
+
+                            <td>
+                                @line.Item.Code -
+                                @line.Item.Name
+                            </td>
+
+                            <td>
+                                @line.RequiredQuantity
+                            </td>
+
+                            <td>
+                                @line.AvailableQuantity
+                            </td>
+
+                            <td>
+                                @line.ShortageQuantity
+                            </td>
+
+                            <td>
+                                @if (line.IsAvailable)
+                                {
+                                    <span class="badge bg-success">
+                                        @LocalizationService["Available"]
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+                                        @LocalizationService["Shortage"]
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                <InputText class="form-control"
+                                           @bind-Value="line.Notes" />
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <strong>@LocalizationService["EvaluationDetails"]</strong>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">
+                        @LocalizationService["EstimatedMaterialCost"]
+                    </label>
+
+                    <InputNumber class="form-control"
+                                 @bind-Value="evaluation.EstimatedMaterialCost" />
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">
+                        @LocalizationService["EstimatedProductionCost"]
+                    </label>
+
+                    <InputNumber class="form-control"
+                                 @bind-Value="evaluation.EstimatedProductionCost" />
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">
+                        @LocalizationService["EstimatedTotalCost"]
+                    </label>
+
+                    <InputNumber class="form-control"
+                                 @bind-Value="evaluation.EstimatedTotalCost" />
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">
+                        @LocalizationService["EstimatedProductionDays"]
+                    </label>
+
+                    <InputNumber class="form-control"
+                                 @bind-Value="evaluation.EstimatedProductionDays" />
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    @LocalizationService["Notes"]
+                </label>
+
+                <InputTextArea class="form-control"
+                               rows="4"
+                               @bind-Value="evaluation.Notes" />
+            </div>
+
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    <div class="d-flex gap-2">
+
+        @if (evaluation.Status == SalesEvaluationStatus.InProgress)
+        {
+            <button class="btn btn-success"
+                    @onclick="CompleteEvaluationAsync">
+                ✓ @LocalizationService["CompleteEvaluation"]
+            </button>
+        }
+
+        <button class="btn btn-secondary"
+                @onclick="GoBack">
+            @LocalizationService["Back"]
+        </button>
+
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+
+    private SalesEvaluation? evaluation;
+
+    private bool loading = true;
+
+    private string? errorMessage;
+    private string? successMessage;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+
+        try
+        {
+            evaluation = await Db.SalesEvaluations
+
+                .Include(x => x.SalesRequest)
+                    .ThenInclude(x => x.Customer)
+
+                .Include(x => x.SalesRequest)
+                    .ThenInclude(x => x.Lines)
+
+                .Include(x => x.Lines)
+                    .ThenInclude(x => x.Item)
+
+                .Include(x => x.EvaluatorUser)
+
+                .FirstOrDefaultAsync(x => x.Id == Id);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    private async Task CompleteEvaluationAsync()
+    {
+        if (evaluation == null)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            await EvaluationService.CompleteAsync(
+                evaluation.Id);
+
+            successMessage =
+                LocalizationService["EvaluationCompleted"];
+
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo(
+            "/sales/requests/edit/" +
+            evaluation?.SalesRequestId);
+    }
+}

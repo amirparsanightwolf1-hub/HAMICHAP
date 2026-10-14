@@ -1,0 +1,318 @@
+﻿@page "/inventory/documents"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["InventoryDocuments"]
+</PageTitle>
+
+<h3 class="mb-4">
+    @LocalizationService["InventoryDocuments"]
+</h3>
+
+<div class="d-flex justify-content-between mb-3">
+
+    <div class="d-flex gap-2 w-50">
+
+        <input class="form-control"
+               placeholder="@LocalizationService["SearchDocument"]"
+               @bind="searchText" />
+
+        <button class="btn btn-primary"
+                @onclick="Search">
+
+            @LocalizationService["Search"]
+
+        </button>
+
+        <button class="btn btn-outline-secondary"
+                @onclick="ClearSearch">
+
+            @LocalizationService["Clear"]
+
+        </button>
+
+    </div>
+
+    <button class="btn btn-primary"
+            @onclick="CreateDocument">
+
+        + @LocalizationService["NewDocument"]
+
+    </button>
+
+</div>
+
+@if (documents == null)
+{
+    <p>@LocalizationService["Loading"]</p>
+}
+else
+{
+    <table class="table table-hover table-bordered table-responsive-cards">
+
+        <thead class="table-light">
+
+            <tr>
+
+                <th>
+                    @LocalizationService["Number"]
+                </th>
+
+                <th>
+                    @LocalizationService["Date"]
+                </th>
+
+                <th>
+                    @LocalizationService["Type"]
+                </th>
+
+                <th>
+                    @LocalizationService["Status"]
+                </th>
+
+                <th style="width:120px;"></th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @if (totalCount == 0)
+            {
+                <tr>
+
+                    <td colspan="5" class="text-center">
+
+                        @LocalizationService["NoDocumentsFound"]
+
+                    </td>
+
+                </tr>
+            }
+            else
+            {
+                @foreach (var doc in documents)
+                {
+                    <tr>
+
+                        <td>
+                            @doc.DocumentNumber
+                        </td>
+
+                        <td>
+                            @doc.DocumentDate.ToShortDateString()
+                        </td>
+
+                        <td>
+                            @LocalizationService.TranslateEnum(doc.DocumentType)
+                        </td>
+
+                        <td>
+                            @LocalizationService.TranslateEnum(doc.Status)
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-sm btn-outline-primary"
+                                    @onclick="() => Open(doc.Id)">
+
+                                @LocalizationService["Open"]
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+                }
+            }
+
+        </tbody>
+
+    </table>
+
+
+    @if (totalPages > 0)
+    {
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
+
+            <div class="text-muted small">
+
+                @((currentPage - 1) * pageSize + 1)
+                -
+                @(Math.Min(currentPage * pageSize, totalCount))
+                /
+                @totalCount
+
+            </div>
+
+
+            <div class="d-flex align-items-center gap-2">
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        @onclick="PreviousPage"
+                        disabled="@(currentPage <= 1)">
+
+                    @LocalizationService["Previous"]
+
+                </button>
+
+
+                <span class="small">
+                    @currentPage / @totalPages
+                </span>
+
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        @onclick="NextPage"
+                        disabled="@(currentPage >= totalPages)">
+
+                    @LocalizationService["Next"]
+
+                </button>
+
+            </div>
+
+        </div>
+    }
+
+}
+
+@code
+{
+    private const int pageSize = 20;
+
+    private List<InventoryDocument>? documents;
+
+    private string searchText = "";
+
+    private int currentPage = 1;
+
+    private int totalCount;
+
+    private int totalPages =>
+        totalCount == 0
+            ? 0
+            : (int)Math.Ceiling(totalCount / (double)pageSize);
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDocuments();
+    }
+
+
+    private async Task LoadDocuments()
+    {
+        var query = Db.InventoryDocuments
+            .AsQueryable();
+
+
+        // Search by document number
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            var search = searchText.Trim();
+
+            query = query.Where(x =>
+                x.DocumentNumber.Contains(search));
+        }
+
+
+        // Count filtered documents
+
+        totalCount = await query.CountAsync();
+
+
+        // Keep current page valid
+
+        if (currentPage > totalPages && totalPages > 0)
+        {
+            currentPage = totalPages;
+        }
+
+        if (totalPages == 0)
+        {
+            currentPage = 1;
+        }
+
+
+        // Load only the current page
+
+        documents = await query
+
+            .OrderByDescending(x => x.DocumentDate)
+
+            .ThenByDescending(x => x.Id)
+
+            .Skip((currentPage - 1) * pageSize)
+
+            .Take(pageSize)
+
+            .ToListAsync();
+    }
+
+
+    private async Task Search()
+    {
+        currentPage = 1;
+
+        await LoadDocuments();
+    }
+
+
+    private async Task ClearSearch()
+    {
+        searchText = "";
+
+        currentPage = 1;
+
+        await LoadDocuments();
+    }
+
+
+    private async Task PreviousPage()
+    {
+        if (currentPage <= 1)
+            return;
+
+        currentPage--;
+
+        await LoadDocuments();
+    }
+
+
+    private async Task NextPage()
+    {
+        if (currentPage >= totalPages)
+            return;
+
+        currentPage++;
+
+        await LoadDocuments();
+    }
+
+
+    private void CreateDocument()
+    {
+        Navigation.NavigateTo(
+            "/inventory/documents/create");
+    }
+
+
+    private void Open(long id)
+    {
+        Navigation.NavigateTo(
+            $"/inventory/documents/edit/{id}");
+    }
+}

@@ -1,0 +1,990 @@
+﻿@page "/sales/requests/edit/{Id:long}"
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Models.Shared.Services
+
+
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject SalesRequestService SalesRequestService
+@inject LocalizationService LocalizationService
+@inject SalesEvaluationService SalesEvaluationService
+
+<PageTitle>
+    @LocalizationService["SalesRequest"]
+</PageTitle>
+
+<div class="page-container">
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">
+                    @LocalizationService["Loading"]
+                </span>
+            </div>
+        </div>
+    }
+    else if (request == null)
+    {
+        <div class="alert alert-danger">
+            @LocalizationService["SalesRequestNotFound"]
+        </div>
+    }
+    else
+    {
+        <div class="erp-page-header mb-4">
+
+            <div>
+                <div class="erp-page-title">
+                    @LocalizationService["SalesRequest"]
+                </div>
+
+                <div class="erp-page-subtitle">
+                    @request.RequestNumber
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        @onclick="GoBack">
+
+                    <i class="bi bi-arrow-left"></i>
+                    @LocalizationService["Back"]
+
+                </button>
+
+                @if (request.Status == SalesRequestStatus.Draft)
+                {
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="SaveAsync"
+                            disabled="@isSaving">
+
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+
+                        <i class="bi bi-save"></i>
+                        @LocalizationService["Save"]
+
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-success"
+                            @onclick="SubmitAsync"
+                            disabled="@isSubmitting">
+
+                        @if (isSubmitting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+
+                        <i class="bi bi-send"></i>
+                        @LocalizationService["Submit"]
+
+                    </button>
+                }
+
+                @if (request.Status == SalesRequestStatus.Submitted)
+                {
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="AssignEvaluatorAsync"
+                            disabled="@isAssigning">
+
+                        @if (isAssigning)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+
+                        <i class="bi bi-person-check"></i>
+                        @LocalizationService["AssignEvaluator"]
+
+                    </button>
+                }
+
+                @if (request.Status == SalesRequestStatus.UnderEvaluation)
+                {
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="OpenEvaluationAsync"
+                            disabled="@isOpeningEvaluation">
+
+                        @if (isOpeningEvaluation)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+
+                        <i class="bi bi-clipboard-check"></i>
+                        @LocalizationService["OpenEvaluation"]
+
+                    </button>
+                }
+
+
+                @if (request.Status == SalesRequestStatus.EvaluationCompleted)
+                {
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="CreateQuotationAsync"
+                            disabled="@isCreatingQuotation">
+
+                        @if (isCreatingQuotation)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+
+                        <i class="bi bi-file-earmark-text"></i>
+                        @LocalizationService["CreateQuotation"]
+
+                    </button>
+                }
+
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="alert alert-danger mb-4">
+                @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="alert alert-success mb-4">
+                @successMessage
+            </div>
+        }
+
+        <!-- Request Information -->
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header">
+                <strong>
+                    @LocalizationService["SalesRequestInformation"]
+                </strong>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @LocalizationService["RequestNumber"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@request.RequestNumber"
+                               readonly />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @LocalizationService["Customer"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@GetCustomerName()"
+                               readonly />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @LocalizationService["RequestDate"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@request.RequestDate.ToString("yyyy-MM-dd")"
+                               readonly />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @LocalizationService["Status"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@LocalizationService.TranslateEnum(request.Status)"
+                               readonly />
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            @LocalizationService["RequestedDeliveryDate"]
+                        </label>
+
+                        @if (request.Status == SalesRequestStatus.Draft)
+                        {
+                            <InputDate @bind-Value="request.RequestedDeliveryDate"
+                                       class="form-control" />
+                        }
+                        else
+                        {
+                            <input class="form-control"
+                                   value="@FormatDate(request.RequestedDeliveryDate)"
+                                   readonly />
+                        }
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            @LocalizationService["CreatedBy"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@GetCreatedByName()"
+                               readonly />
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            @LocalizationService["AssignedEvaluator"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@GetAssignedEvaluatorName()"
+                               readonly />
+
+                    </div>
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            @LocalizationService["Notes"]
+                        </label>
+
+                        @if (request.Status == SalesRequestStatus.Draft)
+                        {
+                            <textarea class="form-control"
+                                      rows="3"
+                                      @bind="request.Notes"></textarea>
+                        }
+                        else
+                        {
+                            <textarea class="form-control"
+                                      rows="3"
+                                      readonly>@request.Notes</textarea>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Request Lines -->
+
+        <div class="card shadow-sm">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+
+                <strong>
+                    @LocalizationService["RequestLines"]
+                </strong>
+
+                @if (request.Status == SalesRequestStatus.Draft)
+                {
+                    <button type="button"
+                            class="btn btn-sm btn-primary"
+                            @onclick="AddLine">
+
+                        <i class="bi bi-plus-circle"></i>
+                        @LocalizationService["AddLine"]
+
+                    </button>
+                }
+
+            </div>
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th style="min-width:260px;">
+                                    @LocalizationService["Item"]
+                                </th>
+
+                                <th style="min-width:140px;"
+                                    class="text-end">
+                                    @LocalizationService["Quantity"]
+                                </th>
+
+                                <th style="min-width:140px;">
+                                    @LocalizationService["Unit"]
+                                </th>
+
+                                <th style="min-width:250px;">
+                                    @LocalizationService["Notes"]
+                                </th>
+
+                                @if (request.Status == SalesRequestStatus.Draft)
+                                {
+                                    <th style="width:80px;"></th>
+                                }
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var line in request.Lines)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        @if (request.Status == SalesRequestStatus.Draft)
+                                        {
+                                            <select class="form-select"
+                                                    value="@line.ItemId"
+                                                    @onchange="@(e => ItemChanged(line, e))">
+
+                                                <option value="0">
+                                                    @LocalizationService["SelectItem"]
+                                                </option>
+
+                                                @foreach (var item in items)
+                                                {
+                                                    <option value="@item.Id">
+                                                        @item.Code - @item.Name
+                                                    </option>
+                                                }
+
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <div class="fw-semibold">
+                                                @GetItemName(line)
+                                            </div>
+
+                                            <small class="text-muted">
+                                                @line.Item?.Code
+                                            </small>
+                                        }
+
+                                    </td>
+
+                                    <td>
+
+                                        @if (request.Status == SalesRequestStatus.Draft)
+                                        {
+                                            <input type="number"
+                                                   class="form-control text-end"
+                                                   min="0"
+                                                   step="0.0001"
+                                                   @bind="line.Quantity" />
+                                        }
+                                        else
+                                        {
+                                            <div class="text-end">
+                                                @line.Quantity.ToString("N2")
+                                            </div>
+                                        }
+
+                                    </td>
+
+                                    <td>
+
+                                        @if (request.Status == SalesRequestStatus.Draft)
+                                        {
+                                            <select class="form-select"
+                                                    @bind="line.UnitId">
+
+                                                @foreach (var unit in units)
+                                                {
+                                                    <option value="@unit.Id">
+                                                        @unit.Name
+                                                        @if (!string.IsNullOrWhiteSpace(unit.Symbol))
+                                                        {
+                                                            <text>
+                                                                (@unit.Symbol)
+                                                            </text>
+                                                        }
+                                                    </option>
+                                                }
+
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            @GetUnitName(line)
+                                        }
+
+                                    </td>
+
+                                    <td>
+
+                                        @if (request.Status == SalesRequestStatus.Draft)
+                                        {
+                                            <input type="text"
+                                                   class="form-control"
+                                                   @bind="line.Notes" />
+                                        }
+                                        else
+                                        {
+                                            @line.Notes
+                                        }
+
+                                    </td>
+
+                                    @if (request.Status == SalesRequestStatus.Draft)
+                                    {
+                                        <td class="text-center">
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="@LocalizationService["Delete"]"
+                                                    @onclick="() => RemoveLine(line)">
+
+                                                <i class="bi bi-trash"></i>
+
+                                            </button>
+
+                                        </td>
+                                    }
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+
+    private SalesRequest? request;
+
+    private List<Customer> customers = new();
+    private List<Item> items = new();
+    private List<Unit> units = new();
+
+    private bool isLoading = true;
+    private bool isSaving;
+    private bool isSubmitting;
+    private bool isAssigning;
+    private bool isOpeningEvaluation;
+    private bool isCreatingQuotation;
+
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            customers =
+                await Db.Customers
+                    .Where(x => x.IsActive)
+                    .OrderBy(x => x.Name)
+                    .ToListAsync();
+
+            items =
+                await Db.Items
+                    .Include(x => x.Unit)
+                    .Where(x => x.IsActive)
+                    .OrderBy(x => x.Name)
+                    .ToListAsync();
+
+            units =
+                await Db.Units
+                    .Where(x => x.IsActive)
+                    .OrderBy(x => x.Name)
+                    .ToListAsync();
+
+            request =
+                await Db.SalesRequests
+
+                    .Include(x => x.Customer)
+
+                    .Include(x => x.CreatedByUser)
+
+                    .Include(x => x.AssignedToUser)
+
+                    .Include(x => x.Lines)
+                        .ThenInclude(x => x.Item)
+
+                    .Include(x => x.Lines)
+                        .ThenInclude(x => x.Unit)
+
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == Id);
+
+            if (request == null)
+            {
+                errorMessage =
+                    LocalizationService["SalesRequestNotFound"];
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AddLine()
+    {
+        if (request == null)
+            return;
+
+        if (request.Status != SalesRequestStatus.Draft)
+            return;
+
+        request.Lines.Add(
+            new SalesRequestLine
+            {
+                SalesRequestId = request.Id,
+                Quantity = 0,
+                UnitId = 0,
+                Notes = ""
+            });
+    }
+
+    private void RemoveLine(
+        SalesRequestLine line)
+    {
+        if (request == null)
+            return;
+
+        if (request.Status != SalesRequestStatus.Draft)
+            return;
+
+        if (line.Id == 0)
+        {
+            request.Lines.Remove(line);
+            return;
+        }
+
+        Db.SalesRequestLines.Remove(line);
+        request.Lines.Remove(line);
+    }
+
+    private async Task ItemChanged(
+        SalesRequestLine line,
+        ChangeEventArgs args)
+    {
+        if (!int.TryParse(
+                args.Value?.ToString(),
+                out var itemId))
+        {
+            return;
+        }
+
+        line.ItemId = itemId;
+
+        var item =
+            items.FirstOrDefault(x =>
+                x.Id == itemId);
+
+        if (item != null)
+        {
+            line.UnitId = item.UnitId;
+
+            line.Item = item;
+
+            var unit =
+                units.FirstOrDefault(x =>
+                    x.Id == item.UnitId);
+
+            if (unit != null)
+                line.Unit = unit;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (request == null)
+            return;
+
+        if (request.Status != SalesRequestStatus.Draft)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            ValidateRequest();
+
+            isSaving = true;
+
+            await Db.SaveChangesAsync();
+
+            successMessage =
+                LocalizationService[
+                    "SalesRequestSavedSuccessfully"];
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (request == null)
+            return;
+
+        if (request.Status != SalesRequestStatus.Draft)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            ValidateRequest();
+
+            isSubmitting = true;
+
+            await Db.SaveChangesAsync();
+
+            await SalesRequestService.SubmitAsync(
+                request.Id);
+
+            Navigation.NavigateTo(
+                $"/sales/requests/edit/{request.Id}",
+                forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task AssignEvaluatorAsync()
+    {
+        if (request == null)
+            return;
+
+        if (request.Status !=
+            SalesRequestStatus.Submitted)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            isAssigning = true;
+
+            var authenticationState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var currentUser =
+                await UserManager.GetUserAsync(
+                    authenticationState.User);
+
+            if (currentUser == null)
+            {
+                throw new InvalidOperationException(
+                    LocalizationService[
+                        "UserNotAuthenticated"]);
+            }
+
+            await SalesRequestService.AssignEvaluatorAsync(
+                request.Id,
+                currentUser.Id);
+
+            Navigation.NavigateTo(
+                $"/sales/requests/edit/{request.Id}",
+                forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isAssigning = false;
+        }
+    }
+
+    private async Task OpenEvaluationAsync()
+    {
+        if (request == null)
+            return;
+
+        if (request.Status !=
+            SalesRequestStatus.UnderEvaluation)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            isOpeningEvaluation = true;
+
+            var authenticationState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var currentUser =
+                await UserManager.GetUserAsync(
+                    authenticationState.User);
+
+            if (currentUser == null)
+            {
+                throw new InvalidOperationException(
+                    LocalizationService[
+                        "UserNotAuthenticated"]);
+            }
+
+            var evaluation =
+                await Db.SalesEvaluations
+                    .FirstOrDefaultAsync(x =>
+                        x.SalesRequestId == request.Id &&
+                        x.Status !=
+                            SalesEvaluationStatus.Cancelled);
+
+            if (evaluation == null)
+            {
+                evaluation =
+                    await SalesEvaluationService.StartAsync(
+                        request.Id,
+                        currentUser.Id);
+            }
+
+            Navigation.NavigateTo(
+                $"/sales/evaluations/edit/{evaluation.Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isOpeningEvaluation = false;
+        }
+    }
+
+    private async Task CreateQuotationAsync()
+    {
+        if (request == null)
+            return;
+
+        if (request.Status !=
+            SalesRequestStatus.EvaluationCompleted)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            isCreatingQuotation = true;
+
+            await SalesRequestService
+                .CreateQuotationAsync(
+                    request.Id);
+
+            Navigation.NavigateTo(
+                $"/sales/requests/edit/{request.Id}",
+                forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isCreatingQuotation = false;
+        }
+    }
+
+    private void ValidateRequest()
+    {
+        if (request == null)
+            return;
+
+        if (request.CustomerId <= 0)
+        {
+            throw new InvalidOperationException(
+                LocalizationService[
+                    "CustomerRequired"]);
+        }
+
+        if (request.Lines == null ||
+            request.Lines.Count == 0)
+        {
+            throw new InvalidOperationException(
+                LocalizationService[
+                    "AtLeastOneRequestLineRequired"]);
+        }
+
+        foreach (var line in request.Lines)
+        {
+            if (line.ItemId <= 0)
+            {
+                throw new InvalidOperationException(
+                    LocalizationService[
+                        "ItemRequired"]);
+            }
+
+            if (line.Quantity <= 0)
+            {
+                throw new InvalidOperationException(
+                    LocalizationService[
+                        "QuantityMustBeGreaterThanZero"]);
+            }
+
+            if (line.UnitId <= 0)
+            {
+                throw new InvalidOperationException(
+                    LocalizationService[
+                        "UnitRequired"]);
+            }
+        }
+    }
+
+    private string GetCustomerName()
+    {
+        return request?.Customer?.Name
+            ?? "-";
+    }
+
+    private string GetCreatedByName()
+    {
+        if (request?.CreatedByUser == null)
+            return "-";
+
+        var user = request.CreatedByUser;
+
+        if (!string.IsNullOrWhiteSpace(user.FirstName) ||
+            !string.IsNullOrWhiteSpace(user.LastName))
+        {
+            return $"{user.FirstName} {user.LastName}".Trim();
+        }
+
+        return user.UserName ?? "-";
+    }
+
+    private string GetAssignedEvaluatorName()
+    {
+        if (request?.AssignedToUser == null)
+            return "-";
+
+        var user = request.AssignedToUser;
+
+        if (!string.IsNullOrWhiteSpace(user.FirstName) ||
+            !string.IsNullOrWhiteSpace(user.LastName))
+        {
+            return $"{user.FirstName} {user.LastName}".Trim();
+        }
+
+        return user.UserName ?? "-";
+    }
+
+    private string GetItemName(
+        SalesRequestLine line)
+    {
+        return line.Item?.Name
+            ?? items.FirstOrDefault(x =>
+                    x.Id == line.ItemId)?.Name
+            ?? line.ItemId.ToString();
+    }
+
+    private string GetUnitName(
+        SalesRequestLine line)
+    {
+        var unit =
+            line.Unit
+            ?? units.FirstOrDefault(x =>
+                x.Id == line.UnitId);
+
+        if (unit == null)
+            return "-";
+
+        if (!string.IsNullOrWhiteSpace(unit.Symbol))
+            return $"{unit.Name} ({unit.Symbol})";
+
+        return unit.Name;
+    }
+
+    private string FormatDate(
+        DateTime? date)
+    {
+        return date?.ToString("yyyy-MM-dd")
+            ?? "-";
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo(
+            "/sales/requests");
+    }
+}

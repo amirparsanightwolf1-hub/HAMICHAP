@@ -1,0 +1,490 @@
+﻿@page "/administration/roles"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Services
+
+@attribute [Authorize]
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject RoleManager<IdentityRole> RoleManager
+@inject UserManager<ApplicationUser> UserManager
+@inject PermissionService PermissionService
+@inject NavigationManager Nav
+
+<PageTitle>Roles</PageTitle>
+
+@if (loading)
+{
+    <p>Loading...</p>
+}
+else if (!canViewRoles)
+{
+    <div class="alert alert-danger">
+        You are not authorized to view roles.
+    </div>
+}
+else
+{
+    <h3>Roles</h3>
+
+    @if (canCreateRoles)
+    {
+        <div class="card mb-4">
+
+            <div class="card-body">
+
+                <h5>Create Role</h5>
+
+                <div class="row align-items-end">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Role Name
+                        </label>
+
+                        <input class="form-control"
+                               @bind="newRoleName"
+                               placeholder="e.g. Warehouse Manager" />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <button class="btn btn-primary"
+                                @onclick="CreateRole">
+
+                            Create Role
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert @messageClass mt-3">
+            @message
+        </div>
+    }
+
+
+    @if (roles == null)
+    {
+        <p>Loading roles...</p>
+    }
+    else if (!roles.Any())
+    {
+        <div class="alert alert-warning">
+            No roles have been created yet.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+
+            <table class="table table-striped table-bordered">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Role
+                        </th>
+
+                        <th>
+                            Users
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var role in roles)
+                    {
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    @role.Name
+                                </strong>
+                            </td>
+
+                            <td>
+                                @GetUserCount(role.Name!)
+                            </td>
+
+                            <td>
+
+                                @if (canManagePermissions)
+                                {
+                                    <button class="btn btn-sm btn-primary me-2"
+                                            @onclick="@(() => Nav.NavigateTo("/administration/permission-management"))">
+
+                                        Manage Permissions
+
+                                    </button>
+                                }
+
+
+                                @if (role.Name == "Administrator")
+                                {
+                                    <button class="btn btn-sm btn-secondary"
+                                            disabled>
+
+                                        Protected
+
+                                    </button>
+                                }
+                                else if (GetUserCount(role.Name!) > 0)
+                                {
+                                    <button class="btn btn-sm btn-secondary"
+                                            disabled
+                                            title="Remove all users from this role before deleting it.">
+
+                                        In Use
+
+                                    </button>
+                                }
+                                else if (canDeleteRoles)
+                                {
+                                    <button class="btn btn-sm btn-danger"
+                                            @onclick="() => DeleteRole(role)">
+
+                                        Delete
+
+                                    </button>
+                                }
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+}
+
+
+@code {
+
+    private List<IdentityRole>? roles;
+
+    private Dictionary<string, int> roleUserCounts = new();
+
+    private string newRoleName = "";
+
+    private string? message;
+
+    private string messageClass = "alert-info";
+
+    private bool loading = true;
+
+    private bool canViewRoles;
+
+    private bool canCreateRoles;
+
+    private bool canDeleteRoles;
+
+    private bool canManagePermissions;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var user = authState.User;
+
+
+            if (user.Identity?.IsAuthenticated != true)
+            {
+                loading = false;
+                return;
+            }
+
+
+            canViewRoles =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Roles.View");
+
+
+            if (!canViewRoles)
+            {
+                loading = false;
+                return;
+            }
+
+
+            canCreateRoles =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Roles.Create");
+
+
+            canDeleteRoles =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Roles.Delete");
+
+
+            canManagePermissions =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Roles.ManagePermissions");
+
+
+            await LoadRoles();
+
+            loading = false;
+        }
+        catch (Exception ex)
+        {
+            loading = false;
+
+            ShowError(
+                $"Unable to load roles: {ex.Message}");
+        }
+    }
+
+
+    private async Task LoadRoles()
+    {
+        roles =
+            await RoleManager.Roles
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+
+
+        roleUserCounts.Clear();
+
+
+        foreach (var role in roles)
+        {
+            if (role.Name == null)
+                continue;
+
+
+            var users =
+                await UserManager.GetUsersInRoleAsync(
+                    role.Name);
+
+
+            roleUserCounts[role.Name] =
+                users.Count;
+        }
+    }
+
+
+    private int GetUserCount(
+        string roleName)
+    {
+        return roleUserCounts.TryGetValue(
+            roleName,
+            out var count)
+                ? count
+                : 0;
+    }
+
+
+    private async Task CreateRole()
+    {
+        message = null;
+
+
+        // Always check the permission again.
+        // Never rely only on hiding the button.
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+
+        if (!await PermissionService.HasPermissionAsync(
+                user,
+                "Roles.Create"))
+        {
+            ShowError(
+                "You are not authorized to create roles.");
+
+            return;
+        }
+
+
+        var roleName =
+            newRoleName.Trim();
+
+
+        if (string.IsNullOrWhiteSpace(roleName))
+        {
+            ShowError(
+                "Please enter a role name.");
+
+            return;
+        }
+
+
+        var exists =
+            await RoleManager.RoleExistsAsync(
+                roleName);
+
+
+        if (exists)
+        {
+            ShowError(
+                "That role already exists.");
+
+            return;
+        }
+
+
+        var result =
+            await RoleManager.CreateAsync(
+                new IdentityRole(roleName));
+
+
+        if (result.Succeeded)
+        {
+            ShowSuccess(
+                $"Role '{roleName}' created successfully.");
+
+            newRoleName = "";
+
+            await LoadRoles();
+        }
+        else
+        {
+            ShowError(
+                string.Join(
+                    ", ",
+                    result.Errors.Select(
+                        x => x.Description)));
+        }
+    }
+
+
+    private async Task DeleteRole(
+        IdentityRole role)
+    {
+        message = null;
+
+
+        // Always verify permission again.
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+
+        if (!await PermissionService.HasPermissionAsync(
+                user,
+                "Roles.Delete"))
+        {
+            ShowError(
+                "You are not authorized to delete roles.");
+
+            return;
+        }
+
+
+        if (role.Name == "Administrator")
+        {
+            ShowError(
+                "The Administrator role cannot be deleted.");
+
+            return;
+        }
+
+
+        if (role.Name == null)
+        {
+            ShowError(
+                "Invalid role.");
+
+            return;
+        }
+
+
+        var users =
+            await UserManager.GetUsersInRoleAsync(
+                role.Name);
+
+
+        if (users.Count > 0)
+        {
+            ShowError(
+                $"Role '{role.Name}' is assigned to {users.Count} user(s) and cannot be deleted.");
+
+            return;
+        }
+
+
+        var result =
+            await RoleManager.DeleteAsync(
+                role);
+
+
+        if (result.Succeeded)
+        {
+            ShowSuccess(
+                $"Role '{role.Name}' deleted successfully.");
+
+            await LoadRoles();
+        }
+        else
+        {
+            ShowError(
+                string.Join(
+                    ", ",
+                    result.Errors.Select(
+                        x => x.Description)));
+        }
+    }
+
+
+    private void ShowSuccess(
+        string text)
+    {
+        message = text;
+
+        messageClass =
+            "alert-success";
+    }
+
+
+    private void ShowError(
+        string text)
+    {
+        message = text;
+
+        messageClass =
+            "alert-danger";
+    }
+
+}

@@ -1,0 +1,172 @@
+/* =========================================
+   Application Layout
+   ========================================= */
+
+.app-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+
+/* =========================================
+   Sidebar
+   ========================================= */
+
+.sidebar {
+    width: 260px;
+    min-width: 260px;
+    min-height: 100vh;
+    background: linear-gradient( 180deg, #0b568d 0%, #073b61 100% );
+    color: white;
+    padding: 22px 16px;
+}
+
+
+/* =========================================
+   Main Content
+   ========================================= */
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+    padding: 30px;
+    overflow-x: hidden;
+    background: var(--erp-background);
+}
+
+
+    /* =========================================
+   Content Width
+   ========================================= */
+
+    .main-content > * {
+        width: 100%;
+    }
+
+
+/* =========================================
+   Mobile Menu Button
+   ========================================= */
+
+.mobile-menu-btn {
+    display: none;
+}
+
+
+/* =========================================
+   Tablet
+   ========================================= */
+
+@media (max-width: 992px) {
+
+    .main-content {
+        padding: 24px;
+    }
+}
+
+
+/* =========================================
+   Mobile
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    .app-layout {
+        display: block;
+        min-height: 100vh;
+    }
+
+
+    /* -----------------------------
+       Mobile menu button
+       ----------------------------- */
+
+    .mobile-menu-btn {
+        display: block;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 3000;
+        width: 46px;
+        height: 42px;
+        padding: 0;
+        background: #0b568d;
+        color: white;
+        border: none;
+        border-radius: 7px;
+        font-size: 22px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.20);
+    }
+
+
+    /* -----------------------------
+       Mobile sidebar
+       ----------------------------- */
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 2500;
+        width: 280px;
+        min-width: 280px;
+        height: 100dvh;
+        min-height: 100dvh;
+        padding: 22px 16px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overscroll-behavior: contain;
+    }
+
+
+        .sidebar.show {
+            left: 0;
+            transform: translateX(0);
+        }
+
+
+    /* -----------------------------
+       Main content
+       ----------------------------- */
+
+    .main-content {
+        width: 100%;
+        min-height: 100vh;
+        padding: 70px 16px 24px 16px;
+        overflow-x: hidden;
+    }
+
+
+    /* -----------------------------
+       Tables
+       ----------------------------- */
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+
+    /* -----------------------------
+       Page actions
+       ----------------------------- */
+
+    .page-actions {
+        gap: 12px;
+    }
+
+
+    /* -----------------------------
+       Cards
+       ----------------------------- */
+
+    .card {
+        width: 100%;
+    }
+}

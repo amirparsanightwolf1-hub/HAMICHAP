@@ -1,0 +1,187 @@
+﻿@page "/sales/requests/create"
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+
+@inject ApplicationDbContext Db
+@inject SalesRequestService SalesRequestService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["SalesRequest"]
+</PageTitle>
+
+<div class="page-container">
+
+    <div class="erp-page-header mb-4">
+
+        <div>
+            <div class="erp-page-title">
+                @LocalizationService["SalesRequest"]
+            </div>
+
+            <div class="erp-page-subtitle">
+                @LocalizationService["CreateSalesRequest"]
+            </div>
+        </div>
+
+        <button type="button"
+                class="btn btn-outline-secondary"
+                @onclick="GoBack">
+
+            <i class="bi bi-arrow-left"></i>
+            @LocalizationService["Back"]
+
+        </button>
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger mb-4">
+            @errorMessage
+        </div>
+    }
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <strong>
+                @LocalizationService["SalesRequestInformation"]
+            </strong>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        @LocalizationService["Customer"]
+                    </label>
+
+                    <select class="form-select"
+                            @bind="customerId">
+
+                        <option value="0">
+                            @LocalizationService["SelectCustomer"]
+                        </option>
+
+                        @foreach (var customer in customers)
+                        {
+                            <option value="@customer.Id">
+                                @customer.Code - @customer.Name
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-6 d-flex align-items-end">
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="CreateAsync"
+                            disabled="@isSaving">
+
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+
+                        <i class="bi bi-plus-circle"></i>
+                        @LocalizationService["Create"]
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@code {
+
+    private List<Customer> customers = new();
+
+    private int customerId;
+
+    private bool isSaving;
+
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers =
+            await Db.Customers
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+    }
+
+    private async Task CreateAsync()
+    {
+        errorMessage = null;
+
+        if (customerId <= 0)
+        {
+            errorMessage =
+                LocalizationService["CustomerRequired"];
+
+            return;
+        }
+
+        try
+        {
+            isSaving = true;
+
+            var authenticationState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var user =
+                await UserManager.GetUserAsync(
+                    authenticationState.User);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException(
+                    LocalizationService["UserNotAuthenticated"]);
+            }
+
+            var request =
+                await SalesRequestService.CreateRequestAsync(
+                    customerId,
+                    user.Id);
+
+            Navigation.NavigateTo(
+                $"/sales/requests/edit/{request.Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo(
+            "/sales/requests");
+    }
+}

@@ -1,0 +1,529 @@
+﻿@page "/inventory/stock/lots"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject LocalizationService LocalizationService
+
+<PageTitle>@LocalizationService["LotStock"]</PageTitle>
+
+<div class="page-container">
+
+    <div class="erp-page-header">
+
+        <div>
+            <h3 class="erp-page-title">
+                @LocalizationService["StockByLot"]
+            </h3>
+        </div>
+
+    </div>
+
+    <!-- =========================================
+         Low Stock Alert Summary
+         ========================================= -->
+    @if (lowStockItems != null && lowStockItems.Count > 0)
+    {
+        <div class="alert alert-warning mb-4">
+
+            <strong>
+                @LocalizationService["LowStockAlert"]
+            </strong>
+
+            <span class="ms-2">
+                @lowStockItems.Count
+                @LocalizationService["ItemsLowStock"]
+            </span>
+
+        </div>
+    }
+
+    <!-- =========================================
+         Inventory Filters
+         ========================================= -->
+
+    <div class="card mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        @LocalizationService["Item"]
+                    </label>
+
+                    <input type="text"
+                           class="form-control"
+                           @bind="searchText"
+                           @bind:event="oninput"
+                           @bind:after="SearchChanged"
+                           placeholder="@LocalizationService["SearchItem"]" />
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        @LocalizationService["InventoryOwner"]
+                    </label>
+
+                    <select class="form-select"
+                            @bind="ownerFilter"
+                            @bind:after="FilterChanged">
+
+                        <option value="@InventoryOwnerFilter.All">
+                            @LocalizationService["AllInventory"]
+                        </option>
+
+                        <option value="@InventoryOwnerFilter.Company">
+                            @LocalizationService["CompanyInventory"]
+                        </option>
+
+                        <option value="@InventoryOwnerFilter.Customer">
+                            @LocalizationService["CustomerInventoryFilter"]
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <button type="button"
+                            class="btn btn-outline-secondary w-100"
+                            @onclick="ClearFilters">
+
+                        @LocalizationService["Clear"]
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    @if (balances == null)
+    {
+        <p>@LocalizationService["Loading"]</p>
+    }
+    else
+    {
+        <div class="card">
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-striped table-bordered table-responsive-cards mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    @LocalizationService["Item"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Warehouse"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Customer"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["LotNumber"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Expiration"]
+                                </th>
+
+                                <th class="text-end">
+                                    @LocalizationService["Quantity"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["StockAlert"]
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @if (balances.Count == 0)
+                            {
+                                <tr>
+
+                                    <td colspan="7"
+                                        class="text-center">
+
+                                        @LocalizationService["NoInventoryFound"]
+
+                                    </td>
+
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var row in balances)
+                                {
+                                    var isLowStock =
+                                        IsLowStock(row.ItemId);
+
+                                    <tr class="@(isLowStock ? "table-warning" : "")">
+
+                                        <td>
+                                            @row.Item.Code - @row.Item.Name
+                                        </td>
+
+                                        <td>
+                                            @row.InventoryLocation.Name
+                                        </td>
+
+                                        <td>
+                                            @(row.Customer?.Name
+                                                ?? LocalizationService["CompanyInventory"])
+                                        </td>
+
+                                        <td>
+                                            @(row.InventoryLot?.LotNumber ?? "-")
+                                        </td>
+
+                                        <td>
+                                            @(row.InventoryLot?.ExpirationDate?.ToShortDateString() ?? "-")
+                                        </td>
+
+                                        <td class="text-end">
+                                            @row.OnHandQuantity
+                                        </td>
+
+                                        <td>
+
+                                            @if (isLowStock)
+                                            {
+                                                <span class="badge bg-danger">
+                                                    @LocalizationService["LowStock"]
+                                                </span>
+
+                                                <div class="small mt-1">
+                                                    @LocalizationService["Threshold"]:
+                                                    @GetThreshold(row.ItemId)
+                                                </div>
+                                            }
+                                            else if (row.Item.EnableLowStockAlert)
+                                            {
+                                                <span class="badge bg-success">
+                                                    @LocalizationService["StockOK"]
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">
+                                                    @LocalizationService["Disabled"]
+                                                </span>
+                                            }
+
+                                        </td>
+
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- =========================================
+                     Pagination
+                     ========================================= -->
+                @if (totalPages > 0)
+                {
+                    <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-top gap-2">
+
+                        <div class="text-muted small">
+                            @((currentPage - 1) * pageSize + 1)
+                            -
+                            @(Math.Min(currentPage * pageSize, totalCount))
+                            /
+                            @totalCount
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    disabled="@(currentPage <= 1)"
+                                    @onclick="PreviousPage">
+
+                                @LocalizationService["Previous"]
+
+                            </button>
+
+                            <span class="small">
+                                @currentPage / @totalPages
+                            </span>
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    disabled="@(currentPage >= totalPages)"
+                                    @onclick="NextPage">
+
+                                @LocalizationService["Next"]
+
+                            </button>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+@code
+{
+    private List<InventoryBalance>? balances;
+
+    private InventoryOwnerFilter ownerFilter =
+        InventoryOwnerFilter.All;
+
+    private string searchText = "";
+
+    private Dictionary<int, decimal> companyAvailableByItem = new();
+
+    private Dictionary<int, decimal> thresholdByItem = new();
+
+    private List<int>? lowStockItems;
+
+    // =========================================
+    // Pagination
+    // =========================================
+
+    private const int pageSize = 20;
+
+    private int currentPage = 1;
+
+    private int totalCount;
+
+    private int totalPages =>
+        totalCount == 0
+            ? 0
+            : (int)Math.Ceiling(
+                totalCount / (double)pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBalances();
+    }
+
+    private async Task LoadBalances()
+    {
+        var query = Db.InventoryBalances
+            .Include(x => x.Item)
+            .Include(x => x.Customer)
+            .Include(x => x.InventoryLocation)
+            .Include(x => x.InventoryLot)
+            .Where(x =>
+                x.OnHandQuantity > 0 &&
+                x.InventoryLotId != null)
+            .AsQueryable();
+
+        // =========================================
+        // Inventory Owner Filter
+        // =========================================
+
+        query = ownerFilter switch
+        {
+            InventoryOwnerFilter.Company =>
+                query.Where(x => x.CustomerId == null),
+
+            InventoryOwnerFilter.Customer =>
+                query.Where(x => x.CustomerId != null),
+
+            _ =>
+                query
+        };
+
+        // =========================================
+        // Item Search
+        // =========================================
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            var search = searchText.Trim();
+
+            query = query.Where(x =>
+                x.Item.Id.ToString().Contains(search) ||
+                x.Item.Code.Contains(search) ||
+                x.Item.Name.Contains(search));
+        }
+
+        // =========================================
+        // Total record count
+        // =========================================
+
+        totalCount = await query.CountAsync();
+
+        // =========================================
+        // Keep current page valid
+        // =========================================
+
+        if (currentPage > totalPages && totalPages > 0)
+        {
+            currentPage = totalPages;
+        }
+
+        if (totalPages == 0)
+        {
+            currentPage = 1;
+        }
+
+        // =========================================
+        // Load only current page
+        // =========================================
+
+        balances = await query
+            .OrderBy(x => x.Item.Name)
+            .ThenBy(x => x.InventoryLocation.Name)
+            .ThenBy(x => x.InventoryLot!.LotNumber)
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        await LoadLowStockAlerts();
+    }
+
+    private async Task LoadLowStockAlerts()
+    {
+        var companyBalances = await Db.InventoryBalances
+            .Include(x => x.Item)
+            .Where(x =>
+                x.CustomerId == null &&
+                x.Item.EnableLowStockAlert)
+            .ToListAsync();
+
+        companyAvailableByItem = companyBalances
+            .GroupBy(x => x.ItemId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Sum(x =>
+                    x.OnHandQuantity -
+                    x.ReservedQuantity));
+
+        thresholdByItem = companyBalances
+            .GroupBy(x => x.ItemId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.First().Item.LowStockThreshold);
+
+        lowStockItems = thresholdByItem
+            .Where(x =>
+                companyAvailableByItem.TryGetValue(
+                    x.Key,
+                    out var available) &&
+                available <= x.Value)
+            .Select(x => x.Key)
+            .ToList();
+    }
+
+    private bool IsLowStock(int itemId)
+    {
+        if (!thresholdByItem.TryGetValue(
+                itemId,
+                out var threshold))
+        {
+            return false;
+        }
+
+        if (!companyAvailableByItem.TryGetValue(
+                itemId,
+                out var available))
+        {
+            return false;
+        }
+
+        return available <= threshold;
+    }
+
+    private decimal GetThreshold(int itemId)
+    {
+        return thresholdByItem.TryGetValue(
+            itemId,
+            out var threshold)
+            ? threshold
+            : 0;
+    }
+
+    // =========================================
+    // Pagination
+    // =========================================
+
+    private async Task PreviousPage()
+    {
+        if (currentPage <= 1)
+        {
+            return;
+        }
+
+        currentPage--;
+
+        await LoadBalances();
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage >= totalPages)
+        {
+            return;
+        }
+
+        currentPage++;
+
+        await LoadBalances();
+    }
+
+    // =========================================
+    // Filters
+    // =========================================
+
+    private async Task SearchChanged()
+    {
+        currentPage = 1;
+
+        await LoadBalances();
+    }
+
+    private async Task FilterChanged()
+    {
+        currentPage = 1;
+
+        await LoadBalances();
+    }
+
+    private async Task ClearFilters()
+    {
+        searchText = "";
+        ownerFilter = InventoryOwnerFilter.All;
+        currentPage = 1;
+
+        await LoadBalances();
+    }
+}

@@ -1,0 +1,218 @@
+﻿@page "/administration/users/create"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+
+@attribute [Authorize(Roles = "Administrator")]
+
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["CreateEmployee"]
+</PageTitle>
+
+<h3>
+    @LocalizationService["CreateEmployee"]
+</h3>
+
+<EditForm Model="employee">
+
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>
+            @LocalizationService["EmployeeNumber"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="employee.EmployeeNumber" />
+    </div>
+
+    <div class="mb-3">
+        <label>
+            @LocalizationService["FirstName"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="employee.FirstName" />
+    </div>
+
+    <div class="mb-3">
+        <label>
+            @LocalizationService["LastName"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="employee.LastName" />
+    </div>
+
+    <div class="mb-3">
+        <label>
+            @LocalizationService["Department"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="employee.Department" />
+    </div>
+
+    <div class="mb-3">
+        <label>
+            @LocalizationService["Position"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="employee.Position" />
+    </div>
+
+    <div class="mb-3">
+        <label>
+            @LocalizationService["EmailUsername"]
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="employee.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label>
+            @LocalizationService["Password"]
+        </label>
+
+        <InputText type="password"
+                   class="form-control"
+                   @bind-Value="employee.Password" />
+    </div>
+
+    <div class="mb-3">
+        <label>
+            @LocalizationService["Roles"]
+        </label>
+
+        @foreach (var role in roles)
+        {
+            <div class="form-check">
+
+                <input class="form-check-input"
+                       type="checkbox"
+                       checked="@employee.Roles.Contains(role)"
+                       @onchange="() => ToggleRole(role)" />
+
+                <label class="form-check-label">
+                    @role
+                </label>
+
+            </div>
+        }
+    </div>
+
+    <button type="button"
+            class="btn btn-primary"
+            @onclick="CreateEmployee">
+        @LocalizationService["CreateEmployee"]
+    </button>
+
+</EditForm>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info mt-3">
+        @message
+    </div>
+}
+
+@code {
+
+    private EmployeeCreateModel employee = new();
+
+    private List<string> roles = new();
+
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        roles = await RoleManager.Roles
+            .Select(x => x.Name!)
+            .ToListAsync();
+    }
+
+    private void ToggleRole(string role)
+    {
+        if (employee.Roles.Contains(role))
+        {
+            employee.Roles.Remove(role);
+        }
+        else
+        {
+            employee.Roles.Add(role);
+        }
+    }
+
+    private async Task CreateEmployee()
+    {
+        var user = new ApplicationUser
+        {
+            UserName = employee.Email,
+            Email = employee.Email,
+
+            EmployeeNumber = employee.EmployeeNumber,
+            FirstName = employee.FirstName,
+            LastName = employee.LastName,
+
+            Department = employee.Department,
+            Position = employee.Position,
+
+            EmailConfirmed = true,
+            IsActive = true
+        };
+
+        var result = await UserManager.CreateAsync(
+            user,
+            employee.Password);
+
+        if (result.Succeeded)
+        {
+            foreach (var role in employee.Roles)
+            {
+                await UserManager.AddToRoleAsync(
+                    user,
+                    role);
+            }
+
+            message =
+                LocalizationService["EmployeeCreatedSuccessfully"];
+
+            employee = new();
+        }
+        else
+        {
+            message = string.Join(
+                ", ",
+                result.Errors.Select(e => e.Description));
+        }
+    }
+
+    public class EmployeeCreateModel
+    {
+        public string EmployeeNumber { get; set; } = "";
+
+        public string FirstName { get; set; } = "";
+
+        public string LastName { get; set; } = "";
+
+        public string Department { get; set; } = "";
+
+        public string Position { get; set; } = "";
+
+        public string Email { get; set; } = "";
+
+        public string Password { get; set; } = "";
+
+        public List<string> Roles { get; set; } = new();
+    }
+}

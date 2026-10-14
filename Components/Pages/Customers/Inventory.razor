@@ -1,0 +1,473 @@
+﻿@page "/customers/inventory"
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Models.Inventory
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["CustomerInventory"]
+</PageTitle>
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="mb-1">
+                @LocalizationService["CustomerInventory"]
+            </h2>
+
+            <p class="text-muted mb-0">
+                @LocalizationService["ViewAllCustomerInventory"]
+            </p>
+        </div>
+
+        <button class="btn btn-outline-secondary"
+                @onclick="ClearFilters"
+                disabled="@(!HasFilters)">
+            @LocalizationService["Clear"]
+        </button>
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    <!-- Filters -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-5">
+
+                    <label class="form-label">
+                        @LocalizationService["SearchItem"]
+                    </label>
+
+                    <input class="form-control"
+                           placeholder="@LocalizationService["SearchItem"]"
+                           @bind="searchText"
+                           @bind:event="oninput" />
+
+                </div>
+
+                <div class="col-md-5">
+
+                    <label class="form-label">
+                        @LocalizationService["Customer"]
+                    </label>
+
+                    <select class="form-select"
+                            @bind="selectedCustomerId">
+
+                        <option value="">
+                            @LocalizationService["Select"]
+                        </option>
+
+                        @foreach (var customer in customers)
+                        {
+                            <option value="@customer.Id">
+                                @customer.Name
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <button class="btn btn-primary w-100"
+                            @onclick="LoadInventory">
+
+                        @LocalizationService["Search"]
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Inventory table -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-body p-0">
+
+            @if (loading)
+            {
+                <div class="p-4 text-center text-muted">
+                    @LocalizationService["Loading"]
+                </div>
+            }
+            else if (inventory.Count == 0)
+            {
+                <div class="p-4 text-center text-muted">
+                    @LocalizationService["NoCustomerInventory"]
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead>
+                            <tr>
+
+                                <th>
+                                    @LocalizationService["Customer"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Code"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Item"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Warehouse"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Lot"]
+                                </th>
+
+                                <th class="text-end">
+                                    @LocalizationService["OnHand"]
+                                </th>
+
+                                <th class="text-end">
+                                    @LocalizationService["Reserved"]
+                                </th>
+
+                                <th class="text-end">
+                                    @LocalizationService["Available"]
+                                </th>
+
+                                <th></th>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var row in inventory)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            @row.Customer?.Name
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        @row.Item?.Code
+                                    </td>
+
+                                    <td>
+                                        @row.Item?.Name
+                                    </td>
+
+                                    <td>
+                                        @row.InventoryLocation?.Name
+                                    </td>
+
+                                    <td>
+                                        @(
+                                            row.InventoryLot?.LotNumber
+                                            ?? "-"
+                                        )
+                                    </td>
+
+                                    <td class="text-end">
+                                        @row.OnHandQuantity
+                                    </td>
+
+                                    <td class="text-end">
+                                        @row.ReservedQuantity
+                                    </td>
+
+                                    <td class="text-end fw-semibold">
+                                        @row.AvailableQuantity
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        @if (row.CustomerId.HasValue)
+                                        {
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => OpenCustomer(row.CustomerId.Value)">
+
+                                                @LocalizationService["Open"]
+
+                                            </button>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- =========================================
+                     Pagination
+                     ========================================= -->
+                @if (totalPages > 0)
+                {
+                    <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-top gap-2">
+
+                        <div class="text-muted small">
+                            @((currentPage - 1) * pageSize + 1)
+                            -
+                            @(Math.Min(currentPage * pageSize, totalCount))
+                            /
+                            @totalCount
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    disabled="@(currentPage <= 1)"
+                                    @onclick="PreviousPage">
+
+                                @LocalizationService["Previous"]
+
+                            </button>
+
+                            <span class="small">
+                                @currentPage / @totalPages
+                            </span>
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    disabled="@(currentPage >= totalPages)"
+                                    @onclick="NextPage">
+
+                                @LocalizationService["Next"]
+
+                            </button>
+
+                        </div>
+
+                    </div>
+                }
+
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+
+    private List<InventoryBalance> inventory = new();
+
+    private List<Customer> customers = new();
+
+    private string searchText = "";
+
+    private string selectedCustomerId = "";
+
+    private bool loading;
+
+    private string errorMessage = "";
+
+    // =========================================
+    // Pagination
+    // =========================================
+
+    private const int pageSize = 20;
+
+    private int currentPage = 1;
+
+    private int totalCount;
+
+    private int totalPages =>
+        totalCount == 0
+            ? 0
+            : (int)Math.Ceiling(
+                totalCount / (double)pageSize);
+
+    private bool HasFilters =>
+        !string.IsNullOrWhiteSpace(searchText) ||
+        !string.IsNullOrWhiteSpace(selectedCustomerId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+        await LoadInventory();
+    }
+
+    private async Task LoadCustomers()
+    {
+        customers = await Db.Customers
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+    }
+
+    private async Task LoadInventory()
+    {
+        loading = true;
+        errorMessage = "";
+
+        try
+        {
+            var query = Db.InventoryBalances
+                .AsNoTracking()
+                .Include(x => x.Item)
+                .Include(x => x.Customer)
+                .Include(x => x.InventoryLot)
+                .Include(x => x.InventoryLocation)
+                .Where(x =>
+                    x.CustomerId != null &&
+                    x.OnHandQuantity > 0);
+
+            // =========================================
+            // Search
+            // =========================================
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var search = searchText.Trim();
+
+                query = query.Where(x =>
+                    x.Item.Id.ToString().Contains(search) ||
+                    x.Item.Code.Contains(search) ||
+                    x.Item.Name.Contains(search) ||
+                    x.Customer!.Name.Contains(search));
+            }
+
+            // =========================================
+            // Customer Filter
+            // =========================================
+
+            if (int.TryParse(
+                selectedCustomerId,
+                out var customerId))
+            {
+                query = query.Where(x =>
+                    x.CustomerId == customerId);
+            }
+
+            // =========================================
+            // Total records
+            // =========================================
+
+            totalCount = await query.CountAsync();
+
+            // =========================================
+            // Keep current page valid
+            // =========================================
+
+            if (currentPage > totalPages && totalPages > 0)
+            {
+                currentPage = totalPages;
+            }
+
+            if (totalPages == 0)
+            {
+                currentPage = 1;
+            }
+
+            // =========================================
+            // Load only current page
+            // =========================================
+
+            inventory = await query
+                .OrderBy(x => x.Customer!.Name)
+                .ThenBy(x => x.Item!.Name)
+                .ThenBy(x => x.InventoryLocation!.Name)
+                .ThenBy(x => x.InventoryLot!.LotNumber)
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            inventory = new();
+            totalCount = 0;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    // =========================================
+    // Pagination
+    // =========================================
+
+    private async Task PreviousPage()
+    {
+        if (currentPage <= 1)
+        {
+            return;
+        }
+
+        currentPage--;
+
+        await LoadInventory();
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage >= totalPages)
+        {
+            return;
+        }
+
+        currentPage++;
+
+        await LoadInventory();
+    }
+
+    // =========================================
+    // Filters
+    // =========================================
+
+    private async Task ClearFilters()
+    {
+        searchText = "";
+        selectedCustomerId = "";
+        currentPage = 1;
+
+        await LoadInventory();
+    }
+
+    private void OpenCustomer(int customerId)
+    {
+        Navigation.NavigateTo(
+            $"/customers/{customerId}/inventory");
+    }
+}

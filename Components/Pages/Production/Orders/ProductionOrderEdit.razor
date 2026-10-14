@@ -1,0 +1,1410 @@
+﻿@page "/production/orders/edit/{Id:long}"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Services
+@using HamiChap_MES_ERP.Models.Inventory
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+@inject MrpService MrpService
+@inject InventoryReservationService InventoryReservationService
+@inject ProductionPostingService ProductionPostingService
+
+<PageTitle>Production Order</PageTitle>
+
+<div class="page-container">
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger mb-4">
+            @errorMessage
+        </div>
+    }
+
+    @if (productionOrder == null)
+    {
+        <div class="alert alert-info">
+            Loading production order...
+        </div>
+    }
+    else
+    {
+        <div class="erp-page-header">
+
+            <div>
+                <div class="d-flex align-items-center gap-3">
+
+                    <h3 class="erp-page-title mb-0">
+                        Production Order
+                    </h3>
+
+                    <span class="@GetStatusClass(productionOrder.Status)">
+                        @LocalizationService.TranslateEnum(productionOrder.Status)
+                    </span>
+
+                </div>
+
+                <p class="erp-page-subtitle mb-0">
+                    @productionOrder.OrderNumber
+                </p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 justify-content-end">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        @onclick="BackToList">
+                    Back
+                </button>
+
+                @if (productionOrder.Status == ProductionOrderStatus.Planned ||
+                     productionOrder.Status == ProductionOrderStatus.MaterialChecking ||
+                     productionOrder.Status == ProductionOrderStatus.WaitingForMaterial)
+                {
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="CalculateMrp"
+                            disabled="@isCalculatingMrp">
+
+                        @(isCalculatingMrp
+                            ? "Calculating..."
+                            : "Calculate MRP")
+
+                    </button>
+                }
+
+                @if (mrpPlan != null &&
+                     (productionOrder.Status == ProductionOrderStatus.Planned ||
+                      productionOrder.Status == ProductionOrderStatus.MaterialChecking ||
+                      productionOrder.Status == ProductionOrderStatus.WaitingForMaterial))
+                {
+                    <button type="button"
+                            class="btn btn-success"
+                            @onclick="ReserveMaterials"
+                            disabled="@isReservingMaterials">
+
+                        @(isReservingMaterials
+                            ? "Reserving..."
+                            : "Reserve Materials")
+
+                    </button>
+                }
+
+                @if (productionOrder.Status == ProductionOrderStatus.ReadyToStart)
+                {
+                    <button type="button"
+                            class="btn btn-primary"
+                            disabled>
+                        Start Production
+                    </button>
+                }
+
+                @if (productionOrder.Status == ProductionOrderStatus.InProduction)
+                {
+                    <button type="button"
+                            class="btn btn-warning"
+                            disabled>
+                        Issue Materials
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            disabled>
+                        Production Progress
+                    </button>
+                }
+
+                @if (productionOrder.Status == ProductionOrderStatus.QualityControl)
+                {
+                    <button type="button"
+                            class="btn btn-info"
+                            disabled>
+                        Quality Control
+                    </button>
+                }
+
+                @if (productionOrder.Status == ProductionOrderStatus.Completed)
+                {
+                    <span class="badge bg-success px-3 py-2">
+                        Production Completed
+                    </span>
+                }
+
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- Production Workflow -->
+        <!-- ===================================================== -->
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                <strong>Production Workflow</strong>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="small text-muted">
+                                1. Planning
+                            </div>
+
+                            <div class="mt-1">
+                                <strong>
+                                    @GetWorkflowStateText(
+                                        ProductionOrderStatus.Planned,
+                                        ProductionOrderStatus.MaterialChecking,
+                                        ProductionOrderStatus.WaitingForMaterial)
+                                </strong>
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                MRP and material availability
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="small text-muted">
+                                2. Material Readiness
+                            </div>
+
+                            <div class="mt-1">
+                                <strong>
+                                    @GetWorkflowStateText(
+                                        ProductionOrderStatus.ReadyToStart)
+                                </strong>
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                Required materials reserved
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="small text-muted">
+                                3. Production
+                            </div>
+
+                            <div class="mt-1">
+                                <strong>
+                                    @GetWorkflowStateText(
+                                        ProductionOrderStatus.InProduction)
+                                </strong>
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                Manufacturing operations
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 h-100">
+
+                            <div class="small text-muted">
+                                4. Quality / Completion
+                            </div>
+
+                            <div class="mt-1">
+                                <strong>
+                                    @GetWorkflowStateText(
+                                        ProductionOrderStatus.QualityControl,
+                                        ProductionOrderStatus.Completed)
+                                </strong>
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                QC and finished production
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- Production Order Information -->
+        <!-- ===================================================== -->
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                <strong>Production Order Information</strong>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Order Number
+                        </label>
+
+                        <input class="form-control"
+                               value="@productionOrder.OrderNumber"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Sales Order
+                        </label>
+
+                        <input class="form-control"
+                               value="@productionOrder.SalesOrder?.OrderNumber"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Customer
+                        </label>
+
+                        <input class="form-control"
+                               value="@productionOrder.SalesOrder?.Customer?.Name"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Status
+                        </label>
+
+                        <div class="pt-2">
+                            <span class="@GetStatusClass(productionOrder.Status)">
+                                @LocalizationService.TranslateEnum(productionOrder.Status)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Created
+                        </label>
+
+                        <input class="form-control"
+                               value="@productionOrder.CreatedDate.ToString("yyyy-MM-dd HH:mm")"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Planned Start
+                        </label>
+
+                        <input class="form-control"
+                               value="@(productionOrder.PlannedStartDate?.ToString("yyyy-MM-dd") ?? "-")"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Planned End
+                        </label>
+
+                        <input class="form-control"
+                               value="@(productionOrder.PlannedEndDate?.ToString("yyyy-MM-dd") ?? "-")"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Actual Start
+                        </label>
+
+                        <input class="form-control"
+                               value="@(productionOrder.ActualStartDate?.ToString("yyyy-MM-dd HH:mm") ?? "-")"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            Actual End
+                        </label>
+
+                        <input class="form-control"
+                               value="@(productionOrder.ActualEndDate?.ToString("yyyy-MM-dd HH:mm") ?? "-")"
+                               readonly />
+                    </div>
+
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(productionOrder.Notes))
+                {
+                    <div class="mt-3">
+
+                        <label class="form-label">
+                            Notes
+                        </label>
+
+                        <textarea class="form-control"
+                                  rows="3"
+                                  readonly>@productionOrder.Notes</textarea>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- Production Lines -->
+        <!-- ===================================================== -->
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                <strong>Production Lines</strong>
+            </div>
+
+            <div class="card-body">
+
+                @if (productionOrder.Lines.Count == 0)
+                {
+                    <div class="alert alert-warning mb-0">
+                        No production lines found.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle">
+
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Code</th>
+                                    <th>Planned Quantity</th>
+                                    <th>Produced Quantity</th>
+                                    <th>Remaining</th>
+                                    <th>Unit</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var line in productionOrder.Lines)
+                                {
+                                    var remaining =
+                                        Math.Max(
+                                            0,
+                                            line.PlannedQuantity -
+                                            line.ProducedQuantity);
+
+                                    <tr>
+
+                                        <td>
+                                            <strong>
+                                                @line.Item?.Name
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            @line.Item?.Code
+                                        </td>
+
+                                        <td>
+                                            @line.PlannedQuantity.ToString("0.###")
+                                        </td>
+
+                                        <td>
+                                            @line.ProducedQuantity.ToString("0.###")
+                                        </td>
+
+                                        <td>
+                                            @remaining.ToString("0.###")
+                                        </td>
+
+                                        <td>
+                                            @line.Unit?.Symbol
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- Production Progress -->
+        <!-- ===================================================== -->
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                <strong>Production Progress</strong>
+            </div>
+
+            <div class="card-body">
+
+                @{
+                    var totalPlanned =
+                        productionOrder.Lines.Sum(x => x.PlannedQuantity);
+
+                    var totalProduced =
+                        productionOrder.Lines.Sum(x => x.ProducedQuantity);
+
+                    var totalRemaining =
+                        Math.Max(
+                            0,
+                            totalPlanned - totalProduced);
+
+                    var progressPercentage =
+                        totalPlanned > 0
+                            ? Math.Min(
+                                100,
+                                (totalProduced / totalPlanned) * 100)
+                            : 0;
+                }
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+
+                        <div class="small text-muted">
+                            Planned
+                        </div>
+
+                        <div class="fs-5 fw-semibold">
+                            @totalPlanned.ToString("0.###")
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="small text-muted">
+                            Produced
+                        </div>
+
+                        <div class="fs-5 fw-semibold">
+                            @totalProduced.ToString("0.###")
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="small text-muted">
+                            Remaining
+                        </div>
+
+                        <div class="fs-5 fw-semibold">
+                            @totalRemaining.ToString("0.###")
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="small text-muted">
+                            Completion
+                        </div>
+
+                        <div class="fs-5 fw-semibold">
+                            @progressPercentage.ToString("0.##")%
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="progress mt-4"
+                     style="height: 10px;">
+
+                    <div class="progress-bar"
+                         role="progressbar"
+                         style="width: @progressPercentage%;"
+                         aria-valuenow="@progressPercentage"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- Production Operations -->
+        <!-- ===================================================== -->
+
+        <div class="card mb-4">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+
+                <strong>Production Operations</strong>
+
+                <span class="badge bg-secondary">
+                    @productionOperations.Count Operations
+                </span>
+
+            </div>
+
+            <div class="card-body">
+
+                @if (productionOperations.Count == 0)
+                {
+                    <div class="alert alert-info mb-0">
+                        No production operations have been defined for this
+                        production order yet.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">
+                                        Seq.
+                                    </th>
+
+                                    <th>
+                                        Operation
+                                    </th>
+
+                                    <th>
+                                        Work Center
+                                    </th>
+
+                                    <th>
+                                        Planned Hours
+                                    </th>
+
+                                    <th>
+                                        Actual Hours
+                                    </th>
+
+                                    <th>
+                                        Status
+                                    </th>
+
+                                    <th style="width: 180px;">
+                                        Action
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var operation in productionOperations)
+                                {
+                                    <tr>
+
+                                        <td>
+                                            <strong>
+                                                @($"{operation.Sequence}. {operation.Name}")
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            @if (operation.WorkCenterId.HasValue)
+                                            {
+                                                <span>
+                                                    WC-@operation.WorkCenterId
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">
+                                                    Not assigned
+                                                </span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @operation.PlannedHours.ToString("0.##")
+                                        </td>
+
+                                        <td>
+                                            @operation.ActualHours.ToString("0.##")
+                                        </td>
+
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                @operation.Status
+                                            </span>
+                                        </td>
+
+                                        <td>
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    disabled>
+                                                Open
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- Production Scheduling -->
+        <!-- ===================================================== -->
+
+        <div class="card mb-4">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+
+                <strong>Production Schedule</strong>
+
+                <span class="badge bg-secondary">
+                    @productionSchedules.Count Schedules
+                </span>
+
+            </div>
+
+            <div class="card-body">
+
+                @if (productionSchedules.Count == 0)
+                {
+                    <div class="alert alert-info mb-0">
+                        No production schedule has been created for this
+                        production order yet.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead>
+                                <tr>
+
+                                    <th>
+                                        Operation
+                                    </th>
+
+                                    <th>
+                                        Machine
+                                    </th>
+
+                                    <th>
+                                        Planned Start
+                                    </th>
+
+                                    <th>
+                                        Planned End
+                                    </th>
+
+                                    <th>
+                                        Priority
+                                    </th>
+
+                                    <th>
+                                        Status
+                                    </th>
+
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var schedule in productionSchedules)
+                                {
+                                    var operation =
+                                        productionOperations
+                                            .FirstOrDefault(
+                                                x => x.Id ==
+                                                    schedule.ProductionOperationId);
+
+                                    <tr>
+
+                                        <td>
+                                            @if (operation != null)
+                                            {
+                                                <strong>
+                                                    @operation.Sequence.
+                                                    @operation.Name
+                                                </strong>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">
+                                                    Operation #@schedule.ProductionOperationId
+                                                </span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            Machine @schedule.MachineId
+                                        </td>
+
+                                        <td>
+                                            @schedule.PlannedStart.ToString(
+                                                "yyyy-MM-dd HH:mm")
+                                        </td>
+
+                                        <td>
+                                            @schedule.PlannedEnd.ToString(
+                                                "yyyy-MM-dd HH:mm")
+                                        </td>
+
+                                        <td>
+                                            @schedule.Priority
+                                        </td>
+
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                @schedule.Status
+                                            </span>
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ===================================================== -->
+        <!-- MRP -->
+        <!-- ===================================================== -->
+
+        @if(!string.IsNullOrWhiteSpace(mrpMessage))
+        {
+            <div class="alert alert-success mb-4">
+                @mrpMessage
+            </div>
+        }
+
+        <div class="card mb-4">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+
+                <strong>
+                    Material Requirements Planning
+                </strong>
+
+                <button type="button"
+                        class="btn btn-sm btn-primary"
+                        @onclick="CalculateMrp"
+                        disabled="@isCalculatingMrp">
+
+                    @(isCalculatingMrp
+                        ? "Calculating..."
+                        : "Calculate MRP")
+
+                </button>
+
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(reservationMessage))
+            {
+                <div class="alert alert-info mb-4">
+                    @reservationMessage
+                </div>
+            }
+
+            <div class="card-body">
+
+                @if (mrpPlan == null)
+                {
+                    <div class="text-muted">
+                        No MRP calculation has been performed yet.
+                    </div>
+                }
+                else if (mrpPlan.Lines.Count == 0)
+                {
+                    <div class="alert alert-warning mb-0">
+                        MRP calculation completed, but no material
+                        requirements were generated.
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-3">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-3">
+
+                                <div class="small text-muted">
+                                    MRP Created
+                                </div>
+
+                                <strong>
+                                    @mrpPlan.CreatedDate.ToString(
+                                        "yyyy-MM-dd HH:mm")
+                                </strong>
+
+                            </div>
+
+                            <div class="col-md-3">
+
+                                <div class="small text-muted">
+                                    Status
+                                </div>
+
+                                <strong>
+                                    @mrpPlan.Status
+                                </strong>
+
+                            </div>
+
+                            <div class="col-md-3">
+
+                                <div class="small text-muted">
+                                    Materials
+                                </div>
+
+                                <strong>
+                                    @mrpPlan.Lines.Count
+                                </strong>
+
+                            </div>
+
+                            <div class="col-md-3">
+
+                                <div class="small text-muted">
+                                    Shortages
+                                </div>
+
+                                <strong>
+                                    @mrpPlan.Lines.Count(
+                                        x => x.IsShortage)
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Code</th>
+                                    <th>Required</th>
+                                    <th>Available</th>
+                                    <th>Shortage</th>
+                                    <th>Unit</th>
+                                    <th>Status</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var line in mrpPlan.Lines)
+                                {
+                                    <tr>
+
+                                        <td>
+                                            <strong>
+                                                @line.Item?.Name
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            @line.Item?.Code
+                                        </td>
+
+                                        <td>
+                                            @line.RequiredQuantity.ToString(
+                                                "0.###")
+                                        </td>
+
+                                        <td>
+                                            @line.AvailableQuantity.ToString(
+                                                "0.###")
+                                        </td>
+
+                                        <td>
+
+                                            @if (line.IsShortage)
+                                            {
+                                                <strong>
+                                                    @line.ShortageQuantity.ToString(
+                                                        "0.###")
+                                                </strong>
+                                            }
+                                            else
+                                            {
+                                                <span>
+                                                    0
+                                                </span>
+                                            }
+
+                                        </td>
+
+                                        <td>
+                                            @line.Unit?.Symbol
+                                        </td>
+
+                                        <td>
+
+                                            @if (line.IsShortage)
+                                            {
+                                                <span class="badge bg-danger">
+                                                    Shortage
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">
+                                                    Available
+                                                </span>
+                                            }
+
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+        <!-- ===================================================== -->
+        <!-- Material Reservations -->
+        <!-- ===================================================== -->
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+                <strong>Material Reservations</strong>
+            </div>
+
+            <div class="card-body">
+
+                @if (materialReservations.Count == 0)
+                {
+                    <div class="alert alert-info mb-0">
+                        No material reservations have been created for this
+                        production order.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle mb-0">
+
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Code</th>
+                                    <th>Reserved Quantity</th>
+                                    <th>Unit</th>
+                                    <th>Reserved Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var reservation in materialReservations)
+                                {
+                                    <tr>
+
+                                        <td>
+                                            <strong>
+                                                @reservation.Item?.Name
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            @reservation.Item?.Code
+                                        </td>
+
+                                        <td>
+                                            @reservation.Quantity.ToString("0.###")
+                                        </td>
+
+                                        <td>
+                                            @reservation.Unit?.Symbol
+                                        </td>
+
+                                        <td>
+                                            @reservation.ReservedDate.ToString(
+                                                "yyyy-MM-dd HH:mm")
+                                        </td>
+
+                                        <td>
+                                            <span class="badge bg-success">
+                                                @reservation.Status
+                                            </span>
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                }
+
+            </div>
+
+        </div> 
+
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+
+    private ProductionOrder? productionOrder;
+
+    private MaterialRequirementPlan? mrpPlan;
+
+    private bool isReservingMaterials;
+
+    private string? reservationMessage;
+
+    private string? errorMessage;
+
+    private string? mrpMessage;
+
+    private bool isCalculatingMrp;
+
+    private bool isIssuingMaterials;
+
+    private string? materialIssueMessage;
+
+    private List<ProductionOperation> productionOperations = new();
+
+    private List<ProductionSchedule> productionSchedules = new();
+
+    private List<ProductionMaterialReservation> materialReservations = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductionOrderAsync();
+    }
+
+    private async Task LoadProductionOrderAsync()
+    {
+        errorMessage = null;
+
+        try
+        {
+            productionOrder = await Db.ProductionOrders
+
+                .Include(x => x.SalesOrder)
+                    .ThenInclude(x => x.Customer)
+
+                .Include(x => x.Lines)
+                    .ThenInclude(x => x.Item)
+                        .ThenInclude(x => x.Unit)
+
+                .Include(x => x.Lines)
+                    .ThenInclude(x => x.Unit)
+
+                .FirstOrDefaultAsync(x => x.Id == Id);
+
+            if (productionOrder == null)
+            {
+                errorMessage = "Production order not found.";
+                return;
+            }
+
+            materialReservations = await Db.ProductionMaterialReservations
+                .Where(x => x.ProductionOrderId == Id)
+                .Include(x => x.Item)
+                .Include(x => x.Unit)
+                .OrderBy(x => x.Item.Name)
+                .ToListAsync();
+
+            productionOperations = await Db.ProductionOperations
+                .Where(x => x.ProductionOrderId == Id)
+                .OrderBy(x => x.Sequence)
+                .ToListAsync();
+
+            var operationIds = productionOperations
+                .Select(x => x.Id)
+                .ToList();
+
+            productionSchedules = await Db.ProductionSchedules
+                .Where(x => operationIds.Contains(x.ProductionOperationId))
+                .OrderBy(x => x.PlannedStart)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task CalculateMrp()
+    {
+        if (productionOrder == null)
+            return;
+
+        if (isCalculatingMrp)
+            return;
+
+        errorMessage = null;
+        mrpMessage = null;
+
+        try
+        {
+            isCalculatingMrp = true;
+
+            mrpPlan =
+                await MrpService.CalculateAsync(
+                    productionOrder.Id);
+
+            mrpMessage =
+                "MRP calculation completed successfully.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isCalculatingMrp = false;
+        }
+    }
+
+    private async Task IssueMaterials()
+    {
+        if (productionOrder == null)
+            return;
+
+        if (isIssuingMaterials)
+            return;
+
+        errorMessage = null;
+        materialIssueMessage = null;
+
+        try
+        {
+            isIssuingMaterials = true;
+
+            var reservations =
+                await Db.ProductionMaterialReservations
+                    .Where(x =>
+                        x.ProductionOrderId == productionOrder.Id &&
+                        x.Status == ReservationStatus.Reserved &&
+                        x.Quantity > 0)
+                    .AnyAsync();
+
+            if (!reservations)
+            {
+                materialIssueMessage =
+                    "No reserved materials are available for issue.";
+
+                return;
+            }
+
+            var productionLocation =
+                await Db.InventoryLocations
+                    .FirstOrDefaultAsync(x =>
+                        x.Type == InventoryLocationType.Production &&
+                        x.IsActive);
+
+            if (productionLocation == null)
+            {
+                throw new InvalidOperationException(
+                    "No active Production inventory location was found.");
+            }
+
+            var documentIds =
+                await ProductionPostingService.PostMaterialIssueAsync(
+                    productionOrder.Id,
+                    productionLocation.Id,
+                    "system");
+
+            materialIssueMessage =
+                $"Material issue posted successfully. " +
+                $"Created {documentIds.Count} Production Issue document(s).";
+
+            await LoadProductionOrderAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isIssuingMaterials = false;
+        }
+    }
+
+    private async Task ReserveMaterials()
+    {
+        if (productionOrder == null)
+            return;
+
+        if (isReservingMaterials)
+            return;
+
+        errorMessage = null;
+        reservationMessage = null;
+
+        try
+        {
+            isReservingMaterials = true;
+
+            var result =
+                await InventoryReservationService
+                    .ReserveForProductionAsync(
+                        productionOrder.Id);
+
+            if (!result)
+            {
+                reservationMessage =
+                    "Material reservation could not be completed because " +
+                    "one or more materials are insufficient.";
+
+                return;
+            }
+
+            productionOrder.Status =
+                ProductionOrderStatus.ReadyToStart;
+
+            await Db.SaveChangesAsync();
+
+            reservationMessage =
+                "All required materials have been reserved successfully.";
+
+            await LoadProductionOrderAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isReservingMaterials = false;
+        }
+    }
+
+
+    private void BackToList()
+    {
+        Navigation.NavigateTo(
+            "/production/orders");
+    }
+    
+    private string GetWorkflowStateText(
+        params ProductionOrderStatus[] statuses)
+    {
+        if (statuses.Contains(productionOrder!.Status))
+        {
+            return LocalizationService.TranslateEnum(
+                productionOrder.Status);
+        }
+
+        if (statuses.Contains(ProductionOrderStatus.Completed) &&
+            productionOrder.Status == ProductionOrderStatus.Completed)
+        {
+            return "Completed";
+        }
+
+        return "Pending";
+    }
+
+    private string GetStatusClass(
+        ProductionOrderStatus status)
+    {
+        return status switch
+        {
+            ProductionOrderStatus.Planned =>
+                "badge bg-secondary",
+
+            ProductionOrderStatus.MaterialChecking =>
+                "badge bg-info",
+
+            ProductionOrderStatus.WaitingForMaterial =>
+                "badge bg-warning text-dark",
+
+            ProductionOrderStatus.ReadyToStart =>
+                "badge bg-primary",
+
+            ProductionOrderStatus.InProduction =>
+                "badge bg-primary",
+
+            ProductionOrderStatus.QualityControl =>
+                "badge bg-info",
+
+            ProductionOrderStatus.Completed =>
+                "badge bg-success",
+
+            ProductionOrderStatus.Cancelled =>
+                "badge bg-danger",
+
+            _ =>
+                "badge bg-secondary"
+        };
+    }
+}

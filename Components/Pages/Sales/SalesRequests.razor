@@ -1,0 +1,271 @@
+﻿@page "/sales/requests"
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["SalesRequests"]
+</PageTitle>
+
+<div class="page-container">
+
+    <div class="erp-page-header mb-4">
+
+        <div>
+            <div class="erp-page-title">
+                @LocalizationService["SalesRequests"]
+            </div>
+
+            <div class="erp-page-subtitle">
+                @LocalizationService["SalesRequestsManagement"]
+            </div>
+        </div>
+
+        <button type="button"
+                class="btn btn-primary"
+                @onclick="CreateRequest">
+
+            <i class="bi bi-plus-circle"></i>
+            @LocalizationService["NewSalesRequest"]
+
+        </button>
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger mb-4">
+            @errorMessage
+        </div>
+    }
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <strong>
+                @LocalizationService["SalesRequests"]
+            </strong>
+        </div>
+
+        <div class="card-body p-0">
+
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+
+                    <div class="spinner-border"
+                         role="status">
+
+                        <span class="visually-hidden">
+                            @LocalizationService["Loading"]
+                        </span>
+
+                    </div>
+
+                </div>
+            }
+            else if (!requests.Any())
+            {
+                <div class="text-center text-muted py-5">
+
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+
+                    @LocalizationService[
+                        "NoSalesRequestsFound"]
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    @LocalizationService["RequestNumber"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Customer"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["RequestDate"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService[
+                                        "RequestedDeliveryDate"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Status"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService[
+                                        "AssignedEvaluator"]
+                                </th>
+
+                                <th style="width:100px;">
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var request in requests)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <span class="fw-semibold">
+                                            @request.RequestNumber
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @request.Customer?.Name
+                                    </td>
+
+                                    <td>
+                                        @request.RequestDate
+                                        .ToString("yyyy-MM-dd")
+                                    </td>
+
+                                    <td>
+                                        @(
+                                            request.RequestedDeliveryDate?
+                                                .ToString("yyyy-MM-dd")
+                                            ?? "-"
+                                        )
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            @LocalizationService
+                                            .TranslateEnum(
+                                            request.Status)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @GetEvaluatorName(request)
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                @onclick="() => OpenRequest(request.Id)">
+
+                                            <i class="bi bi-pencil"></i>
+                                            @LocalizationService["Open"]
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>
+
+@code {
+
+    private List<SalesRequest> requests = new();
+
+    private bool isLoading = true;
+
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            requests =
+                await Db.SalesRequests
+
+                    .Include(x => x.Customer)
+
+                    .Include(x => x.AssignedToUser)
+
+                    .OrderByDescending(x => x.RequestDate)
+
+                    .ThenByDescending(x => x.Id)
+
+                    .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetEvaluatorName(
+        SalesRequest request)
+    {
+        if (request.AssignedToUser == null)
+            return "-";
+
+        var user =
+            request.AssignedToUser;
+
+        if (!string.IsNullOrWhiteSpace(
+                user.FirstName) ||
+            !string.IsNullOrWhiteSpace(
+                user.LastName))
+        {
+            return $"{user.FirstName} {user.LastName}"
+                .Trim();
+        }
+
+        return user.UserName ?? "-";
+    }
+
+    private void CreateRequest()
+    {
+        Navigation.NavigateTo(
+            "/sales/requests/create");
+    }
+
+    private void OpenRequest(long id)
+    {
+        Navigation.NavigateTo(
+            $"/sales/requests/edit/{id}");
+    }
+}

@@ -1,0 +1,205 @@
+﻿@page "/production/orders"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+
+<PageTitle>Production Orders</PageTitle>
+
+<div class="page-container">
+
+    <div class="erp-page-header">
+
+        <div>
+            <h3 class="erp-page-title">
+                Production Orders
+            </h3>
+
+            <p class="erp-page-subtitle">
+                Manage production orders and their manufacturing progress.
+            </p>
+        </div>
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger mb-4">
+            @errorMessage
+        </div>
+    }
+
+    @if (productionOrders == null)
+    {
+        <div class="alert alert-info">
+            Loading production orders...
+        </div>
+    }
+    else if (productionOrders.Count == 0)
+    {
+        <div class="card">
+            <div class="card-body">
+                No production orders found.
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Order Number</th>
+                                <th>Sales Order</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Planned Start</th>
+                                <th>Planned End</th>
+                                <th>Lines</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var order in productionOrders)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            @order.OrderNumber
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        @order.SalesOrder?.OrderNumber
+                                    </td>
+
+                                    <td>
+                                        <span class="@GetStatusClass(order.Status)">
+                                            @LocalizationService.TranslateEnum(order.Status)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @order.CreatedDate.ToString("yyyy-MM-dd")
+                                    </td>
+
+                                    <td>
+                                        @(order.PlannedStartDate?.ToString("yyyy-MM-dd") ?? "-")
+                                    </td>
+
+                                    <td>
+                                        @(order.PlannedEndDate?.ToString("yyyy-MM-dd") ?? "-")
+                                    </td>
+
+                                    <td>
+                                        @order.Lines.Count
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                @onclick="() => OpenOrder(order.Id)">
+                                            Open
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private List<ProductionOrder>? productionOrders;
+
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProductionOrdersAsync();
+    }
+
+    private async Task LoadProductionOrdersAsync()
+    {
+        errorMessage = null;
+
+        try
+        {
+            productionOrders = await Db.ProductionOrders
+                .Include(x => x.SalesOrder)
+                .Include(x => x.Lines)
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void OpenOrder(long id)
+    {
+        Navigation.NavigateTo(
+            $"/production/orders/edit/{id}");
+    }
+
+    private string GetStatusClass(
+        ProductionOrderStatus status)
+    {
+        return status switch
+        {
+            ProductionOrderStatus.Planned =>
+                "badge bg-secondary",
+
+            ProductionOrderStatus.MaterialChecking =>
+                "badge bg-info",
+
+            ProductionOrderStatus.WaitingForMaterial =>
+                "badge bg-warning text-dark",
+
+            ProductionOrderStatus.ReadyToStart =>
+                "badge bg-primary",
+
+            ProductionOrderStatus.InProduction =>
+                "badge bg-primary",
+
+            ProductionOrderStatus.QualityControl =>
+                "badge bg-info",
+
+            ProductionOrderStatus.Completed =>
+                "badge bg-success",
+
+            ProductionOrderStatus.Cancelled =>
+                "badge bg-danger",
+
+            _ =>
+                "badge bg-secondary"
+        };
+    }
+}

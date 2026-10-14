@@ -1,0 +1,280 @@
+﻿@page "/customers/{CustomerId:int}/inventory"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Models.Inventory
+
+@attribute [Authorize]
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
+
+<PageTitle>@LocalizationService["CustomerInventory"]</PageTitle>
+
+<div class="page-container">
+
+    @if (loading)
+    {
+        <p>@LocalizationService["LoadingCustomerInventory"]</p>
+    }
+    else if (customer == null)
+    {
+        <div class="alert alert-danger">
+            @LocalizationService["CustomerNotFound"]
+        </div>
+    }
+    else
+    {
+        <!-- Page Header -->
+
+        <div class="erp-page-header">
+
+            <div>
+
+                <h3 class="erp-page-title">
+                    @customer.Name
+                </h3>
+
+                <p class="erp-page-subtitle">
+                    @LocalizationService["CustomerInventory"]
+
+                    @if (!string.IsNullOrWhiteSpace(customer.Code))
+                    {
+                        <span> · @customer.Code</span>
+                    }
+                </p>
+
+            </div>
+
+            <div>
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        @onclick="GoBack">
+
+                    @LocalizationService["BackToCustomers"]
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- Inventory Summary -->
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-card-body">
+
+                        <p class="dashboard-stat-label">
+                            @LocalizationService["Items"]
+                        </p>
+
+                        <div class="dashboard-stat-value">
+                            @inventory.Count
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-card-body">
+
+                        <p class="dashboard-stat-label">
+                            @LocalizationService["TotalOnHand"]
+                        </p>
+
+                        <div class="dashboard-stat-value">
+                            @TotalOnHand.ToString("N2")
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-card-body">
+
+                        <p class="dashboard-stat-label">
+                            @LocalizationService["TotalReserved"]
+                        </p>
+
+                        <div class="dashboard-stat-value">
+                            @TotalReserved.ToString("N2")
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Inventory -->
+        @if (!inventory.Any())
+        {
+            <div class="alert alert-info">
+                @LocalizationService["CustomerHasNoInventory"]
+            </div>
+        }
+        else
+        {
+            <div class="card">
+
+                <div class="card-body p-0">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-bordered table-striped table-hover mb-0">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>@LocalizationService["Item"]</th>
+                                    <th>@LocalizationService["Lot"]</th>
+                                    <th>@LocalizationService["Location"]</th>
+                                    <th>@LocalizationService["OnHand"]</th>
+                                    <th>@LocalizationService["Reserved"]</th>
+                                    <th>@LocalizationService["Available"]</th>
+                                    <th>@LocalizationService["Unit"]</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var balance in inventory)
+                                {
+                                    <tr>
+
+                                        <td>
+                                            <strong>
+                                                @balance.Item?.Name
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            @if (balance.InventoryLot != null)
+                                            {
+                                                @balance.InventoryLot.LotNumber
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">
+                                                    —
+                                                </span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @balance.InventoryLocation?.Name
+                                        </td>
+
+                                        <td>
+                                            @balance.OnHandQuantity.ToString("N2")
+                                        </td>
+
+                                        <td>
+                                            @balance.ReservedQuantity.ToString("N2")
+                                        </td>
+
+                                        <td>
+                                            <strong>
+                                                @balance.AvailableQuantity.ToString("N2")
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            @balance.Item?.Unit?.Symbol
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public int CustomerId { get; set; }
+
+    private Customer? customer;
+
+    private List<InventoryBalance> inventory = new();
+
+    private bool loading = true;
+
+    private decimal TotalOnHand =>
+        inventory.Sum(x => x.OnHandQuantity);
+
+    private decimal TotalReserved =>
+        inventory.Sum(x => x.ReservedQuantity);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        loading = true;
+
+        customer = await Db.Customers
+            .FirstOrDefaultAsync(x => x.Id == CustomerId);
+
+        if (customer != null)
+        {
+            inventory = await Db.InventoryBalances
+                .Include(x => x.Item)
+                    .ThenInclude(x => x.Unit)
+                .Include(x => x.InventoryLot)
+                .Include(x => x.InventoryLocation)
+                .Where(x =>
+                    x.CustomerId == CustomerId &&
+                    x.OnHandQuantity > 0)
+                .OrderBy(x => x.Item.Name)
+                .ThenBy(x => x.InventoryLocation.Name)
+                .ToListAsync();
+        }
+        else
+        {
+            inventory.Clear();
+        }
+
+        loading = false;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/customers");
+    }
+
+}

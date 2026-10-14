@@ -1,0 +1,715 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+	<data name="AppTitle" xml:space="preserve">
+    <value>HamiChap ERP</value>
+  </data>
+
+	<data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+
+	<data name="Inventory" xml:space="preserve">
+    <value>Inventory</value>
+  </data>
+
+	<data name="Documents" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+
+	<data name="Items" xml:space="preserve">
+    <value>Items</value>
+  </data>
+
+	<data name="Units" xml:space="preserve">
+    <value>Units</value>
+  </data>
+
+	<data name="ItemCategories" xml:space="preserve">
+    <value>Item Categories</value>
+  </data>
+
+	<data name="Lots" xml:space="preserve">
+    <value>Lots</value>
+  </data>
+
+	<data name="InventoryStock" xml:space="preserve">
+    <value>Inventory Stock</value>
+  </data>
+
+	<data name="WarehouseStock" xml:space="preserve">
+    <value>Warehouse Stock</value>
+  </data>
+
+	<data name="StockByLot" xml:space="preserve">
+    <value>Stock by Lot</value>
+  </data>
+
+	<data name="Locations" xml:space="preserve">
+    <value>Locations</value>
+  </data>
+
+	<data name="Transactions" xml:space="preserve">
+    <value>Transactions</value>
+  </data>
+
+	<data name="Customers" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+
+	<data name="CustomerInventory" xml:space="preserve">
+    <value>Customer Inventory</value>
+  </data>
+
+	<data name="Administration" xml:space="preserve">
+    <value>Administration</value>
+  </data>
+
+	<data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+
+	<data name="Roles" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+
+	<data name="Permissions" xml:space="preserve">
+    <value>Permissions</value>
+  </data>
+
+	<data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+
+	<data name="English" xml:space="preserve">
+    <value>English</value>
+  </data>
+
+	<data name="Persian" xml:space="preserve">
+    <value>Persian</value>
+  </data>
+
+	<data name="CreateEmployee" xml:space="preserve">
+  <value>Create Employee</value>
+</data>
+
+	<data name="EmployeeNumber" xml:space="preserve">
+  <value>Employee Number</value>
+</data>
+
+	<data name="FirstName" xml:space="preserve">
+  <value>First Name</value>
+</data>
+
+	<data name="LastName" xml:space="preserve">
+  <value>Last Name</value>
+</data>
+
+	<data name="Department" xml:space="preserve">
+  <value>Department</value>
+</data>
+
+	<data name="Position" xml:space="preserve">
+  <value>Position</value>
+</data>
+
+	<data name="EmailUsername" xml:space="preserve">
+  <value>Email / Username</value>
+</data>
+
+	<data name="EmployeeCreatedSuccessfully" xml:space="preserve">
+  <value>Employee created successfully.</value>
+</data>
+
+	<data name="CreateInventoryDocument" xml:space="preserve">
+  <value>Create Inventory Document</value>
+</data>
+
+	<data name="CreateInventoryDocumentDescription" xml:space="preserve">
+  <value>Create a new inventory document and add items.</value>
+</data>
+
+	<data name="DocumentType" xml:space="preserve">
+  <value>Document Type</value>
+</data>
+
+	<data name="Date" xml:space="preserve">
+  <value>Date</value>
+</data>
+
+	<data name="Status" xml:space="preserve">
+  <value>Status</value>
+</data>
+
+	<data name="From" xml:space="preserve">
+  <value>From</value>
+</data>
+
+	<data name="To" xml:space="preserve">
+  <value>To</value>
+</data>
+
+	<data name="SelectSource" xml:space="preserve">
+  <value>Select Source</value>
+</data>
+
+	<data name="SelectDestination" xml:space="preserve">
+  <value>Select Destination</value>
+</data>
+
+	<data name="Notes" xml:space="preserve">
+  <value>Notes</value>
+</data>
+
+	<data name="Lines" xml:space="preserve">
+  <value>Lines</value>
+</data>
+
+	<data name="AddLine" xml:space="preserve">
+  <value>Add Line</value>
+</data>
+
+	<data name="Item" xml:space="preserve">
+  <value>Item</value>
+</data>
+
+	<data name="Customer" xml:space="preserve">
+  <value>Customer</value>
+</data>
+
+	<data name="CompanyInventory" xml:space="preserve">
+  <value>Company Inventory</value>
+</data>
+
+	<data name="SelectItem" xml:space="preserve">
+  <value>Select Item</value>
+</data>
+
+	<data name="Quantity" xml:space="preserve">
+  <value>Quantity</value>
+</data>
+
+	<data name="Unit" xml:space="preserve">
+  <value>Unit</value>
+</data>
+
+	<data name="LotNumber" xml:space="preserve">
+  <value>Lot Number</value>
+</data>
+
+	<data name="Expiration" xml:space="preserve">
+  <value>Expiration</value>
+</data>
+
+	<data name="Remove" xml:space="preserve">
+  <value>Remove</value>
+</data>
+
+	<data name="SaveDraft" xml:space="preserve">
+  <value>Save Draft</value>
+</data>
+
+	<data name="EditInventoryDocument" xml:space="preserve">
+  <value>Edit Inventory Document</value>
+</data>
+
+	<data name="QuantityShort" xml:space="preserve">
+  <value>Qty</value>
+</data>
+
+	<data name="Lot" xml:space="preserve">
+  <value>Lot</value>
+</data>
+
+	<data name="SaveChanges" xml:space="preserve">
+  <value>Save Changes</value>
+</data>
+
+	<data name="PostDocument" xml:space="preserve">
+  <value>POST DOCUMENT</value>
+</data>
+
+	<data name="DocumentPostedReadOnly" xml:space="preserve">
+  <value>This document has been posted and is read-only.</value>
+</data>
+
+	<data name="InventoryDocuments" xml:space="preserve">
+  <value>Inventory Documents</value>
+</data>
+
+	<data name="SearchDocument" xml:space="preserve">
+  <value>Search document...</value>
+</data>
+
+	<data name="NewDocument" xml:space="preserve">
+  <value>New Document</value>
+</data>
+
+	<data name="Number" xml:space="preserve">
+  <value>Number</value>
+</data>
+
+	<data name="NoDocumentsFound" xml:space="preserve">
+  <value>No documents found.</value>
+</data>
+
+	<data name="Open" xml:space="preserve">
+  <value>Open</value>
+</data>
+
+	<data name="ItemsManagement" xml:space="preserve">
+  <value>Items Management</value>
+</data>
+
+	<data name="Code" xml:space="preserve">
+  <value>Code</value>
+</data>
+
+	<data name="Name" xml:space="preserve">
+  <value>Name</value>
+</data>
+
+	<data name="Category" xml:space="preserve">
+  <value>Category</value>
+</data>
+
+	<data name="Select" xml:space="preserve">
+  <value>Select</value>
+</data>
+
+	<data name="RawMaterial" xml:space="preserve">
+  <value>Raw Material</value>
+</data>
+
+	<data name="FinishedProduct" xml:space="preserve">
+  <value>Finished Product</value>
+</data>
+
+	<data name="RequiresLotTracking" xml:space="preserve">
+  <value>Requires Lot Tracking</value>
+</data>
+
+	<data name="AddItem" xml:space="preserve">
+  <value>Add Item</value>
+</data>
+
+	<data name="Type" xml:space="preserve">
+  <value>Type</value>
+</data>
+
+	<data name="Active" xml:space="preserve">
+  <value>Active</value>
+</data>
+
+	<data name="Inactive" xml:space="preserve">
+  <value>Inactive</value>
+</data>
+
+	<data name="NoItemsFound" xml:space="preserve">
+  <value>No items found</value>
+</data>
+
+	<data name="Symbol" xml:space="preserve">
+  <value>Symbol</value>
+</data>
+
+	<data name="Add" xml:space="preserve">
+  <value>Add</value>
+</data>
+
+	<data name="Yes" xml:space="preserve">
+  <value>Yes</value>
+</data>
+
+	<data name="No" xml:space="preserve">
+  <value>No</value>
+</data>
+
+	<data name="CategoryName" xml:space="preserve">
+  <value>Category Name</value>
+</data>
+
+	<data name="NoCategoriesFound" xml:space="preserve">
+  <value>No categories found</value>
+</data>
+
+	<data name="Disabled" xml:space="preserve">
+  <value>Disabled</value>
+</data>
+
+	<data name="Delete" xml:space="preserve">
+  <value>Delete</value>
+</data>
+
+	<data name="InventoryLots" xml:space="preserve">
+  <value>Inventory Lots</value>
+</data>
+
+	<data name="SearchLotNumber" xml:space="preserve">
+  <value>Search Lot Number</value>
+</data>
+
+	<data name="AllItems" xml:space="preserve">
+  <value>All Items</value>
+</data>
+
+	<data name="Search" xml:space="preserve">
+  <value>Search</value>
+</data>
+
+	<data name="OriginalQuantity" xml:space="preserve">
+  <value>Original Qty</value>
+</data>
+
+	<data name="Received" xml:space="preserve">
+  <value>Received</value>
+</data>
+
+	<data name="NoLotsFound" xml:space="preserve">
+  <value>No lots found</value>
+</data>
+
+	<data name="Closed" xml:space="preserve">
+  <value>Closed</value>
+</data>
+
+	<data name="Login" xml:space="preserve">
+  <value>Log in</value>
+</data>
+	<data name="UseLocalAccountToLogin" xml:space="preserve">
+  <value>Use a local account to log in.</value>
+</data>
+	<data name="Email" xml:space="preserve">
+  <value>Email</value>
+</data>
+	<data name="Password" xml:space="preserve">
+  <value>Password</value>
+</data>
+	<data name="RememberMe" xml:space="preserve">
+  <value>Remember me</value>
+</data>
+	<data name="Or" xml:space="preserve">
+  <value>OR</value>
+</data>
+	<data name="LoginWithPasskey" xml:space="preserve">
+  <value>Log in with a passkey</value>
+</data>
+	<data name="ForgotPassword" xml:space="preserve">
+  <value>Forgot your password?</value>
+</data>
+	<data name="RegisterAsNewUser" xml:space="preserve">
+  <value>Register as a new user</value>
+</data>
+	<data name="ResendEmailConfirmation" xml:space="preserve">
+  <value>Resend email confirmation</value>
+</data>
+	<data name="UseAnotherServiceToLogin" xml:space="preserve">
+  <value>Use another service to log in.</value>
+</data>
+	<data name="Error" xml:space="preserve">
+  <value>Error</value>
+</data>
+	<data name="InvalidLoginAttempt" xml:space="preserve">
+  <value>Invalid login attempt.</value>
+</data>
+
+	<data name="InventoryLocations" xml:space="preserve">
+  <value>Inventory Locations</value>
+</data>
+	<data name="SaveLocation" xml:space="preserve">
+  <value>Save Location</value>
+</data>
+
+	<data name="OnHand" xml:space="preserve">
+  <value>On Hand</value>
+</data>
+	<data name="Reserved" xml:space="preserve">
+  <value>Reserved</value>
+</data>
+	<data name="Available" xml:space="preserve">
+  <value>Available</value>
+</data>
+
+	<data name="LotStock" xml:space="preserve">
+  <value>Lot Stock</value>
+</data>
+	<data name="Warehouse" xml:space="preserve">
+  <value>Warehouse</value>
+</data>
+
+	<data name="InventoryTransactions" xml:space="preserve">
+  <value>Inventory Transactions</value>
+</data>
+
+	<data name="CreateCustomer" xml:space="preserve">
+  <value>Create Customer</value>
+</data>
+	<data name="Phone" xml:space="preserve">
+  <value>Phone</value>
+</data>
+	<data name="Address" xml:space="preserve">
+  <value>Address</value>
+</data>
+	<data name="SaveCustomer" xml:space="preserve">
+  <value>Save Customer</value>
+</data>
+
+	<data name="LoadingCustomerInventory" xml:space="preserve">
+  <value>Loading customer inventory...</value>
+</data>
+	<data name="CustomerNotFound" xml:space="preserve">
+  <value>Customer not found.</value>
+</data>
+	<data name="BackToCustomers" xml:space="preserve">
+  <value>Back to Customers</value>
+</data>
+	<data name="TotalOnHand" xml:space="preserve">
+  <value>Total On Hand</value>
+</data>
+	<data name="TotalReserved" xml:space="preserve">
+  <value>Total Reserved</value>
+</data>
+	<data name="CustomerHasNoInventory" xml:space="preserve">
+  <value>This customer currently has no inventory.</value>
+</data>
+	
+<data name="ManageCustomersAndInventory" xml:space="preserve">
+  <value>Manage customers and view their inventory.</value>
+</data>
+<data name="NewCustomer" xml:space="preserve">
+  <value>New Customer</value>
+</data>
+<data name="NoCustomersCreated" xml:space="preserve">
+  <value>No customers have been created yet.</value>
+</data>
+
+	<data name="GoodsReceipt" xml:space="preserve">
+  <value>Goods Receipt</value>
+</data>
+	<data name="CustomerReceipt" xml:space="preserve">
+  <value>Customer Receipt</value>
+</data>
+	<data name="MaterialTransfer" xml:space="preserve">
+  <value>Material Transfer</value>
+</data>
+	<data name="ProductionIssue" xml:space="preserve">
+  <value>Production Issue</value>
+</data>
+	<data name="ProductionReceipt" xml:space="preserve">
+  <value>Production Receipt</value>
+</data>
+	<data name="InventoryAdjustment" xml:space="preserve">
+  <value>Inventory Adjustment</value>
+</data>
+	<data name="ProductionOrder" xml:space="preserve">
+  <value>Production Order</value>
+</data>
+	<data name="SalesOrder" xml:space="preserve">
+  <value>Sales Order</value>
+</data>
+	<data name="PurchaseOrder" xml:space="preserve">
+  <value>Purchase Order</value>
+</data>
+
+	<data name="Draft" xml:space="preserve">
+  <value>Draft</value>
+</data>
+	<data name="Posted" xml:space="preserve">
+  <value>Posted</value>
+</data>
+	<data name="Cancelled" xml:space="preserve">
+  <value>Cancelled</value>
+</data>
+	<data name="CustomerReturn" xml:space="preserve">
+  <value>Customer Return</value>
+</data>
+	<data name="SupplierReturn" xml:space="preserve">
+  <value>Supplier Return</value>
+</data>
+
+	<data name="InventoryOwner" xml:space="preserve">
+  <value>Inventory Owner</value>
+</data>
+	<data name="AllInventory" xml:space="preserve">
+  <value>All Inventory</value>
+</data>
+	<data name="CustomerInventoryFilter" xml:space="preserve">
+  <value>Customer Inventory</value>
+</data>
+
+	<data name="NoInventoryFound" xml:space="preserve">
+  <value>No inventory found.</value>
+</data>
+
+	<data name="SearchItem" xml:space="preserve">
+    <value>Search by item ID, code or name...</value>
+</data>
+
+	<data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+</data>
+
+	<data name="LowStockAlert" xml:space="preserve">
+    <value>Low Stock Alert</value>
+</data>
+
+	<data name="EnableLowStockAlert" xml:space="preserve">
+    <value>Enable low stock alert</value>
+</data>
+
+	<data name="LowStockThreshold" xml:space="preserve">
+    <value>Low stock threshold</value>
+</data>
+
+	<data name="LowStockThresholdDescription" xml:space="preserve">
+    <value>Alert when available stock reaches or falls below this amount.</value>
+</data>
+
+	<data name="StockAlert" xml:space="preserve">
+    <value>Stock Alert</value>
+</data>
+
+	<data name="LowStock" xml:space="preserve">
+    <value>Low Stock</value>
+</data>
+
+	<data name="StockOK" xml:space="preserve">
+    <value>Stock OK</value>
+</data>
+
+	<data name="ItemsLowStock" xml:space="preserve">
+    <value>items are low on stock.</value>
+</data>
+
+	<data name="Threshold" xml:space="preserve">
+    <value>Threshold</value>
+</data>
+
+	<data name="More" xml:space="preserve">
+    <value>more</value>
+</data>
+
+	<data name="MainWarehouse" xml:space="preserve">
+  <value>Main Warehouse</value>
+</data>
+
+	<data name="DefaultSupplier" xml:space="preserve">
+  <value>Default Supplier</value>
+</data>
+</root>

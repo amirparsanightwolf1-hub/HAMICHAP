@@ -1,0 +1,600 @@
+﻿@page "/sales/deliveries/create"
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Administration
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject SalesDeliveryService SalesDeliveryService
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["CreateSalesDelivery"]
+</PageTitle>
+
+<div class="page-container">
+
+    <div class="erp-page-header">
+
+        <div>
+            <h3 class="erp-page-title">
+                @LocalizationService["CreateSalesDelivery"]
+            </h3>
+
+            <p class="erp-page-subtitle">
+                @LocalizationService["CreateSalesDeliveryDescription"]
+            </p>
+        </div>
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger mb-4">
+            @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success mb-4">
+            @successMessage
+        </div>
+    }
+
+    <!-- =====================================================
+         Sales Order
+         ===================================================== -->
+
+    <div class="card mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        @LocalizationService["SalesOrder"]
+                    </label>
+
+                    <select class="form-select"
+                            value="@selectedSalesOrderId"
+                            @onchange="OnSalesOrderChanged">
+
+                        <option value="0">
+                            -- @LocalizationService["SelectSalesOrder"] --
+                        </option>
+
+                        @foreach (var order in salesOrders)
+                        {
+                            <option value="@order.Id">
+                                @order.OrderNumber -
+                                @order.Customer?.Name
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                @if (selectedSalesOrder != null)
+                {
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @LocalizationService["Customer"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@selectedSalesOrder.Customer?.Name"
+                               readonly />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @LocalizationService["OrderStatus"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@LocalizationService.TranslateEnum(selectedSalesOrder.Status)"
+                               readonly />
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+    @if (selectedSalesOrder != null)
+    {
+        <!-- =================================================
+             Delivery Locations
+             ================================================= -->
+
+        <div class="card mb-4">
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            @LocalizationService["From"]
+                        </label>
+
+                        <select class="form-select"
+                                @bind="fromLocationId">
+
+                            <option value="0">
+                                -- @LocalizationService["SelectSource"] --
+                            </option>
+
+                            @foreach (var location in finishedGoodsLocations)
+                            {
+                                <option value="@location.Id">
+                                    @GetLocationDisplayName(location)
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            @LocalizationService["To"]
+                        </label>
+
+                        <select class="form-select"
+                                @bind="toLocationId">
+
+                            <option value="0">
+                                -- @LocalizationService["SelectDestination"] --
+                            </option>
+
+                            @foreach (var location in customerLocations)
+                            {
+                                <option value="@location.Id">
+                                    @GetLocationDisplayName(location)
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             Delivery Lines
+             ================================================= -->
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <h4 class="section-title mb-0">
+                @LocalizationService["Lines"]
+            </h4>
+
+        </div>
+
+        <div class="card">
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped table-responsive-cards mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    @LocalizationService["Item"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["OrderedQuantity"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["ProducedQuantity"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["DeliveredQuantity"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["RemainingQuantity"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["DeliveryQuantity"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Unit"]
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var line in selectedSalesOrder.Lines)
+                            {
+                                var remaining =
+                                    line.Quantity -
+                                    line.DeliveredQuantity;
+
+                                var request =
+                                    GetRequest(line.Id);
+
+                                <tr>
+
+                                    <td>
+                                        @line.Item?.Name
+                                    </td>
+
+                                    <td>
+                                        @line.Quantity
+                                    </td>
+
+                                    <td>
+                                        @line.ProducedQuantity
+                                    </td>
+
+                                    <td>
+                                        @line.DeliveredQuantity
+                                    </td>
+
+                                    <td>
+                                        @remaining
+                                    </td>
+
+                                    <td>
+
+                                        <input class="form-control"
+                                               type="number"
+                                               min="0"
+                                               max="@remaining"
+                                               step="0.01"
+                                               @bind="request.Quantity" />
+
+                                    </td>
+
+                                    <td>
+                                        @line.Unit?.Symbol
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             Notes
+             ================================================= -->
+
+        <div class="card mt-4">
+
+            <div class="card-body">
+
+                <label class="form-label">
+                    @LocalizationService["Notes"]
+                </label>
+
+                <textarea class="form-control"
+                          rows="3"
+                          @bind="notes">
+                </textarea>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             Actions
+             ================================================= -->
+
+        <div class="mt-4 d-flex gap-2">
+
+            <button type="button"
+                    class="btn btn-secondary"
+                    @onclick="Cancel">
+
+                @LocalizationService["Cancel"]
+
+            </button>
+
+            <button type="button"
+                    class="btn btn-primary"
+                    @onclick="CreateDelivery"
+                    disabled="@isSaving">
+
+                @if (isSaving)
+                {
+                    @LocalizationService["Saving"]
+                }
+                else
+                {
+                    @LocalizationService["CreateDelivery"]
+                }
+
+            </button>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private List<SalesOrder> salesOrders = new();
+
+    private SalesOrder? selectedSalesOrder;
+
+    private List<InventoryLocation> finishedGoodsLocations = new();
+
+    private List<InventoryLocation> customerLocations = new();
+
+    private readonly Dictionary<long, SalesDeliveryLineRequest>
+        requests = new();
+
+    private long selectedSalesOrderId;
+
+    private int fromLocationId;
+
+    private int toLocationId;
+
+    private string notes = "";
+
+    private bool isSaving;
+
+    private string? errorMessage;
+
+    private string? successMessage;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        salesOrders =
+            await Db.SalesOrders
+                .Include(x => x.Customer)
+                .Include(x => x.Lines)
+                    .ThenInclude(x => x.Item)
+                .Include(x => x.Lines)
+                    .ThenInclude(x => x.Unit)
+                .Where(x =>
+                    x.Status !=
+                    Models.Sales.Enums.SalesOrderStatus.Cancelled)
+                .OrderByDescending(x => x.OrderDate)
+                .ToListAsync();
+
+        finishedGoodsLocations =
+            await Db.InventoryLocations
+                .Where(x =>
+                    x.IsActive &&
+                    x.Type ==
+                    InventoryLocationType.FinishedGoods)
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+
+        customerLocations =
+            await Db.InventoryLocations
+                .Where(x =>
+                    x.IsActive &&
+                    x.Type ==
+                    InventoryLocationType.Customer)
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+    }
+
+
+    private async Task OnSalesOrderChanged(
+        ChangeEventArgs args)
+    {
+        if (!long.TryParse(
+                args.Value?.ToString(),
+                out var orderId))
+        {
+            orderId = 0;
+        }
+
+        selectedSalesOrderId =
+            orderId;
+
+        selectedSalesOrder =
+            salesOrders.FirstOrDefault(
+                x => x.Id == orderId);
+
+        requests.Clear();
+
+        if (selectedSalesOrder == null)
+            return;
+
+        foreach (var line in selectedSalesOrder.Lines)
+        {
+            requests[line.Id] =
+                new SalesDeliveryLineRequest
+                {
+                    SalesOrderLineId =
+                        line.Id,
+
+                    Quantity = 0
+                };
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    private SalesDeliveryLineRequest GetRequest(
+        long salesOrderLineId)
+    {
+        if (!requests.TryGetValue(
+                salesOrderLineId,
+                out var request))
+        {
+            request =
+                new SalesDeliveryLineRequest
+                {
+                    SalesOrderLineId =
+                        salesOrderLineId
+                };
+
+            requests[salesOrderLineId] =
+                request;
+        }
+
+        return request;
+    }
+
+
+    private async Task CreateDelivery()
+    {
+        if (isSaving)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        if (selectedSalesOrder == null)
+        {
+            errorMessage =
+                LocalizationService[
+                    "SelectSalesOrder"];
+
+            return;
+        }
+
+        if (fromLocationId <= 0)
+        {
+            errorMessage =
+                LocalizationService[
+                    "SelectSource"];
+
+            return;
+        }
+
+        if (toLocationId <= 0)
+        {
+            errorMessage =
+                LocalizationService[
+                    "SelectDestination"];
+
+            return;
+        }
+
+        var selectedLines =
+            requests.Values
+                .Where(x =>
+                    x.Quantity > 0)
+                .ToList();
+
+        if (selectedLines.Count == 0)
+        {
+            errorMessage =
+                LocalizationService[
+                    "DeliveryQuantityRequired"];
+
+            return;
+        }
+
+        try
+        {
+            isSaving = true;
+
+            var authState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var user =
+                await UserManager.GetUserAsync(
+                    authState.User);
+
+            if (user == null)
+            {
+                errorMessage =
+                    "Authenticated user was not found.";
+
+                return;
+            }
+
+            var delivery =
+                await SalesDeliveryService
+                    .CreateDeliveryAsync(
+                        selectedSalesOrder.Id,
+                        fromLocationId,
+                        toLocationId,
+                        user.Id,
+                        selectedLines);
+
+            Navigation.NavigateTo(
+                $"/sales/deliveries/edit/{delivery.Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo(
+            "/sales/orders");
+    }
+
+
+    private string GetLocationDisplayName(
+        InventoryLocation location)
+    {
+        return location.Code switch
+        {
+            "FG01" =>
+                LocalizationService["FinishedGoods"],
+
+            "CUST01" =>
+                LocalizationService["CustomerLocation"],
+
+            _ =>
+                location.Name
+        };
+    }
+}

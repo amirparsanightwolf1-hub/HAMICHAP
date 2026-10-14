@@ -1,0 +1,241 @@
+﻿@page "/inventory/lots"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["InventoryLots"]
+</PageTitle>
+
+<h3>
+    @LocalizationService["InventoryLots"]
+</h3>
+
+<div class="card mb-3">
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <label>
+                    @LocalizationService["SearchLotNumber"]
+                </label>
+
+                <input class="form-control"
+                       @bind="searchText"
+                       @bind:event="oninput" />
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label>
+                    @LocalizationService["Item"]
+                </label>
+
+                <select class="form-select"
+                        @bind="selectedItemId">
+
+                    <option value="0">
+                        @LocalizationService["AllItems"]
+                    </option>
+
+                    @foreach (var item in items)
+                    {
+                        <option value="@item.Id">
+                            @item.Code - @item.Name
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-2 mt-4">
+
+                <button class="btn btn-primary"
+                        @onclick="Search">
+
+                    @LocalizationService["Search"]
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<table class="table table-bordered table-hover table-responsive-cards">
+
+    <thead>
+
+        <tr>
+
+            <th>
+                @LocalizationService["LotNumber"]
+            </th>
+
+            <th>
+                @LocalizationService["Item"]
+            </th>
+
+            <th>
+                @LocalizationService["OriginalQuantity"]
+            </th>
+
+            <th>
+                @LocalizationService["Unit"]
+            </th>
+
+            <th>
+                @LocalizationService["Received"]
+            </th>
+
+            <th>
+                @LocalizationService["Expiration"]
+            </th>
+
+            <th>
+                @LocalizationService["Status"]
+            </th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @if (lots.Count == 0)
+        {
+            <tr>
+
+                <td colspan="7"
+                    class="text-center">
+
+                    @LocalizationService["NoLotsFound"]
+
+                </td>
+
+            </tr>
+        }
+        else
+        {
+            @foreach (var lot in lots)
+            {
+                <tr>
+
+                    <td>
+                        @lot.LotNumber
+                    </td>
+
+                    <td>
+                        @lot.Item.Code
+                        -
+                        @lot.Item.Name
+                    </td>
+
+                    <td>
+                        @lot.OriginalQuantity
+                    </td>
+
+                    <td>
+                        @lot.Unit.Symbol
+                    </td>
+
+                    <td>
+                        @lot.ReceivedDate.ToShortDateString()
+                    </td>
+
+                    <td>
+
+                        @if (lot.ExpirationDate.HasValue)
+                        {
+                            @lot.ExpirationDate.Value.ToShortDateString()
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+
+                    </td>
+
+                    <td>
+
+                        @if (lot.IsClosed)
+                        {
+                            <span class="badge bg-secondary">
+                                @LocalizationService["Closed"]
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">
+                                @LocalizationService["Active"]
+                            </span>
+                        }
+
+                    </td>
+
+                </tr>
+            }
+        }
+
+    </tbody>
+
+</table>
+
+@code {
+
+    private List<InventoryLot> lots = new();
+
+    private List<Item> items = new();
+
+    private string searchText = "";
+
+    private int selectedItemId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await Db.Items
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        await Search();
+    }
+
+    async Task Search()
+    {
+        var query =
+            Db.InventoryLots
+                .Include(x => x.Item)
+                .Include(x => x.Unit)
+                .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            query = query.Where(x =>
+                x.LotNumber.Contains(searchText));
+        }
+
+        if (selectedItemId > 0)
+        {
+            query = query.Where(x =>
+                x.ItemId == selectedItemId);
+        }
+
+        lots = await query
+            .OrderByDescending(x => x.ReceivedDate)
+            .ToListAsync();
+    }
+}

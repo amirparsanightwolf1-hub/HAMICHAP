@@ -1,0 +1,527 @@
+﻿@page "/administration/role-permissions/{RoleId}"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Administration
+
+@attribute [Authorize]
+
+@inject RoleManager<IdentityRole> RoleManager
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>Role Permissions</PageTitle>
+
+<h3>Role Permissions</h3>
+
+@if (loading)
+{
+    <p>Loading...</p>
+}
+else if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert @messageClass mt-3">
+        @message
+    </div>
+}
+else if (role == null)
+{
+    <div class="alert alert-danger">
+        Role not found.
+    </div>
+}
+else
+{
+    <div class="card mb-4">
+
+        <div class="card-body">
+
+            <h5>
+                @role.Name
+            </h5>
+
+            <p class="text-muted mb-0">
+                Select the permissions that this role is allowed to use.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    @if (!permissions.Any())
+    {
+        <div class="alert alert-warning">
+            You are not authorized to manage any permissions for this role.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+
+            <table class="table table-striped table-bordered">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Permission
+                        </th>
+
+                        <th style="width: 120px;">
+                            Enabled
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var permission in permissions)
+                    {
+                        <tr>
+
+                            <td>
+                                @permission.Name
+                            </td>
+
+                            <td>
+
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       checked="@HasPermission(permission.Id)"
+                                       @onchange="e => TogglePermission(permission.Id, e)" />
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <button class="btn btn-primary"
+                @onclick="Save">
+
+            Save Changes
+
+        </button>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public string RoleId { get; set; } = "";
+
+
+    private IdentityRole? role;
+
+    private List<Permission> permissions = new();
+
+    private HashSet<int> selectedPermissions = new();
+
+    private string? message;
+
+    private string messageClass = "alert-info";
+
+    private bool loading = true;
+
+    private bool isAdministrator = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // -------------------------------------------------
+            // 1. Get the currently logged-in user
+            // -------------------------------------------------
+
+            var authState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var principal = authState.User;
+
+            if (principal.Identity?.IsAuthenticated != true)
+            {
+                SetError("You must be logged in to manage permissions.");
+                return;
+            }
+
+
+            var currentUser =
+                await UserManager.GetUserAsync(principal);
+
+            if (currentUser == null)
+            {
+                SetError("Current user could not be found.");
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // 2. Get the role being requested
+            // -------------------------------------------------
+
+            role =
+                await RoleManager.FindByIdAsync(RoleId);
+
+            if (role == null)
+            {
+                SetError("Role not found.");
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // 3. Administrator bypass
+            //
+            // Administrator can manage any role.
+            // -------------------------------------------------
+
+            isAdministrator =
+                await UserManager.IsInRoleAsync(
+                    currentUser,
+                    "Administrator");
+
+
+            // -------------------------------------------------
+            // 4. If not Administrator, check whether
+            //    their role is allowed to manage this target role.
+            // -------------------------------------------------
+
+            if (!isAdministrator)
+            {
+                var managerRoles =
+                    await UserManager.GetRolesAsync(
+                        currentUser);
+
+                if (!managerRoles.Any())
+                {
+                    SetError(
+                        "You are not assigned to a role that can manage permissions.");
+
+                    return;
+                }
+
+
+                var canManageTargetRole =
+                    await Db.RolePermissionManagements
+                        .AnyAsync(x =>
+                            managerRoles.Contains(
+                                x.ManagerRoleId)
+                            &&
+                            x.TargetRoleId == RoleId);
+
+
+                if (!canManageTargetRole)
+                {
+                    SetError(
+                        "You are not authorized to manage permissions for this role.");
+
+                    return;
+                }
+            }
+
+
+            // -------------------------------------------------
+            // 5. Load the permissions that this manager is
+            //    actually allowed to control.
+            // -------------------------------------------------
+
+            if (isAdministrator)
+            {
+                // Administrator can manage every permission.
+
+                permissions =
+                    await Db.Permissions
+                        .OrderBy(x => x.Name)
+                        .ToListAsync();
+            }
+            else
+            {
+                var managerRoles =
+                    await UserManager.GetRolesAsync(
+                        currentUser);
+
+
+                permissions =
+                    await Db.RolePermissionManagements
+                        .Where(x =>
+                            managerRoles.Contains(
+                                x.ManagerRoleId)
+                            &&
+                            x.TargetRoleId == RoleId)
+                        .Select(x => x.Permission)
+                        .Distinct()
+                        .OrderBy(x => x.Name)
+                        .ToListAsync();
+            }
+
+
+            // -------------------------------------------------
+            // 6. Load the permissions currently assigned
+            //    to the target role.
+            // -------------------------------------------------
+
+            var existing =
+                await Db.RolePermissions
+                    .Where(x =>
+                        x.RoleId == RoleId)
+                    .ToListAsync();
+
+
+            foreach (var item in existing)
+            {
+                selectedPermissions.Add(
+                    item.PermissionId);
+            }
+
+
+            loading = false;
+        }
+        catch (Exception ex)
+        {
+            SetError(
+                $"Unable to load permissions: {ex.Message}");
+        }
+    }
+
+
+    private bool HasPermission(int permissionId)
+    {
+        return selectedPermissions.Contains(
+            permissionId);
+    }
+
+
+    private void TogglePermission(
+        int permissionId,
+        ChangeEventArgs e)
+    {
+        bool enabled =
+            e.Value is bool value && value;
+
+
+        if (enabled)
+        {
+            selectedPermissions.Add(
+                permissionId);
+        }
+        else
+        {
+            selectedPermissions.Remove(
+                permissionId);
+        }
+    }
+
+
+    private async Task Save()
+    {
+        if (role == null)
+            return;
+
+
+        // -------------------------------------------------
+        // IMPORTANT:
+        // Check authorization AGAIN when saving.
+        //
+        // This prevents someone from bypassing the UI
+        // and submitting changes to a role they cannot manage.
+        // -------------------------------------------------
+
+        var authState =
+            await AuthenticationStateProvider
+                .GetAuthenticationStateAsync();
+
+        var principal = authState.User;
+
+        var currentUser =
+            await UserManager.GetUserAsync(principal);
+
+        if (currentUser == null)
+        {
+            SetError(
+                "Current user could not be found.");
+
+            return;
+        }
+
+
+        var administrator =
+            await UserManager.IsInRoleAsync(
+                currentUser,
+                "Administrator");
+
+
+        if (!administrator)
+        {
+            var managerRoles =
+                await UserManager.GetRolesAsync(
+                    currentUser);
+
+
+            var canManageTargetRole =
+                await Db.RolePermissionManagements
+                    .AnyAsync(x =>
+                        managerRoles.Contains(
+                            x.ManagerRoleId)
+                        &&
+                        x.TargetRoleId == RoleId);
+
+
+            if (!canManageTargetRole)
+            {
+                SetError(
+                    "You are not authorized to modify permissions for this role.");
+
+                return;
+            }
+        }
+
+
+        // -------------------------------------------------
+        // Only permissions that this manager is allowed
+        // to control can be changed.
+        // -------------------------------------------------
+
+        HashSet<int> manageablePermissionIds;
+
+
+        if (administrator)
+        {
+            manageablePermissionIds =
+                (await Db.Permissions
+                    .Select(x => x.Id)
+                    .ToListAsync())
+                .ToHashSet();
+        }
+        else
+        {
+            var managerRoles =
+                await UserManager.GetRolesAsync(
+                    currentUser);
+
+
+            manageablePermissionIds =
+                (await Db.RolePermissionManagements
+                    .Where(x =>
+                        managerRoles.Contains(
+                            x.ManagerRoleId)
+                        &&
+                        x.TargetRoleId == RoleId)
+                    .Select(x => x.PermissionId)
+                    .Distinct()
+                    .ToListAsync())
+                .ToHashSet();
+        }
+
+
+        // -------------------------------------------------
+        // Load existing role permissions.
+        // -------------------------------------------------
+
+        var existing =
+            await Db.RolePermissions
+                .Where(x =>
+                    x.RoleId == RoleId)
+                .ToListAsync();
+
+
+        // -------------------------------------------------
+        // Remove only permissions that the manager is
+        // authorized to control.
+        //
+        // This is important:
+        //
+        // A Warehouse Manager must NOT accidentally remove
+        // permissions that they are not allowed to manage.
+        // -------------------------------------------------
+
+        var permissionsToRemove =
+            existing
+                .Where(x =>
+                    manageablePermissionIds.Contains(
+                        x.PermissionId)
+                    &&
+                    !selectedPermissions.Contains(
+                        x.PermissionId))
+                .ToList();
+
+
+        Db.RolePermissions.RemoveRange(
+            permissionsToRemove);
+
+
+        // -------------------------------------------------
+        // Add newly enabled permissions.
+        // -------------------------------------------------
+
+        var existingPermissionIds =
+            existing
+                .Select(x => x.PermissionId)
+                .ToHashSet();
+
+
+        foreach (var permissionId in selectedPermissions)
+        {
+            // Manager can only add permissions they are
+            // explicitly allowed to manage.
+
+            if (!manageablePermissionIds.Contains(
+                    permissionId))
+            {
+                continue;
+            }
+
+
+            if (existingPermissionIds.Contains(
+                    permissionId))
+            {
+                continue;
+            }
+
+
+            Db.RolePermissions.Add(
+                new RolePermission
+                {
+                    RoleId = RoleId,
+                    PermissionId = permissionId
+                });
+        }
+
+
+        await Db.SaveChangesAsync();
+
+
+        message =
+            $"Permissions for '{role.Name}' saved successfully.";
+
+        messageClass =
+            "alert-success";
+    }
+
+
+    private void SetError(string text)
+    {
+        message = text;
+
+        messageClass =
+            "alert-danger";
+
+        loading = false;
+    }
+
+}

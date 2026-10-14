@@ -1,0 +1,632 @@
+﻿@page "/inventory/items"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["Items"]
+</PageTitle>
+
+<h3>
+    @LocalizationService["ItemsManagement"]
+</h3>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger mb-3">
+        @errorMessage
+    </div>
+}
+
+<!-- =========================================
+     Create Item
+     ========================================= -->
+
+<div class="card mb-4">
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    @LocalizationService["Code"]
+                </label>
+
+                <input class="form-control"
+                       @bind="newItem.Code" />
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label class="form-label">
+                    @LocalizationService["Name"]
+                </label>
+
+                <input class="form-control"
+                       @bind="newItem.Name" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label class="form-label">
+                    @LocalizationService["Category"]
+                </label>
+
+                <select class="form-select"
+                        @bind="newItem.CategoryId">
+
+                    <option value="0">
+                        -- @LocalizationService["Select"] --
+                    </option>
+
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Id">
+                            @category.Name
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label class="form-label">
+                    @LocalizationService["Unit"]
+                </label>
+
+                <select class="form-select"
+                        @bind="newItem.UnitId">
+
+                    <option value="0">
+                        -- @LocalizationService["Select"] --
+                    </option>
+
+                    @foreach (var unit in units)
+                    {
+                        <option value="@unit.Id">
+                            @unit.Symbol
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <!-- =========================================
+             Item Properties
+             ========================================= -->
+
+        <div class="row g-3 mt-2">
+
+            <div class="col-md-3">
+
+                <div class="form-check">
+
+                    <input class="form-check-input"
+                           type="checkbox"
+                           @bind="newItem.IsRawMaterial" />
+
+                    <label class="form-check-label">
+                        @LocalizationService["RawMaterial"]
+                    </label>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="form-check">
+
+                    <input class="form-check-input"
+                           type="checkbox"
+                           @bind="newItem.IsFinishedProduct" />
+
+                    <label class="form-check-label">
+                        @LocalizationService["FinishedProduct"]
+                    </label>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="form-check">
+
+                    <input class="form-check-input"
+                           type="checkbox"
+                           @bind="newItem.RequiresLotTracking" />
+
+                    <label class="form-check-label">
+                        @LocalizationService["RequiresLotTracking"]
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =========================================
+             Low Stock Alert
+             ========================================= -->
+
+        <div class="card mt-4">
+
+            <div class="card-header">
+                <strong>
+                    @LocalizationService["LowStockAlert"]
+                </strong>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-md-4">
+
+                        <div class="form-check">
+
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="enableLowStockAlert"
+                                   @bind="newItem.EnableLowStockAlert" />
+
+                            <label class="form-check-label"
+                                   for="enableLowStockAlert">
+
+                                @LocalizationService["EnableLowStockAlert"]
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    @if (newItem.EnableLowStockAlert)
+                    {
+                        <div class="col-md-4">
+
+                            <label class="form-label">
+                                @LocalizationService["LowStockThreshold"]
+                            </label>
+
+                            <InputNumber @bind-Value="newItem.LowStockThreshold"
+                                         class="form-control"
+                                         min="0" />
+
+                            <div class="form-text">
+                                @LocalizationService["LowStockThresholdDescription"]
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =========================================
+             Save
+             ========================================= -->
+
+        <div class="mt-4">
+
+            <button class="btn btn-primary"
+                    @onclick="Save">
+
+                @LocalizationService["AddItem"]
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================================
+     Items List
+     ========================================= -->
+
+<table class="table table-bordered table-hover table-responsive-cards">
+
+    <thead>
+
+        <tr>
+
+            <th>
+                @LocalizationService["Code"]
+            </th>
+
+            <th>
+                @LocalizationService["Name"]
+            </th>
+
+            <th>
+                @LocalizationService["Category"]
+            </th>
+
+            <th>
+                @LocalizationService["Unit"]
+            </th>
+
+            <th>
+                @LocalizationService["Type"]
+            </th>
+
+            <th>
+                @LocalizationService["StockAlert"]
+            </th>
+
+            <th>
+                @LocalizationService["Status"]
+            </th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @if (items.Count == 0)
+        {
+            <tr>
+
+                <td colspan="7"
+                    class="text-center">
+
+                    @LocalizationService["NoItemsFound"]
+
+                </td>
+
+            </tr>
+        }
+        else
+        {
+            @foreach (var item in items)
+            {
+                <tr>
+
+                    <td>
+                        @item.Code
+                    </td>
+
+                    <td>
+                        @item.Name
+                    </td>
+
+                    <td>
+                        @item.Category?.Name
+                    </td>
+
+                    <td>
+                        @item.Unit?.Symbol
+                    </td>
+
+                    <td>
+
+                        @if (item.IsRawMaterial)
+                        {
+                            <span class="badge bg-info">
+                                @LocalizationService["RawMaterial"]
+                            </span>
+                        }
+
+                        @if (item.IsFinishedProduct)
+                        {
+                            <span class="badge bg-success">
+                                @LocalizationService["FinishedProduct"]
+                            </span>
+                        }
+
+                    </td>
+
+                    <td>
+
+                        @if (item.EnableLowStockAlert)
+                        {
+                            <span class="badge bg-warning text-dark">
+                                @LocalizationService["Enabled"]
+                            </span>
+
+                            <div class="small mt-1">
+                                @LocalizationService["LowStockThreshold"]:
+                                @item.LowStockThreshold
+                                @item.Unit?.Symbol
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted">
+                                @LocalizationService["Disabled"]
+                            </span>
+                        }
+
+                    </td>
+
+                    <td>
+
+                        @if (item.IsActive)
+                        {
+                            <span>
+                                @LocalizationService["Active"]
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                @LocalizationService["Inactive"]
+                            </span>
+                        }
+
+                    </td>
+
+                </tr>
+            }
+        }
+
+    </tbody>
+
+</table>
+
+<!-- =========================================
+     Pagination
+     ========================================= -->
+@if (totalPages > 0)
+{
+    <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
+
+        <div class="text-muted small">
+            @((currentPage - 1) * pageSize + 1)
+            -
+            @(Math.Min(currentPage * pageSize, totalCount))
+            /
+            @totalCount
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    disabled="@(currentPage <= 1)"
+                    @onclick="PreviousPage">
+
+                @LocalizationService["Previous"]
+
+            </button>
+
+            <span class="small">
+                @currentPage / @totalPages
+            </span>
+
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    disabled="@(currentPage >= totalPages)"
+                    @onclick="NextPage">
+
+                @LocalizationService["Next"]
+
+            </button>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    private List<Item> items = new();
+
+    private List<Unit> units = new();
+
+    private List<ItemCategory> categories = new();
+
+    private Item newItem = new();
+
+    private string? errorMessage;
+
+    // =========================================
+    // Pagination
+    // =========================================
+
+    private const int pageSize = 20;
+
+    private int currentPage = 1;
+
+    private int totalCount;
+
+    private int totalPages =>
+        totalCount == 0
+            ? 0
+            : (int)Math.Ceiling(
+                totalCount / (double)pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        // =========================================
+        // Count total items
+        // =========================================
+
+        totalCount = await Db.Items.CountAsync();
+
+        // =========================================
+        // Keep current page valid
+        // =========================================
+
+        if (currentPage > totalPages && totalPages > 0)
+        {
+            currentPage = totalPages;
+        }
+
+        if (totalPages == 0)
+        {
+            currentPage = 1;
+        }
+
+        // =========================================
+        // Load only current page
+        // =========================================
+
+        items = await Db.Items
+            .Include(x => x.Category)
+            .Include(x => x.Unit)
+            .OrderBy(x => x.Code)
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // =========================================
+        // Load dropdown data
+        // =========================================
+
+        units = await Db.Units
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        categories = await Db.ItemCategories
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage <= 1)
+        {
+            return;
+        }
+
+        currentPage--;
+
+        await Load();
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage >= totalPages)
+        {
+            return;
+        }
+
+        currentPage++;
+
+        await Load();
+    }
+
+    private async Task Save()
+    {
+        errorMessage = null;
+
+        newItem.Code = newItem.Code.Trim();
+        newItem.Name = newItem.Name.Trim();
+
+        if (string.IsNullOrWhiteSpace(newItem.Code))
+        {
+            errorMessage = "Item code is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newItem.Name))
+        {
+            errorMessage = "Item name is required.";
+            return;
+        }
+
+        if (newItem.CategoryId == 0)
+        {
+            errorMessage = "Category is required.";
+            return;
+        }
+
+        if (newItem.UnitId == 0)
+        {
+            errorMessage = "Unit is required.";
+            return;
+        }
+
+        // =========================================
+        // Low Stock Alert Validation
+        // =========================================
+
+        if (newItem.EnableLowStockAlert &&
+            newItem.LowStockThreshold <= 0)
+        {
+            errorMessage =
+                "Low stock threshold must be greater than zero.";
+
+            return;
+        }
+
+        if (!newItem.EnableLowStockAlert)
+        {
+            newItem.LowStockThreshold = 0;
+        }
+
+        // =========================================
+        // Duplicate Code Check
+        // =========================================
+
+        var normalizedCode =
+            newItem.Code.ToUpperInvariant();
+
+        var codeExists = await Db.Items
+            .AnyAsync(x =>
+                x.Code.ToUpper() == normalizedCode);
+
+        if (codeExists)
+        {
+            errorMessage =
+                $"Item code '{newItem.Code}' already exists.";
+
+            return;
+        }
+
+        newItem.IsActive = true;
+
+        try
+        {
+            Db.Items.Add(newItem);
+
+            await Db.SaveChangesAsync();
+
+            newItem = new Item();
+
+            // Return to first page so the newly added
+            // item can be shown according to Code order.
+            currentPage = 1;
+
+            await Load();
+        }
+        catch (DbUpdateException)
+        {
+            errorMessage =
+                $"Item code '{normalizedCode}' already exists or could not be saved.";
+
+            Db.Entry(newItem).State =
+                EntityState.Detached;
+        }
+    }
+}

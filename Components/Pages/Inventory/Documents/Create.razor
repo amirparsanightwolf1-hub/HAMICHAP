@@ -1,0 +1,531 @@
+﻿@page "/inventory/documents/create"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Models.Shared
+@using HamiChap_MES_ERP.Models.Customers
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using HamiChap_MES_ERP.Models.Administration
+@using HamiChap_MES_ERP.Services
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject InventoryPostingService PostingService
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject NumberSeriesService NumberSeriesService
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["CreateInventoryDocument"]
+</PageTitle>
+
+<div class="page-container">
+
+    <div class="erp-page-header">
+
+        <div>
+            <h3 class="erp-page-title">
+                @LocalizationService["CreateInventoryDocument"]
+            </h3>
+
+            <p class="erp-page-subtitle">
+                @LocalizationService["CreateInventoryDocumentDescription"]
+            </p>
+        </div>
+
+    </div>
+
+    <!-- =========================================
+         Document Information
+         ========================================= -->
+
+    <div class="card mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        @LocalizationService["DocumentType"]
+                    </label>
+
+                    <select class="form-select"
+                            @bind="document.DocumentType">
+
+                        @foreach (var type in Enum.GetValues<InventoryDocumentType>())
+                        {
+                            <option value="@type">
+                                @LocalizationService.TranslateEnum(type)
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        @LocalizationService["Date"]
+                    </label>
+
+                    <input class="form-control"
+                           type="date"
+                           @bind="document.DocumentDate" />
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        @LocalizationService["Status"]
+                    </label>
+
+                    <input class="form-control"
+                           value="@LocalizationService.TranslateEnum(document.Status)"
+                           disabled />
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        @LocalizationService["From"]
+                    </label>
+
+                    <select class="form-select"
+                            @bind="document.FromLocationId">
+
+                        <option value="">
+                            -- @LocalizationService["SelectSource"] --
+                        </option>
+
+                        @foreach (var location in fromLocations)
+                        {
+                            <option value="@location.Id">
+                                @GetLocationDisplayName(location)
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        @LocalizationService["To"]
+                    </label>
+
+                    <select class="form-select"
+                            @bind="document.ToLocationId">
+
+                        <option value="">
+                            -- @LocalizationService["SelectDestination"] --
+                        </option>
+
+                        @foreach (var location in toLocations)
+                        {
+                            <option value="@location.Id">
+                                @GetLocationDisplayName(location)
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="mt-3">
+
+                <label class="form-label">
+                    @LocalizationService["Notes"]
+                </label>
+
+                <textarea class="form-control"
+                          rows="3"
+                          @bind="document.Notes">
+                </textarea>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================================
+         Document Lines
+         ========================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h4 class="section-title mb-0">
+            @LocalizationService["Lines"]
+        </h4>
+
+        <button class="btn btn-secondary"
+                @onclick="AddLine">
+
+            + @LocalizationService["AddLine"]
+
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-striped table-responsive-cards mb-0">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                @LocalizationService["Item"]
+                            </th>
+
+                            <th>
+                                @LocalizationService["Customer"]
+                            </th>
+
+                            <th>
+                                @LocalizationService["Quantity"]
+                            </th>
+
+                            <th>
+                                @LocalizationService["Unit"]
+                            </th>
+
+                            <th>
+                                @LocalizationService["LotNumber"]
+                            </th>
+
+                            <th>
+                                @LocalizationService["Expiration"]
+                            </th>
+
+                            <th></th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var line in document.Lines)
+                        {
+                            <tr>
+
+                                <!-- Item -->
+
+                                <td>
+                                    <SearchableSelect TItem="Item"
+                                                      Items="items"
+                                                      Value="line.ItemId"
+                                                      ValueChanged="@(v => OnItemSelected(line, v))"
+                                                      TextSelector="@(i => i.Name)"
+                                                      ValueSelector="@(i => i.Id)"
+                                                      Placeholder="@LocalizationService["SelectItem"]" />
+                                </td>
+
+                                <!-- Customer -->
+
+                                <td>
+                                    <SearchableSelect TItem="Customer"
+                                                      Items="customers"
+                                                      Value="selectedCustomerId ?? 0"
+                                                      ValueChanged="@(v => selectedCustomerId = v == 0 ? null : v)"
+                                                      TextSelector="@(c => c.Name)"
+                                                      ValueSelector="@(c => c.Id)"
+                                                      Placeholder="@LocalizationService["CompanyInventory"]" />
+                                </td>
+
+                                <!-- Quantity -->
+
+                                <td>
+
+                                    <input class="form-control"
+                                           type="number"
+                                           min="0"
+                                           step="0.01"
+                                           @bind="line.Quantity" />
+
+                                </td>
+
+                                <!-- Unit -->
+
+                                <td>
+
+                                    <input class="form-control"
+                                           value="@GetItemUnitName(line.ItemId)"
+                                           readonly />
+
+                                </td>
+
+                                <!-- Lot -->
+
+                                <td>
+
+                                    @if (GetItem(line.ItemId)?.RequiresLotTracking == true)
+                                    {
+                                        <input class="form-control"
+                                               placeholder="@LocalizationService["LotNumber"]"
+                                               @bind="line.LotNumber" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <!-- Expiration -->
+
+                                <td>
+
+                                    @if (GetItem(line.ItemId)?.RequiresLotTracking == true)
+                                    {
+                                        <input class="form-control"
+                                               type="date"
+                                               @bind="line.LotExpirationDate" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <!-- Remove -->
+
+                                <td>
+
+                                    <button class="btn btn-danger btn-sm"
+                                            @onclick="() => RemoveLine(line)">
+
+                                        @LocalizationService["Remove"]
+
+                                    </button>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================================
+         Actions
+         ========================================= -->
+
+    <div class="mt-4 d-flex gap-2">
+
+        <button class="btn btn-secondary"
+                @onclick="AddLine">
+
+            + @LocalizationService["AddLine"]
+
+        </button>
+
+        <button class="btn btn-primary"
+                @onclick="Save">
+
+            @LocalizationService["SaveDraft"]
+
+        </button>
+
+    </div>
+
+</div>
+
+@code {
+
+    private InventoryDocument document = new()
+    {
+        DocumentType = InventoryDocumentType.GoodsReceipt
+    };
+
+    private List<Item> items = new();
+
+    private List<Customer> customers = new();
+
+    private List<InventoryLocation> fromLocations = new();
+
+    private List<InventoryLocation> toLocations = new();
+
+    private int? selectedCustomerId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await Db.Items
+            .Include(x => x.Unit)
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        customers = await Db.Customers
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        fromLocations = await Db.InventoryLocations
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        toLocations = await Db.InventoryLocations
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+    }
+
+    private void OnItemSelected(InventoryDocumentLine line, int itemId)
+    {
+        line.ItemId = itemId;
+        SetLineUnit(line);
+    }
+
+    void AddLine()
+    {
+        document.Lines.Add(
+            new InventoryDocumentLine
+            {
+                CustomerId = selectedCustomerId
+            }
+        );
+    }
+
+    private void RemoveLine(
+        InventoryDocumentLine line)
+    {
+        document.Lines.Remove(line);
+    }
+
+    private Item? GetItem(int itemId)
+    {
+        return items.FirstOrDefault(
+            x => x.Id == itemId);
+    }
+
+    private void SetLineUnit(
+        InventoryDocumentLine line)
+    {
+        var item = GetItem(line.ItemId);
+
+        if (item == null)
+        {
+            line.UnitId = 0;
+            return;
+        }
+
+        line.UnitId = item.UnitId;
+    }
+
+    private string GetLocationDisplayName(InventoryLocation location)
+    {
+        return location.Code switch
+        {
+            "WH01" => LocalizationService["MainWarehouse"],
+            "SUP01" => LocalizationService["DefaultSupplier"],
+            _ => location.Name
+        };
+    }
+
+    private string GetItemUnitName(
+        int itemId)
+    {
+        var item = GetItem(itemId);
+
+        return item?.Unit?.Symbol ?? "";
+    }
+
+    private async Task Save()
+    {
+        if (document.FromLocationId == null)
+        {
+            return;
+        }
+
+        if (document.ToLocationId == null)
+        {
+            return;
+        }
+
+        if (document.Lines.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var line in document.Lines)
+        {
+            // Apply the selected inventory owner to the line.
+            line.CustomerId = selectedCustomerId;
+
+            if (line.ItemId == 0)
+            {
+                return;
+            }
+
+            if (line.Quantity <= 0)
+            {
+                return;
+            }
+
+            // Unit is inherited from the Item.
+            // Make sure it is populated before saving.
+            SetLineUnit(line);
+
+            if (line.UnitId == 0)
+            {
+                return;
+            }
+
+            var item = GetItem(line.ItemId);
+
+            if (item == null)
+            {
+                return;
+            }
+
+            if (item.RequiresLotTracking &&
+                string.IsNullOrWhiteSpace(line.LotNumber))
+            {
+                return;
+            }
+        }
+
+        document.DocumentNumber =
+            await NumberSeriesService
+                .GetNextNumberAsync(
+                    NumberSeriesType.GoodsReceipt);
+
+        Db.InventoryDocuments.Add(document);
+
+        await Db.SaveChangesAsync();
+
+        Navigation.NavigateTo(
+            $"/inventory/documents/edit/{document.Id}");
+    }
+}

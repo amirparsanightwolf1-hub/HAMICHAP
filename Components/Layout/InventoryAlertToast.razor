@@ -1,0 +1,227 @@
+﻿@implements IDisposable
+
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+
+@inject InventoryAlertService InventoryAlertService
+@inject LocalizationService LocalizationService
+
+@if (showAlert && alerts.Count > 0)
+{
+    <div class="inventory-alert-toast">
+
+        <div class="inventory-alert-toast-header">
+
+            <div class="inventory-alert-toast-title">
+                <span class="inventory-alert-icon">⚠</span>
+
+                <strong>
+                    @LocalizationService["LowStockAlert"]
+                </strong>
+            </div>
+
+            <button type="button"
+                    class="inventory-alert-close"
+                    @onclick="Dismiss">
+                ×
+            </button>
+
+        </div>
+
+        <div class="inventory-alert-toast-body">
+
+            <div class="inventory-alert-summary">
+                @alerts.Count
+                @LocalizationService["ItemsLowStock"]
+            </div>
+
+            @foreach (var alert in alerts.Take(5))
+            {
+                <div class="inventory-alert-item">
+
+                    <div class="inventory-alert-item-name">
+                        <strong>@alert.ItemCode</strong>
+                        <span>@alert.ItemName</span>
+                    </div>
+
+                    <div class="inventory-alert-item-stock">
+
+                        <span>
+                            @LocalizationService["Available"]:
+                        </span>
+
+                        <strong>
+                            @alert.AvailableQuantity
+                            @alert.UnitSymbol
+                        </strong>
+
+                    </div>
+
+                    <div class="inventory-alert-item-threshold">
+
+                        @LocalizationService["Threshold"]:
+                        @alert.Threshold
+                        @alert.UnitSymbol
+
+                    </div>
+
+                </div>
+            }
+
+            @if (alerts.Count > 5)
+            {
+                <div class="inventory-alert-more">
+                    +@(alerts.Count - 5)
+                    @LocalizationService["More"]
+                </div>
+            }
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    private List<LowStockAlert> alerts = new();
+
+    private bool showAlert;
+
+    private CancellationTokenSource?
+        pollingCancellationTokenSource;
+
+    private CancellationTokenSource?
+        hideCancellationTokenSource;
+
+    protected override Task OnInitializedAsync()
+    {
+        pollingCancellationTokenSource =
+            new CancellationTokenSource();
+
+        _ = PollAlertsAsync(
+            pollingCancellationTokenSource.Token);
+
+        return Task.CompletedTask;
+    }
+
+    private async Task PollAlertsAsync(
+        CancellationToken token)
+    {
+        // Check immediately.
+        await CheckAlertsAsync();
+
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(
+                    TimeSpan.FromSeconds(10),
+                    token);
+
+                if (token.IsCancellationRequested)
+                    break;
+
+                await CheckAlertsAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch
+            {
+                // Keep polling if one check fails.
+            }
+        }
+    }
+
+    private async Task CheckAlertsAsync()
+    {
+        var newAlerts =
+            await InventoryAlertService
+                .GetLowStockAlertsAsync();
+
+        await InvokeAsync(() =>
+        {
+            var shouldShow =
+                alerts.Count == 0 && newAlerts.Count > 0;
+
+            alerts = newAlerts;
+
+            if (alerts.Count == 0)
+            {
+                showAlert = false;
+                return;
+            }
+
+            if (shouldShow)
+            {
+                ShowPopup();
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    private bool HasAlertsChanged()
+    {
+        return alerts.Any(x =>
+            x.AvailableQuantity <= x.Threshold);
+    }
+
+    private void ShowPopup()
+    {
+        showAlert = true;
+
+        hideCancellationTokenSource?.Cancel();
+        hideCancellationTokenSource?.Dispose();
+
+        hideCancellationTokenSource =
+            new CancellationTokenSource();
+
+        var token =
+            hideCancellationTokenSource.Token;
+
+        _ = HideAfter15SecondsAsync(token);
+    }
+
+    private async Task HideAfter15SecondsAsync(
+        CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(
+                TimeSpan.FromSeconds(15),
+                token);
+
+            if (token.IsCancellationRequested)
+                return;
+
+            await InvokeAsync(() =>
+            {
+                showAlert = false;
+                StateHasChanged();
+            });
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private void Dismiss()
+    {
+        showAlert = false;
+
+        hideCancellationTokenSource?.Cancel();
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        pollingCancellationTokenSource?.Cancel();
+        pollingCancellationTokenSource?.Dispose();
+
+        hideCancellationTokenSource?.Cancel();
+        hideCancellationTokenSource?.Dispose();
+    }
+}

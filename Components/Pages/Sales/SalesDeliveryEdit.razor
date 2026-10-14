@@ -1,0 +1,803 @@
+﻿@page "/sales/deliveries/edit/{Id:long}"
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Models.Shared
+@using HamiChap_MES_ERP.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+
+@using SalesDeliveryModel = HamiChap_MES_ERP.Models.Sales.SalesDelivery
+@using SalesDeliveryLineModel = HamiChap_MES_ERP.Models.Sales.SalesDeliveryLine
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject SalesDeliveryService SalesDeliveryService
+@inject LocalizationService L
+
+<PageTitle>
+    @L["SalesDelivery"]
+</PageTitle>
+
+<div class="page-container">
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">
+                    @L["Loading"]
+                </span>
+            </div>
+        </div>
+    }
+    else if (delivery == null)
+    {
+        <div class="alert alert-danger">
+            @L["SalesDeliveryNotFound"]
+        </div>
+    }
+    else
+    {
+        <div class="erp-page-header mb-4">
+
+            <div>
+                <div class="erp-page-title">
+                    @L["SalesDelivery"]
+                </div>
+
+                <div class="erp-page-subtitle">
+                    @delivery.DeliveryNumber
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        @onclick="GoBack">
+
+                    <i class="bi bi-arrow-left"></i>
+                    @L["Back"]
+
+                </button>
+
+                @if (delivery.Status == SalesDeliveryStatus.Draft)
+                {
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="SaveAsync"
+                            disabled="@isSaving">
+
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+
+                        <i class="bi bi-save"></i>
+                        @L["Save"]
+
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-success"
+                            @onclick="PostAsync"
+                            disabled="@isPosting">
+
+                        @if (isPosting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+
+                        <i class="bi bi-check-circle"></i>
+                        @L["Post"]
+
+                    </button>
+                }
+
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="alert alert-danger mb-4">
+                @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="alert alert-success mb-4">
+                @successMessage
+            </div>
+        }
+
+        <!-- Delivery Information -->
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header">
+                <strong>
+                    @L["SalesDeliveryInformation"]
+                </strong>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <!-- Delivery Number -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @L["DeliveryNumber"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@delivery.DeliveryNumber"
+                               readonly />
+
+                    </div>
+
+                    <!-- Sales Order -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @L["SalesOrder"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@GetSalesOrderNumber()"
+                               readonly />
+
+                    </div>
+
+                    <!-- Customer -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @L["Customer"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@GetCustomerName()"
+                               readonly />
+
+                    </div>
+
+                    <!-- Status -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @L["Status"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@L.TranslateEnum(delivery.Status)"
+                               readonly />
+
+                    </div>
+
+                    <!-- Delivery Date -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @L["DeliveryDate"]
+                        </label>
+
+                        @if (delivery.Status == SalesDeliveryStatus.Draft)
+                        {
+                            <InputDate @bind-Value="delivery.DeliveryDate"
+                                       class="form-control" />
+                        }
+                        else
+                        {
+                            <input class="form-control"
+                                   value="@delivery.DeliveryDate.ToString("yyyy-MM-dd")"
+                                   readonly />
+                        }
+
+                    </div>
+
+                    <!-- From Location -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @L["FromLocation"]
+                        </label>
+
+                        @if (delivery.Status == SalesDeliveryStatus.Draft)
+                        {
+                            <select class="form-select"
+                                    @bind="delivery.FromLocationId">
+
+                                @foreach (var location in locations)
+                                {
+                                    <option value="@location.Id">
+                                        @GetLocationDisplayName(location)
+                                    </option>
+                                }
+
+                            </select>
+                        }
+                        else
+                        {
+                            <input class="form-control"
+                                   value="@GetLocationDisplayName(delivery.FromLocation)"
+                                   readonly />
+                        }
+
+                    </div>
+
+                    <!-- To Location -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @L["ToLocation"]
+                        </label>
+
+                        @if (delivery.Status == SalesDeliveryStatus.Draft)
+                        {
+                            <select class="form-select"
+                                    @bind="delivery.ToLocationId">
+
+                                @foreach (var location in locations)
+                                {
+                                    <option value="@location.Id">
+                                        @GetLocationDisplayName(location)
+                                    </option>
+                                }
+
+                            </select>
+                        }
+                        else
+                        {
+                            <input class="form-control"
+                                   value="@GetLocationDisplayName(delivery.ToLocation)"
+                                   readonly />
+                        }
+
+                    </div>
+
+                    <!-- Created By -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            @L["CreatedBy"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@GetUserName()"
+                               readonly />
+
+                    </div>
+
+                    <!-- Notes -->
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            @L["Notes"]
+                        </label>
+
+                        @if (delivery.Status == SalesDeliveryStatus.Draft)
+                        {
+                            <textarea class="form-control"
+                                      rows="3"
+                                      @bind="delivery.Notes">
+                            </textarea>
+                        }
+                        else
+                        {
+                            <textarea class="form-control"
+                                      rows="3"
+                                      readonly>@delivery.Notes</textarea>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Delivery Lines -->
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+                <strong>
+                    @L["DeliveryLines"]
+                </strong>
+            </div>
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    @L["Item"]
+                                </th>
+
+                                <th class="text-end">
+                                    @L["OrderedQuantity"]
+                                </th>
+
+                                <th class="text-end">
+                                    @L["ProducedQuantity"]
+                                </th>
+
+                                <th class="text-end">
+                                    @L["DeliveredQuantity"]
+                                </th>
+
+                                <th class="text-end">
+                                    @L["RemainingQuantity"]
+                                </th>
+
+                                <th class="text-end">
+                                    @L["DeliveryQuantity"]
+                                </th>
+
+                                <th>
+                                    @L["Unit"]
+                                </th>
+
+                                <th>
+                                    @L["Notes"]
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var line in delivery.Lines)
+                            {
+                                var salesLine =
+                                    line.SalesOrderLine;
+
+                                var remaining =
+                                    salesLine.Quantity -
+                                    salesLine.DeliveredQuantity;
+
+                                <tr>
+
+                                    <!-- Item -->
+
+                                    <td>
+
+                                        <div class="fw-semibold">
+                                            @GetItemDisplayName(line)
+                                        </div>
+
+                                        <small class="text-muted">
+                                            @line.ItemId
+                                        </small>
+
+                                    </td>
+
+                                    <!-- Ordered -->
+
+                                    <td class="text-end">
+                                        @salesLine.Quantity.ToString("N2")
+                                    </td>
+
+                                    <!-- Produced -->
+
+                                    <td class="text-end">
+                                        @salesLine.ProducedQuantity.ToString("N2")
+                                    </td>
+
+                                    <!-- Delivered -->
+
+                                    <td class="text-end">
+                                        @salesLine.DeliveredQuantity.ToString("N2")
+                                    </td>
+
+                                    <!-- Remaining -->
+
+                                    <td class="text-end">
+                                        @remaining.ToString("N2")
+                                    </td>
+
+                                    <!-- Delivery Quantity -->
+
+                                    <td class="text-end"
+                                        style="min-width:150px;">
+
+                                        @if (delivery.Status ==
+                                            SalesDeliveryStatus.Draft)
+                                        {
+                                            <input type="number"
+                                                   class="form-control text-end"
+                                                   step="0.0001"
+                                                   min="0"
+                                                   max="@remaining"
+                                                   @bind="line.Quantity" />
+                                        }
+                                        else
+                                        {
+                                            @line.Quantity.ToString("N2")
+                                        }
+
+                                    </td>
+
+                                    <!-- Unit -->
+
+                                    <td>
+                                        @GetUnitDisplayName(line)
+                                    </td>
+
+                                    <!-- Notes -->
+
+                                    <td style="min-width:220px;">
+
+                                        @if (delivery.Status ==
+                                            SalesDeliveryStatus.Draft)
+                                        {
+                                            <input type="text"
+                                                   class="form-control"
+                                                   @bind="line.Notes" />
+                                        }
+                                        else
+                                        {
+                                            @line.Notes
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+
+        @if (delivery.Status == SalesDeliveryStatus.Posted)
+        {
+            <div class="alert alert-success mt-4">
+
+                <i class="bi bi-check-circle me-1"></i>
+
+                @L["SalesDeliveryPostedSuccessfully"]
+
+            </div>
+        }
+
+        @if (delivery.Status == SalesDeliveryStatus.Cancelled)
+        {
+            <div class="alert alert-secondary mt-4">
+
+                <i class="bi bi-x-circle me-1"></i>
+
+                @L["SalesDeliveryCancelled"]
+
+            </div>
+        }
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+
+    private SalesDeliveryModel? delivery;
+
+    private List<InventoryLocation> locations = new();
+
+    private bool isLoading = true;
+    private bool isSaving;
+    private bool isPosting;
+
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            delivery =
+                await Db.SalesDeliveries
+
+                    .Include(x => x.SalesOrder)
+                        .ThenInclude(x => x.Lines)
+
+                    .Include(x => x.Customer)
+
+                    .Include(x => x.User)
+
+                    .Include(x => x.FromLocation)
+
+                    .Include(x => x.ToLocation)
+
+                    .Include(x => x.Lines)
+                        .ThenInclude(x => x.Item)
+
+                    .Include(x => x.Lines)
+                        .ThenInclude(x => x.Unit)
+
+                    .Include(x => x.Lines)
+                        .ThenInclude(x => x.SalesOrderLine)
+
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == Id);
+
+            if (delivery == null)
+            {
+                errorMessage =
+                    L["SalesDeliveryNotFound"];
+
+                return;
+            }
+
+            locations =
+                await Db.InventoryLocations
+                    .Where(x => x.IsActive)
+                    .OrderBy(x => x.Name)
+                    .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (delivery == null)
+            return;
+
+        if (delivery.Status != SalesDeliveryStatus.Draft)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            ValidateDraft();
+
+            isSaving = true;
+
+            await Db.SaveChangesAsync();
+
+            successMessage =
+                L["SalesDeliverySavedSuccessfully"];
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task PostAsync()
+    {
+        if (delivery == null)
+            return;
+
+        if (delivery.Status != SalesDeliveryStatus.Draft)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            ValidateDraft();
+
+            isPosting = true;
+
+            var authenticationState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var user =
+                await UserManager.GetUserAsync(
+                    authenticationState.User);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException(
+                    L["UserNotAuthenticated"]);
+            }
+
+            /*
+             * Save the current draft changes first.
+             */
+            await Db.SaveChangesAsync();
+
+            await SalesDeliveryService.PostDeliveryAsync(
+                delivery.Id,
+                user.Id);
+
+            Navigation.NavigateTo(
+                $"/sales/deliveries/edit/{delivery.Id}",
+                forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isPosting = false;
+        }
+    }
+
+    private void ValidateDraft()
+    {
+        if (delivery == null)
+            return;
+
+        if (delivery.FromLocationId <= 0)
+        {
+            throw new InvalidOperationException(
+                L["FromLocationRequired"]);
+        }
+
+        if (delivery.ToLocationId <= 0)
+        {
+            throw new InvalidOperationException(
+                L["ToLocationRequired"]);
+        }
+
+        if (delivery.FromLocationId ==
+            delivery.ToLocationId)
+        {
+            throw new InvalidOperationException(
+                L["LocationsMustBeDifferent"]);
+        }
+
+        if (delivery.Lines == null ||
+            delivery.Lines.Count == 0)
+        {
+            throw new InvalidOperationException(
+                L["AtLeastOneDeliveryLineRequired"]);
+        }
+
+        foreach (var line in delivery.Lines)
+        {
+            if (line.Quantity <= 0)
+            {
+                throw new InvalidOperationException(
+                    $"{L["DeliveryQuantityMustBeGreaterThanZero"]} " +
+                    $"({GetItemDisplayName(line)})");
+            }
+
+            if (line.SalesOrderLine == null)
+            {
+                throw new InvalidOperationException(
+                    L["SalesOrderLineNotFound"]);
+            }
+
+            var salesLine =
+                line.SalesOrderLine;
+
+            var remaining =
+                salesLine.Quantity -
+                salesLine.DeliveredQuantity;
+
+            if (line.Quantity > remaining)
+            {
+                throw new InvalidOperationException(
+                    $"{L["DeliveryQuantityExceedsRemaining"]} " +
+                    $"({GetItemDisplayName(line)})");
+            }
+
+            var remainingProduced =
+                salesLine.ProducedQuantity -
+                salesLine.DeliveredQuantity;
+
+            if (line.Quantity > remainingProduced)
+            {
+                throw new InvalidOperationException(
+                    $"{L["DeliveryQuantityExceedsProduced"]} " +
+                    $"({GetItemDisplayName(line)})");
+            }
+        }
+    }
+
+    private string GetSalesOrderNumber()
+    {
+        return delivery?.SalesOrder?.OrderNumber
+            ?? "-";
+    }
+
+    private string GetCustomerName()
+    {
+        return delivery?.Customer?.Name
+            ?? "-";
+    }
+
+    private string GetUserName()
+    {
+        return delivery?.User?.UserName
+            ?? "-";
+    }
+
+    private string GetItemDisplayName(
+        SalesDeliveryLineModel line)
+    {
+        return line.Item?.Name
+            ?? line.ItemId.ToString();
+    }
+
+    private string GetUnitDisplayName(
+        SalesDeliveryLineModel line)
+    {
+        if (line.Unit == null)
+            return line.UnitId.ToString();
+
+        if (!string.IsNullOrWhiteSpace(
+            line.Unit.Symbol))
+        {
+            return line.Unit.Symbol;
+        }
+
+        return line.Unit.Name;
+    }
+
+    private string GetLocationDisplayName(
+        InventoryLocation? location)
+    {
+        if (location == null)
+            return "-";
+
+        if (!string.IsNullOrWhiteSpace(
+            location.Name))
+        {
+            return location.Name;
+        }
+
+        return location.Code;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo(
+            "/sales/deliveries");
+    }
+}

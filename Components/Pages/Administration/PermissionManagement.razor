@@ -1,0 +1,404 @@
+﻿@page "/administration/permission-management"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using HamiChap_MES_ERP.Models.Administration
+@using HamiChap_MES_ERP.Services
+
+@attribute [Authorize]
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject PermissionService PermissionService
+
+<PageTitle>Permission Management</PageTitle>
+
+<h3>Permission Management</h3>
+
+@if (loading)
+{
+    <p>Loading...</p>
+}
+else if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert @messageClass">
+        @message
+    </div>
+}
+else if (!manageableRoles.Any())
+{
+    <div class="alert alert-warning">
+        You are not authorized to manage permissions for any roles.
+    </div>
+}
+else
+{
+    <div class="row">
+
+        <!-- ROLES -->
+
+        <div class="col-md-4">
+
+            <div class="card">
+
+                <div class="card-header">
+                    <strong>Roles You Can Manage</strong>
+                </div>
+
+                <div class="list-group list-group-flush">
+
+                    @foreach (var targetRole in manageableRoles)
+                    {
+                        <button type="button"
+                                class="list-group-item list-group-item-action
+                            @(selectedRole?.Id == targetRole.Id
+                                ? "active"
+                                : "")"
+                                @onclick="() => SelectRole(targetRole)">
+
+                            @targetRole.Name
+
+                        </button>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PERMISSIONS -->
+
+        <div class="col-md-8">
+
+            @if (selectedRole == null)
+            {
+                <div class="alert alert-info">
+                    Select a role to manage its permissions.
+                </div>
+            }
+            else
+            {
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <strong>
+                            @selectedRole.Name
+                        </strong>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <p class="text-muted">
+                            Select the permissions that this role is
+                            allowed to use.
+                        </p>
+
+                        @if (!manageablePermissions.Any())
+                        {
+                            <div class="alert alert-warning">
+                                You are not authorized to delegate
+                                any permissions to this role.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+
+                                <table class="table table-striped table-bordered">
+
+                                    <thead>
+
+                                        <tr>
+
+                                            <th>
+                                                Permission
+                                            </th>
+
+                                            <th>
+                                                Description
+                                            </th>
+
+                                            <th style="width: 100px;">
+                                                Enabled
+                                            </th>
+
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                        @foreach (var permission
+                                            in manageablePermissions)
+                                        {
+                                            <tr>
+
+                                                <td>
+                                                    <strong>
+                                                        @permission.Name
+                                                    </strong>
+                                                </td>
+
+                                                <td>
+                                                    @permission.Description
+                                                </td>
+
+                                                <td>
+
+                                                    <input class="form-check-input"
+                                                           type="checkbox"
+                                                           checked="@HasPermission(permission.Id)"
+                                                           @onchange="e =>
+                                                                                                                   TogglePermission(
+                                                                                                                       permission.Id,
+                                                                                                                       e)" />
+
+</td>
+
+                                            </tr>
+                                        }
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+
+                            <button class="btn btn-primary"
+                                    @onclick="Save">
+
+                                Save Changes
+
+                            </button>
+                        }
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+}
+
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="alert @statusMessageClass mt-3">
+        @statusMessage
+    </div>
+}
+
+
+@code {
+
+    private bool loading = true;
+
+    private List<IdentityRole> manageableRoles = new();
+
+    private IdentityRole? selectedRole;
+
+    private List<Permission> manageablePermissions = new();
+
+    private HashSet<int> selectedPermissions = new();
+
+    private string? message;
+
+    private string messageClass = "alert-info";
+
+    private string? statusMessage;
+
+    private string statusMessageClass = "alert-info";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated != true)
+            {
+                SetError("You must be logged in.");
+                return;
+            }
+
+
+            manageableRoles =
+                await PermissionService
+                    .GetManageableRolesAsync(user);
+
+            loading = false;
+        }
+        catch (Exception ex)
+        {
+            SetError(
+                $"Unable to load permission management: {ex.Message}");
+        }
+    }
+
+
+    private async Task SelectRole(
+        IdentityRole targetRole)
+    {
+        statusMessage = null;
+
+        selectedRole = targetRole;
+
+        selectedPermissions.Clear();
+
+        try
+        {
+            var authState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var user = authState.User;
+
+
+            var canManage =
+                await PermissionService
+                    .CanManageRoleAsync(
+                        user,
+                        targetRole.Id);
+
+            if (!canManage)
+            {
+                statusMessage =
+                    "You are not authorized to manage this role.";
+
+                statusMessageClass =
+                    "alert-danger";
+
+                selectedRole = null;
+
+                return;
+            }
+
+
+            manageablePermissions =
+                await PermissionService
+                    .GetDelegatablePermissionsAsync(
+                        user,
+                        targetRole.Id);
+
+
+            selectedPermissions =
+                await PermissionService
+                    .GetRolePermissionIdsAsync(
+                        user,
+                        targetRole.Id);
+        }
+        catch (Exception ex)
+        {
+            statusMessage =
+                $"Unable to load permissions: {ex.Message}";
+
+            statusMessageClass =
+                "alert-danger";
+        }
+    }
+
+
+    private bool HasPermission(
+        int permissionId)
+    {
+        return selectedPermissions.Contains(
+            permissionId);
+    }
+
+
+    private void TogglePermission(
+        int permissionId,
+        ChangeEventArgs e)
+    {
+        var enabled =
+            e.Value is bool value && value;
+
+        if (enabled)
+        {
+            selectedPermissions.Add(
+                permissionId);
+        }
+        else
+        {
+            selectedPermissions.Remove(
+                permissionId);
+        }
+    }
+
+
+    private async Task Save()
+    {
+        if (selectedRole == null)
+            return;
+
+        statusMessage = null;
+
+        try
+        {
+            var authState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var user = authState.User;
+
+
+            var success =
+                await PermissionService
+                    .SaveRolePermissionsAsync(
+                        user,
+                        selectedRole.Id,
+                        selectedPermissions);
+
+
+            if (!success)
+            {
+                statusMessage =
+                    "You are not authorized to modify this role.";
+
+                statusMessageClass =
+                    "alert-danger";
+
+                return;
+            }
+
+
+            statusMessage =
+                $"Permissions for '{selectedRole.Name}' saved successfully.";
+
+            statusMessageClass =
+                "alert-success";
+        }
+        catch (Exception ex)
+        {
+            statusMessage =
+                $"Unable to save permissions: {ex.Message}";
+
+            statusMessageClass =
+                "alert-danger";
+        }
+    }
+
+
+    private void SetError(
+        string text)
+    {
+        message = text;
+
+        messageClass =
+            "alert-danger";
+
+        loading = false;
+    }
+
+}

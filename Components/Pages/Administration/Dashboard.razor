@@ -1,0 +1,54 @@
+﻿@page "/administration"
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Administrator")]
+
+<PageTitle>Administration</PageTitle>
+
+<h3>Administration</h3>
+
+<div class="row">
+
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h5>Users</h5>
+            <p>
+                Manage employees and user accounts.
+            </p>
+
+            <a href="/administration/users" class="btn btn-primary">
+                Manage Users
+            </a>
+        </div>
+    </div>
+
+
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h5>Roles</h5>
+            <p>
+                Manage access levels.
+            </p>
+
+            <a href="/administration/roles" class="btn btn-primary">
+                Manage Roles
+            </a>
+        </div>
+    </div>
+
+
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h5>Permissions</h5>
+            <p>
+                Control access to system features.
+            </p>
+
+            <a href="/administration/permissions" class="btn btn-primary">
+                Manage Permissions
+            </a>
+        </div>
+    </div>
+
+</div>

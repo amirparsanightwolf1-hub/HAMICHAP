@@ -1,0 +1,180 @@
+﻿@page "/inventory/locations"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+
+@inject ApplicationDbContext Db
+@inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
+
+<PageTitle>@LocalizationService["InventoryLocations"]</PageTitle>
+
+<h3>@LocalizationService["InventoryLocations"]</h3>
+
+<div class="card mb-4">
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    @LocalizationService["Code"]
+                </label>
+
+                <input class="form-control"
+                       @bind="location.Code" />
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    @LocalizationService["Name"]
+                </label>
+
+                <input class="form-control"
+                       @bind="location.Name" />
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label class="form-label">
+                    @LocalizationService["Type"]
+                </label>
+
+                <select class="form-select"
+                        @bind="location.Type">
+
+                    @foreach (var type in Enum.GetValues<InventoryLocationType>())
+                    {
+                        <option value="@type">
+                            @type
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label class="form-label">
+                    @LocalizationService["Active"]
+                </label>
+
+                <br />
+
+                <input type="checkbox"
+                       @bind="location.IsActive" />
+
+            </div>
+
+        </div>
+
+        <button type="button"
+                class="btn btn-primary mt-3"
+                @onclick="Save">
+
+            @LocalizationService["SaveLocation"]
+
+        </button>
+
+    </div>
+
+</div>
+
+<table class="table table-bordered table-responsive-cards">
+
+    <thead>
+
+        <tr>
+
+            <th>
+                @LocalizationService["Code"]
+            </th>
+
+            <th>
+                @LocalizationService["Name"]
+            </th>
+
+            <th>
+                @LocalizationService["Type"]
+            </th>
+
+            <th>
+                @LocalizationService["Active"]
+            </th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in locations)
+        {
+            <tr>
+
+                <td>
+                    @item.Code
+                </td>
+
+                <td>
+                    @item.Name
+                </td>
+
+                <td>
+                    @item.Type
+                </td>
+
+                <td>
+                    @(item.IsActive
+                        ? LocalizationService["Yes"]
+                        : LocalizationService["No"])
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+@code {
+
+    InventoryLocation location = new();
+
+    List<InventoryLocation> locations = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLocations();
+    }
+
+    async Task LoadLocations()
+    {
+        locations = await Db.InventoryLocations
+            .OrderBy(x => x.Code)
+            .ToListAsync();
+    }
+
+    async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(location.Code))
+            return;
+
+        if (string.IsNullOrWhiteSpace(location.Name))
+            return;
+
+        Db.InventoryLocations.Add(location);
+
+        await Db.SaveChangesAsync();
+
+        location = new();
+
+        await LoadLocations();
+    }
+}

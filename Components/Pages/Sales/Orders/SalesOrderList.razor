@@ -1,0 +1,254 @@
+﻿@page "/sales/orders"
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["SalesOrders"]
+</PageTitle>
+
+<div class="page-container">
+
+    <div class="erp-page-header mb-4">
+
+        <div>
+            <div class="erp-page-title">
+                @LocalizationService["SalesOrders"]
+            </div>
+
+            <div class="erp-page-subtitle">
+                @LocalizationService["SalesOrdersManagement"]
+            </div>
+        </div>
+
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">
+                    @LocalizationService["Loading"]
+                </span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead>
+                            <tr>
+
+                                <th>
+                                    @LocalizationService["OrderNumber"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Customer"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["OrderDate"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["DeliveryDate"]
+                                </th>
+
+                                <th class="text-end">
+                                    @LocalizationService["TotalAmount"]
+                                </th>
+
+                                <th>
+                                    @LocalizationService["Status"]
+                                </th>
+
+                                <th style="width:100px;"></th>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @if (orders.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="7"
+                                        class="text-center text-muted py-4">
+
+                                        @LocalizationService[
+                                            "NoSalesOrdersFound"]
+
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var order in orders)
+                                {
+                                    <tr>
+
+                                        <td class="fw-semibold">
+                                            @order.OrderNumber
+                                        </td>
+
+                                        <td>
+                                            @order.Customer?.Name
+                                        </td>
+
+                                        <td>
+                                            @order.OrderDate
+                                            .ToString("yyyy-MM-dd")
+                                        </td>
+
+                                        <td>
+                                            @(order.DeliveryDate?
+                                                .ToString("yyyy-MM-dd")
+                                                ?? "-")
+                                        </td>
+
+                                        <td class="text-end">
+                                            @order.TotalAmount
+                                            .ToString("N2")
+                                        </td>
+
+                                        <td>
+                                            <span class="badge
+                                                @GetStatusClass(order.Status)">
+
+                                                @LocalizationService
+                                                .TranslateEnum(
+                                                order.Status)
+
+                                            </span>
+                                        </td>
+
+                                        <td class="text-center">
+
+                                            <button type="button"
+                                                    class="btn btn-sm
+                                                btn-outline-primary"
+                                                    @onclick="() =>
+                                                                                                        OpenOrder(order.Id)">
+
+<i class="bi bi-eye"></i>
+@LocalizationService["Open"]
+
+</button>
+
+                                        </td>
+
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private List<SalesOrder> orders = new();
+
+    private bool isLoading = true;
+
+    private string? errorMessage;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            orders =
+                await Db.SalesOrders
+
+                    .Include(x => x.Customer)
+
+                    .OrderByDescending(x => x.OrderDate)
+
+                    .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
+    private void OpenOrder(long orderId)
+    {
+        Navigation.NavigateTo(
+            $"/sales/orders/edit/{orderId}");
+    }
+
+
+    private string GetStatusClass(
+        HamiChap_MES_ERP.Models.Sales.Enums.SalesOrderStatus status)
+    {
+        return status switch
+        {
+            HamiChap_MES_ERP.Models.Sales.Enums.SalesOrderStatus.Confirmed
+                => "bg-primary",
+
+            HamiChap_MES_ERP.Models.Sales.Enums.SalesOrderStatus.PartiallyReserved
+                => "bg-warning text-dark",
+
+            HamiChap_MES_ERP.Models.Sales.Enums.SalesOrderStatus.Reserved
+                => "bg-success",
+
+            HamiChap_MES_ERP.Models.Sales.Enums.SalesOrderStatus.InProduction
+                => "bg-info text-dark",
+
+            HamiChap_MES_ERP.Models.Sales.Enums.SalesOrderStatus.PartiallyDelivered
+                => "bg-warning text-dark",
+
+            HamiChap_MES_ERP.Models.Sales.Enums.SalesOrderStatus.Completed
+                => "bg-success",
+
+            HamiChap_MES_ERP.Models.Sales.Enums.SalesOrderStatus.Cancelled
+                => "bg-danger",
+
+            _ => "bg-secondary"
+        };
+    }
+}

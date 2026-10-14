@@ -1,0 +1,58 @@
+﻿@implements IDisposable
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Services
+
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SessionInactivityService InactivityService
+
+@code
+{
+    private bool logoutTriggered;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+
+        AuthenticationStateProvider.AuthenticationStateChanged
+            += HandleAuthenticationStateChanged;
+    }
+
+    private void HandleLocationChanged(
+        object? sender,
+        LocationChangedEventArgs e)
+    {
+        if (!logoutTriggered)
+        {
+            InactivityService.RecordActivity();
+        }
+    }
+
+    private async void HandleAuthenticationStateChanged(
+        Task<AuthenticationState> task)
+    {
+        var state = await task;
+
+        if (state.User.Identity?.IsAuthenticated != true &&
+            !logoutTriggered)
+        {
+            logoutTriggered = true;
+
+            await InvokeAsync(() =>
+            {
+                Navigation.NavigateTo(
+                    "/Account/InactivityLogout",
+                    forceLoad: true);
+            });
+        }
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+
+        AuthenticationStateProvider.AuthenticationStateChanged
+            -= HandleAuthenticationStateChanged;
+    }
+}

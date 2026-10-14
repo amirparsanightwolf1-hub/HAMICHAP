@@ -1,0 +1,181 @@
+﻿@page "/inventory/itemcategories"
+
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject LocalizationService LocalizationService
+
+<PageTitle>
+    @LocalizationService["ItemCategories"]
+</PageTitle>
+
+<h3>
+    @LocalizationService["ItemCategories"]
+</h3>
+
+<div class="card mb-3">
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+                    @LocalizationService["CategoryName"]
+                </label>
+
+                <input class="form-control"
+                       @bind="newCategory.Name" />
+
+            </div>
+
+            <div class="col-md-2 mt-4">
+
+                <button class="btn btn-primary"
+                        @onclick="Save">
+
+                    @LocalizationService["Add"]
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<table class="table table-bordered table-responsive-cards">
+
+    <thead>
+
+        <tr>
+
+            <th>
+                @LocalizationService["Name"]
+            </th>
+
+            <th>
+                @LocalizationService["Status"]
+            </th>
+
+            <th></th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @if (categories.Count == 0)
+        {
+            <tr>
+
+                <td colspan="3" class="text-center">
+
+                    @LocalizationService["NoCategoriesFound"]
+
+                </td>
+
+            </tr>
+        }
+        else
+        {
+            @foreach (var category in categories)
+            {
+                <tr>
+
+                    <td>
+                        @category.Name
+                    </td>
+
+                    <td>
+
+                        @if (category.IsActive)
+                        {
+                            <span class="badge bg-success">
+                                @LocalizationService["Active"]
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                @LocalizationService["Disabled"]
+                            </span>
+                        }
+
+                    </td>
+
+                    <td>
+
+                        <button class="btn btn-sm btn-danger"
+                                @onclick="() => Delete(category.Id)">
+
+                            @LocalizationService["Delete"]
+
+                        </button>
+
+                    </td>
+
+                </tr>
+            }
+        }
+
+    </tbody>
+
+</table>
+
+@code {
+
+    private List<ItemCategory> categories = new();
+
+    private ItemCategory newCategory = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    async Task Load()
+    {
+        categories = await Db.ItemCategories
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+    }
+
+    async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(newCategory.Name))
+            return;
+
+        newCategory.IsActive = true;
+
+        Db.ItemCategories.Add(newCategory);
+
+        await Db.SaveChangesAsync();
+
+        newCategory = new ItemCategory();
+
+        await Load();
+    }
+
+    async Task Delete(int id)
+    {
+        var category =
+            await Db.ItemCategories.FindAsync(id);
+
+        if (category == null)
+            return;
+
+        category.IsActive = false;
+
+        await Db.SaveChangesAsync();
+
+        await Load();
+    }
+}
