@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
+	<!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -59,64 +59,64 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
 	<data name="AppTitle" xml:space="preserve">
     <value>حامی‌چاپ ERP</value>
   </data>
@@ -714,4 +714,117 @@
 	<data name="DefaultSupplier" xml:space="preserve">
   <value>تأمین‌کننده پیش‌فرض</value>
 </data>
+
+	<!-- Production workflow and production-order localizations -->
+	<data name="Production" xml:space="preserve">
+    <value>تولید</value>
+  </data>
+	<data name="ProductionWorkflow" xml:space="preserve">
+    <value>گردش کار تولید</value>
+  </data>
+	<data name="ProductionWorkflowDescription" xml:space="preserve">
+    <value>دستورهای تولید و پیشرفت آن‌ها را در هر مرحله پیگیری کنید.</value>
+  </data>
+	<data name="ProductionOrders" xml:space="preserve">
+    <value>دستورهای تولید</value>
+  </data>
+	<data name="ProductionOrdersDescription" xml:space="preserve">
+    <value>مشاهده و مدیریت دستورهای تولید.</value>
+  </data>
+	<data name="ProductionManagement" xml:space="preserve">
+    <value>مدیریت تولید</value>
+  </data>
+	<data name="TotalProductionOrders" xml:space="preserve">
+    <value>کل دستورهای تولید</value>
+  </data>
+	<data name="ActiveProductionOrders" xml:space="preserve">
+    <value>دستورهای تولید فعال</value>
+  </data>
+	<data name="CompletedProductionOrders" xml:space="preserve">
+    <value>دستورهای تولید تکمیل‌شده</value>
+  </data>
+	<data name="PendingProductionOrders" xml:space="preserve">
+    <value>دستورهای تولید در انتظار</value>
+  </data>
+	<data name="CreateProductionOrder" xml:space="preserve">
+    <value>ایجاد دستور تولید</value>
+  </data>
+	<data name="NewProductionOrder" xml:space="preserve">
+    <value>دستور تولید جدید</value>
+  </data>
+	<data name="SearchProductionOrders" xml:space="preserve">
+    <value>جستجوی دستورهای تولید...</value>
+  </data>
+	<data name="FilterByStatus" xml:space="preserve">
+    <value>فیلتر بر اساس وضعیت</value>
+  </data>
+	<data name="AllStatuses" xml:space="preserve">
+    <value>همه وضعیت‌ها</value>
+  </data>
+	<data name="NoProductionOrdersFound" xml:space="preserve">
+    <value>دستور تولیدی یافت نشد.</value>
+  </data>
+	<data name="OrderNumber" xml:space="preserve">
+    <value>شماره دستور</value>
+  </data>
+	<data name="Product" xml:space="preserve">
+    <value>محصول</value>
+  </data>
+	<data name="PlannedQuantity" xml:space="preserve">
+    <value>مقدار برنامه‌ریزی‌شده</value>
+  </data>
+	<data name="ProducedQuantity" xml:space="preserve">
+    <value>مقدار تولیدشده</value>
+  </data>
+	<data name="Progress" xml:space="preserve">
+    <value>پیشرفت</value>
+  </data>
+	<data name="StartDate" xml:space="preserve">
+    <value>تاریخ شروع</value>
+  </data>
+	<data name="DueDate" xml:space="preserve">
+    <value>تاریخ سررسید</value>
+  </data>
+	<data name="CurrentStage" xml:space="preserve">
+    <value>مرحله فعلی</value>
+  </data>
+	<data name="WorkflowStages" xml:space="preserve">
+    <value>مراحل گردش کار</value>
+  </data>
+	<data name="Planning" xml:space="preserve">
+    <value>برنامه‌ریزی</value>
+  </data>
+	<data name="MaterialReservation" xml:space="preserve">
+    <value>رزرو مواد</value>
+  </data>
+	<data name="MaterialIssue" xml:space="preserve">
+    <value>صدور مواد</value>
+  </data>
+	<data name="ProductionExecution" xml:space="preserve">
+    <value>اجرای تولید</value>
+  </data>
+	<data name="QualityControl" xml:space="preserve">
+    <value>کنترل کیفیت</value>
+  </data>
+	<data name="ReadyToStart" xml:space="preserve">
+    <value>آماده شروع</value>
+  </data>
+	<data name="InProgress" xml:space="preserve">
+    <value>در حال انجام</value>
+  </data>
+	<data name="OnHold" xml:space="preserve">
+    <value>متوقف‌شده</value>
+  </data>
+	<data name="Completed" xml:space="preserve">
+    <value>تکمیل‌شده</value>
+  </data>
+	<data name="ViewProductionOrder" xml:space="preserve">
+    <value>مشاهده دستور تولید</value>
+  </data>
+	<data name="NoResults" xml:space="preserve">
+    <value>نتیجه‌ای یافت نشد.</value>
+  </data>
+	<data name="Refresh" xml:space="preserve">
+    <value>بارگذاری مجدد</value>
+  </data>
 </root>
