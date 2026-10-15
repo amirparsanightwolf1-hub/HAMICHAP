@@ -40,7 +40,6 @@ else
             <!-- =====================================================
                  Inventory
                  ===================================================== -->
-
             @if (canViewInventory)
             {
                 <h6 class="menu-section">
@@ -159,9 +158,29 @@ else
 
 
             <!-- =====================================================
+                 Production
+                 ===================================================== -->
+            @if (canViewProduction)
+            {
+                <h6 class="menu-section">
+                    @LocalizationService["Production"]
+                </h6>
+
+                <button class="menu-button"
+                        @onclick='() => GoTo("/production/workflow")'>
+                    🔄 @LocalizationService["ProductionWorkflow"]
+                </button>
+
+                <button class="menu-button"
+                        @onclick='() => GoTo("/production/orders")'>
+                    🏭 @LocalizationService["ProductionOrders"]
+                </button>
+            }
+
+
+            <!-- =====================================================
                  Customers
                  ===================================================== -->
-
             @if (canViewCustomers)
             {
                 <h6 class="menu-section">
@@ -183,10 +202,9 @@ else
             <!-- =====================================================
                  Administration
                  ===================================================== -->
-
             @if (canViewUsers ||
-                 canViewRoles ||
-                 canManagePermissions)
+                             canViewRoles ||
+                             canManagePermissions)
             {
                 <h6 class="menu-section">
                     @LocalizationService["Administration"]
@@ -253,6 +271,13 @@ else
     private bool canViewSalesDeliveries;
 
     private bool canViewSalesOrders;
+
+
+    // =========================================================
+    // Production
+    // =========================================================
+
+    private bool canViewProduction;
 
 
     // =========================================================
@@ -365,6 +390,16 @@ else
                 canViewSalesRequests ||
                 canViewSalesOrders ||
                 canViewSalesDeliveries;
+
+
+            // =====================================================
+            // Production
+            // =====================================================
+
+            canViewProduction =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Production.Orders.View");
 
 
             // =====================================================
