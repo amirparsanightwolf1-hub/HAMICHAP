@@ -1,0 +1,169 @@
+﻿@page "/production/workflow"
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Production
+@inject ApplicationDbContext Db
+
+<PageTitle>Production Workflow</PageTitle>
+
+<div class="container-fluid py-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Production Workflow</h1>
+            <p class="text-muted mb-0">Track orders from material readiness through quality control and completion.</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="/production/orders">All Production Orders</a>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(loadError))
+    {
+        <div class="alert alert-danger" role="alert">@loadError</div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Open Orders</div><div class="fs-3 fw-semibold">@openCount</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Ready to Start</div><div class="fs-3 fw-semibold">@CountStatus(ProductionOrderStatus.ReadyToStart)</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">In Production</div><div class="fs-3 fw-semibold">@CountStatus(ProductionOrderStatus.InProduction)</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Quality Control</div><div class="fs-3 fw-semibold">@CountStatus(ProductionOrderStatus.QualityControl)</div></div></div></div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-body"><h2 class="h5 mb-0">Workflow stages</h2></div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-xl-4"><div class="border rounded p-3 h-100"><div class="fw-semibold mb-1">1. Material readiness</div><div class="small text-muted mb-3">Review the order, BOM/MRP results, and reservations.</div><a href="/production/orders" class="btn btn-sm btn-outline-primary">Review orders</a></div></div>
+                <div class="col-12 col-md-6 col-xl-4"><div class="border rounded p-3 h-100"><div class="fw-semibold mb-1">2. Issue materials</div><div class="small text-muted mb-3">Issue reserved materials to production.</div><a href="@OrdersForStatusUrl(ProductionOrderStatus.ReadyToStart)" class="btn btn-sm btn-outline-primary">View ready orders</a></div></div>
+                <div class="col-12 col-md-6 col-xl-4"><div class="border rounded p-3 h-100"><div class="fw-semibold mb-1">3. Production execution</div><div class="small text-muted mb-3">Record and monitor production output.</div><a href="@OrdersForStatusUrl(ProductionOrderStatus.InProduction)" class="btn btn-sm btn-outline-primary">View active orders</a></div></div>
+                <div class="col-12 col-md-6 col-xl-4"><div class="border rounded p-3 h-100"><div class="fw-semibold mb-1">4. Quality control</div><div class="small text-muted mb-3">Record accepted, rejected, and rework quantities.</div><a href="@OrdersForStatusUrl(ProductionOrderStatus.QualityControl)" class="btn btn-sm btn-outline-primary">View QC orders</a></div></div>
+                <div class="col-12 col-md-6 col-xl-4"><div class="border rounded p-3 h-100"><div class="fw-semibold mb-1">5. Finished goods</div><div class="small text-muted mb-3">Post accepted quantities into finished-goods inventory.</div><a href="/inventory/documents" class="btn btn-sm btn-outline-primary">Inventory documents</a></div></div>
+                <div class="col-12 col-md-6 col-xl-4"><div class="border rounded p-3 h-100"><div class="fw-semibold mb-1">6. Complete order</div><div class="small text-muted mb-3">Complete after production quantities and QC checks pass.</div><a href="/production/orders" class="btn btn-sm btn-outline-primary">Review completion</a></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-body d-flex flex-wrap justify-content-between align-items-center gap-2"><h2 class="h5 mb-0">Production orders</h2><button class="btn btn-sm btn-outline-secondary" type="button" @onclick="LoadOrdersAsync" disabled="@isLoading">@(isLoading ? "Refreshing..." : "Refresh")</button></div>
+        <div class="card-body border-bottom">
+            <div class="row g-2">
+                <div class="col-12 col-md-6"><label for="orderSearch" class="form-label">Search</label><input id="orderSearch" class="form-control" @bind="searchText" @bind:event="oninput" placeholder="Order number, notes, or status" /></div>
+                <div class="col-12 col-md-4"><label for="statusFilter" class="form-label">Status</label><select id="statusFilter" class="form-select" @bind="statusFilter"><option value="">All statuses</option>@foreach (var status in Enum.GetValues<ProductionOrderStatus>()) {
+                    <option value="@status.ToString()">@StatusLabel(status)</option>
+                }
+            </select></div>
+            <div class="col-12 col-md-2 d-flex align-items-end"><button class="btn btn-outline-secondary w-100" type="button" @onclick="ClearFilters">Clear filters</button></div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="p-4 text-center text-muted">Loading production orders...</div>
+    }
+    else if (FilteredOrders.Count == 0)
+    {
+        <div class="p-4 text-center text-muted">No production orders match these filters.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Order</th><th>Status</th><th>Progress</th><th>Planned end</th><th class="text-end">Action</th></tr></thead>
+                <tbody>
+                    @foreach (var order in FilteredOrders)
+                    {
+                        var planned = order.Lines.Sum(x => x.PlannedQuantity);
+                        var produced = order.Lines.Sum(x => x.ProducedQuantity);
+                        var progress = planned > 0 ? (int)Math.Clamp(decimal.ToDouble(produced / planned * 100m), 0d, 100d) : 0;
+                        <tr>
+                            <td><div class="fw-semibold">@order.OrderNumber</div><div class="small text-muted">@order.Lines.Count line(s)</div></td>
+                            <td><span class="badge @StatusBadgeClass(order.Status)">@StatusLabel(order.Status)</span></td>
+                            <td style="min-width: 150px;"><div class="d-flex justify-content-between small mb-1"><span>@produced.ToString("0.###") / @planned.ToString("0.###")</span><span>@progress%</span></div><div class="progress" role="progressbar" aria-label="Production progress" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="height: 6px;"><div class="progress-bar" style="width: @(progress)%"></div></div></td>
+                            <td>@(order.PlannedEndDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                            <td class="text-end"><a class="btn btn-sm btn-primary" href="@($"/production/orders/edit/{order.Id}")">Open order</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "status")]
+    public string? StatusQuery { get; set; }
+
+    private List<ProductionOrder> orders = new();
+    private bool isLoading = true;
+    private string? loadError;
+    private string searchText = string.Empty;
+    private string statusFilter = string.Empty;
+
+    private int openCount => orders.Count(x => x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled);
+
+    private List<ProductionOrder> FilteredOrders
+    {
+        get
+        {
+            IEnumerable<ProductionOrder> query = orders;
+            if (!string.IsNullOrWhiteSpace(statusFilter) && Enum.TryParse<ProductionOrderStatus>(statusFilter, out var selectedStatus))
+                query = query.Where(x => x.Status == selectedStatus);
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var term = searchText.Trim();
+                query = query.Where(x => x.OrderNumber.Contains(term, StringComparison.OrdinalIgnoreCase) || x.Notes.Contains(term, StringComparison.OrdinalIgnoreCase) || StatusLabel(x.Status).Contains(term, StringComparison.OrdinalIgnoreCase));
+            }
+            return query.OrderBy(x => x.Status == ProductionOrderStatus.Completed || x.Status == ProductionOrderStatus.Cancelled).ThenBy(x => x.PlannedEndDate ?? DateTime.MaxValue).ThenByDescending(x => x.CreatedDate).ToList();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Enum.TryParse<ProductionOrderStatus>(StatusQuery, out var requestedStatus))
+            statusFilter = requestedStatus.ToString();
+        await LoadOrdersAsync();
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        isLoading = true;
+        loadError = null;
+        try
+        {
+            orders = await Db.ProductionOrders.AsNoTracking().Include(x => x.Lines).OrderByDescending(x => x.CreatedDate).ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Could not load production orders: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private int CountStatus(ProductionOrderStatus status) => orders.Count(x => x.Status == status);
+    private void ClearFilters() { searchText = string.Empty; statusFilter = string.Empty; }
+
+    private static string StatusLabel(ProductionOrderStatus status) => status switch
+    {
+        ProductionOrderStatus.ReadyToStart => "Ready to Start",
+        ProductionOrderStatus.InProduction => "In Production",
+        ProductionOrderStatus.QualityControl => "Quality Control",
+        _ => status.ToString()
+    };
+
+    private static string StatusBadgeClass(ProductionOrderStatus status) => status switch
+    {
+        ProductionOrderStatus.Planned => "text-bg-secondary",
+        ProductionOrderStatus.MaterialChecking => "text-bg-info",
+        ProductionOrderStatus.WaitingForMaterial => "text-bg-warning",
+        ProductionOrderStatus.ReadyToStart => "text-bg-primary",
+        ProductionOrderStatus.InProduction => "text-bg-success",
+        ProductionOrderStatus.QualityControl => "text-bg-warning",
+        ProductionOrderStatus.Completed => "text-bg-success",
+        ProductionOrderStatus.Cancelled => "text-bg-danger",
+        _ => "text-bg-secondary"
+    };
+
+    private static string OrdersForStatusUrl(ProductionOrderStatus status) => $"/production/workflow?status={Uri.EscapeDataString(status.ToString())}";
+}
