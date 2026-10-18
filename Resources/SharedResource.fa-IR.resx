@@ -1242,4 +1242,37 @@
   <data name="QuotationCreated" xml:space="preserve">
     <value>پیش‌فاکتور ایجادشده</value>
   </data>
+	<data name="SalesOrders" xml:space="preserve">
+  <value>سفارش‌های فروش</value>
+</data>
+	<data name="SalesOrdersManagement" xml:space="preserve">
+  <value>مدیریت و مشاهده سفارش‌های فروش</value>
+</data>
+	<data name="OrderNumber" xml:space="preserve">
+  <value>شماره سفارش</value>
+</data>
+	<data name="OrderDate" xml:space="preserve">
+  <value>تاریخ سفارش</value>
+</data>
+	<data name="DeliveryDate" xml:space="preserve">
+  <value>تاریخ تحویل</value>
+</data>
+	<data name="TotalAmount" xml:space="preserve">
+  <value>مبلغ کل</value>
+</data>
+	<data name="NoSalesOrdersFound" xml:space="preserve">
+  <value>هیچ سفارش فروشی یافت نشد.</value>
+</data>
+	<data name="Open" xml:space="preserve">
+  <value>باز کردن</value>
+</data>
+	<data name="Customer" xml:space="preserve">
+  <value>مشتری</value>
+</data>
+	<data name="Status" xml:space="preserve">
+  <value>وضعیت</value>
+</data>
+	<data name="Loading" xml:space="preserve">
+  <value>در حال بارگذاری...</value>
+</data>
 </root>

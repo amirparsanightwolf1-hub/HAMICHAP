@@ -1242,4 +1242,37 @@
   <data name="QuotationCreated" xml:space="preserve">
     <value>Quotation Created</value>
   </data>
+	<data name="SalesOrders" xml:space="preserve">
+  <value>Sales Orders</value>
+</data>
+	<data name="SalesOrdersManagement" xml:space="preserve">
+  <value>Manage and view sales orders</value>
+</data>
+	<data name="OrderNumber" xml:space="preserve">
+  <value>Order Number</value>
+</data>
+	<data name="OrderDate" xml:space="preserve">
+  <value>Order Date</value>
+</data>
+	<data name="DeliveryDate" xml:space="preserve">
+  <value>Delivery Date</value>
+</data>
+	<data name="TotalAmount" xml:space="preserve">
+  <value>Total Amount</value>
+</data>
+	<data name="NoSalesOrdersFound" xml:space="preserve">
+  <value>No sales orders found.</value>
+</data>
+	<data name="Open" xml:space="preserve">
+  <value>Open</value>
+</data>
+	<data name="Customer" xml:space="preserve">
+  <value>Customer</value>
+</data>
+	<data name="Status" xml:space="preserve">
+  <value>Status</value>
+</data>
+	<data name="Loading" xml:space="preserve">
+  <value>Loading...</value>
+</data>
 </root>

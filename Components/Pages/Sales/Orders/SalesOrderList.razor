@@ -116,8 +116,9 @@
                                         </td>
 
                                         <td>
-                                            @order.OrderDate
+                                            @(order.OrderDate
                                             .ToString("yyyy-MM-dd")
+                                            )
                                         </td>
 
                                         <td>
@@ -127,18 +128,19 @@
                                         </td>
 
                                         <td class="text-end">
-                                            @order.TotalAmount
+                                            @(order.TotalAmount
                                             .ToString("N2")
+                                            )
                                         </td>
 
                                         <td>
                                             <span class="badge
                                                 @GetStatusClass(order.Status)">
 
-                                                @LocalizationService
+                                                @(LocalizationService
                                                 .TranslateEnum(
                                                 order.Status)
-
+                                                )
                                             </span>
                                         </td>
 
