@@ -1,0 +1,219 @@
+﻿@page "/sales/quotations"
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+
+<PageTitle>@LocalizationService["SalesQuotations"]</PageTitle>
+
+<div class="page-container">
+
+    <div class="erp-page-header mb-4">
+        <div>
+            <div class="erp-page-title">
+                @LocalizationService["SalesQuotations"]
+            </div>
+
+            <div class="erp-page-subtitle">
+                @LocalizationService["SalesQuotationsManagement"]
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">
+                    @LocalizationService["Loading"]
+                </span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>
+                    @LocalizationService["SalesQuotations"]
+                </strong>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@LocalizationService["QuotationNumber"]</th>
+                                <th>@LocalizationService["Customer"]</th>
+                                <th>@LocalizationService["QuotationDate"]</th>
+                                <th>@LocalizationService["ValidUntil"]</th>
+                                <th class="text-end">@LocalizationService["FinalAmount"]</th>
+                                <th>@LocalizationService["Status"]</th>
+                                <th style="width: 100px;"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (quotations.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="7"
+                                        class="text-center text-muted py-4">
+                                        @LocalizationService["NoQuotationsFound"]
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var quotation in quotations)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">
+                                            @quotation.QuotationNumber
+                                        </td>
+
+                                        <td>
+                                            @(quotation.Customer?.Name ?? "-")
+                                        </td>
+
+                                        <td>
+                                            @(quotation.QuotationDate.ToString("yyyy-MM-dd"))
+                                        </td>
+
+                                        <td>
+                                            @(quotation.ValidUntil.HasValue
+                                                ? quotation.ValidUntil.Value.ToString("yyyy-MM-dd")
+                                                : "-")
+                                        </td>
+
+                                        <td class="text-end fw-semibold">
+                                            @quotation.FinalAmount.ToString("N2")
+                                        </td>
+
+                                        <td>
+                                            <span class="badge @GetStatusClass(quotation.Status)">
+                                                @(LocalizationService.TranslateEnum(quotation.Status))
+                                            </span>
+                                        </td>
+
+                                        <td class="text-end">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => OpenQuotation(quotation.Id)">
+                                                <i class="bi bi-eye"></i>
+                                                @LocalizationService["Open"]
+                                            </button>
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                    @onclick="() => PreviewQuotation(quotation.Id)">
+                                                @LocalizationService["QuotationPreview"]
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Quotation> quotations = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private void PreviewQuotation(long id)
+    {
+        Navigation.NavigateTo($"/sales/quotations/preview/{id}");
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            quotations = await Db.Quotations
+                .AsNoTracking()
+                .Include(x => x.Customer)
+                .OrderByDescending(x => x.QuotationDate)
+                .ThenByDescending(x => x.Id)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenQuotation(long id)
+    {
+        Navigation.NavigateTo($"/sales/quotations/edit/{id}");
+    }
+
+    private static string GetStatusClass(QuotationStatus status)
+    {
+        return status switch
+        {
+            QuotationStatus.Draft =>
+                "bg-secondary",
+
+            QuotationStatus.PendingApproval =>
+                "bg-warning text-dark",
+
+            QuotationStatus.RevisionRequired =>
+                "bg-danger",
+
+            QuotationStatus.Approved =>
+                "bg-primary",
+
+            QuotationStatus.ReadyToSend =>
+                "bg-info text-dark",
+
+            QuotationStatus.SentToCustomer =>
+                "bg-info text-dark",
+
+            QuotationStatus.CustomerNegotiation =>
+                "bg-warning text-dark",
+
+            QuotationStatus.Accepted =>
+                "bg-success",
+
+            QuotationStatus.Rejected =>
+                "bg-danger",
+
+            QuotationStatus.Expired =>
+                "bg-dark",
+
+            QuotationStatus.Cancelled =>
+                "bg-secondary",
+
+            _ => "bg-secondary"
+        };
+    }
+}

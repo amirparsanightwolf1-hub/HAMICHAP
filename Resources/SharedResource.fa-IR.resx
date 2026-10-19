@@ -1,1278 +1,1460 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<root>
-  <!-- 
-    Microsoft ResX Schema 
-    
-    Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
-    associated with the data types.
-    
-    Example:
-    
-    ... ado.net/XML headers & schema ...
-    <resheader name="resmimetype">text/microsoft-resx</resheader>
-    <resheader name="version">2.0</resheader>
-    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
-    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
-    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
-    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-        <value>[base64 mime encoded serialized .NET Framework object]</value>
-    </data>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
-        <comment>This is a comment</comment>
-    </data>
-                
-    There are any number of "resheader" rows that contain simple 
-    name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
-    mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
-    extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
-    read any of the formats listed below.
-    
-    mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-            : and then encoded with base64 encoding.
-    
-    mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
-            : and then encoded with base64 encoding.
-
-    mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
-            : using a System.ComponentModel.TypeConverter
-            : and then encoded with base64 encoding.
-    -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="Action" xml:space="preserve">
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:schema id="root">
+		<xs:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xs:element name="root" ns1:IsDataSet="true">
+			<xs:complexType>
+				<xs:choice maxOccurs="unbounded">
+					<xs:element name="metadata">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="value" type="xsd:string" minOccurs="0" />
+							</xs:sequence>
+							<xs:attribute name="name" use="required" type="xsd:string" />
+							<xs:attribute name="type" type="xsd:string" />
+							<xs:attribute name="mimetype" type="xsd:string" />
+							<xs:attribute ref="xml:space" />
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="assembly">
+						<xs:complexType>
+							<xs:attribute name="alias" type="xsd:string" />
+							<xs:attribute name="name" type="xsd:string" />
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="data">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+								<xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+							</xs:sequence>
+							<xs:attribute name="name" type="xsd:string" use="required" ns1:Ordinal="1" />
+							<xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+							<xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+							<xs:attribute ref="xml:space" />
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="resheader">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+							</xs:sequence>
+							<xs:attribute name="name" type="xsd:string" use="required" />
+						</xs:complexType>
+					</xs:element>
+				</xs:choice>
+			</xs:complexType>
+		</xs:element>
+	</xs:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<data name="Action" xml:space="preserve">
     <value>عملیات</value>
   </data>
-  <data name="Actions" xml:space="preserve">
+	<data name="Actions" xml:space="preserve">
     <value>عملیات</value>
   </data>
-  <data name="Active" xml:space="preserve">
+	<data name="Active" xml:space="preserve">
     <value>فعال</value>
   </data>
-  <data name="ActiveProductionOrders" xml:space="preserve">
+	<data name="ActiveProductionOrders" xml:space="preserve">
     <value>دستورهای تولید فعال</value>
   </data>
-  <data name="ActualDate" xml:space="preserve">
+	<data name="ActualDate" xml:space="preserve">
     <value>تاریخ واقعی</value>
   </data>
-  <data name="ActualEnd" xml:space="preserve">
+	<data name="ActualEnd" xml:space="preserve">
     <value>پایان واقعی</value>
   </data>
-  <data name="ActualHours" xml:space="preserve">
+	<data name="ActualHours" xml:space="preserve">
     <value>ساعات واقعی</value>
   </data>
-  <data name="ActualStart" xml:space="preserve">
+	<data name="ActualStart" xml:space="preserve">
     <value>شروع واقعی</value>
   </data>
-  <data name="Add" xml:space="preserve">
+	<data name="Add" xml:space="preserve">
     <value>افزودن</value>
   </data>
-  <data name="AddItem" xml:space="preserve">
+	<data name="AddItem" xml:space="preserve">
     <value>افزودن قلم</value>
   </data>
-  <data name="AddLine" xml:space="preserve">
+	<data name="AddLine" xml:space="preserve">
     <value>افزودن ردیف</value>
   </data>
-  <data name="Address" xml:space="preserve">
+	<data name="Address" xml:space="preserve">
     <value>آدرس</value>
   </data>
-  <data name="Administration" xml:space="preserve">
+	<data name="Administration" xml:space="preserve">
     <value>مدیریت</value>
   </data>
-  <data name="AdministratorRoleCannotBeDeleted" xml:space="preserve">
+	<data name="AdministratorRoleCannotBeDeleted" xml:space="preserve">
     <value>نقش مدیر سیستم قابل حذف نیست.</value>
   </data>
-  <data name="AllInventory" xml:space="preserve">
+	<data name="AllInventory" xml:space="preserve">
     <value>همه موجودی‌ها</value>
   </data>
-  <data name="AllItems" xml:space="preserve">
+	<data name="AllItems" xml:space="preserve">
     <value>همه اقلام</value>
   </data>
-  <data name="AllRequiredMaterialsReserved" xml:space="preserve">
+	<data name="AllRequiredMaterialsReserved" xml:space="preserve">
     <value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value>
   </data>
-  <data name="AllStatuses" xml:space="preserve">
+	<data name="AllStatuses" xml:space="preserve">
     <value>همه وضعیت‌ها</value>
   </data>
-  <data name="AppTitle" xml:space="preserve">
+	<data name="AppTitle" xml:space="preserve">
     <value>حامی‌چاپ ERP</value>
   </data>
-  <data name="AuthenticatedUserNotFound" xml:space="preserve">
+	<data name="AuthenticatedUserNotFound" xml:space="preserve">
     <value>کاربر احراز هویت‌شده یافت نشد.</value>
   </data>
-  <data name="Available" xml:space="preserve">
+	<data name="Available" xml:space="preserve">
     <value>موجودی قابل استفاده</value>
   </data>
-  <data name="Back" xml:space="preserve">
+	<data name="Back" xml:space="preserve">
     <value>بازگشت</value>
   </data>
-  <data name="BackToCustomers" xml:space="preserve">
+	<data name="BackToCustomers" xml:space="preserve">
     <value>بازگشت به مشتریان</value>
   </data>
-  <data name="CalculateMRP" xml:space="preserve">
+	<data name="CalculateMRP" xml:space="preserve">
     <value>محاسبه برنامه‌ریزی نیازمندی مواد</value>
   </data>
-  <data name="Calculating" xml:space="preserve">
+	<data name="Calculating" xml:space="preserve">
     <value>در حال محاسبه...</value>
   </data>
-  <data name="Cancel" xml:space="preserve">
+	<data name="Cancel" xml:space="preserve">
     <value>لغو</value>
   </data>
-  <data name="Cancelled" xml:space="preserve">
+	<data name="Cancelled" xml:space="preserve">
     <value>لغو شده</value>
   </data>
-  <data name="Category" xml:space="preserve">
+	<data name="Category" xml:space="preserve">
     <value>دسته‌بندی</value>
   </data>
-  <data name="CategoryName" xml:space="preserve">
+	<data name="CategoryName" xml:space="preserve">
     <value>نام دسته‌بندی</value>
   </data>
-  <data name="Clear" xml:space="preserve">
+	<data name="Clear" xml:space="preserve">
     <value>پاک کردن</value>
   </data>
-  <data name="Closed" xml:space="preserve">
+	<data name="Closed" xml:space="preserve">
     <value>بسته</value>
   </data>
-  <data name="Code" xml:space="preserve">
+	<data name="Code" xml:space="preserve">
     <value>کد</value>
   </data>
-  <data name="CompanyInventory" xml:space="preserve">
+	<data name="CompanyInventory" xml:space="preserve">
     <value>موجودی شرکت</value>
   </data>
-  <data name="Completed" xml:space="preserve">
+	<data name="Completed" xml:space="preserve">
     <value>تکمیل‌شده</value>
   </data>
-  <data name="CompletedProductionOrders" xml:space="preserve">
+	<data name="CompletedProductionOrders" xml:space="preserve">
     <value>دستورهای تولید تکمیل‌شده</value>
   </data>
-  <data name="Completion" xml:space="preserve">
+	<data name="Completion" xml:space="preserve">
     <value>درصد تکمیل</value>
   </data>
-  <data name="Create" xml:space="preserve">
+	<data name="Create" xml:space="preserve">
     <value>ایجاد</value>
   </data>
-  <data name="CreateCustomer" xml:space="preserve">
+	<data name="CreateCustomer" xml:space="preserve">
     <value>ایجاد مشتری</value>
   </data>
-  <data name="Created" xml:space="preserve">
+	<data name="Created" xml:space="preserve">
     <value>ایجاد شده</value>
   </data>
-  <data name="CreateDelivery" xml:space="preserve">
+	<data name="CreateDelivery" xml:space="preserve">
     <value>ایجاد حواله</value>
   </data>
-  <data name="CreateEmployee" xml:space="preserve">
+	<data name="CreateEmployee" xml:space="preserve">
     <value>ایجاد کارمند</value>
   </data>
-  <data name="CreateInventoryDocument" xml:space="preserve">
+	<data name="CreateInventoryDocument" xml:space="preserve">
     <value>ایجاد سند انبار</value>
   </data>
-  <data name="CreateInventoryDocumentDescription" xml:space="preserve">
+	<data name="CreateInventoryDocumentDescription" xml:space="preserve">
     <value>ایجاد یک سند جدید انبار و افزودن اقلام.</value>
   </data>
-  <data name="CreateProductionOrder" xml:space="preserve">
+	<data name="CreateProductionOrder" xml:space="preserve">
     <value>ایجاد دستور تولید</value>
   </data>
-  <data name="CreateRole" xml:space="preserve">
+	<data name="CreateRole" xml:space="preserve">
     <value>ایجاد نقش</value>
   </data>
-  <data name="CreateSalesDelivery" xml:space="preserve">
+	<data name="CreateSalesDelivery" xml:space="preserve">
     <value>ایجاد حواله فروش</value>
   </data>
-  <data name="CreateSalesDeliveryDescription" xml:space="preserve">
+	<data name="CreateSalesDeliveryDescription" xml:space="preserve">
     <value>برای سفارش فروش، حواله ایجاد کنید و مقادیر ارسال‌شده را ثبت کنید.</value>
   </data>
-  <data name="CurrentStage" xml:space="preserve">
+	<data name="CurrentStage" xml:space="preserve">
     <value>مرحله فعلی</value>
   </data>
-  <data name="Customer" xml:space="preserve">
+	<data name="Customer" xml:space="preserve">
     <value>مشتری</value>
   </data>
-  <data name="CustomerHasNoInventory" xml:space="preserve">
+	<data name="CustomerHasNoInventory" xml:space="preserve">
     <value>این مشتری در حال حاضر موجودی ندارد.</value>
   </data>
-  <data name="CustomerInventory" xml:space="preserve">
+	<data name="CustomerInventory" xml:space="preserve">
     <value>موجودی مشتریان</value>
   </data>
-  <data name="CustomerInventoryFilter" xml:space="preserve">
+	<data name="CustomerInventoryFilter" xml:space="preserve">
     <value>موجودی مشتریان</value>
   </data>
-  <data name="CustomerLocation" xml:space="preserve">
+	<data name="CustomerLocation" xml:space="preserve">
     <value>موقعیت مشتری</value>
   </data>
-  <data name="CustomerNotFound" xml:space="preserve">
+	<data name="CustomerNotFound" xml:space="preserve">
     <value>مشتری یافت نشد.</value>
   </data>
-  <data name="CustomerReceipt" xml:space="preserve">
+	<data name="CustomerReceipt" xml:space="preserve">
     <value>رسید مشتری</value>
   </data>
-  <data name="CustomerReturn" xml:space="preserve">
+	<data name="CustomerReturn" xml:space="preserve">
     <value>مرجوعی مشتری</value>
   </data>
-  <data name="Customers" xml:space="preserve">
+	<data name="Customers" xml:space="preserve">
     <value>مشتریان</value>
   </data>
-  <data name="Dashboard" xml:space="preserve">
+	<data name="Dashboard" xml:space="preserve">
     <value>داشبورد</value>
   </data>
-  <data name="Date" xml:space="preserve">
+	<data name="Date" xml:space="preserve">
     <value>تاریخ</value>
   </data>
-  <data name="DefaultSupplier" xml:space="preserve">
+	<data name="DefaultSupplier" xml:space="preserve">
     <value>تأمین‌کننده پیش‌فرض</value>
   </data>
-  <data name="Delete" xml:space="preserve">
+	<data name="Delete" xml:space="preserve">
     <value>حذف</value>
   </data>
-  <data name="DeleteRole" xml:space="preserve">
+	<data name="DeleteRole" xml:space="preserve">
     <value>حذف</value>
   </data>
-  <data name="DeliveredQuantity" xml:space="preserve">
+	<data name="DeliveredQuantity" xml:space="preserve">
     <value>مقدار تحویل‌شده</value>
   </data>
-  <data name="DeliveryQuantity" xml:space="preserve">
+	<data name="DeliveryQuantity" xml:space="preserve">
     <value>مقدار تحویل</value>
   </data>
-  <data name="DeliveryQuantityRequired" xml:space="preserve">
+	<data name="DeliveryQuantityRequired" xml:space="preserve">
     <value>برای حداقل یک کالا، مقدار تحویل بیشتر از صفر وارد کنید.</value>
   </data>
-  <data name="Department" xml:space="preserve">
+	<data name="Department" xml:space="preserve">
     <value>واحد</value>
   </data>
-  <data name="Disabled" xml:space="preserve">
+	<data name="Disabled" xml:space="preserve">
     <value>غیرفعال</value>
   </data>
-  <data name="DocumentPostedReadOnly" xml:space="preserve">
+	<data name="DocumentPostedReadOnly" xml:space="preserve">
     <value>این سند ثبت نهایی شده و فقط قابل مشاهده است.</value>
   </data>
-  <data name="Documents" xml:space="preserve">
+	<data name="Documents" xml:space="preserve">
     <value>اسناد</value>
   </data>
-  <data name="DocumentType" xml:space="preserve">
+	<data name="DocumentType" xml:space="preserve">
     <value>نوع سند</value>
   </data>
-  <data name="Draft" xml:space="preserve">
+	<data name="Draft" xml:space="preserve">
     <value>پیش‌نویس</value>
   </data>
-  <data name="DueDate" xml:space="preserve">
+	<data name="DueDate" xml:space="preserve">
     <value>تاریخ سررسید</value>
   </data>
-  <data name="Duration" xml:space="preserve">
+	<data name="Duration" xml:space="preserve">
     <value>مدت‌زمان</value>
   </data>
-  <data name="EditInventoryDocument" xml:space="preserve">
+	<data name="EditInventoryDocument" xml:space="preserve">
     <value>ویرایش سند انبار</value>
   </data>
-  <data name="Email" xml:space="preserve">
+	<data name="Email" xml:space="preserve">
     <value>ایمیل</value>
   </data>
-  <data name="EmailUsername" xml:space="preserve">
+	<data name="EmailUsername" xml:space="preserve">
     <value>ایمیل / نام کاربری</value>
   </data>
-  <data name="EmployeeCreatedSuccessfully" xml:space="preserve">
+	<data name="EmployeeCreatedSuccessfully" xml:space="preserve">
     <value>کارمند با موفقیت ایجاد شد.</value>
   </data>
-  <data name="EmployeeNumber" xml:space="preserve">
+	<data name="EmployeeNumber" xml:space="preserve">
     <value>شماره پرسنلی</value>
   </data>
-  <data name="EnableLowStockAlert" xml:space="preserve">
+	<data name="EnableLowStockAlert" xml:space="preserve">
     <value>فعال کردن هشدار کمبود موجودی</value>
   </data>
-  <data name="EndDateTime" xml:space="preserve">
+	<data name="EndDateTime" xml:space="preserve">
     <value>تاریخ و زمان پایان</value>
   </data>
-  <data name="English" xml:space="preserve">
+	<data name="English" xml:space="preserve">
     <value>انگلیسی</value>
   </data>
-  <data name="EnterRoleName" xml:space="preserve">
+	<data name="EnterRoleName" xml:space="preserve">
     <value>لطفاً نام نقش را وارد کنید.</value>
   </data>
-  <data name="Error" xml:space="preserve">
+	<data name="Error" xml:space="preserve">
     <value>خطا</value>
   </data>
-  <data name="Expiration" xml:space="preserve">
+	<data name="Expiration" xml:space="preserve">
     <value>تاریخ انقضا</value>
   </data>
-  <data name="FilterByStatus" xml:space="preserve">
+	<data name="FilterByStatus" xml:space="preserve">
     <value>فیلتر بر اساس وضعیت</value>
   </data>
-  <data name="FinishedGoods" xml:space="preserve">
+	<data name="FinishedGoods" xml:space="preserve">
     <value>کالای ساخته‌شده</value>
   </data>
-  <data name="FinishedProduct" xml:space="preserve">
+	<data name="FinishedProduct" xml:space="preserve">
     <value>محصول نهایی</value>
   </data>
-  <data name="FirstName" xml:space="preserve">
+	<data name="FirstName" xml:space="preserve">
     <value>نام</value>
   </data>
-  <data name="ForgotPassword" xml:space="preserve">
+	<data name="ForgotPassword" xml:space="preserve">
     <value>رمز عبور خود را فراموش کرده‌اید؟</value>
   </data>
-  <data name="From" xml:space="preserve">
+	<data name="From" xml:space="preserve">
     <value>از</value>
   </data>
-  <data name="GoodsReceipt" xml:space="preserve">
+	<data name="GoodsReceipt" xml:space="preserve">
     <value>رسید کالا</value>
   </data>
-  <data name="Inactive" xml:space="preserve">
+	<data name="Inactive" xml:space="preserve">
     <value>غیرفعال</value>
   </data>
-  <data name="InProduction" xml:space="preserve">
+	<data name="InProduction" xml:space="preserve">
     <value>در حال تولید</value>
   </data>
-  <data name="InProgress" xml:space="preserve">
+	<data name="InProgress" xml:space="preserve">
     <value>در حال انجام</value>
   </data>
-  <data name="InUse" xml:space="preserve">
+	<data name="InUse" xml:space="preserve">
     <value>در حال استفاده</value>
   </data>
-  <data name="InvalidLoginAttempt" xml:space="preserve">
+	<data name="InvalidLoginAttempt" xml:space="preserve">
     <value>تلاش برای ورود نامعتبر است.</value>
   </data>
-  <data name="InvalidRole" xml:space="preserve">
+	<data name="InvalidRole" xml:space="preserve">
     <value>نقش نامعتبر است.</value>
   </data>
-  <data name="Inventory" xml:space="preserve">
+	<data name="Inventory" xml:space="preserve">
     <value>انبار</value>
   </data>
-  <data name="InventoryAdjustment" xml:space="preserve">
+	<data name="InventoryAdjustment" xml:space="preserve">
     <value>اصلاح موجودی</value>
   </data>
-  <data name="InventoryDocuments" xml:space="preserve">
+	<data name="InventoryDocuments" xml:space="preserve">
     <value>اسناد انبار</value>
   </data>
-  <data name="InventoryLocations" xml:space="preserve">
+	<data name="InventoryLocations" xml:space="preserve">
     <value>مکان‌های انبار</value>
   </data>
-  <data name="InventoryLots" xml:space="preserve">
+	<data name="InventoryLots" xml:space="preserve">
     <value>بچ‌های انبار</value>
   </data>
-  <data name="InventoryOwner" xml:space="preserve">
+	<data name="InventoryOwner" xml:space="preserve">
     <value>مالک موجودی</value>
   </data>
-  <data name="InventoryStock" xml:space="preserve">
+	<data name="InventoryStock" xml:space="preserve">
     <value>موجودی انبار</value>
   </data>
-  <data name="InventoryTransactions" xml:space="preserve">
+	<data name="InventoryTransactions" xml:space="preserve">
     <value>تراکنش‌های انبار</value>
   </data>
-  <data name="IssueMaterials" xml:space="preserve">
+	<data name="IssueMaterials" xml:space="preserve">
     <value>صدور مواد</value>
   </data>
-  <data name="Item" xml:space="preserve">
+	<data name="Item" xml:space="preserve">
     <value>قلم</value>
   </data>
-  <data name="ItemCategories" xml:space="preserve">
+	<data name="ItemCategories" xml:space="preserve">
     <value>دسته‌بندی اقلام</value>
   </data>
-  <data name="Items" xml:space="preserve">
+	<data name="Items" xml:space="preserve">
     <value>اقلام</value>
   </data>
-  <data name="ItemsLowStock" xml:space="preserve">
+	<data name="ItemsLowStock" xml:space="preserve">
     <value>کالا دارای موجودی کم هستند.</value>
   </data>
-  <data name="ItemsManagement" xml:space="preserve">
+	<data name="ItemsManagement" xml:space="preserve">
     <value>مدیریت اقلام</value>
   </data>
-  <data name="LastName" xml:space="preserve">
+	<data name="LastName" xml:space="preserve">
     <value>نام خانوادگی</value>
   </data>
-  <data name="Lines" xml:space="preserve">
+	<data name="Lines" xml:space="preserve">
     <value>ردیف‌ها</value>
   </data>
-  <data name="Loading" xml:space="preserve">
+	<data name="Loading" xml:space="preserve">
     <value>در حال بارگذاری...</value>
   </data>
-  <data name="LoadingCustomerInventory" xml:space="preserve">
+	<data name="LoadingCustomerInventory" xml:space="preserve">
     <value>در حال بارگذاری موجودی مشتری...</value>
   </data>
-  <data name="LoadingProductionOrder" xml:space="preserve">
+	<data name="LoadingProductionOrder" xml:space="preserve">
     <value>در حال بارگذاری دستور تولید...</value>
   </data>
-  <data name="LoadingRoles" xml:space="preserve">
+	<data name="LoadingRoles" xml:space="preserve">
     <value>در حال بارگذاری نقش‌ها...</value>
   </data>
-  <data name="Locations" xml:space="preserve">
+	<data name="Locations" xml:space="preserve">
     <value>مکان‌ها</value>
   </data>
-  <data name="Login" xml:space="preserve">
+	<data name="Login" xml:space="preserve">
     <value>ورود</value>
   </data>
-  <data name="LoginWithPasskey" xml:space="preserve">
+	<data name="LoginWithPasskey" xml:space="preserve">
     <value>ورود با کلید عبور</value>
   </data>
-  <data name="Lot" xml:space="preserve">
+	<data name="Lot" xml:space="preserve">
     <value>بچ</value>
   </data>
-  <data name="LotNumber" xml:space="preserve">
+	<data name="LotNumber" xml:space="preserve">
     <value>شماره بچ</value>
   </data>
-  <data name="Lots" xml:space="preserve">
+	<data name="Lots" xml:space="preserve">
     <value>بچ‌ها</value>
   </data>
-  <data name="LotStock" xml:space="preserve">
+	<data name="LotStock" xml:space="preserve">
     <value>موجودی بچ</value>
   </data>
-  <data name="LowStock" xml:space="preserve">
+	<data name="LowStock" xml:space="preserve">
     <value>موجودی کم</value>
   </data>
-  <data name="LowStockAlert" xml:space="preserve">
+	<data name="LowStockAlert" xml:space="preserve">
     <value>هشدار کمبود موجودی</value>
   </data>
-  <data name="LowStockThreshold" xml:space="preserve">
+	<data name="LowStockThreshold" xml:space="preserve">
     <value>حد آستانه کمبود موجودی</value>
   </data>
-  <data name="LowStockThresholdDescription" xml:space="preserve">
+	<data name="LowStockThresholdDescription" xml:space="preserve">
     <value>هنگامی که موجودی قابل استفاده به این مقدار یا کمتر برسد هشدار داده شود.</value>
   </data>
-  <data name="Machine" xml:space="preserve">
+	<data name="Machine" xml:space="preserve">
     <value>ماشین</value>
   </data>
-  <data name="MainWarehouse" xml:space="preserve">
+	<data name="MainWarehouse" xml:space="preserve">
     <value>انبار اصلی</value>
   </data>
-  <data name="ManageCustomersAndInventory" xml:space="preserve">
+	<data name="ManageCustomersAndInventory" xml:space="preserve">
     <value>مدیریت مشتریان و مشاهده موجودی آن‌ها.</value>
   </data>
-  <data name="ManagePermissions" xml:space="preserve">
+	<data name="ManagePermissions" xml:space="preserve">
     <value>مدیریت مجوزها</value>
   </data>
-  <data name="ManufacturingOperations" xml:space="preserve">
+	<data name="ManufacturingOperations" xml:space="preserve">
     <value>عملیات ساخت</value>
   </data>
-  <data name="Material" xml:space="preserve">
+	<data name="Material" xml:space="preserve">
     <value>ماده</value>
   </data>
-  <data name="MaterialChecking" xml:space="preserve">
+	<data name="MaterialChecking" xml:space="preserve">
     <value>بررسی مواد</value>
   </data>
-  <data name="MaterialIssue" xml:space="preserve">
+	<data name="MaterialIssue" xml:space="preserve">
     <value>صدور مواد</value>
   </data>
-  <data name="MaterialIssuePostedSuccessfully" xml:space="preserve">
+	<data name="MaterialIssuePostedSuccessfully" xml:space="preserve">
     <value>صدور مواد با موفقیت ثبت شد.</value>
   </data>
-  <data name="MaterialIssuePostedSuccessfullyWithCount" xml:space="preserve">
+	<data name="MaterialIssuePostedSuccessfullyWithCount" xml:space="preserve">
     <value>صدور مواد با موفقیت ثبت شد. تعداد {0} سند صدور مواد تولید ایجاد شد.</value>
   </data>
-  <data name="MaterialReadiness" xml:space="preserve">
+	<data name="MaterialReadiness" xml:space="preserve">
     <value>۲. آماده‌بودن مواد</value>
   </data>
-  <data name="MaterialRequirementsPlanning" xml:space="preserve">
+	<data name="MaterialRequirementsPlanning" xml:space="preserve">
     <value>برنامه‌ریزی نیازمندی مواد</value>
   </data>
-  <data name="MaterialReservation" xml:space="preserve">
+	<data name="MaterialReservation" xml:space="preserve">
     <value>رزرو مواد</value>
   </data>
-  <data name="MaterialReservationInsufficient" xml:space="preserve">
+	<data name="MaterialReservationInsufficient" xml:space="preserve">
     <value>رزرو مواد انجام نشد، زیرا موجودی یک یا چند ماده کافی نیست.</value>
   </data>
-  <data name="Materials" xml:space="preserve">
+	<data name="Materials" xml:space="preserve">
     <value>مواد</value>
   </data>
-  <data name="MaterialTransfer" xml:space="preserve">
+	<data name="MaterialTransfer" xml:space="preserve">
     <value>انتقال مواد</value>
   </data>
-  <data name="More" xml:space="preserve">
+	<data name="More" xml:space="preserve">
     <value>مورد دیگر</value>
   </data>
-  <data name="MRPAndMaterialAvailability" xml:space="preserve">
+	<data name="MRPAndMaterialAvailability" xml:space="preserve">
     <value>برنامه‌ریزی نیازمندی مواد و موجودی مواد</value>
   </data>
-  <data name="MRPCalculationCompletedSuccessfully" xml:space="preserve">
+	<data name="MRPCalculationCompletedSuccessfully" xml:space="preserve">
     <value>محاسبه برنامه‌ریزی نیازمندی مواد با موفقیت انجام شد.</value>
   </data>
-  <data name="MRPCompletedNoRequirements" xml:space="preserve">
+	<data name="MRPCompletedNoRequirements" xml:space="preserve">
     <value>محاسبه برنامه‌ریزی نیازمندی مواد انجام شد، اما هیچ نیازمندی موادی ایجاد نشد.</value>
   </data>
-  <data name="MRPCreated" xml:space="preserve">
+	<data name="MRPCreated" xml:space="preserve">
     <value>برنامه‌ریزی نیازمندی مواد ایجاد شد</value>
   </data>
-  <data name="MRPNotPerformedYet" xml:space="preserve">
+	<data name="MRPNotPerformedYet" xml:space="preserve">
     <value>هنوز محاسبه برنامه‌ریزی نیازمندی مواد انجام نشده است.</value>
   </data>
-  <data name="Name" xml:space="preserve">
+	<data name="Name" xml:space="preserve">
     <value>نام</value>
   </data>
-  <data name="NewCustomer" xml:space="preserve">
+	<data name="NewCustomer" xml:space="preserve">
     <value>مشتری جدید</value>
   </data>
-  <data name="NewDocument" xml:space="preserve">
+	<data name="NewDocument" xml:space="preserve">
     <value>سند جدید</value>
   </data>
-  <data name="NewProductionOrder" xml:space="preserve">
+	<data name="NewProductionOrder" xml:space="preserve">
     <value>دستور تولید جدید</value>
   </data>
-  <data name="No" xml:space="preserve">
+	<data name="No" xml:space="preserve">
     <value>خیر</value>
   </data>
-  <data name="NoActiveProductionLocationFound" xml:space="preserve">
+	<data name="NoActiveProductionLocationFound" xml:space="preserve">
     <value>مکان موجودی فعال برای تولید یافت نشد.</value>
   </data>
-  <data name="NoCategoriesFound" xml:space="preserve">
+	<data name="NoCategoriesFound" xml:space="preserve">
     <value>دسته‌بندی‌ای یافت نشد</value>
   </data>
-  <data name="NoCustomersCreated" xml:space="preserve">
+	<data name="NoCustomersCreated" xml:space="preserve">
     <value>هنوز هیچ مشتری‌ای ایجاد نشده است.</value>
   </data>
-  <data name="NoDocumentsFound" xml:space="preserve">
+	<data name="NoDocumentsFound" xml:space="preserve">
     <value>سندی یافت نشد.</value>
   </data>
-  <data name="NoInventoryFound" xml:space="preserve">
+	<data name="NoInventoryFound" xml:space="preserve">
     <value>موجودی یافت نشد.</value>
   </data>
-  <data name="NoItemsFound" xml:space="preserve">
+	<data name="NoItemsFound" xml:space="preserve">
     <value>قلمی یافت نشد</value>
   </data>
-  <data name="NoLotsFound" xml:space="preserve">
+	<data name="NoLotsFound" xml:space="preserve">
     <value>بچی یافت نشد</value>
   </data>
-  <data name="NoMaterialReservationsCreated" xml:space="preserve">
+	<data name="NoMaterialReservationsCreated" xml:space="preserve">
     <value>هیچ رزروی برای مواد این دستور تولید ایجاد نشده است.</value>
   </data>
-  <data name="NoProductionLinesFound" xml:space="preserve">
+	<data name="NoProductionLinesFound" xml:space="preserve">
     <value>ردیف تولیدی یافت نشد.</value>
   </data>
-  <data name="NoProductionOperationsDefined" xml:space="preserve">
+	<data name="NoProductionOperationsDefined" xml:space="preserve">
     <value>هنوز عملیاتی برای این دستور تولید تعریف نشده است.</value>
   </data>
-  <data name="NoProductionOrdersFound" xml:space="preserve">
+	<data name="NoProductionOrdersFound" xml:space="preserve">
     <value>دستور تولیدی یافت نشد.</value>
   </data>
-  <data name="NoProductionScheduleCreated" xml:space="preserve">
+	<data name="NoProductionScheduleCreated" xml:space="preserve">
     <value>هنوز برنامه تولیدی برای این دستور ایجاد نشده است.</value>
   </data>
-  <data name="NoProductionScheduleDefined" xml:space="preserve">
+	<data name="NoProductionScheduleDefined" xml:space="preserve">
     <value>هنوز برنامه‌ای برای این دستور تولید تعریف نشده است.</value>
   </data>
-  <data name="NoReservedMaterialsAvailableForIssue" xml:space="preserve">
+	<data name="NoReservedMaterialsAvailableForIssue" xml:space="preserve">
     <value>مواد رزروشده‌ای برای صدور وجود ندارد.</value>
   </data>
-  <data name="NoResults" xml:space="preserve">
+	<data name="NoResults" xml:space="preserve">
     <value>نتیجه‌ای یافت نشد.</value>
   </data>
-  <data name="NoRolesCreated" xml:space="preserve">
+	<data name="NoRolesCreated" xml:space="preserve">
     <value>هنوز هیچ نقشی ایجاد نشده است.</value>
   </data>
-  <data name="NotAssigned" xml:space="preserve">
+	<data name="NotAssigned" xml:space="preserve">
     <value>تخصیص‌نیافته</value>
   </data>
-  <data name="Notes" xml:space="preserve">
+	<data name="Notes" xml:space="preserve">
     <value>یادداشت‌ها</value>
   </data>
-  <data name="Number" xml:space="preserve">
+	<data name="Number" xml:space="preserve">
     <value>شماره</value>
   </data>
-  <data name="OnHand" xml:space="preserve">
+	<data name="OnHand" xml:space="preserve">
     <value>موجودی فعلی</value>
   </data>
-  <data name="OnHold" xml:space="preserve">
+	<data name="OnHold" xml:space="preserve">
     <value>متوقف‌شده</value>
   </data>
-  <data name="Open" xml:space="preserve">
+	<data name="Open" xml:space="preserve">
     <value>باز کردن</value>
   </data>
-  <data name="Operation" xml:space="preserve">
+	<data name="Operation" xml:space="preserve">
     <value>عملیات</value>
   </data>
-  <data name="Operations" xml:space="preserve">
+	<data name="Operations" xml:space="preserve">
     <value>عملیات</value>
   </data>
-  <data name="OperationsCount" xml:space="preserve">
+	<data name="OperationsCount" xml:space="preserve">
     <value>{0} عملیات</value>
   </data>
-  <data name="Or" xml:space="preserve">
+	<data name="Or" xml:space="preserve">
     <value>یا</value>
   </data>
-  <data name="OrderedQuantity" xml:space="preserve">
+	<data name="OrderedQuantity" xml:space="preserve">
     <value>مقدار سفارش</value>
   </data>
-  <data name="OrderNumber" xml:space="preserve">
+	<data name="OrderNumber" xml:space="preserve">
     <value>شماره دستور</value>
   </data>
-  <data name="OrderStatus" xml:space="preserve">
+	<data name="OrderStatus" xml:space="preserve">
     <value>وضعیت سفارش</value>
   </data>
-  <data name="OriginalQuantity" xml:space="preserve">
+	<data name="OriginalQuantity" xml:space="preserve">
     <value>مقدار اولیه</value>
   </data>
-  <data name="Password" xml:space="preserve">
+	<data name="Password" xml:space="preserve">
     <value>رمز عبور</value>
   </data>
-  <data name="Pending" xml:space="preserve">
+	<data name="Pending" xml:space="preserve">
     <value>در انتظار</value>
   </data>
-  <data name="PendingProductionOrders" xml:space="preserve">
+	<data name="PendingProductionOrders" xml:space="preserve">
     <value>دستورهای تولید در انتظار</value>
   </data>
-  <data name="Permissions" xml:space="preserve">
+	<data name="Permissions" xml:space="preserve">
     <value>دسترسی‌ها</value>
   </data>
-  <data name="Persian" xml:space="preserve">
+	<data name="Persian" xml:space="preserve">
     <value>فارسی</value>
   </data>
-  <data name="Phone" xml:space="preserve">
+	<data name="Phone" xml:space="preserve">
     <value>تلفن</value>
   </data>
-  <data name="Planned" xml:space="preserve">
+	<data name="Planned" xml:space="preserve">
     <value>برنامه‌ریزی‌شده</value>
   </data>
-  <data name="PlannedDate" xml:space="preserve">
+	<data name="PlannedDate" xml:space="preserve">
     <value>تاریخ برنامه‌ریزی‌شده</value>
   </data>
-  <data name="PlannedEnd" xml:space="preserve">
+	<data name="PlannedEnd" xml:space="preserve">
     <value>پایان برنامه‌ریزی‌شده</value>
   </data>
-  <data name="PlannedHours" xml:space="preserve">
+	<data name="PlannedHours" xml:space="preserve">
     <value>ساعات برنامه‌ریزی‌شده</value>
   </data>
-  <data name="PlannedQuantity" xml:space="preserve">
+	<data name="PlannedQuantity" xml:space="preserve">
     <value>مقدار برنامه‌ریزی‌شده</value>
   </data>
-  <data name="PlannedStart" xml:space="preserve">
+	<data name="PlannedStart" xml:space="preserve">
     <value>شروع برنامه‌ریزی‌شده</value>
   </data>
-  <data name="Planning" xml:space="preserve">
+	<data name="Planning" xml:space="preserve">
     <value>برنامه‌ریزی</value>
   </data>
-  <data name="PlanningStage" xml:space="preserve">
+	<data name="PlanningStage" xml:space="preserve">
     <value>۱. برنامه‌ریزی</value>
   </data>
-  <data name="Position" xml:space="preserve">
+	<data name="Position" xml:space="preserve">
     <value>سمت</value>
   </data>
-  <data name="PostDocument" xml:space="preserve">
+	<data name="PostDocument" xml:space="preserve">
     <value>ثبت نهایی سند</value>
   </data>
-  <data name="Posted" xml:space="preserve">
+	<data name="Posted" xml:space="preserve">
     <value>ثبت نهایی شده</value>
   </data>
-  <data name="Priority" xml:space="preserve">
+	<data name="Priority" xml:space="preserve">
     <value>اولویت</value>
   </data>
-  <data name="Produced" xml:space="preserve">
+	<data name="Produced" xml:space="preserve">
     <value>تولیدشده</value>
   </data>
-  <data name="ProducedQuantity" xml:space="preserve">
+	<data name="ProducedQuantity" xml:space="preserve">
     <value>مقدار تولیدشده</value>
   </data>
-  <data name="Product" xml:space="preserve">
+	<data name="Product" xml:space="preserve">
     <value>محصول</value>
   </data>
-  <data name="Production" xml:space="preserve">
+	<data name="Production" xml:space="preserve">
     <value>تولید</value>
   </data>
-  <data name="ProductionCompleted" xml:space="preserve">
+	<data name="ProductionCompleted" xml:space="preserve">
     <value>تولید تکمیل شد</value>
   </data>
-  <data name="ProductionExecution" xml:space="preserve">
+	<data name="ProductionExecution" xml:space="preserve">
     <value>اجرای تولید</value>
   </data>
-  <data name="ProductionIssue" xml:space="preserve">
+	<data name="ProductionIssue" xml:space="preserve">
     <value>مصرف تولید</value>
   </data>
-  <data name="ProductionLines" xml:space="preserve">
+	<data name="ProductionLines" xml:space="preserve">
     <value>ردیف‌های تولید</value>
   </data>
-  <data name="ProductionManagement" xml:space="preserve">
+	<data name="ProductionManagement" xml:space="preserve">
     <value>مدیریت تولید</value>
   </data>
-  <data name="ProductionOperations" xml:space="preserve">
+	<data name="ProductionOperations" xml:space="preserve">
     <value>عملیات تولید</value>
   </data>
-  <data name="ProductionOrder" xml:space="preserve">
+	<data name="ProductionOrder" xml:space="preserve">
     <value>دستور تولید</value>
   </data>
-  <data name="ProductionOrderInformation" xml:space="preserve">
+	<data name="ProductionOrderInformation" xml:space="preserve">
     <value>اطلاعات دستور تولید</value>
   </data>
-  <data name="ProductionOrderNotFound" xml:space="preserve">
+	<data name="ProductionOrderNotFound" xml:space="preserve">
     <value>دستور تولید یافت نشد.</value>
   </data>
-  <data name="ProductionOrders" xml:space="preserve">
+	<data name="ProductionOrders" xml:space="preserve">
     <value>دستورهای تولید</value>
   </data>
-  <data name="ProductionOrdersDescription" xml:space="preserve">
+	<data name="ProductionOrdersDescription" xml:space="preserve">
     <value>مشاهده و مدیریت دستورهای تولید.</value>
   </data>
-  <data name="ProductionProgress" xml:space="preserve">
+	<data name="ProductionProgress" xml:space="preserve">
     <value>پیشرفت تولید</value>
   </data>
-  <data name="ProductionReceipt" xml:space="preserve">
+	<data name="ProductionReceipt" xml:space="preserve">
     <value>رسید تولید</value>
   </data>
-  <data name="ProductionSchedule" xml:space="preserve">
+	<data name="ProductionSchedule" xml:space="preserve">
     <value>برنامه تولید</value>
   </data>
-  <data name="ProductionStage" xml:space="preserve">
+	<data name="ProductionStage" xml:space="preserve">
     <value>۳. تولید</value>
   </data>
-  <data name="ProductionWorkflow" xml:space="preserve">
+	<data name="ProductionWorkflow" xml:space="preserve">
     <value>گردش کار تولید</value>
   </data>
-  <data name="ProductionWorkflowDescription" xml:space="preserve">
+	<data name="ProductionWorkflowDescription" xml:space="preserve">
     <value>دستورهای تولید و پیشرفت آن‌ها را در هر مرحله پیگیری کنید.</value>
   </data>
-  <data name="Progress" xml:space="preserve">
+	<data name="Progress" xml:space="preserve">
     <value>پیشرفت</value>
   </data>
-  <data name="Protected" xml:space="preserve">
+	<data name="Protected" xml:space="preserve">
     <value>محافظت‌شده</value>
   </data>
-  <data name="PurchaseOrder" xml:space="preserve">
+	<data name="PurchaseOrder" xml:space="preserve">
     <value>سفارش خرید</value>
   </data>
-  <data name="QCAndFinishedProduction" xml:space="preserve">
+	<data name="QCAndFinishedProduction" xml:space="preserve">
     <value>کنترل کیفیت و تکمیل تولید</value>
   </data>
-  <data name="QualityCompletion" xml:space="preserve">
+	<data name="QualityCompletion" xml:space="preserve">
     <value>۴. کنترل کیفیت / تکمیل</value>
   </data>
-  <data name="QualityControl" xml:space="preserve">
+	<data name="QualityControl" xml:space="preserve">
     <value>کنترل کیفیت</value>
   </data>
-  <data name="Quantity" xml:space="preserve">
+	<data name="Quantity" xml:space="preserve">
     <value>مقدار</value>
   </data>
-  <data name="QuantityShort" xml:space="preserve">
+	<data name="QuantityShort" xml:space="preserve">
     <value>مقدار</value>
   </data>
-  <data name="RawMaterial" xml:space="preserve">
+	<data name="RawMaterial" xml:space="preserve">
     <value>مواد اولیه</value>
   </data>
-  <data name="ReadyToStart" xml:space="preserve">
+	<data name="ReadyToStart" xml:space="preserve">
     <value>آماده شروع</value>
   </data>
-  <data name="Received" xml:space="preserve">
+	<data name="Received" xml:space="preserve">
     <value>تاریخ دریافت</value>
   </data>
-  <data name="Refresh" xml:space="preserve">
+	<data name="Refresh" xml:space="preserve">
     <value>بارگذاری مجدد</value>
   </data>
-  <data name="RegisterAsNewUser" xml:space="preserve">
+	<data name="RegisterAsNewUser" xml:space="preserve">
     <value>ثبت‌نام به عنوان کاربر جدید</value>
   </data>
-  <data name="Remaining" xml:space="preserve">
+	<data name="Remaining" xml:space="preserve">
     <value>باقی‌مانده</value>
   </data>
-  <data name="RemainingQuantity" xml:space="preserve">
+	<data name="RemainingQuantity" xml:space="preserve">
     <value>مقدار باقی‌مانده</value>
   </data>
-  <data name="RememberMe" xml:space="preserve">
+	<data name="RememberMe" xml:space="preserve">
     <value>مرا به خاطر بسپار</value>
   </data>
-  <data name="Remove" xml:space="preserve">
+	<data name="Remove" xml:space="preserve">
     <value>حذف</value>
   </data>
-  <data name="RemoveUsersBeforeDeletingRole" xml:space="preserve">
+	<data name="RemoveUsersBeforeDeletingRole" xml:space="preserve">
     <value>پیش از حذف این نقش، همه کاربران را از آن خارج کنید.</value>
   </data>
-  <data name="Required" xml:space="preserve">
+	<data name="Required" xml:space="preserve">
     <value>موردنیاز</value>
   </data>
-  <data name="RequiredMaterialsReserved" xml:space="preserve">
+	<data name="RequiredMaterialsReserved" xml:space="preserve">
     <value>مواد موردنیاز رزرو شده‌اند</value>
   </data>
-  <data name="RequiresLotTracking" xml:space="preserve">
+	<data name="RequiresLotTracking" xml:space="preserve">
     <value>نیازمند ردیابی بچ</value>
   </data>
-  <data name="ResendEmailConfirmation" xml:space="preserve">
+	<data name="ResendEmailConfirmation" xml:space="preserve">
     <value>ارسال مجدد تأیید ایمیل</value>
   </data>
-  <data name="Reserved" xml:space="preserve">
+	<data name="Reserved" xml:space="preserve">
     <value>رزروشده</value>
   </data>
-  <data name="ReservedDate" xml:space="preserve">
+	<data name="ReservedDate" xml:space="preserve">
     <value>تاریخ رزرو</value>
   </data>
-  <data name="ReservedQuantity" xml:space="preserve">
+	<data name="ReservedQuantity" xml:space="preserve">
     <value>مقدار رزروشده</value>
   </data>
-  <data name="ReserveMaterials" xml:space="preserve">
+	<data name="ReserveMaterials" xml:space="preserve">
     <value>رزرو مواد</value>
   </data>
-  <data name="Reserving" xml:space="preserve">
+	<data name="Reserving" xml:space="preserve">
     <value>در حال رزرو...</value>
   </data>
-  <data name="Role" xml:space="preserve">
+	<data name="Role" xml:space="preserve">
     <value>نقش</value>
   </data>
-  <data name="RoleAlreadyExists" xml:space="preserve">
+	<data name="RoleAlreadyExists" xml:space="preserve">
     <value>این نقش از قبل وجود دارد.</value>
   </data>
-  <data name="RoleName" xml:space="preserve">
+	<data name="RoleName" xml:space="preserve">
     <value>نام نقش</value>
   </data>
-  <data name="RoleNamePlaceholder" xml:space="preserve">
+	<data name="RoleNamePlaceholder" xml:space="preserve">
     <value>مثلاً مدیر انبار</value>
   </data>
-  <data name="Roles" xml:space="preserve">
+	<data name="Roles" xml:space="preserve">
     <value>نقش‌ها</value>
   </data>
-  <data name="Sales" xml:space="preserve">
+	<data name="Sales" xml:space="preserve">
     <value>فروش</value>
   </data>
-  <data name="SalesDeliveries" xml:space="preserve">
+	<data name="SalesDeliveries" xml:space="preserve">
     <value>ارسال‌های فروش</value>
   </data>
-  <data name="SalesOrder" xml:space="preserve">
+	<data name="SalesOrder" xml:space="preserve">
     <value>سفارش فروش</value>
   </data>
-  <data name="SalesOrders" xml:space="preserve">
+	<data name="SalesOrders" xml:space="preserve">
     <value>سفارش‌های فروش</value>
   </data>
-  <data name="SalesRequests" xml:space="preserve">
+	<data name="SalesRequests" xml:space="preserve">
     <value>درخواست‌های فروش</value>
   </data>
-  <data name="SaveChanges" xml:space="preserve">
+	<data name="SaveChanges" xml:space="preserve">
     <value>ذخیره تغییرات</value>
   </data>
-  <data name="SaveCustomer" xml:space="preserve">
+	<data name="SaveCustomer" xml:space="preserve">
     <value>ذخیره مشتری</value>
   </data>
-  <data name="SaveDraft" xml:space="preserve">
+	<data name="SaveDraft" xml:space="preserve">
     <value>ذخیره پیش‌نویس</value>
   </data>
-  <data name="SaveLocation" xml:space="preserve">
+	<data name="SaveLocation" xml:space="preserve">
     <value>ذخیره مکان</value>
   </data>
-  <data name="Saving" xml:space="preserve">
+	<data name="Saving" xml:space="preserve">
     <value>در حال ذخیره‌سازی...</value>
   </data>
-  <data name="Schedule" xml:space="preserve">
+	<data name="Schedule" xml:space="preserve">
     <value>برنامه زمان‌بندی</value>
   </data>
-  <data name="Search" xml:space="preserve">
+	<data name="Search" xml:space="preserve">
     <value>جستجو</value>
   </data>
-  <data name="SearchDocument" xml:space="preserve">
+	<data name="SearchDocument" xml:space="preserve">
     <value>جستجوی سند...</value>
   </data>
-  <data name="SearchItem" xml:space="preserve">
+	<data name="SearchItem" xml:space="preserve">
     <value>جستجو بر اساس شناسه، کد یا نام کالا...</value>
   </data>
-  <data name="SearchLotNumber" xml:space="preserve">
+	<data name="SearchLotNumber" xml:space="preserve">
     <value>جستجوی شماره بچ</value>
   </data>
-  <data name="SearchProductionOrders" xml:space="preserve">
+	<data name="SearchProductionOrders" xml:space="preserve">
     <value>جستجوی دستورهای تولید...</value>
   </data>
-  <data name="Select" xml:space="preserve">
+	<data name="Select" xml:space="preserve">
     <value>انتخاب</value>
   </data>
-  <data name="SelectDestination" xml:space="preserve">
+	<data name="SelectDestination" xml:space="preserve">
     <value>انتخاب مقصد</value>
   </data>
-  <data name="SelectItem" xml:space="preserve">
+	<data name="SelectItem" xml:space="preserve">
     <value>انتخاب قلم</value>
   </data>
-  <data name="SelectSalesOrder" xml:space="preserve">
+	<data name="SelectSalesOrder" xml:space="preserve">
     <value>یک سفارش فروش انتخاب کنید</value>
   </data>
-  <data name="SelectSource" xml:space="preserve">
+	<data name="SelectSource" xml:space="preserve">
     <value>انتخاب مبدأ</value>
   </data>
-  <data name="Sequence" xml:space="preserve">
+	<data name="Sequence" xml:space="preserve">
     <value>ردیف</value>
   </data>
-  <data name="Shortage" xml:space="preserve">
+	<data name="Shortage" xml:space="preserve">
     <value>کسری</value>
   </data>
-  <data name="Shortages" xml:space="preserve">
+	<data name="Shortages" xml:space="preserve">
     <value>موارد کسری</value>
   </data>
-  <data name="StartDate" xml:space="preserve">
+	<data name="StartDate" xml:space="preserve">
     <value>تاریخ شروع</value>
   </data>
-  <data name="StartDateTime" xml:space="preserve">
+	<data name="StartDateTime" xml:space="preserve">
     <value>تاریخ و زمان شروع</value>
   </data>
-  <data name="StartProduction" xml:space="preserve">
+	<data name="StartProduction" xml:space="preserve">
     <value>شروع تولید</value>
   </data>
-  <data name="Status" xml:space="preserve">
+	<data name="Status" xml:space="preserve">
     <value>وضعیت</value>
   </data>
-  <data name="StockAlert" xml:space="preserve">
+	<data name="StockAlert" xml:space="preserve">
     <value>هشدار موجودی</value>
   </data>
-  <data name="StockByLot" xml:space="preserve">
+	<data name="StockByLot" xml:space="preserve">
     <value>موجودی بر اساس بچ</value>
   </data>
-  <data name="StockOK" xml:space="preserve">
+	<data name="StockOK" xml:space="preserve">
     <value>موجودی کافی</value>
   </data>
-  <data name="SupplierReturn" xml:space="preserve">
+	<data name="SupplierReturn" xml:space="preserve">
     <value>مرجوعی تأمین‌کننده</value>
   </data>
-  <data name="Symbol" xml:space="preserve">
+	<data name="Symbol" xml:space="preserve">
     <value>نماد</value>
   </data>
-  <data name="Threshold" xml:space="preserve">
+	<data name="Threshold" xml:space="preserve">
     <value>حد آستانه</value>
   </data>
-  <data name="To" xml:space="preserve">
+	<data name="To" xml:space="preserve">
     <value>به</value>
   </data>
-  <data name="TotalOnHand" xml:space="preserve">
+	<data name="TotalOnHand" xml:space="preserve">
     <value>مجموع موجودی فعلی</value>
   </data>
-  <data name="TotalProductionOrders" xml:space="preserve">
+	<data name="TotalProductionOrders" xml:space="preserve">
     <value>کل دستورهای تولید</value>
   </data>
-  <data name="TotalReserved" xml:space="preserve">
+	<data name="TotalReserved" xml:space="preserve">
     <value>مجموع رزروشده</value>
   </data>
-  <data name="Transactions" xml:space="preserve">
+	<data name="Transactions" xml:space="preserve">
     <value>تراکنش‌ها</value>
   </data>
-  <data name="Type" xml:space="preserve">
+	<data name="Type" xml:space="preserve">
     <value>نوع</value>
   </data>
-  <data name="UnauthorizedToCreateRoles" xml:space="preserve">
+	<data name="UnauthorizedToCreateRoles" xml:space="preserve">
     <value>شما مجوز ایجاد نقش ندارید.</value>
   </data>
-  <data name="UnauthorizedToDeleteRoles" xml:space="preserve">
+	<data name="UnauthorizedToDeleteRoles" xml:space="preserve">
     <value>شما مجوز حذف نقش ندارید.</value>
   </data>
-  <data name="UnauthorizedToViewRoles" xml:space="preserve">
+	<data name="UnauthorizedToViewRoles" xml:space="preserve">
     <value>شما مجوز مشاهده نقش‌ها را ندارید.</value>
   </data>
-  <data name="Unit" xml:space="preserve">
+	<data name="Unit" xml:space="preserve">
     <value>واحد</value>
   </data>
-  <data name="Units" xml:space="preserve">
+	<data name="Units" xml:space="preserve">
     <value>واحدها</value>
   </data>
-  <data name="UseAnotherServiceToLogin" xml:space="preserve">
+	<data name="UseAnotherServiceToLogin" xml:space="preserve">
     <value>استفاده از سرویس دیگری برای ورود</value>
   </data>
-  <data name="UseLocalAccountToLogin" xml:space="preserve">
+	<data name="UseLocalAccountToLogin" xml:space="preserve">
     <value>برای ورود از حساب کاربری محلی استفاده کنید.</value>
   </data>
-  <data name="Users" xml:space="preserve">
+	<data name="Users" xml:space="preserve">
     <value>کاربران</value>
   </data>
-  <data name="UsersCount" xml:space="preserve">
+	<data name="UsersCount" xml:space="preserve">
     <value>کاربران</value>
   </data>
-  <data name="ViewProductionOrder" xml:space="preserve">
+	<data name="ViewProductionOrder" xml:space="preserve">
     <value>مشاهده دستور تولید</value>
   </data>
-  <data name="WaitingForMaterial" xml:space="preserve">
+	<data name="WaitingForMaterial" xml:space="preserve">
     <value>در انتظار مواد</value>
   </data>
-  <data name="Warehouse" xml:space="preserve">
+	<data name="Warehouse" xml:space="preserve">
     <value>انبار</value>
   </data>
-  <data name="WarehouseStock" xml:space="preserve">
+	<data name="WarehouseStock" xml:space="preserve">
     <value>موجودی انبارها</value>
   </data>
-  <data name="WorkCenter" xml:space="preserve">
+	<data name="WorkCenter" xml:space="preserve">
     <value>مرکز کاری</value>
   </data>
-  <data name="WorkflowStages" xml:space="preserve">
+	<data name="WorkflowStages" xml:space="preserve">
     <value>مراحل گردش کار</value>
   </data>
-  <data name="Yes" xml:space="preserve">
+	<data name="Yes" xml:space="preserve">
     <value>بله</value>
   </data>
-  <data name="AtLeastOneDeliveryLineRequired" xml:space="preserve">
+	<data name="AtLeastOneDeliveryLineRequired" xml:space="preserve">
     <value>حداقل یک ردیف تحویل الزامی است.</value>
   </data>
-  <data name="CreatedBy" xml:space="preserve">
+	<data name="CreatedBy" xml:space="preserve">
     <value>ایجادکننده</value>
   </data>
-  <data name="DeliveryDate" xml:space="preserve">
+	<data name="DeliveryDate" xml:space="preserve">
     <value>تاریخ تحویل</value>
   </data>
-  <data name="DeliveryLines" xml:space="preserve">
+	<data name="DeliveryLines" xml:space="preserve">
     <value>ردیف‌های تحویل</value>
   </data>
-  <data name="DeliveryNumber" xml:space="preserve">
+	<data name="DeliveryNumber" xml:space="preserve">
     <value>شماره تحویل</value>
   </data>
-  <data name="DeliveryQuantityExceedsProduced" xml:space="preserve">
+	<data name="DeliveryQuantityExceedsProduced" xml:space="preserve">
     <value>مقدار تحویل نمی‌تواند از مقدار تولیدشده باقی‌مانده بیشتر باشد.</value>
   </data>
-  <data name="DeliveryQuantityExceedsRemaining" xml:space="preserve">
+	<data name="DeliveryQuantityExceedsRemaining" xml:space="preserve">
     <value>مقدار تحویل نمی‌تواند از مقدار باقی‌مانده سفارش بیشتر باشد.</value>
   </data>
-  <data name="DeliveryQuantityMustBeGreaterThanZero" xml:space="preserve">
+	<data name="DeliveryQuantityMustBeGreaterThanZero" xml:space="preserve">
     <value>مقدار تحویل باید بیشتر از صفر باشد.</value>
   </data>
-  <data name="FromLocation" xml:space="preserve">
+	<data name="FromLocation" xml:space="preserve">
     <value>مبدأ</value>
   </data>
-  <data name="FromLocationRequired" xml:space="preserve">
+	<data name="FromLocationRequired" xml:space="preserve">
     <value>انتخاب محل مبدأ الزامی است.</value>
   </data>
-  <data name="LocationsMustBeDifferent" xml:space="preserve">
+	<data name="LocationsMustBeDifferent" xml:space="preserve">
     <value>محل مبدأ و مقصد باید متفاوت باشند.</value>
   </data>
-  <data name="Post" xml:space="preserve">
+	<data name="Post" xml:space="preserve">
     <value>ثبت نهایی</value>
   </data>
-  <data name="SalesDelivery" xml:space="preserve">
+	<data name="SalesDelivery" xml:space="preserve">
     <value>تحویل فروش</value>
   </data>
-  <data name="SalesDeliveryCancelled" xml:space="preserve">
+	<data name="SalesDeliveryCancelled" xml:space="preserve">
     <value>این تحویل فروش لغو شده است.</value>
   </data>
-  <data name="SalesDeliveryInformation" xml:space="preserve">
+	<data name="SalesDeliveryInformation" xml:space="preserve">
     <value>اطلاعات تحویل فروش</value>
   </data>
-  <data name="SalesDeliveryNotFound" xml:space="preserve">
+	<data name="SalesDeliveryNotFound" xml:space="preserve">
     <value>تحویل فروش یافت نشد.</value>
   </data>
-  <data name="SalesDeliveryPostedSuccessfully" xml:space="preserve">
+	<data name="SalesDeliveryPostedSuccessfully" xml:space="preserve">
     <value>تحویل فروش با موفقیت ثبت نهایی شد.</value>
   </data>
-  <data name="SalesDeliverySavedSuccessfully" xml:space="preserve">
+	<data name="SalesDeliverySavedSuccessfully" xml:space="preserve">
     <value>تحویل فروش با موفقیت ذخیره شد.</value>
   </data>
-  <data name="SalesOrderLineNotFound" xml:space="preserve">
+	<data name="SalesOrderLineNotFound" xml:space="preserve">
     <value>ردیف مرتبط سفارش فروش یافت نشد.</value>
   </data>
-  <data name="Save" xml:space="preserve">
+	<data name="Save" xml:space="preserve">
     <value>ذخیره</value>
   </data>
-  <data name="ToLocation" xml:space="preserve">
+	<data name="ToLocation" xml:space="preserve">
     <value>مقصد</value>
   </data>
-  <data name="ToLocationRequired" xml:space="preserve">
+	<data name="ToLocationRequired" xml:space="preserve">
     <value>انتخاب محل مقصد الزامی است.</value>
   </data>
-  <data name="UserNotAuthenticated" xml:space="preserve">
+	<data name="UserNotAuthenticated" xml:space="preserve">
     <value>کاربر فعلی احراز هویت نشده است.</value>
   </data>
-  <data name="SalesRequest" xml:space="preserve">
+	<data name="SalesRequest" xml:space="preserve">
     <value>درخواست فروش</value>
   </data>
-  <data name="CreateSalesRequest" xml:space="preserve">
+	<data name="CreateSalesRequest" xml:space="preserve">
     <value>ایجاد درخواست فروش</value>
   </data>
-  <data name="SalesRequestInformation" xml:space="preserve">
+	<data name="SalesRequestInformation" xml:space="preserve">
     <value>اطلاعات درخواست فروش</value>
   </data>
-  <data name="SelectCustomer" xml:space="preserve">
+	<data name="SelectCustomer" xml:space="preserve">
     <value>انتخاب مشتری</value>
   </data>
-  <data name="CustomerRequired" xml:space="preserve">
+	<data name="CustomerRequired" xml:space="preserve">
     <value>لطفاً یک مشتری انتخاب کنید.</value>
   </data>
-  <data name="AssignEvaluator" xml:space="preserve">
+	<data name="AssignEvaluator" xml:space="preserve">
     <value>تخصیص ارزیاب</value>
   </data>
-  <data name="AssignedEvaluator" xml:space="preserve">
+	<data name="AssignedEvaluator" xml:space="preserve">
     <value>ارزیاب تخصیص‌یافته</value>
   </data>
-  <data name="AtLeastOneRequestLineRequired" xml:space="preserve">
+	<data name="AtLeastOneRequestLineRequired" xml:space="preserve">
     <value>حداقل یک ردیف درخواست لازم است.</value>
   </data>
-  <data name="CreateQuotation" xml:space="preserve">
+	<data name="CreateQuotation" xml:space="preserve">
     <value>ایجاد پیش‌فاکتور</value>
   </data>
-  <data name="ItemRequired" xml:space="preserve">
+	<data name="ItemRequired" xml:space="preserve">
     <value>انتخاب کالا الزامی است.</value>
   </data>
-  <data name="OpenEvaluation" xml:space="preserve">
+	<data name="OpenEvaluation" xml:space="preserve">
     <value>باز کردن ارزیابی</value>
   </data>
-  <data name="QuantityMustBeGreaterThanZero" xml:space="preserve">
+	<data name="QuantityMustBeGreaterThanZero" xml:space="preserve">
     <value>مقدار باید بیشتر از صفر باشد.</value>
   </data>
-  <data name="RequestDate" xml:space="preserve">
+	<data name="RequestDate" xml:space="preserve">
     <value>تاریخ درخواست</value>
   </data>
-  <data name="RequestLines" xml:space="preserve">
+	<data name="RequestLines" xml:space="preserve">
     <value>ردیف‌های درخواست</value>
   </data>
-  <data name="RequestNumber" xml:space="preserve">
+	<data name="RequestNumber" xml:space="preserve">
     <value>شماره درخواست</value>
   </data>
-  <data name="RequestedDeliveryDate" xml:space="preserve">
+	<data name="RequestedDeliveryDate" xml:space="preserve">
     <value>تاریخ تحویل درخواستی</value>
   </data>
-  <data name="SalesRequestNotFound" xml:space="preserve">
+	<data name="SalesRequestNotFound" xml:space="preserve">
     <value>درخواست فروش یافت نشد.</value>
   </data>
-  <data name="SalesRequestSavedSuccessfully" xml:space="preserve">
+	<data name="SalesRequestSavedSuccessfully" xml:space="preserve">
     <value>درخواست فروش با موفقیت ذخیره شد.</value>
   </data>
-  <data name="Submit" xml:space="preserve">
+	<data name="Submit" xml:space="preserve">
     <value>ارسال</value>
   </data>
-  <data name="UnitRequired" xml:space="preserve">
+	<data name="UnitRequired" xml:space="preserve">
     <value>انتخاب واحد الزامی است.</value>
   </data>
-  <data name="SalesRequestsManagement" xml:space="preserve">
+	<data name="SalesRequestsManagement" xml:space="preserve">
     <value>مدیریت و بررسی درخواست‌های فروش.</value>
   </data>
-  <data name="NewSalesRequest" xml:space="preserve">
+	<data name="NewSalesRequest" xml:space="preserve">
     <value>درخواست فروش جدید</value>
   </data>
-  <data name="NoSalesRequestsFound" xml:space="preserve">
+	<data name="NoSalesRequestsFound" xml:space="preserve">
     <value>هیچ درخواست فروشی یافت نشد.</value>
   </data>
-  <data name="SalesEvaluation" xml:space="preserve">
+	<data name="SalesEvaluation" xml:space="preserve">
     <value>ارزیابی فروش</value>
   </data>
-  <data name="SalesEvaluationNotFound" xml:space="preserve">
+	<data name="SalesEvaluationNotFound" xml:space="preserve">
     <value>ارزیابی فروش یافت نشد.</value>
   </data>
-  <data name="MaterialAvailability" xml:space="preserve">
+	<data name="MaterialAvailability" xml:space="preserve">
     <value>وضعیت موجودی مواد</value>
   </data>
-  <data name="RequiredQuantity" xml:space="preserve">
+	<data name="RequiredQuantity" xml:space="preserve">
     <value>مقدار موردنیاز</value>
   </data>
-  <data name="AvailableQuantity" xml:space="preserve">
+	<data name="AvailableQuantity" xml:space="preserve">
     <value>مقدار موجود</value>
   </data>
-  <data name="ShortageQuantity" xml:space="preserve">
+	<data name="ShortageQuantity" xml:space="preserve">
     <value>مقدار کسری</value>
   </data>
-  <data name="Availability" xml:space="preserve">
+	<data name="Availability" xml:space="preserve">
     <value>وضعیت موجودی</value>
   </data>
-  <data name="EvaluationDetails" xml:space="preserve">
+	<data name="EvaluationDetails" xml:space="preserve">
     <value>جزئیات ارزیابی</value>
   </data>
-  <data name="EstimatedMaterialCost" xml:space="preserve">
+	<data name="EstimatedMaterialCost" xml:space="preserve">
     <value>هزینه تخمینی مواد</value>
   </data>
-  <data name="EstimatedProductionCost" xml:space="preserve">
+	<data name="EstimatedProductionCost" xml:space="preserve">
     <value>هزینه تخمینی تولید</value>
   </data>
-  <data name="EstimatedTotalCost" xml:space="preserve">
+	<data name="EstimatedTotalCost" xml:space="preserve">
     <value>هزینه تخمینی کل</value>
   </data>
-  <data name="EstimatedProductionDays" xml:space="preserve">
+	<data name="EstimatedProductionDays" xml:space="preserve">
     <value>روزهای تخمینی تولید</value>
   </data>
-  <data name="CompleteEvaluation" xml:space="preserve">
+	<data name="CompleteEvaluation" xml:space="preserve">
     <value>تکمیل ارزیابی</value>
   </data>
-  <data name="EvaluationCompleted" xml:space="preserve">
+	<data name="EvaluationCompleted" xml:space="preserve">
     <value>ارزیابی با موفقیت تکمیل شد.</value>
   </data>
-  <data name="Submitted" xml:space="preserve">
-    <value>ارسال‌شده</value>
+	<data name="SalesQuotations" xml:space="preserve">
+    <value>پیش‌فاکتورهای فروش</value>
   </data>
-  <data name="UnderEvaluation" xml:space="preserve">
-    <value>در حال ارزیابی</value>
+	<data name="SalesQuotationsManagement" xml:space="preserve">
+    <value>مشاهده و مدیریت پیش‌فاکتورهای مشتریان</value>
   </data>
-  <data name="QuotationCreated" xml:space="preserve">
-    <value>پیش‌فاکتور ایجادشده</value>
+	<data name="QuotationNumber" xml:space="preserve">
+    <value>شماره پیش‌فاکتور</value>
   </data>
-	<data name="SalesOrders" xml:space="preserve">
-  <value>سفارش‌های فروش</value>
-</data>
+	<data name="QuotationDate" xml:space="preserve">
+    <value>تاریخ پیش‌فاکتور</value>
+  </data>
+	<data name="ValidUntil" xml:space="preserve">
+    <value>معتبر تا</value>
+  </data>
+	<data name="FinalAmount" xml:space="preserve">
+    <value>مبلغ نهایی</value>
+  </data>
+	<data name="NoQuotationsFound" xml:space="preserve">
+    <value>هیچ پیش‌فاکتوری یافت نشد.</value>
+  </data>
+	<data name="QuotationPreview" xml:space="preserve">
+    <value>پیش‌نمایش پیش‌فاکتور</value>
+  </data>
+	<data name="QuotationNotFound" xml:space="preserve">
+    <value>پیش‌فاکتور یافت نشد.</value>
+  </data>
+	<data name="BackToQuotation" xml:space="preserve">
+    <value>بازگشت به پیش‌فاکتور</value>
+  </data>
+	<data name="PrintSavePdf" xml:space="preserve">
+    <value>چاپ / ذخیره به‌صورت PDF</value>
+  </data>
+	<data name="EstimatedDeliveryDays" xml:space="preserve">
+    <value>روزهای تخمینی تحویل</value>
+  </data>
+	<data name="ProfitMargin" xml:space="preserve">
+    <value>حاشیه سود (٪)</value>
+  </data>
+	<data name="QuotationLines" xml:space="preserve">
+    <value>ردیف‌های پیش‌فاکتور</value>
+  </data>
+	<data name="UnitPrice" xml:space="preserve">
+    <value>قیمت واحد</value>
+  </data>
+	<data name="TotalPrice" xml:space="preserve">
+    <value>قیمت کل</value>
+  </data>
+	<data name="FinancialSummary" xml:space="preserve">
+    <value>خلاصه مالی</value>
+  </data>
+	<data name="QuotationSavedSuccessfully" xml:space="preserve">
+    <value>پیش‌فاکتور با موفقیت ذخیره شد.</value>
+  </data>
+	<data name="AtLeastOneQuotationLineRequired" xml:space="preserve">
+    <value>حداقل یک ردیف برای پیش‌فاکتور لازم است.</value>
+  </data>
+	<data name="UnitPriceCannotBeNegative" xml:space="preserve">
+    <value>قیمت واحد نمی‌تواند منفی باشد.</value>
+  </data>
+	<data name="MaterialCostCannotBeNegative" xml:space="preserve">
+    <value>هزینه مواد نمی‌تواند منفی باشد.</value>
+  </data>
+	<data name="ProductionCostCannotBeNegative" xml:space="preserve">
+    <value>هزینه تولید نمی‌تواند منفی باشد.</value>
+  </data>
+	<data name="EstimatedDeliveryDaysCannotBeNegative" xml:space="preserve">
+    <value>روزهای تخمینی تحویل نمی‌تواند منفی باشد.</value>
+  </data>
+	<data name="SubmitForApproval" xml:space="preserve">
+    <value>ارسال برای تأیید</value>
+  </data>
+	<data name="RevisionRequired" xml:space="preserve">
+    <value>نیازمند بازنگری</value>
+  </data>
+	<data name="ReadyToSend" xml:space="preserve">
+    <value>آماده ارسال</value>
+  </data>
+	<data name="SendToCustomer" xml:space="preserve">
+    <value>ارسال به مشتری</value>
+  </data>
+	<data name="CustomerAccepted" xml:space="preserve">
+    <value>پذیرش مشتری</value>
+  </data>
+	<data name="CustomerRejected" xml:space="preserve">
+    <value>رد توسط مشتری</value>
+  </data>
+	<data name="CreateSalesOrder" xml:space="preserve">
+    <value>ایجاد سفارش فروش</value>
+  </data>
+	<data name="QuotationItems" xml:space="preserve">
+    <value>اقلام پیش‌فاکتور</value>
+  </data>
+	<data name="NoQuotationLines" xml:space="preserve">
+    <value>هیچ ردیفی برای پیش‌فاکتور یافت نشد.</value>
+  </data>
+	<data name="QuotationFooterMessage" xml:space="preserve">
+    <value>از اعتماد و همکاری شما سپاسگزاریم.</value>
+  </data>
 	<data name="SalesOrdersManagement" xml:space="preserve">
-  <value>مدیریت و مشاهده سفارش‌های فروش</value>
-</data>
-	<data name="OrderNumber" xml:space="preserve">
-  <value>شماره سفارش</value>
-</data>
+    <value>مشاهده و مدیریت سفارش‌های فروش مشتریان</value>
+  </data>
 	<data name="OrderDate" xml:space="preserve">
-  <value>تاریخ سفارش</value>
-</data>
-	<data name="DeliveryDate" xml:space="preserve">
-  <value>تاریخ تحویل</value>
-</data>
-	<data name="TotalAmount" xml:space="preserve">
-  <value>مبلغ کل</value>
-</data>
+    <value>تاریخ سفارش</value>
+  </data>
 	<data name="NoSalesOrdersFound" xml:space="preserve">
-  <value>هیچ سفارش فروشی یافت نشد.</value>
-</data>
-	<data name="Open" xml:space="preserve">
-  <value>باز کردن</value>
-</data>
-	<data name="Customer" xml:space="preserve">
-  <value>مشتری</value>
-</data>
-	<data name="Status" xml:space="preserve">
-  <value>وضعیت</value>
-</data>
-	<data name="Loading" xml:space="preserve">
-  <value>در حال بارگذاری...</value>
-</data>
+    <value>هیچ سفارش فروشی یافت نشد.</value>
+  </data>
+	<data name="SalesOrderNotFound" xml:space="preserve">
+    <value>سفارش فروش یافت نشد.</value>
+  </data>
+	<data name="SalesOrderInformation" xml:space="preserve">
+    <value>اطلاعات سفارش فروش</value>
+  </data>
+	<data name="SalesOrderLines" xml:space="preserve">
+    <value>ردیف‌های سفارش فروش</value>
+  </data>
+	<data name="OrderProgress" xml:space="preserve">
+    <value>پیشرفت سفارش</value>
+  </data>
+	<data name="Delivered" xml:space="preserve">
+    <value>تحویل‌شده</value>
+  </data>
+	<data name="Workflow_ProductionWorkflow" xml:space="preserve">
+    <value>گردش کار تولید</value>
+  </data>
+	<data name="Workflow_Description" xml:space="preserve">
+    <value>مدیریت سفارش‌های تولید و روند ساخت آن‌ها.</value>
+  </data>
+	<data name="Workflow_OpenOrders" xml:space="preserve">
+    <value>سفارش‌های باز</value>
+  </data>
+	<data name="Workflow_Stages" xml:space="preserve">
+    <value>مراحل گردش کار</value>
+  </data>
+	<data name="Workflow_MaterialReadiness" xml:space="preserve">
+    <value>آمادگی مواد</value>
+  </data>
+	<data name="Workflow_MaterialReadinessDescription" xml:space="preserve">
+    <value>پیش از تولید، موجودی و دسترس‌پذیری مواد را بررسی کنید.</value>
+  </data>
+	<data name="Workflow_ReviewOrders" xml:space="preserve">
+    <value>بررسی سفارش‌ها</value>
+  </data>
+	<data name="Workflow_IssueMaterials" xml:space="preserve">
+    <value>صدور مواد</value>
+  </data>
+	<data name="Workflow_IssueMaterialsDescription" xml:space="preserve">
+    <value>مواد رزروشده را به تولید تحویل دهید.</value>
+  </data>
+	<data name="Workflow_ViewReadyOrders" xml:space="preserve">
+    <value>مشاهده سفارش‌های آماده</value>
+  </data>
+	<data name="Workflow_ProductionExecution" xml:space="preserve">
+    <value>اجرای تولید</value>
+  </data>
+	<data name="Workflow_ProductionExecutionDescription" xml:space="preserve">
+    <value>عملیات فعال ساخت را پیگیری کنید.</value>
+  </data>
+	<data name="Workflow_ViewActiveOrders" xml:space="preserve">
+    <value>مشاهده سفارش‌های فعال</value>
+  </data>
+	<data name="Workflow_QualityControlDescription" xml:space="preserve">
+    <value>پیش از نهایی‌سازی، تولید تکمیل‌شده را بازرسی کنید.</value>
+  </data>
+	<data name="Workflow_ViewQcOrders" xml:space="preserve">
+    <value>مشاهده سفارش‌های کنترل کیفیت</value>
+  </data>
+	<data name="Workflow_FinishedGoods" xml:space="preserve">
+    <value>محصولات نهایی</value>
+  </data>
+	<data name="Workflow_FinishedGoodsDescription" xml:space="preserve">
+    <value>محصولات نهایی را بررسی و سفارش‌های تولید را تکمیل کنید.</value>
+  </data>
+	<data name="Workflow_CompleteOrder" xml:space="preserve">
+    <value>تکمیل سفارش</value>
+  </data>
+	<data name="Workflow_ReviewCompletion" xml:space="preserve">
+    <value>بررسی تکمیل</value>
+  </data>
+	<data name="Workflow_Refreshing" xml:space="preserve">
+    <value>در حال تازه‌سازی...</value>
+  </data>
+	<data name="Workflow_SearchPlaceholder" xml:space="preserve">
+    <value>جست‌وجوی سفارش‌های تولید...</value>
+  </data>
+	<data name="Workflow_ClearFilters" xml:space="preserve">
+    <value>پاک‌کردن فیلترها</value>
+  </data>
+	<data name="Workflow_LoadingOrders" xml:space="preserve">
+    <value>در حال بارگذاری سفارش‌های تولید...</value>
+  </data>
+	<data name="Workflow_NoMatchingOrders" xml:space="preserve">
+    <value>سفارش منطبقی یافت نشد.</value>
+  </data>
+	<data name="Workflow_PlannedEnd" xml:space="preserve">
+    <value>پایان برنامه‌ریزی‌شده</value>
+  </data>
+	<data name="Workflow_Lines" xml:space="preserve">
+    <value>ردیف‌ها</value>
+  </data>
+	<data name="Workflow_OpenOrder" xml:space="preserve">
+    <value>بازکردن سفارش</value>
+  </data>
+	<data name="Workflow_LoadError" xml:space="preserve">
+    <value>بارگذاری سفارش‌های تولید ناموفق بود.</value>
+  </data>
+	<data name="ProductionOrdersPageTitle" xml:space="preserve">
+    <value>سفارش‌های تولید</value>
+  </data>
+	<data name="ProductionOrdersPageDescription" xml:space="preserve">
+    <value>سفارش‌های تولید و روند ساخت آن‌ها را مدیریت کنید.</value>
+  </data>
+	<data name="LoadingProductionOrders" xml:space="preserve">
+    <value>در حال بارگذاری سفارش‌های تولید...</value>
+  </data>
+	<data name="SalesOrderLabel" xml:space="preserve">
+    <value>سفارش فروش</value>
+  </data>
+	<data name="ProductionOrderPageTitle" xml:space="preserve">
+    <value>سفارش تولید</value>
+  </data>
+	<data name="Schedules" xml:space="preserve">
+    <value>برنامه‌ها</value>
+  </data>
+	<data name="MaterialReservationCouldNotBeCompleted" xml:space="preserve">
+    <value>رزرو مواد انجام نشد؛ موجودی یک یا چند ماده کافی نیست.</value>
+  </data>
+	<data name="AllRequiredMaterialsReservedSuccessfully" xml:space="preserve">
+    <value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value>
+  </data>
+	<data name="CustomerNegotiation" xml:space="preserve">
+    <value>مذاکره با مشتری</value>
+  </data>
+	<data name="SentToCustomer" xml:space="preserve">
+    <value>ارسال‌شده به مشتری</value>
+  </data>
+	<data name="Accepted" xml:space="preserve">
+    <value>پذیرفته‌شده</value>
+  </data>
+	<data name="Rejected" xml:space="preserve">
+    <value>ردشده</value>
+  </data>
+	<data name="Expired" xml:space="preserve">
+    <value>منقضی‌شده</value>
+  </data>
+	<data name="Approved" xml:space="preserve">
+    <value>تأییدشده</value>
+  </data>
+	<data name="Ready" xml:space="preserve">
+    <value>آماده</value>
+  </data>
+	<data name="Quotation" xml:space="preserve">
+    <value>پیش‌فاکتور</value>
+  </data>
+	<data name="MaterialCost" xml:space="preserve">
+    <value>هزینه مواد اولیه</value>
+  </data>
+	<data name="ProductionCost" xml:space="preserve">
+    <value>هزینه تولید</value>
+  </data>
+	<data name="Description" xml:space="preserve">
+    <value>شرح</value>
+  </data>
+	<data name="TotalAmount" xml:space="preserve">
+    <value>مبلغ کل</value>
+  </data>
+	<data name="ProductionOrdersSubtitle" xml:space="preserve"><value>مدیریت سفارش‌های تولید و پیشرفت ساخت آن‌ها.</value></data>
+	<data name="IssuingMaterials" xml:space="preserve"><value>در حال صدور مواد...</value></data>
+	<data name="NoProductionSchedule" xml:space="preserve"><value>هنوز زمان‌بندی تولیدی برای این سفارش ایجاد نشده است.</value></data>
+	<data name="NoMRPCalculationPerformed" xml:space="preserve"><value>هنوز محاسبه برنامه‌ریزی نیازمندی مواد انجام نشده است.</value></data>
+	<data name="MRPNoRequirements" xml:space="preserve"><value>محاسبه برنامه‌ریزی نیازمندی مواد انجام شد، اما نیازی به مواد ایجاد نشد.</value></data>
+	<data name="MaterialReservations" xml:space="preserve"><value>رزروهای مواد</value></data>
+	<data name="NoMaterialReservations" xml:space="preserve"><value>هیچ رزروی برای مواد این سفارش تولید ایجاد نشده است.</value></data>
+	<data name="MRPCalculationSuccess" xml:space="preserve"><value>محاسبه برنامه‌ریزی نیازمندی مواد با موفقیت انجام شد.</value></data>
+	<data name="NoReservedMaterialsToIssue" xml:space="preserve"><value>مواد رزروشده‌ای برای صدور وجود ندارد.</value></data>
+	<data name="NoActiveProductionLocation" xml:space="preserve"><value>هیچ محل انبار فعال برای تولید یافت نشد.</value></data>
+	<data name="MaterialIssuePosted" xml:space="preserve"><value>سند صدور مواد با موفقیت ثبت شد.</value></data>
+	<data name="CreatedProductionIssueDocuments" xml:space="preserve"><value>تعداد {0} سند صدور مواد تولید ایجاد شد.</value></data>
+	<data name="ReservationInsufficientMaterials" xml:space="preserve"><value>رزرو مواد انجام نشد، زیرا موجودی یک یا چند ماده کافی نیست.</value></data>
+	<data name="MaterialsReservedSuccessfully" xml:space="preserve"><value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value></data>
+	<data name="MachineLabel" xml:space="preserve"><value>ماشین {0}</value></data>
+	<data name="OperationNumber" xml:space="preserve"><value>عملیات شماره {0}</value></data>
 </root>

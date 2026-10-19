@@ -56,6 +56,12 @@
             <div class="d-flex gap-2">
 
                 <button type="button"
+                        class="btn btn-outline-primary"
+                        @onclick="OpenPreview">
+                    @LocalizationService["QuotationPreview"]
+                </button>
+
+                <button type="button"
                         class="btn btn-outline-secondary"
                         @onclick="GoBack">
 
@@ -589,6 +595,11 @@
         quotation != null &&
         (quotation.Status == QuotationStatus.Draft ||
          quotation.Status == QuotationStatus.RevisionRequired);
+
+    private void OpenPreview()
+    {
+        Navigation.NavigateTo($"/sales/quotations/preview/{Id}");
+    }
 
 
     protected override async Task OnInitializedAsync()
