@@ -131,11 +131,20 @@ else
                     @LocalizationService["Sales"]
                 </h6>
 
+                
                 @if (canViewSalesRequests)
                 {
                     <button class="menu-button"
                             @onclick='() => GoTo("/sales/requests")'>
                         📋 @LocalizationService["SalesRequests"]
+                    </button>
+                }
+
+                @if (canViewSalesRequests)
+                {
+                    <button class="menu-button"
+                            @onclick='() => GoTo("/sales/quotations")'>
+                        🧾 @LocalizationService["SalesQuotations"]
                     </button>
                 }
 
@@ -146,6 +155,7 @@ else
                         🚚 @LocalizationService["SalesDeliveries"]
                     </button>
                 }
+
             }
 
             @if (canViewSalesOrders)
@@ -157,9 +167,10 @@ else
             }
 
 
+            
             <!-- =====================================================
-                 Production
-                 ===================================================== -->
+                Production
+                ===================================================== -->
             @if (canViewProduction)
             {
                 <h6 class="menu-section">
@@ -175,7 +186,13 @@ else
                         @onclick='() => GoTo("/production/orders")'>
                     🏭 @LocalizationService["ProductionOrders"]
                 </button>
+
+                <button class="menu-button"
+                        @onclick='() => GoTo("/production/quality-inspections")'>
+                    🔍 @LocalizationService["QualityInspectionManagement"]
+                </button>
             }
+
 
 
             <!-- =====================================================

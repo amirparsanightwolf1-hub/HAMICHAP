@@ -1,0 +1,423 @@
+﻿@page "/production/quality-inspections"
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Models.Production.Quality
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+
+@inject ApplicationDbContext Db
+@inject LocalizationService LocalizationService
+@inject QualityInspectionService QualityInspectionService
+@inject ProductionQualityPostingService ProductionQualityPostingService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>@LocalizationService["QualityInspections"]</PageTitle>
+
+<div class="page-container">
+    <div class="erp-page-header">
+        <div>
+            <h3 class="erp-page-title">@LocalizationService["QualityInspections"]</h3>
+            <p class="erp-page-subtitle">@LocalizationService["QualityInspectionsDescription"]</p>
+        </div>
+        <button class="btn btn-primary" @onclick="() => showCreate = !showCreate">
+            @(showCreate ? LocalizationService["Cancel"] : LocalizationService["CreateInspection"])
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger mb-3">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success mb-3">@successMessage</div>
+    }
+
+    @if (showCreate)
+    {
+        <div class="card mb-4">
+            <div class="card-header"><strong>@LocalizationService["CreateInspection"]</strong></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">@LocalizationService["ProductionOrder"]</label>
+                        <InputSelect class="form-select" @bind-Value="newProductionOrderId">
+                            <option value="0">@LocalizationService["SelectProductionOrder"]</option>
+                            @foreach (var order in productionOrders)
+                            {
+                                <option value="@order.Id">@order.OrderNumber</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">@LocalizationService["Item"]</label>
+                        <InputSelect class="form-select" @bind-Value="newItemId">
+                            <option value="0">@LocalizationService["SelectItem"]</option>
+                            @foreach (var item in items)
+                            {
+                                <option value="@item.Id">@item.Code - @item.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">@LocalizationService["InspectedQuantity"]</label>
+                        <InputNumber class="form-control" min="0.001" step="0.001" @bind-Value="newQuantity" />
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-primary" @onclick="CreateInspectionAsync" disabled="@busy">
+                        @(busy ? LocalizationService["Saving"] : LocalizationService["CreateInspection"])
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <input class="form-control" placeholder="@LocalizationService["SearchInspectionPlaceholder"]" @bind="searchText" @bind:event="oninput" />
+                </div>
+                <div class="col-md-4">
+                    <InputSelect class="form-select" @bind-Value="statusFilter">
+                        <option value="">@LocalizationService["AllStatuses"]</option>
+                        @foreach (var status in Enum.GetValues<QualityInspectionStatus>())
+                        {
+                            <option value="@status">@LocalizationService[status.ToString()]</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (inspections == null)
+    {
+        <div class="alert alert-info">@LocalizationService["Loading"]</div>
+    }
+    else
+    {
+        var filtered = inspections.Where(x =>
+            (string.IsNullOrWhiteSpace(searchText) ||
+             x.ProductionOrder.OrderNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+             ItemLabel(x.ItemId).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+             x.Id.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(statusFilter) || x.Status.ToString() == statusFilter)).ToList();
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>@LocalizationService["QualityInspections"]</strong></div>
+            <div class="card-body">
+                @if (filtered.Count == 0)
+                {
+                    <div class="text-muted">@LocalizationService["NoQualityInspectionsFound"]</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>@LocalizationService["InspectionNumber"]</th>
+                                    <th>@LocalizationService["ProductionOrder"]</th>
+                                    <th>@LocalizationService["Item"]</th>
+                                    <th>@LocalizationService["InspectionDate"]</th>
+                                    <th>@LocalizationService["InspectedQuantity"]</th>
+                                    <th>@LocalizationService["AcceptedQuantity"]</th>
+                                    <th>@LocalizationService["RejectedQuantity"]</th>
+                                    <th>@LocalizationService["Status"]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var inspection in filtered)
+                                {
+                                    <tr>
+                                        <td><strong>QC-@inspection.Id</strong></td>
+                                        <td>@inspection.ProductionOrder.OrderNumber</td>
+                                        <td>@ItemLabel(inspection.ItemId)</td>
+                                        <td>@inspection.InspectionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>@inspection.InspectedQuantity.ToString("0.###")</td>
+                                        <td>@inspection.AcceptedQuantity.ToString("0.###")</td>
+                                        <td>@inspection.RejectedQuantity.ToString("0.###")</td>
+                                        <td><span class="@StatusClass(inspection.Status)">@LocalizationService[inspection.Status.ToString()]</span></td>
+                                        <td class="text-end"><button class="btn btn-sm btn-outline-primary" @onclick="() => SelectInspectionAsync(inspection.Id)">@LocalizationService["Open"]</button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (selected != null)
+    {
+        <div class="erp-page-header">
+            <div>
+                <h3 class="erp-page-title">@LocalizationService["QualityInspectionDetails"] — QC-@selected.Id</h3>
+                <p class="erp-page-subtitle">@selected.ProductionOrder?.OrderNumber · @ItemLabel(selected.ItemId)</p>
+            </div>
+            <span class="@StatusClass(selected.Status)">@LocalizationService[selected.Status.ToString()]</span>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>@LocalizationService["InspectionResults"]</strong></div>
+            <div class="card-body">
+                @if (selected.Results.Count == 0)
+                {
+                    <p class="text-muted">@LocalizationService["NoInspectionResults"]</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>@LocalizationService["ParameterName"]</th>
+                                    <th>@LocalizationService["MeasuredValue"]</th>
+                                    <th>@LocalizationService["MinimumValue"]</th>
+                                    <th>@LocalizationService["MaximumValue"]</th>
+                                    <th>@LocalizationService["TextValue"]</th>
+                                    <th>@LocalizationService["Result"]</th>
+                                    <th>@LocalizationService["Notes"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var result in selected.Results.OrderBy(x => x.Id))
+                                {
+                                    <tr>
+                                        <td>@result.ParameterName</td>
+                                        <td>@result.MeasuredValue?.ToString("0.####")</td>
+                                        <td>@result.MinimumValue?.ToString("0.####")</td>
+                                        <td>@result.MaximumValue?.ToString("0.####")</td>
+                                        <td>@result.TextValue</td>
+                                        <td><span class="badge @(result.Passed ? "bg-success" : "bg-danger")">@(result.Passed ? LocalizationService["Passed"] : LocalizationService["Failed"])</span></td>
+                                        <td>@result.Notes</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (CanEdit(selected.Status))
+        {
+            <div class="card mb-4">
+                <div class="card-header"><strong>@LocalizationService["AddInspectionResult"]</strong></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3"><label class="form-label">@LocalizationService["ParameterName"]</label><InputText class="form-control" @bind-Value="parameterName" /></div>
+                        <div class="col-md-2"><label class="form-label">@LocalizationService["MeasuredValue"]</label><InputNumber class="form-control" step="0.0001" @bind-Value="measuredValue" /></div>
+                        <div class="col-md-2"><label class="form-label">@LocalizationService["MinimumValue"]</label><InputNumber class="form-control" step="0.0001" @bind-Value="minimumValue" /></div>
+                        <div class="col-md-2"><label class="form-label">@LocalizationService["MaximumValue"]</label><InputNumber class="form-control" step="0.0001" @bind-Value="maximumValue" /></div>
+                        <div class="col-md-3"><label class="form-label">@LocalizationService["TextValue"]</label><InputText class="form-control" @bind-Value="textValue" /></div>
+                        <div class="col-12"><label class="form-label">@LocalizationService["Notes"]</label><InputTextArea class="form-control" rows="2" @bind-Value="resultNotes" /></div>
+                    </div>
+                    <button class="btn btn-primary mt-3" @onclick="AddResultAsync" disabled="@busy">@LocalizationService["AddResult"]</button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><strong>@LocalizationService["CompleteInspection"]</strong></div>
+                <div class="card-body">
+                    <p class="text-muted">@LocalizationService["InspectionQuantityRule"]</p>
+                    <div class="row g-3">
+                        <div class="col-md-4"><label class="form-label">@LocalizationService["AcceptedQuantity"]</label><InputNumber class="form-control" min="0" step="0.001" @bind-Value="acceptedQuantity" /></div>
+                        <div class="col-md-4"><label class="form-label">@LocalizationService["RejectedQuantity"]</label><InputNumber class="form-control" min="0" step="0.001" @bind-Value="rejectedQuantity" /></div>
+                        <div class="col-md-4"><label class="form-label">@LocalizationService["ReworkQuantity"]</label><InputNumber class="form-control" min="0" step="0.001" @bind-Value="reworkQuantity" /></div>
+                    </div>
+                    <button class="btn btn-success mt-3" @onclick="CompleteInspectionAsync" disabled="@busy">@LocalizationService["CompleteInspection"]</button>
+                </div>
+            </div>
+        }
+
+        @if (IsCompleted(selected.Status) && !qualityResultAlreadyPosted)
+        {
+            <div class="card mb-4">
+                <div class="card-header"><strong>@LocalizationService["PostQualityResultToInventory"]</strong></div>
+                <div class="card-body">
+                    <p class="text-muted">@LocalizationService["QualityPostingDescription"]</p>
+                    <div class="row g-3">
+                        <div class="col-md-3"><label class="form-label">@LocalizationService["ProductionLocation"]</label><InputSelect class="form-select" @bind-Value="productionLocationId"><option value="0">@LocalizationService["SelectLocation"]</option>@foreach (var l in locations.Where(x => x.Type == InventoryLocationType.Production)){
+                            <option value="@l.Id">@l.Name</option>
+                        }
+                    </InputSelect></div>
+                    <div class="col-md-3"><label class="form-label">@LocalizationService["FinishedGoodsLocation"]</label><InputSelect class="form-select" @bind-Value="finishedGoodsLocationId"><option value="0">@LocalizationService["SelectLocation"]</option>@foreach (var l in locations.Where(x => x.Type == InventoryLocationType.FinishedGoods)){
+                        <option value="@l.Id">@l.Name</option>
+                    }
+                </InputSelect></div>
+                <div class="col-md-3"><label class="form-label">@LocalizationService["WasteLocation"]</label><InputSelect class="form-select" @bind-Value="wasteLocationId"><option value="0">@LocalizationService["SelectLocation"]</option>@foreach (var l in locations.Where(x => x.Type == InventoryLocationType.Waste)){
+                    <option value="@l.Id">@l.Name</option>
+                }
+            </InputSelect></div>
+            <div class="col-md-3"><label class="form-label">@LocalizationService["ReworkLocation"]</label><InputSelect class="form-select" @bind-Value="reworkLocationId"><option value="0">@LocalizationService["SelectLocation"]</option>@foreach (var l in locations.Where(x => x.Type == InventoryLocationType.Rework)){
+                <option value="@l.Id">@l.Name</option>
+            }
+        </InputSelect></div>
+    </div>
+    <button class="btn btn-warning mt-3" @onclick="PostQualityResultAsync" disabled="@busy">@LocalizationService["PostQualityResult"]</button>
+</div>
+</div>
+        }
+        else if (qualityResultAlreadyPosted)
+{
+    <div class="alert alert-success">@LocalizationService["QualityResultAlreadyPosted"]</div>
+}
+    }
+</div>
+
+@code {
+    private List<QualityInspection>? inspections;
+    private List<ProductionOrder> productionOrders = new();
+    private List<Item> items = new();
+    private List<InventoryLocation> locations = new();
+    private Dictionary<int, string> itemLabels = new();
+    private QualityInspection? selected;
+    private bool qualityResultAlreadyPosted;
+    private bool showCreate;
+    private bool busy;
+    private string? errorMessage;
+    private string? successMessage;
+    private string searchText = "";
+    private string statusFilter = "";
+    private long newProductionOrderId;
+    private int newItemId;
+    private decimal newQuantity = 1;
+    private string parameterName = "";
+    private decimal? measuredValue;
+    private decimal? minimumValue;
+    private decimal? maximumValue;
+    private string? textValue;
+    private string resultNotes = "";
+    private decimal acceptedQuantity;
+    private decimal rejectedQuantity;
+    private decimal reworkQuantity;
+    private int productionLocationId;
+    private int finishedGoodsLocationId;
+    private int wasteLocationId;
+    private int reworkLocationId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productionOrders = await Db.ProductionOrders.OrderByDescending(x => x.CreatedDate).ToListAsync();
+        items = await Db.Items.OrderBy(x => x.Name).ToListAsync();
+        itemLabels = items.ToDictionary(x => x.Id, x => $"{x.Code} - {x.Name}");
+        locations = await Db.InventoryLocations.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        await LoadInspectionsAsync();
+    }
+
+    private async Task LoadInspectionsAsync()
+    {
+        inspections = await Db.QualityInspections.AsNoTracking().Include(x => x.ProductionOrder).OrderByDescending(x => x.InspectionDate).ToListAsync();
+    }
+
+    private string ItemLabel(int itemId) => itemLabels.TryGetValue(itemId, out var value) ? value : $"#{itemId}";
+
+    private async Task CreateInspectionAsync()
+    {
+        errorMessage = successMessage = null;
+        if (newProductionOrderId <= 0 || newItemId <= 0) { errorMessage = LocalizationService["SelectProductionOrderAndItem"]; return; }
+        if (newQuantity <= 0) { errorMessage = LocalizationService["QuantityMustBeGreaterThanZero"]; return; }
+        try
+        {
+            busy = true;
+            var created = await QualityInspectionService.CreateInspectionAsync(newProductionOrderId, newItemId, newQuantity);
+            showCreate = false;
+            await LoadInspectionsAsync();
+            await SelectInspectionAsync(created.Id);
+            successMessage = LocalizationService["QualityInspectionCreated"];
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { busy = false; }
+    }
+
+    private async Task SelectInspectionAsync(long id)
+    {
+        errorMessage = successMessage = null;
+        selected = await Db.QualityInspections.Include(x => x.ProductionOrder).Include(x => x.Results).FirstOrDefaultAsync(x => x.Id == id);
+        qualityResultAlreadyPosted = selected != null && await Db.InventoryDocuments
+            .AsNoTracking()
+            .AnyAsync(x => x.QualityInspectionId == id && x.Status == InventoryDocumentStatus.Posted);
+        if (selected != null)
+        {
+            acceptedQuantity = selected.AcceptedQuantity;
+            rejectedQuantity = selected.RejectedQuantity;
+            reworkQuantity = selected.ReworkQuantity;
+        }
+    }
+
+    private async Task AddResultAsync()
+    {
+        errorMessage = successMessage = null;
+        if (selected == null) return;
+        if (string.IsNullOrWhiteSpace(parameterName)) { errorMessage = LocalizationService["ParameterNameRequired"]; return; }
+        try
+        {
+            busy = true;
+            await QualityInspectionService.AddResultAsync(selected.Id, parameterName.Trim(), measuredValue, minimumValue, maximumValue, string.IsNullOrWhiteSpace(textValue) ? null : textValue.Trim(), resultNotes);
+            parameterName = resultNotes = ""; measuredValue = minimumValue = maximumValue = null; textValue = null;
+            await SelectInspectionAsync(selected.Id);
+            await LoadInspectionsAsync();
+            successMessage = LocalizationService["InspectionResultAdded"];
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { busy = false; }
+    }
+
+    private async Task CompleteInspectionAsync()
+    {
+        errorMessage = successMessage = null;
+        if (selected == null) return;
+        if (acceptedQuantity < 0 || rejectedQuantity < 0 || reworkQuantity < 0) { errorMessage = LocalizationService["QuantitiesCannotBeNegative"]; return; }
+        if (acceptedQuantity + rejectedQuantity + reworkQuantity != selected.InspectedQuantity) { errorMessage = LocalizationService["InspectionQuantitiesMustMatch"]; return; }
+        try
+        {
+            busy = true;
+            await QualityInspectionService.CompleteInspectionAsync(selected.Id, acceptedQuantity, rejectedQuantity, reworkQuantity);
+            await SelectInspectionAsync(selected.Id);
+            await LoadInspectionsAsync();
+            successMessage = LocalizationService["InspectionCompleted"];
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { busy = false; }
+    }
+
+    private async Task PostQualityResultAsync()
+    {
+        errorMessage = successMessage = null;
+        if (selected == null) return;
+        if (productionLocationId <= 0 || finishedGoodsLocationId <= 0 || wasteLocationId <= 0 || reworkLocationId <= 0) { errorMessage = LocalizationService["SelectAllPostingLocations"]; return; }
+        try
+        {
+            busy = true;
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = auth.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId)) { errorMessage = LocalizationService["UserNotAuthenticated"]; return; }
+            await ProductionQualityPostingService.PostQualityResultAsync(selected.Id, productionLocationId, finishedGoodsLocationId, wasteLocationId, reworkLocationId, userId);
+            await SelectInspectionAsync(selected.Id);
+            successMessage = LocalizationService["QualityResultPosted"];
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { busy = false; }
+    }
+
+    private static bool IsCompleted(QualityInspectionStatus s) => s is QualityInspectionStatus.Passed or QualityInspectionStatus.PartiallyPassed or QualityInspectionStatus.Failed;
+    private static bool CanEdit(QualityInspectionStatus s) => s is QualityInspectionStatus.Pending or QualityInspectionStatus.InProgress;
+    private string StatusClass(QualityInspectionStatus s) => s switch
+    {
+        QualityInspectionStatus.Passed => "badge bg-success",
+        QualityInspectionStatus.PartiallyPassed => "badge bg-warning text-dark",
+        QualityInspectionStatus.Failed => "badge bg-danger",
+        QualityInspectionStatus.InProgress => "badge bg-primary",
+        QualityInspectionStatus.Cancelled => "badge bg-secondary",
+        _ => "badge bg-info text-dark"
+    };
+}

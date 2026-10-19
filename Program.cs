@@ -41,6 +41,8 @@ builder.Services.AddScoped<QualityInspectionService>();
 builder.Services.AddScoped<ProductionQualityPostingService>();
 builder.Services.AddScoped<ProductionOrderCompletionService>();
 builder.Services.AddScoped<SalesDeliveryService>();
+builder.Services.AddScoped<QualityInspectionService>();
+builder.Services.AddScoped<ProductionQualityPostingService>();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 builder.Services.AddAuthentication(options =>

@@ -1,51 +1,110 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
-<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:schema id="root">
-    <xs:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xs:element name="root" ns1:IsDataSet="true">
-      <xs:complexType>
-        <xs:choice maxOccurs="unbounded">
-          <xs:element name="metadata">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="value" type="xsd:string" minOccurs="0" />
-              </xs:sequence>
-              <xs:attribute name="name" use="required" type="xsd:string" />
-              <xs:attribute name="type" type="xsd:string" />
-              <xs:attribute name="mimetype" type="xsd:string" />
-              <xs:attribute ref="xml:space" />
-            </xs:complexType>
-          </xs:element>
-          <xs:element name="assembly">
-            <xs:complexType>
-              <xs:attribute name="alias" type="xsd:string" />
-              <xs:attribute name="name" type="xsd:string" />
-            </xs:complexType>
-          </xs:element>
-          <xs:element name="data">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
-                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
-              </xs:sequence>
-              <xs:attribute name="name" type="xsd:string" use="required" ns1:Ordinal="1" />
-              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
-              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
-              <xs:attribute ref="xml:space" />
-            </xs:complexType>
-          </xs:element>
-          <xs:element name="resheader">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
-              </xs:sequence>
-              <xs:attribute name="name" type="xsd:string" use="required" />
-            </xs:complexType>
-          </xs:element>
-        </xs:choice>
-      </xs:complexType>
-    </xs:element>
-  </xs:schema>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
@@ -58,6 +117,189 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AllStatuses" xml:space="preserve">
+    <value>All statuses</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="InProgress" xml:space="preserve">
+    <value>In Progress</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="ProductionOrder" xml:space="preserve">
+    <value>Production Order</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="SelectItem" xml:space="preserve">
+    <value>Select item</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="UserNotAuthenticated" xml:space="preserve">
+    <value>The current user could not be identified.</value>
+  </data>
+  <data name="QuantityMustBeGreaterThanZero" xml:space="preserve">
+    <value>Quantity must be greater than zero.</value>
+  </data>
+  <data name="QualityInspections" xml:space="preserve">
+    <value>Quality Inspections</value>
+  </data>
+  <data name="QualityInspectionsDescription" xml:space="preserve">
+    <value>Manage inspections, record measurements, classify quantities, and post quality results to inventory.</value>
+  </data>
+  <data name="CreateInspection" xml:space="preserve">
+    <value>Create Inspection</value>
+  </data>
+  <data name="SelectProductionOrder" xml:space="preserve">
+    <value>Select production order</value>
+  </data>
+  <data name="InspectedQuantity" xml:space="preserve">
+    <value>Inspected Quantity</value>
+  </data>
+  <data name="SearchInspectionPlaceholder" xml:space="preserve">
+    <value>Search by inspection, production order, or item...</value>
+  </data>
+  <data name="NoQualityInspectionsFound" xml:space="preserve">
+    <value>No quality inspections found.</value>
+  </data>
+  <data name="InspectionNumber" xml:space="preserve">
+    <value>Inspection #</value>
+  </data>
+  <data name="InspectionDate" xml:space="preserve">
+    <value>Inspection Date</value>
+  </data>
+  <data name="AcceptedQuantity" xml:space="preserve">
+    <value>Accepted Quantity</value>
+  </data>
+  <data name="RejectedQuantity" xml:space="preserve">
+    <value>Rejected Quantity</value>
+  </data>
+  <data name="SelectProductionOrderAndItem" xml:space="preserve">
+    <value>Select a production order and item.</value>
+  </data>
+  <data name="QualityInspectionCreated" xml:space="preserve">
+    <value>Quality inspection created.</value>
+  </data>
+  <data name="QualityInspectionDetails" xml:space="preserve">
+    <value>Quality Inspection Details</value>
+  </data>
+  <data name="InspectionResults" xml:space="preserve">
+    <value>Inspection Results</value>
+  </data>
+  <data name="NoInspectionResults" xml:space="preserve">
+    <value>No inspection results recorded yet.</value>
+  </data>
+  <data name="ParameterName" xml:space="preserve">
+    <value>Parameter Name</value>
+  </data>
+  <data name="MeasuredValue" xml:space="preserve">
+    <value>Measured Value</value>
+  </data>
+  <data name="MinimumValue" xml:space="preserve">
+    <value>Minimum Value</value>
+  </data>
+  <data name="MaximumValue" xml:space="preserve">
+    <value>Maximum Value</value>
+  </data>
+  <data name="TextValue" xml:space="preserve">
+    <value>Text Value</value>
+  </data>
+  <data name="Result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="Passed" xml:space="preserve">
+    <value>Passed</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="AddInspectionResult" xml:space="preserve">
+    <value>Add Inspection Result</value>
+  </data>
+  <data name="AddResult" xml:space="preserve">
+    <value>Add Result</value>
+  </data>
+  <data name="CompleteInspection" xml:space="preserve">
+    <value>Complete Inspection</value>
+  </data>
+  <data name="InspectionQuantityRule" xml:space="preserve">
+    <value>Accepted + rejected + rework quantities must equal the inspected quantity.</value>
+  </data>
+  <data name="ReworkQuantity" xml:space="preserve">
+    <value>Rework Quantity</value>
+  </data>
+  <data name="PostQualityResultToInventory" xml:space="preserve">
+    <value>Post Quality Result to Inventory</value>
+  </data>
+  <data name="QualityPostingDescription" xml:space="preserve">
+    <value>Posts accepted quantities to finished goods, rejected quantities to waste, and rework quantities to the rework location.</value>
+  </data>
+  <data name="ProductionLocation" xml:space="preserve">
+    <value>Production Location</value>
+  </data>
+  <data name="FinishedGoodsLocation" xml:space="preserve">
+    <value>Finished Goods Location</value>
+  </data>
+  <data name="WasteLocation" xml:space="preserve">
+    <value>Waste Location</value>
+  </data>
+  <data name="ReworkLocation" xml:space="preserve">
+    <value>Rework Location</value>
+  </data>
+  <data name="SelectLocation" xml:space="preserve">
+    <value>Select location</value>
+  </data>
+  <data name="PostQualityResult" xml:space="preserve">
+    <value>Post Quality Result</value>
+  </data>
+  <data name="ParameterNameRequired" xml:space="preserve">
+    <value>Parameter name is required.</value>
+  </data>
+  <data name="InspectionResultAdded" xml:space="preserve">
+    <value>Inspection result added.</value>
+  </data>
+  <data name="QuantitiesCannotBeNegative" xml:space="preserve">
+    <value>Quantities cannot be negative.</value>
+  </data>
+  <data name="InspectionQuantitiesMustMatch" xml:space="preserve">
+    <value>Accepted, rejected, and rework quantities must equal the inspected quantity.</value>
+  </data>
+  <data name="InspectionCompleted" xml:space="preserve">
+    <value>Inspection completed.</value>
+  </data>
+  <data name="SelectAllPostingLocations" xml:space="preserve">
+    <value>Select all four inventory locations.</value>
+  </data>
+  <data name="QualityResultPosted" xml:space="preserve">
+    <value>Quality result posted to inventory.</value>
+  </data>
+  <data name="PartiallyPassed" xml:space="preserve">
+    <value>Partially Passed</value>
+  </data>
+  <data name="QualityResultAlreadyPosted" xml:space="preserve">
+    <value>Quality result has already been posted to inventory.</value>
+  </data>
   <data name="Action" xml:space="preserve">
     <value>Action</value>
   </data>
@@ -109,9 +351,6 @@
   <data name="AllRequiredMaterialsReserved" xml:space="preserve">
     <value>All required materials have been reserved successfully.</value>
   </data>
-  <data name="AllStatuses" xml:space="preserve">
-    <value>All statuses</value>
-  </data>
   <data name="AppTitle" xml:space="preserve">
     <value>HamiChap ERP</value>
   </data>
@@ -132,12 +371,6 @@
   </data>
   <data name="Calculating" xml:space="preserve">
     <value>Calculating...</value>
-  </data>
-  <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-  <data name="Cancelled" xml:space="preserve">
-    <value>Cancelled</value>
   </data>
   <data name="Category" xml:space="preserve">
     <value>Category</value>
@@ -337,9 +570,6 @@
   <data name="InProduction" xml:space="preserve">
     <value>In Production</value>
   </data>
-  <data name="InProgress" xml:space="preserve">
-    <value>In Progress</value>
-  </data>
   <data name="InUse" xml:space="preserve">
     <value>In Use</value>
   </data>
@@ -376,9 +606,6 @@
   <data name="IssueMaterials" xml:space="preserve">
     <value>Issue Materials</value>
   </data>
-  <data name="Item" xml:space="preserve">
-    <value>Item</value>
-  </data>
   <data name="ItemCategories" xml:space="preserve">
     <value>Item Categories</value>
   </data>
@@ -396,9 +623,6 @@
   </data>
   <data name="Lines" xml:space="preserve">
     <value>Lines</value>
-  </data>
-  <data name="Loading" xml:space="preserve">
-    <value>Loading...</value>
   </data>
   <data name="LoadingCustomerInventory" xml:space="preserve">
     <value>Loading customer inventory...</value>
@@ -574,9 +798,6 @@
   <data name="NotAssigned" xml:space="preserve">
     <value>Not assigned</value>
   </data>
-  <data name="Notes" xml:space="preserve">
-    <value>Notes</value>
-  </data>
   <data name="Number" xml:space="preserve">
     <value>Number</value>
   </data>
@@ -585,9 +806,6 @@
   </data>
   <data name="OnHold" xml:space="preserve">
     <value>On Hold</value>
-  </data>
-  <data name="Open" xml:space="preserve">
-    <value>Open</value>
   </data>
   <data name="Operation" xml:space="preserve">
     <value>Operation</value>
@@ -615,9 +833,6 @@
   </data>
   <data name="Password" xml:space="preserve">
     <value>Password</value>
-  </data>
-  <data name="Pending" xml:space="preserve">
-    <value>Pending</value>
   </data>
   <data name="PendingProductionOrders" xml:space="preserve">
     <value>Pending Production Orders</value>
@@ -696,9 +911,6 @@
   </data>
   <data name="ProductionOperations" xml:space="preserve">
     <value>Production Operations</value>
-  </data>
-  <data name="ProductionOrder" xml:space="preserve">
-    <value>Production Order</value>
   </data>
   <data name="ProductionOrderInformation" xml:space="preserve">
     <value>Production Order Information</value>
@@ -853,9 +1065,6 @@
   <data name="SaveLocation" xml:space="preserve">
     <value>Save Location</value>
   </data>
-  <data name="Saving" xml:space="preserve">
-    <value>Saving...</value>
-  </data>
   <data name="Schedule" xml:space="preserve">
     <value>Schedule</value>
   </data>
@@ -880,9 +1089,6 @@
   <data name="SelectDestination" xml:space="preserve">
     <value>Select Destination</value>
   </data>
-  <data name="SelectItem" xml:space="preserve">
-    <value>Select Item</value>
-  </data>
   <data name="SelectSalesOrder" xml:space="preserve">
     <value>Select a sales order</value>
   </data>
@@ -906,9 +1112,6 @@
   </data>
   <data name="StartProduction" xml:space="preserve">
     <value>Start Production</value>
-  </data>
-  <data name="Status" xml:space="preserve">
-    <value>Status</value>
   </data>
   <data name="StockAlert" xml:space="preserve">
     <value>Stock Alert</value>
@@ -1060,9 +1263,6 @@
   <data name="ToLocationRequired" xml:space="preserve">
     <value>Destination location is required.</value>
   </data>
-  <data name="UserNotAuthenticated" xml:space="preserve">
-    <value>The current user is not authenticated.</value>
-  </data>
   <data name="SalesRequest" xml:space="preserve">
     <value>Sales Request</value>
   </data>
@@ -1095,9 +1295,6 @@
   </data>
   <data name="OpenEvaluation" xml:space="preserve">
     <value>Open Evaluation</value>
-  </data>
-  <data name="QuantityMustBeGreaterThanZero" xml:space="preserve">
-    <value>Quantity must be greater than zero.</value>
   </data>
   <data name="RequestDate" xml:space="preserve">
     <value>Request Date</value>
@@ -1441,4 +1638,55 @@
   <data name="TotalAmount" xml:space="preserve">
     <value>Total Amount</value>
   </data>
-<data name="ProductionOrdersSubtitle" xml:space="preserve"><value>Manage production orders and their manufacturing progress.</value></data><data name="IssuingMaterials" xml:space="preserve"><value>Issuing Materials...</value></data><data name="NoProductionSchedule" xml:space="preserve"><value>No production schedule has been created for this production order yet.</value></data><data name="NoMRPCalculationPerformed" xml:space="preserve"><value>No MRP calculation has been performed yet.</value></data><data name="MRPNoRequirements" xml:space="preserve"><value>MRP calculation completed, but no material requirements were generated.</value></data><data name="MaterialReservations" xml:space="preserve"><value>Material Reservations</value></data><data name="NoMaterialReservations" xml:space="preserve"><value>No material reservations have been created for this production order.</value></data><data name="MRPCalculationSuccess" xml:space="preserve"><value>MRP calculation completed successfully.</value></data><data name="NoReservedMaterialsToIssue" xml:space="preserve"><value>No reserved materials are available for issue.</value></data><data name="NoActiveProductionLocation" xml:space="preserve"><value>No active Production inventory location was found.</value></data><data name="MaterialIssuePosted" xml:space="preserve"><value>Material issue posted successfully.</value></data><data name="CreatedProductionIssueDocuments" xml:space="preserve"><value>Created {0} Production Issue document(s).</value></data><data name="ReservationInsufficientMaterials" xml:space="preserve"><value>Material reservation could not be completed because one or more materials are insufficient.</value></data><data name="MaterialsReservedSuccessfully" xml:space="preserve"><value>All required materials have been reserved successfully.</value></data><data name="MachineLabel" xml:space="preserve"><value>Machine {0}</value></data><data name="OperationNumber" xml:space="preserve"><value>Operation #{0}</value></data></root>
+  <data name="ProductionOrdersSubtitle" xml:space="preserve">
+    <value>Manage production orders and their manufacturing progress.</value>
+  </data>
+  <data name="IssuingMaterials" xml:space="preserve">
+    <value>Issuing Materials...</value>
+  </data>
+  <data name="NoProductionSchedule" xml:space="preserve">
+    <value>No production schedule has been created for this production order yet.</value>
+  </data>
+  <data name="NoMRPCalculationPerformed" xml:space="preserve">
+    <value>No MRP calculation has been performed yet.</value>
+  </data>
+  <data name="MRPNoRequirements" xml:space="preserve">
+    <value>MRP calculation completed, but no material requirements were generated.</value>
+  </data>
+  <data name="MaterialReservations" xml:space="preserve">
+    <value>Material Reservations</value>
+  </data>
+  <data name="NoMaterialReservations" xml:space="preserve">
+    <value>No material reservations have been created for this production order.</value>
+  </data>
+  <data name="MRPCalculationSuccess" xml:space="preserve">
+    <value>MRP calculation completed successfully.</value>
+  </data>
+  <data name="NoReservedMaterialsToIssue" xml:space="preserve">
+    <value>No reserved materials are available for issue.</value>
+  </data>
+  <data name="NoActiveProductionLocation" xml:space="preserve">
+    <value>No active Production inventory location was found.</value>
+  </data>
+  <data name="MaterialIssuePosted" xml:space="preserve">
+    <value>Material issue posted successfully.</value>
+  </data>
+  <data name="CreatedProductionIssueDocuments" xml:space="preserve">
+    <value>Created {0} Production Issue document(s).</value>
+  </data>
+  <data name="ReservationInsufficientMaterials" xml:space="preserve">
+    <value>Material reservation could not be completed because one or more materials are insufficient.</value>
+  </data>
+  <data name="MaterialsReservedSuccessfully" xml:space="preserve">
+    <value>All required materials have been reserved successfully.</value>
+  </data>
+  <data name="MachineLabel" xml:space="preserve">
+    <value>Machine {0}</value>
+  </data>
+  <data name="OperationNumber" xml:space="preserve">
+    <value>Operation #{0}</value>
+  </data>
+  <data name="QualityInspectionManagement" xml:space="preserve">
+    <value>Quality Inspection Management</value>
+  </data>
+</root>

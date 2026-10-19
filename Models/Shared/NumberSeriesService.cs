@@ -16,7 +16,8 @@ public class NumberSeriesService
     NumberSeriesType type,
     bool useTransaction = true)
     {
-        if (!useTransaction)
+        if (!useTransaction ||
+            _db.Database.CurrentTransaction != null)
         {
             return await GetNextNumberInternalAsync(type);
         }
