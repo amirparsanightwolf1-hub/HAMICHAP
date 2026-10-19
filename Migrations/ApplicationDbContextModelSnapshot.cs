@@ -1721,6 +1721,135 @@ namespace HamiChap_MES_ERP.Migrations
                     b.ToTable("SalesEvaluationLines");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesInvoice", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("InvoiceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("QuotationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<long>("SalesDeliveryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SalesOrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("QuotationId");
+
+                    b.HasIndex("SalesDeliveryId")
+                        .IsUnique();
+
+                    b.HasIndex("SalesOrderId");
+
+                    b.ToTable("SalesInvoices");
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesInvoiceLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<long>("QuotationLineId")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<long>("SalesDeliveryLineId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SalesInvoiceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("QuotationLineId");
+
+                    b.HasIndex("SalesDeliveryLineId")
+                        .IsUnique();
+
+                    b.HasIndex("SalesInvoiceId");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("SalesInvoiceLines");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesOrder", b =>
                 {
                     b.Property<long>("Id")
@@ -1790,6 +1919,9 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<long?>("QuotationLineId")
+                        .HasColumnType("bigint");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -1808,6 +1940,8 @@ namespace HamiChap_MES_ERP.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ItemId");
+
+                    b.HasIndex("QuotationLineId");
 
                     b.HasIndex("SalesOrderId");
 
@@ -2870,6 +3004,84 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Navigation("SalesEvaluation");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesInvoice", b =>
+                {
+                    b.HasOne("HamiChap_MES_ERP.Models.Customers.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.Quotation", "Quotation")
+                        .WithMany()
+                        .HasForeignKey("QuotationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.SalesDelivery", "SalesDelivery")
+                        .WithMany()
+                        .HasForeignKey("SalesDeliveryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.SalesOrder", "SalesOrder")
+                        .WithMany()
+                        .HasForeignKey("SalesOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Quotation");
+
+                    b.Navigation("SalesDelivery");
+
+                    b.Navigation("SalesOrder");
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesInvoiceLine", b =>
+                {
+                    b.HasOne("HamiChap_MES_ERP.Models.Inventory.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.QuotationLine", "QuotationLine")
+                        .WithMany()
+                        .HasForeignKey("QuotationLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.SalesDeliveryLine", "SalesDeliveryLine")
+                        .WithMany()
+                        .HasForeignKey("SalesDeliveryLineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.SalesInvoice", "SalesInvoice")
+                        .WithMany("Lines")
+                        .HasForeignKey("SalesInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Inventory.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("QuotationLine");
+
+                    b.Navigation("SalesDeliveryLine");
+
+                    b.Navigation("SalesInvoice");
+
+                    b.Navigation("Unit");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesOrder", b =>
                 {
                     b.HasOne("HamiChap_MES_ERP.Models.Customers.Customer", "Customer")
@@ -2897,6 +3109,11 @@ namespace HamiChap_MES_ERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.QuotationLine", "QuotationLine")
+                        .WithMany()
+                        .HasForeignKey("QuotationLineId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("HamiChap_MES_ERP.Models.Sales.SalesOrder", "SalesOrder")
                         .WithMany("Lines")
                         .HasForeignKey("SalesOrderId")
@@ -2910,6 +3127,8 @@ namespace HamiChap_MES_ERP.Migrations
                         .IsRequired();
 
                     b.Navigation("Item");
+
+                    b.Navigation("QuotationLine");
 
                     b.Navigation("SalesOrder");
 
@@ -3172,6 +3391,11 @@ namespace HamiChap_MES_ERP.Migrations
                 });
 
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesEvaluation", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesInvoice", b =>
                 {
                     b.Navigation("Lines");
                 });

@@ -43,4 +43,8 @@ public class SalesOrderLine : BaseEntity
     public decimal DeliveredQuantity { get; set; }
 
     public decimal ProducedQuantity { get; set; }
+
+    public long? QuotationLineId { get; set; }
+
+    public QuotationLine? QuotationLine { get; set; }
 }

@@ -94,6 +94,7 @@ public class NumberSeriesService
             NumberSeriesType.Quotation => "QT",
             NumberSeriesType.ProductionScrap => "PS",
             NumberSeriesType.SalesDelivery => "SD",
+            NumberSeriesType.SalesInvoice => "SI",
 
             _ => "DOC"
         };

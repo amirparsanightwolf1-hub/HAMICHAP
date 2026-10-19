@@ -156,6 +156,14 @@ else
                     </button>
                 }
 
+                @if (canViewSalesInvoices)
+                {
+                    <button class="menu-button"
+                            @onclick='() => GoTo("/sales/invoices")'>
+                        🧾 @LocalizationService["SalesInvoices"]
+                    </button>
+                }
+
             }
 
             @if (canViewSalesOrders)
@@ -289,6 +297,7 @@ else
 
     private bool canViewSalesOrders;
 
+    private bool canViewSalesInvoices;
 
     // =========================================================
     // Production
@@ -398,6 +407,11 @@ else
                     user,
                     "Sales.Deliveries.View");
 
+            canViewSalesInvoices =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Sales.Invoices.View");
+
             canViewSalesOrders =
                 await PermissionService.HasPermissionAsync(
                     user,
@@ -406,7 +420,8 @@ else
             canViewSales =
                 canViewSalesRequests ||
                 canViewSalesOrders ||
-                canViewSalesDeliveries;
+                canViewSalesDeliveries ||
+                canViewSalesInvoices;
 
 
             // =====================================================

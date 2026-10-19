@@ -12,15 +12,18 @@ public class SalesDeliveryService
     private readonly ApplicationDbContext _db;
     private readonly InventoryPostingService _inventoryPosting;
     private readonly NumberSeriesService _numberSeries;
+    private readonly SalesInvoiceService _salesInvoiceService;
 
     public SalesDeliveryService(
-        ApplicationDbContext db,
-        InventoryPostingService inventoryPosting,
-        NumberSeriesService numberSeries)
+    ApplicationDbContext db,
+    InventoryPostingService inventoryPosting,
+    NumberSeriesService numberSeries,
+    SalesInvoiceService salesInvoiceService)
     {
         _db = db;
         _inventoryPosting = inventoryPosting;
         _numberSeries = numberSeries;
+        _salesInvoiceService = salesInvoiceService;
     }
 
     public async Task<SalesDelivery> CreateDeliveryAsync(
@@ -158,8 +161,15 @@ public class SalesDeliveryService
                 delivery.SalesOrder,
                 delivery.Lines);
 
+            // Create the invoice inside the existing transaction.
+            await _salesInvoiceService.CreateForDeliveryAsync(
+                delivery.Id,
+                userId);
+
             foreach (var line in delivery.Lines)
             {
+                // Keep your existing inventory posting code here.
+
                 var salesLine =
                     delivery.SalesOrder.Lines
                         .First(x =>

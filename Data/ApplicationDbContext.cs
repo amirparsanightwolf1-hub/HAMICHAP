@@ -14,6 +14,33 @@ namespace HamiChap_MES_ERP.Data
     {
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<SalesInvoice>().Property(x => x.Subtotal).HasPrecision(18, 2);
+            builder.Entity<SalesInvoice>().Property(x => x.TotalAmount).HasPrecision(18, 2);
+            builder.Entity<SalesInvoice>().HasIndex(x => x.InvoiceNumber).IsUnique();
+            builder.Entity<SalesInvoice>().HasIndex(x => x.SalesDeliveryId).IsUnique();
+
+            builder.Entity<SalesInvoice>().HasOne(x => x.Quotation).WithMany()
+                .HasForeignKey(x => x.QuotationId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SalesInvoice>().HasOne(x => x.SalesOrder).WithMany()
+                .HasForeignKey(x => x.SalesOrderId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SalesInvoice>().HasOne(x => x.SalesDelivery).WithMany()
+                .HasForeignKey(x => x.SalesDeliveryId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SalesInvoice>().HasOne(x => x.Customer).WithMany()
+                .HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<SalesInvoiceLine>().Property(x => x.Quantity).HasPrecision(18, 4);
+            builder.Entity<SalesInvoiceLine>().Property(x => x.UnitPrice).HasPrecision(18, 4);
+            builder.Entity<SalesInvoiceLine>().Property(x => x.LineTotal).HasPrecision(18, 2);
+            builder.Entity<SalesInvoiceLine>().HasIndex(x => x.SalesDeliveryLineId).IsUnique();
+
+            builder.Entity<SalesInvoiceLine>().HasOne(x => x.SalesInvoice).WithMany(x => x.Lines)
+                .HasForeignKey(x => x.SalesInvoiceId).OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<SalesInvoiceLine>().HasOne(x => x.SalesDeliveryLine).WithMany()
+                .HasForeignKey(x => x.SalesDeliveryLineId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SalesInvoiceLine>().HasOne(x => x.QuotationLine).WithMany()
+                .HasForeignKey(x => x.QuotationLineId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SalesOrderLine>().HasOne(x => x.QuotationLine).WithMany()
+                .HasForeignKey(x => x.QuotationLineId).OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<InventoryBalance>()
                 .Property(x => x.OnHandQuantity)
@@ -666,6 +693,11 @@ namespace HamiChap_MES_ERP.Data
 
         public DbSet<QuotationLine> QuotationLines
             => Set<QuotationLine>();
+
+        public DbSet<SalesInvoice> SalesInvoices 
+            => Set<SalesInvoice>();
+        public DbSet<SalesInvoiceLine> SalesInvoiceLines
+            => Set<SalesInvoiceLine>();
 
         public DbSet<ApprovalHistory> ApprovalHistories
             => Set<ApprovalHistory>();

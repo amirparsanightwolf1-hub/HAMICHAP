@@ -1796,4 +1796,52 @@
 	<data name="NoActiveBomForProductionItem" xml:space="preserve"><value>No active bill of materials was found for this production item.</value></data>
 	<data name="BomHasNoComponentLines" xml:space="preserve"><value>The bill of materials has no component lines.</value></data>
 	<data name="PlannedQuantityMustBePositive" xml:space="preserve"><value>The planned production quantity must be greater than zero.</value></data>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+	</resheader>
+	<data name="Common.TextDirection" xml:space="preserve"><value>ltr</value></data>
+	<data name="Common.Loading" xml:space="preserve"><value>Loading...</value></data>
+	<data name="Common.Date" xml:space="preserve"><value>Date</value></data>
+	<data name="Common.Customer" xml:space="preserve"><value>Customer</value></data>
+	<data name="Common.Total" xml:space="preserve"><value>Total</value></data>
+	<data name="Common.Status" xml:space="preserve"><value>Status</value></data>
+	<data name="Common.Back" xml:space="preserve"><value>Back</value></data>
+	<data name="Common.Item" xml:space="preserve"><value>Item</value></data>
+	<data name="Common.Quantity" xml:space="preserve"><value>Quantity</value></data>
+	<data name="Common.Notes" xml:space="preserve"><value>Notes</value></data>
+	<data name="Common.Subtotal" xml:space="preserve"><value>Subtotal</value></data>
+	<data name="Common.LoadFailed" xml:space="preserve"><value>Unable to load sales invoices. Please try again.</value></data>
+	<data name="SalesInvoices.PageTitle" xml:space="preserve"><value>Sales Invoices</value></data>
+	<data name="SalesInvoices.Title" xml:space="preserve"><value>Sales Invoices</value></data>
+	<data name="SalesInvoices.Description" xml:space="preserve"><value>Invoices are generated automatically when a sales delivery is posted.</value></data>
+	<data name="SalesInvoices.Empty" xml:space="preserve"><value>No sales invoices have been generated yet.</value></data>
+	<data name="SalesInvoices.Invoice" xml:space="preserve"><value>Invoice</value></data>
+	<data name="SalesInvoices.Quotation" xml:space="preserve"><value>Quotation</value></data>
+	<data name="SalesInvoices.SalesOrder" xml:space="preserve"><value>Sales Order</value></data>
+	<data name="SalesInvoices.Delivery" xml:space="preserve"><value>Delivery</value></data>
+	<data name="SalesInvoice.PageTitle" xml:space="preserve"><value>Sales Invoice</value></data>
+	<data name="SalesInvoice.Title" xml:space="preserve"><value>Sales Invoice</value></data>
+	<data name="SalesInvoice.PrintSavePdf" xml:space="preserve"><value>Print / Save PDF</value></data>
+	<data name="SalesInvoice.NotFound" xml:space="preserve"><value>Sales invoice not found.</value></data>
+	<data name="SalesInvoice.DocumentHeading" xml:space="preserve"><value>SALES INVOICE</value></data>
+	<data name="SalesInvoice.BillTo" xml:space="preserve"><value>Bill To</value></data>
+	<data name="SalesInvoice.ApprovedQuotation" xml:space="preserve"><value>Approved Quotation</value></data>
+	<data name="SalesInvoice.SalesOrder" xml:space="preserve"><value>Sales Order</value></data>
+	<data name="SalesInvoice.SalesDelivery" xml:space="preserve"><value>Sales Delivery</value></data>
+	<data name="SalesInvoice.ApprovedUnitPrice" xml:space="preserve"><value>Approved Unit Price</value></data>
+	<data name="SalesInvoice.LineTotal" xml:space="preserve"><value>Line Total</value></data>
+	<data name="SalesInvoice.GeneratedNotice" xml:space="preserve"><value>Generated from the accepted quotation and posted sales delivery.</value></data>
+	<data name="SalesInvoiceStatus.Draft" xml:space="preserve"><value>Draft</value></data>
+	<data name="SalesInvoiceStatus.Posted" xml:space="preserve"><value>Posted</value></data>
+	<data name="SalesInvoiceStatus.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+	<data name="SalesInvoices" xml:space="preserve"><value>Sales Invoices</value></data>
 </root>

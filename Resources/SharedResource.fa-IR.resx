@@ -1796,4 +1796,52 @@
 	<data name="NoActiveBomForProductionItem" xml:space="preserve"><value>هیچ فهرست مواد فعالی برای این قلم تولید یافت نشد.</value></data>
 	<data name="BomHasNoComponentLines" xml:space="preserve"><value>فهرست مواد هیچ ردیف مؤلفه‌ای ندارد.</value></data>
 	<data name="PlannedQuantityMustBePositive" xml:space="preserve"><value>مقدار تولید برنامه‌ریزی‌شده باید بیشتر از صفر باشد.</value></data>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+	</resheader>
+	<data name="Common.TextDirection" xml:space="preserve"><value>rtl</value></data>
+	<data name="Common.Loading" xml:space="preserve"><value>در حال بارگذاری...</value></data>
+	<data name="Common.Date" xml:space="preserve"><value>تاریخ</value></data>
+	<data name="Common.Customer" xml:space="preserve"><value>مشتری</value></data>
+	<data name="Common.Total" xml:space="preserve"><value>مبلغ کل</value></data>
+	<data name="Common.Status" xml:space="preserve"><value>وضعیت</value></data>
+	<data name="Common.Back" xml:space="preserve"><value>بازگشت</value></data>
+	<data name="Common.Item" xml:space="preserve"><value>کالا</value></data>
+	<data name="Common.Quantity" xml:space="preserve"><value>تعداد</value></data>
+	<data name="Common.Notes" xml:space="preserve"><value>توضیحات</value></data>
+	<data name="Common.Subtotal" xml:space="preserve"><value>جمع جزء</value></data>
+	<data name="Common.LoadFailed" xml:space="preserve"><value>بارگذاری فاکتورهای فروش انجام نشد. لطفاً دوباره تلاش کنید.</value></data>
+	<data name="SalesInvoices.PageTitle" xml:space="preserve"><value>فاکتورهای فروش</value></data>
+	<data name="SalesInvoices.Title" xml:space="preserve"><value>فاکتورهای فروش</value></data>
+	<data name="SalesInvoices.Description" xml:space="preserve"><value>پس از ثبت حواله فروش، فاکتور به‌صورت خودکار ایجاد می‌شود.</value></data>
+	<data name="SalesInvoices.Empty" xml:space="preserve"><value>هنوز فاکتور فروشی ایجاد نشده است.</value></data>
+	<data name="SalesInvoices.Invoice" xml:space="preserve"><value>شماره فاکتور</value></data>
+	<data name="SalesInvoices.Quotation" xml:space="preserve"><value>پیش‌فاکتور</value></data>
+	<data name="SalesInvoices.SalesOrder" xml:space="preserve"><value>سفارش فروش</value></data>
+	<data name="SalesInvoices.Delivery" xml:space="preserve"><value>حواله فروش</value></data>
+	<data name="SalesInvoice.PageTitle" xml:space="preserve"><value>فاکتور فروش</value></data>
+	<data name="SalesInvoice.Title" xml:space="preserve"><value>فاکتور فروش</value></data>
+	<data name="SalesInvoice.PrintSavePdf" xml:space="preserve"><value>چاپ / ذخیره PDF</value></data>
+	<data name="SalesInvoice.NotFound" xml:space="preserve"><value>فاکتور فروش پیدا نشد.</value></data>
+	<data name="SalesInvoice.DocumentHeading" xml:space="preserve"><value>فاکتور فروش</value></data>
+	<data name="SalesInvoice.BillTo" xml:space="preserve"><value>صورتحساب برای</value></data>
+	<data name="SalesInvoice.ApprovedQuotation" xml:space="preserve"><value>پیش‌فاکتور تأییدشده</value></data>
+	<data name="SalesInvoice.SalesOrder" xml:space="preserve"><value>سفارش فروش</value></data>
+	<data name="SalesInvoice.SalesDelivery" xml:space="preserve"><value>حواله فروش</value></data>
+	<data name="SalesInvoice.ApprovedUnitPrice" xml:space="preserve"><value>قیمت واحد تأییدشده</value></data>
+	<data name="SalesInvoice.LineTotal" xml:space="preserve"><value>مبلغ ردیف</value></data>
+	<data name="SalesInvoice.GeneratedNotice" xml:space="preserve"><value>این فاکتور بر اساس پیش‌فاکتور پذیرفته‌شده و حواله فروش ثبت‌شده ایجاد شده است.</value></data>
+	<data name="SalesInvoiceStatus.Draft" xml:space="preserve"><value>پیش‌نویس</value></data>
+	<data name="SalesInvoiceStatus.Posted" xml:space="preserve"><value>ثبت‌شده</value></data>
+	<data name="SalesInvoiceStatus.Cancelled" xml:space="preserve"><value>لغوشده</value></data>
+	<data name="SalesInvoices" xml:space="preserve"><value>فاکتورهای فروش</value></data>
 </root>

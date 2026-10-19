@@ -1,0 +1,96 @@
+@page "/sales/invoices"
+
+@using HamiChap_MES_ERP.Services
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+
+<PageTitle>@LocalizationService["SalesInvoices.PageTitle"]</PageTitle>
+<div class="page-container" dir="@LocalizationService["Common.TextDirection"]">
+    <div class="erp-page-header mb-4">
+        <div>
+            <h3 class="erp-page-title">@LocalizationService["SalesInvoices.Title"]</h3>
+            <p class="erp-page-subtitle">@LocalizationService["SalesInvoices.Description"]</p>
+        </div>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">@LocalizationService["Common.Loading"]</span>
+            </div>
+        </div>
+    }
+    else if (invoices.Count == 0)
+    {
+        <div class="alert alert-info">@LocalizationService["SalesInvoices.Empty"]</div>
+    }
+    else
+    {
+        <div class="card"><div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr>
+                    <th>@LocalizationService["SalesInvoices.Invoice"]</th>
+                    <th>@LocalizationService["Common.Date"]</th>
+                    <th>@LocalizationService["Common.Customer"]</th>
+                    <th>@LocalizationService["SalesInvoices.Quotation"]</th>
+                    <th>@LocalizationService["SalesInvoices.SalesOrder"]</th>
+                    <th>@LocalizationService["SalesInvoices.Delivery"]</th>
+                    <th class="text-end">@LocalizationService["Common.Total"]</th>
+                    <th>@LocalizationService["Common.Status"]</th>
+                </tr></thead>
+                <tbody>
+                @foreach (var invoice in invoices)
+                {
+                    <tr role="button" style="cursor:pointer" @onclick="() => OpenInvoice(invoice.Id)">
+                        <td class="fw-semibold">@invoice.InvoiceNumber</td>
+                        <td>@invoice.InvoiceDate.ToString("yyyy-MM-dd")</td>
+                        <td>@invoice.Customer?.Name</td>
+                        <td>@invoice.Quotation?.QuotationNumber</td>
+                        <td>@invoice.SalesOrder?.OrderNumber</td>
+                        <td>@invoice.SalesDelivery?.DeliveryNumber</td>
+                        <td class="text-end">@invoice.TotalAmount.ToString("N2")</td>
+                        <td>@LocalizationService[$"SalesInvoiceStatus.{invoice.Status}"]</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div></div>
+    }
+</div>
+
+@code {
+    private List<SalesInvoice> invoices = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            invoices = await Db.SalesInvoices.AsNoTracking()
+                .Include(x => x.Customer)
+                .Include(x => x.Quotation)
+                .Include(x => x.SalesOrder)
+                .Include(x => x.SalesDelivery)
+                .OrderByDescending(x => x.InvoiceDate)
+                .ThenByDescending(x => x.Id)
+                .ToListAsync();
+        }
+        catch
+        {
+            errorMessage = LocalizationService["Common.LoadFailed"];
+        }
+        finally { isLoading = false; }
+    }
+
+    private void OpenInvoice(long id) => Navigation.NavigateTo($"/sales/invoices/edit/{id}");
+}
