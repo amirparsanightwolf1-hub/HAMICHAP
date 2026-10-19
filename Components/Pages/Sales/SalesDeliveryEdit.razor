@@ -342,10 +342,6 @@
                                 </th>
 
                                 <th class="text-end">
-                                    @L["ProducedQuantity"]
-                                </th>
-
-                                <th class="text-end">
                                     @L["DeliveredQuantity"]
                                 </th>
 
@@ -400,12 +396,6 @@
 
                                     <td class="text-end">
                                         @salesLine.Quantity.ToString("N2")
-                                    </td>
-
-                                    <!-- Produced -->
-
-                                    <td class="text-end">
-                                        @salesLine.ProducedQuantity.ToString("N2")
                                     </td>
 
                                     <!-- Delivered -->
@@ -519,6 +509,9 @@
     private string? errorMessage;
     private string? successMessage;
 
+    private List<InventoryLocation> finishedGoodsLocations = new();
+    private List<InventoryLocation> customerLocations = new();
+
     protected override async Task OnInitializedAsync()
     {
         await LoadAsync();
@@ -565,9 +558,19 @@
                 return;
             }
 
-            locations =
+            finishedGoodsLocations =
                 await Db.InventoryLocations
-                    .Where(x => x.IsActive)
+                .Where(x =>
+                    x.IsActive &&
+                    x.Type == InventoryLocationType.FinishedGoods)
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+
+            customerLocations =
+                await Db.InventoryLocations
+                    .Where(x =>
+                        x.IsActive &&
+                        x.Type == InventoryLocationType.Customer)
                     .OrderBy(x => x.Name)
                     .ToListAsync();
         }
@@ -727,16 +730,6 @@
                     $"({GetItemDisplayName(line)})");
             }
 
-            var remainingProduced =
-                salesLine.ProducedQuantity -
-                salesLine.DeliveredQuantity;
-
-            if (line.Quantity > remainingProduced)
-            {
-                throw new InvalidOperationException(
-                    $"{L["DeliveryQuantityExceedsProduced"]} " +
-                    $"({GetItemDisplayName(line)})");
-            }
         }
     }
 

@@ -288,24 +288,13 @@ public class SalesDeliveryService
                     $"Requested: {request.Quantity}.");
             }
 
-            var remainingProduced =
-                salesLine.ProducedQuantity -
-                salesLine.DeliveredQuantity;
-
-            if (request.Quantity > remainingProduced)
-            {
-                throw new InvalidOperationException(
-                    $"Delivery quantity for item {salesLine.ItemId} " +
-                    $"exceeds the available produced quantity. " +
-                    $"Produced remaining: {remainingProduced}, " +
-                    $"Requested: {request.Quantity}.");
-            }
         }
     }
 
+
     private static void ValidatePostedDeliveryLines(
-    SalesOrder salesOrder,
-    ICollection<SalesDeliveryLine> deliveryLines)
+        SalesOrder salesOrder,
+        ICollection<SalesDeliveryLine> deliveryLines)
     {
         foreach (var deliveryLine in deliveryLines)
         {
@@ -316,9 +305,8 @@ public class SalesDeliveryService
             }
 
             var salesLine =
-                salesOrder.Lines
-                    .FirstOrDefault(x =>
-                        x.Id == deliveryLine.SalesOrderLineId);
+                salesOrder.Lines.FirstOrDefault(x =>
+                    x.Id == deliveryLine.SalesOrderLineId);
 
             if (salesLine == null)
             {
@@ -326,33 +314,20 @@ public class SalesDeliveryService
                     $"Sales order line {deliveryLine.SalesOrderLineId} was not found.");
             }
 
-            var remainingOrdered =
-                salesLine.Quantity -
-                salesLine.DeliveredQuantity;
+            var remaining =
+                salesLine.Quantity - salesLine.DeliveredQuantity;
 
-            if (deliveryLine.Quantity > remainingOrdered)
+            if (deliveryLine.Quantity > remaining)
             {
                 throw new InvalidOperationException(
                     $"Delivery quantity for item {salesLine.ItemId} " +
-                    $"exceeds the remaining ordered quantity. " +
-                    $"Remaining: {remainingOrdered}, " +
-                    $"Requested: {deliveryLine.Quantity}.");
-            }
-
-            var remainingProduced =
-                salesLine.ProducedQuantity -
-                salesLine.DeliveredQuantity;
-
-            if (deliveryLine.Quantity > remainingProduced)
-            {
-                throw new InvalidOperationException(
-                    $"Delivery quantity for item {salesLine.ItemId} " +
-                    $"exceeds the available produced quantity. " +
-                    $"Produced remaining: {remainingProduced}, " +
+                    "exceeds the remaining ordered quantity. " +
+                    $"Remaining: {remaining}, " +
                     $"Requested: {deliveryLine.Quantity}.");
             }
         }
     }
+
 
     private static void UpdateSalesOrderStatus(
         SalesOrder salesOrder)
