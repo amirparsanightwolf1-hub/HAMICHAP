@@ -14,7 +14,7 @@
 @inject ProductionPostingService ProductionPostingService
 @inject ProductionExecutionService ProductionExecutionService
 
-<PageTitle>Production Order</PageTitle>
+<PageTitle>@LocalizationService["ProductionOrder"]</PageTitle>
 
 <div class="page-container">
 
@@ -28,7 +28,7 @@
     @if (productionOrder == null)
     {
         <div class="alert alert-info">
-            Loading production order...
+            @LocalizationService["LoadingProductionOrder"]
         </div>
     }
     else
@@ -39,7 +39,7 @@
                 <div class="d-flex align-items-center gap-3">
 
                     <h3 class="erp-page-title mb-0">
-                        Production Order
+                        @LocalizationService["ProductionOrder"]
                     </h3>
 
                     <span class="@GetStatusClass(productionOrder.Status)">
@@ -58,7 +58,7 @@
                 <button type="button"
                         class="btn btn-secondary"
                         @onclick="BackToList">
-                    Back
+                    @LocalizationService["Back"]
                 </button>
 
                 @if (productionOrder.Status == ProductionOrderStatus.Planned ||
@@ -71,8 +71,8 @@
                             disabled="@isCalculatingMrp">
 
                         @(isCalculatingMrp
-                            ? "Calculating..."
-                            : "Calculate MRP")
+                            ? LocalizationService["Calculating"]
+                            : LocalizationService["CalculateMRP"])
 
                     </button>
                 }
@@ -88,8 +88,8 @@
                             disabled="@isReservingMaterials">
 
                         @(isReservingMaterials
-                            ? "Reserving..."
-                            : "Reserve Materials")
+                            ? LocalizationService["Reserving"]
+                            : LocalizationService["ReserveMaterials"])
 
                     </button>
                 }
@@ -99,7 +99,7 @@
                     <button type="button"
                             class="btn btn-primary"
                             disabled>
-                        Start Production
+                        @LocalizationService["StartProduction"]
                     </button>
                 }
 
@@ -110,7 +110,7 @@
                             class="btn btn-warning"
                             @onclick="IssueMaterials"
                             disabled="@isIssuingMaterials">
-                        @(isIssuingMaterials ? "Issuing Materials..." : "Issue Materials")
+                        @(isIssuingMaterials ? LocalizationService["IssuingMaterials"] : LocalizationService["IssueMaterials"])
                     </button>
                 }
 
@@ -119,7 +119,7 @@
                     <button type="button"
                             class="btn btn-primary"
                             disabled>
-                        Production Progress
+                        @LocalizationService["ProductionProgress"]
                     </button>
                 }
 
@@ -129,14 +129,14 @@
                     <button type="button"
                             class="btn btn-info"
                             disabled>
-                        Quality Control
+                        @LocalizationService["QualityControl"]
                     </button>
                 }
 
                 @if (productionOrder.Status == ProductionOrderStatus.Completed)
                 {
                     <span class="badge bg-success px-3 py-2">
-                        Production Completed
+                        @LocalizationService["ProductionCompleted"]
                     </span>
                 }
 
@@ -151,7 +151,7 @@
         <div class="card mb-4">
 
             <div class="card-header">
-                <strong>Production Workflow</strong>
+                <strong>@LocalizationService["ProductionWorkflow"]</strong>
             </div>
 
             <div class="card-body">
@@ -162,7 +162,7 @@
                         <div class="border rounded p-3 h-100">
 
                             <div class="small text-muted">
-                                1. Planning
+                                @LocalizationService["WorkflowPlanning"]
                             </div>
 
                             <div class="mt-1">
@@ -175,7 +175,7 @@
                             </div>
 
                             <div class="small text-muted mt-2">
-                                MRP and material availability
+                                @LocalizationService["MrpAndMaterialAvailability"]
                             </div>
 
                         </div>
@@ -185,7 +185,7 @@
                         <div class="border rounded p-3 h-100">
 
                             <div class="small text-muted">
-                                2. Material Readiness
+                                @LocalizationService["WorkflowMaterialReadiness"]
                             </div>
 
                             <div class="mt-1">
@@ -196,7 +196,7 @@
                             </div>
 
                             <div class="small text-muted mt-2">
-                                Required materials reserved
+                                @LocalizationService["RequiredMaterialsReserved"]
                             </div>
 
                         </div>
@@ -206,7 +206,7 @@
                         <div class="border rounded p-3 h-100">
 
                             <div class="small text-muted">
-                                3. Production
+                                @LocalizationService["WorkflowProduction"]
                             </div>
 
                             <div class="mt-1">
@@ -217,7 +217,7 @@
                             </div>
 
                             <div class="small text-muted mt-2">
-                                Manufacturing operations
+                                @LocalizationService["ManufacturingOperations"]
                             </div>
 
                         </div>
@@ -227,7 +227,7 @@
                         <div class="border rounded p-3 h-100">
 
                             <div class="small text-muted">
-                                4. Quality / Completion
+                                @LocalizationService["WorkflowQualityCompletion"]
                             </div>
 
                             <div class="mt-1">
@@ -239,7 +239,7 @@
                             </div>
 
                             <div class="small text-muted mt-2">
-                                QC and finished production
+                                @LocalizationService["QcAndFinishedProduction"]
                             </div>
 
                         </div>
@@ -258,7 +258,7 @@
         <div class="card mb-4">
 
             <div class="card-header">
-                <strong>Production Order Information</strong>
+                <strong>@LocalizationService["ProductionOrderInformation"]</strong>
             </div>
 
             <div class="card-body">
@@ -267,7 +267,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Order Number
+                            @LocalizationService["OrderNumber"]
                         </label>
 
                         <input class="form-control"
@@ -277,7 +277,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Sales Order
+                            @LocalizationService["SalesOrder"]
                         </label>
 
                         <input class="form-control"
@@ -287,7 +287,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Customer
+                            @LocalizationService["Customer"]
                         </label>
 
                         <input class="form-control"
@@ -297,7 +297,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Status
+                            @LocalizationService["Status"]
                         </label>
 
                         <div class="pt-2">
@@ -309,7 +309,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Created
+                            @LocalizationService["Created"]
                         </label>
 
                         <input class="form-control"
@@ -319,7 +319,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Planned Start
+                            @LocalizationService["PlannedStart"]
                         </label>
 
                         <input class="form-control"
@@ -329,7 +329,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Planned End
+                            @LocalizationService["PlannedEnd"]
                         </label>
 
                         <input class="form-control"
@@ -339,7 +339,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Actual Start
+                            @LocalizationService["ActualStart"]
                         </label>
 
                         <input class="form-control"
@@ -349,7 +349,7 @@
 
                     <div class="col-md-3">
                         <label class="form-label">
-                            Actual End
+                            @LocalizationService["ActualEnd"]
                         </label>
 
                         <input class="form-control"
@@ -364,7 +364,7 @@
                     <div class="mt-3">
 
                         <label class="form-label">
-                            Notes
+                            @LocalizationService["Notes"]
                         </label>
 
                         <textarea class="form-control"
@@ -385,7 +385,7 @@
         <div class="card mb-4">
 
             <div class="card-header">
-                <strong>Production Lines</strong>
+                <strong>@LocalizationService["ProductionLines"]</strong>
             </div>
 
             <div class="card-body">
@@ -393,7 +393,7 @@
                 @if (productionOrder.Lines.Count == 0)
                 {
                     <div class="alert alert-warning mb-0">
-                        No production lines found.
+                        @LocalizationService["NoProductionLines"]
                     </div>
                 }
                 else
@@ -404,12 +404,12 @@
 
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th>Code</th>
-                                    <th>Planned Quantity</th>
-                                    <th>Produced Quantity</th>
-                                    <th>Remaining</th>
-                                    <th>Unit</th>
+                                    <th>@LocalizationService["Item"]</th>
+                                    <th>@LocalizationService["Code"]</th>
+                                    <th>@LocalizationService["PlannedQuantity"]</th>
+                                    <th>@LocalizationService["ProducedQuantity"]</th>
+                                    <th>@LocalizationService["Remaining"]</th>
+                                    <th>@LocalizationService["Unit"]</th>
                                 </tr>
                             </thead>
 
@@ -472,7 +472,7 @@
         <div class="card mb-4">
 
             <div class="card-header">
-                <strong>Production Progress</strong>
+                <strong>@LocalizationService["ProductionProgress"]</strong>
             </div>
 
             <div class="card-body">
@@ -502,7 +502,7 @@
                     <div class="col-md-3">
 
                         <div class="small text-muted">
-                            Planned
+                            @LocalizationService["Planned"]
                         </div>
 
                         <div class="fs-5 fw-semibold">
@@ -514,7 +514,7 @@
                     <div class="col-md-3">
 
                         <div class="small text-muted">
-                            Produced
+                            @LocalizationService["Produced"]
                         </div>
 
                         <div class="fs-5 fw-semibold">
@@ -526,7 +526,7 @@
                     <div class="col-md-3">
 
                         <div class="small text-muted">
-                            Remaining
+                            @LocalizationService["Remaining"]
                         </div>
 
                         <div class="fs-5 fw-semibold">
@@ -538,7 +538,7 @@
                     <div class="col-md-3">
 
                         <div class="small text-muted">
-                            Completion
+                            @LocalizationService["Completion"]
                         </div>
 
                         <div class="fs-5 fw-semibold">
@@ -574,10 +574,10 @@
 
             <div class="card-header d-flex justify-content-between align-items-center">
 
-                <strong>Production Operations</strong>
+                <strong>@LocalizationService["ProductionOperations"]</strong>
 
                 <span class="badge bg-secondary">
-                    @productionOperations.Count Operations
+                    @string.Format(LocalizationService["OperationsCount"], productionOperations.Count)
                 </span>
 
             </div>
@@ -600,31 +600,31 @@
                             <thead>
                                 <tr>
                                     <th style="width: 80px;">
-                                        Seq.
+                                        @LocalizationService["Sequence"]
                                     </th>
 
                                     <th>
-                                        Operation
+                                        @LocalizationService["Operation"]
                                     </th>
 
                                     <th>
-                                        Work Center
+                                        @LocalizationService["WorkCenter"]
                                     </th>
 
                                     <th>
-                                        Planned Hours
+                                        @LocalizationService["PlannedHours"]
                                     </th>
 
                                     <th>
-                                        Actual Hours
+                                        @LocalizationService["ActualHours"]
                                     </th>
 
                                     <th>
-                                        Status
+                                        @LocalizationService["Status"]
                                     </th>
 
                                     <th style="width: 180px;">
-                                        Action
+                                        @LocalizationService["Action"]
                                     </th>
                                 </tr>
                             </thead>
@@ -651,7 +651,7 @@
                                             else
                                             {
                                                 <span class="text-muted">
-                                                    Not assigned
+                                                    @LocalizationService["NotAssigned"]
                                                 </span>
                                             }
                                         </td>
@@ -675,7 +675,7 @@
                                             <button type="button"
                                                     class="btn btn-sm btn-outline-primary"
                                                     disabled>
-                                                Open
+                                                @LocalizationService["Open"]
                                             </button>
 
                                         </td>
@@ -702,10 +702,10 @@
 
             <div class="card-header d-flex justify-content-between align-items-center">
 
-                <strong>Production Schedule</strong>
+                <strong>@LocalizationService["ProductionSchedule"]</strong>
 
                 <span class="badge bg-secondary">
-                    @productionSchedules.Count Schedules
+                    @string.Format(LocalizationService["SchedulesCount"], productionSchedules.Count)
                 </span>
 
             </div>
@@ -729,27 +729,27 @@
                                 <tr>
 
                                     <th>
-                                        Operation
+                                        @LocalizationService["Operation"]
                                     </th>
 
                                     <th>
-                                        Machine
+                                        @LocalizationService["Machine"]
                                     </th>
 
                                     <th>
-                                        Planned Start
+                                        @LocalizationService["PlannedStart"]
                                     </th>
 
                                     <th>
-                                        Planned End
+                                        @LocalizationService["PlannedEnd"]
                                     </th>
 
                                     <th>
-                                        Priority
+                                        @LocalizationService["Priority"]
                                     </th>
 
                                     <th>
-                                        Status
+                                        @LocalizationService["Status"]
                                     </th>
 
                                 </tr>
@@ -778,13 +778,13 @@
                                             else
                                             {
                                                 <span class="text-muted">
-                                                    Operation #@schedule.ProductionOperationId
+                                                    @LocalizationService["Operation"] #@schedule.ProductionOperationId
                                                 </span>
                                             }
                                         </td>
 
                                         <td>
-                                            Machine @schedule.MachineId
+                                            @LocalizationService["Machine"] @schedule.MachineId
                                         </td>
 
                                         <td>
@@ -826,8 +826,7 @@
         <!-- ===================================================== -->
         <!-- MRP -->
         <!-- ===================================================== -->
-
-        @if(!string.IsNullOrWhiteSpace(mrpMessage))
+        @if (!string.IsNullOrWhiteSpace(mrpMessage))
         {
             <div class="alert alert-success mb-4">
                 @mrpMessage
@@ -857,8 +856,8 @@
                         disabled="@isCalculatingMrp">
 
                     @(isCalculatingMrp
-                        ? "Calculating..."
-                        : "Calculate MRP")
+                        ? LocalizationService["Calculating"]
+                        : LocalizationService["CalculateMRP"])
 
                 </button>
 
@@ -876,7 +875,7 @@
                 @if (mrpPlan == null)
                 {
                     <div class="text-muted">
-                        No MRP calculation has been performed yet.
+                        @LocalizationService["NoMrpCalculation"]
                     </div>
                 }
                 else if (mrpPlan.Lines.Count == 0)
@@ -895,7 +894,7 @@
                             <div class="col-md-3">
 
                                 <div class="small text-muted">
-                                    MRP Created
+                                    @LocalizationService["MrpCreated"]
                                 </div>
 
                                 <strong>
@@ -908,7 +907,7 @@
                             <div class="col-md-3">
 
                                 <div class="small text-muted">
-                                    Status
+                                    @LocalizationService["Status"]
                                 </div>
 
                                 <strong>
@@ -920,7 +919,7 @@
                             <div class="col-md-3">
 
                                 <div class="small text-muted">
-                                    Materials
+                                    @LocalizationService["Materials"]
                                 </div>
 
                                 <strong>
@@ -932,7 +931,7 @@
                             <div class="col-md-3">
 
                                 <div class="small text-muted">
-                                    Shortages
+                                    @LocalizationService["Shortages"]
                                 </div>
 
                                 <strong>
@@ -953,13 +952,13 @@
                             <thead>
 
                                 <tr>
-                                    <th>Material</th>
-                                    <th>Code</th>
-                                    <th>Required</th>
-                                    <th>Available</th>
-                                    <th>Shortage</th>
-                                    <th>Unit</th>
-                                    <th>Status</th>
+                                    <th>@LocalizationService["Material"]</th>
+                                    <th>@LocalizationService["Code"]</th>
+                                    <th>@LocalizationService["Required"]</th>
+                                    <th>@LocalizationService["Available"]</th>
+                                    <th>@LocalizationService["Shortage"]</th>
+                                    <th>@LocalizationService["Unit"]</th>
+                                    <th>@LocalizationService["Status"]</th>
                                 </tr>
 
                             </thead>
@@ -1017,13 +1016,13 @@
                                             @if (line.IsShortage)
                                             {
                                                 <span class="badge bg-danger">
-                                                    Shortage
+                                                    @LocalizationService["Shortage"]
                                                 </span>
                                             }
                                             else
                                             {
                                                 <span class="badge bg-success">
-                                                    Available
+                                                    @LocalizationService["Available"]
                                                 </span>
                                             }
 
@@ -1050,7 +1049,7 @@
         <div class="card mb-4">
 
             <div class="card-header">
-                <strong>Material Reservations</strong>
+                <strong>@LocalizationService["ReservationMessage"]</strong>
             </div>
 
             <div class="card-body">
@@ -1070,12 +1069,12 @@
 
                             <thead>
                                 <tr>
-                                    <th>Material</th>
-                                    <th>Code</th>
-                                    <th>Reserved Quantity</th>
-                                    <th>Unit</th>
-                                    <th>Reserved Date</th>
-                                    <th>Status</th>
+                                    <th>@LocalizationService["Material"]</th>
+                                    <th>@LocalizationService["Code"]</th>
+                                    <th>@LocalizationService["ReservedQuantity"]</th>
+                                    <th>@LocalizationService["Unit"]</th>
+                                    <th>@LocalizationService["ReservedDate"]</th>
+                                    <th>@LocalizationService["Status"]</th>
                                 </tr>
                             </thead>
 
@@ -1126,7 +1125,7 @@
 
             </div>
 
-        </div> 
+        </div>
 
     }
 
@@ -1138,9 +1137,9 @@
     public long Id { get; set; }
 
     private long selectedProductionLineId;
-    
+
     private decimal outputQuantity;
-    
+
     private decimal wasteQuantity;
 
     private bool isRecordingOutput;
@@ -1198,7 +1197,7 @@
 
             if (productionOrder == null)
             {
-                errorMessage = "Production order not found.";
+                errorMessage = LocalizationService["ProductionOrderNotFound"];
                 return;
             }
 
@@ -1225,7 +1224,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            errorMessage = GetLocalizedErrorMessage(ex);
         }
     }
 
@@ -1249,11 +1248,11 @@
                     productionOrder.Id);
 
             mrpMessage =
-                "MRP calculation completed successfully.";
+                LocalizationService["MrpCalculationSuccess"];
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            errorMessage = GetLocalizedErrorMessage(ex);
         }
         finally
         {
@@ -1287,7 +1286,7 @@
             if (!reservations)
             {
                 materialIssueMessage =
-                    "No reserved materials are available for issue.";
+                    LocalizationService["NoReservedMaterialsForIssue"];
 
                 return;
             }
@@ -1301,7 +1300,7 @@
             if (productionLocation == null)
             {
                 throw new InvalidOperationException(
-                    "No active Production inventory location was found.");
+                    LocalizationService["NoActiveProductionLocation"]);
             }
 
             var documentIds =
@@ -1311,14 +1310,13 @@
                     "system");
 
             materialIssueMessage =
-                $"Material issue posted successfully. " +
-                $"Created {documentIds.Count} Production Issue document(s).";
+                string.Format(LocalizationService["MaterialIssuePosted"], documentIds.Count);
 
             await LoadProductionOrderAsync();
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            errorMessage = GetLocalizedErrorMessage(ex);
         }
         finally
         {
@@ -1361,13 +1359,13 @@
             await Db.SaveChangesAsync();
 
             reservationMessage =
-                "All required materials have been reserved successfully.";
+                LocalizationService["ReservationSuccess"];
 
             await LoadProductionOrderAsync();
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            errorMessage = GetLocalizedErrorMessage(ex);
         }
         finally
         {
@@ -1376,14 +1374,41 @@
     }
 
 
+    private string GetLocalizedErrorMessage(Exception ex)
+    {
+        var message = ex.GetBaseException().Message;
+
+        if (message.Contains("Production order not found", StringComparison.OrdinalIgnoreCase))
+            return LocalizationService["ProductionOrderNotFound"];
+
+        if (message.Contains("No active Production inventory location", StringComparison.OrdinalIgnoreCase))
+            return LocalizationService["NoActiveProductionLocation"];
+
+        if (message.Contains("No reserved materials", StringComparison.OrdinalIgnoreCase))
+            return LocalizationService["NoReservedMaterialsForIssue"];
+
+        if (message.Contains("No active BOM", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("No active BOM was found", StringComparison.OrdinalIgnoreCase))
+            return LocalizationService["NoActiveBomForProductionItem"];
+
+        if (message.Contains("has no component lines", StringComparison.OrdinalIgnoreCase))
+            return LocalizationService["BomHasNoComponentLines"];
+
+        if (message.Contains("planned quantity greater than zero", StringComparison.OrdinalIgnoreCase))
+            return LocalizationService["PlannedQuantityMustBePositive"];
+
+        // Avoid displaying untranslated exception text to users.
+        return LocalizationService["UnexpectedError"];
+    }
+
     private void BackToList()
     {
         Navigation.NavigateTo(
             "/production/orders");
     }
-    
+
     private string GetWorkflowStateText(
-        params ProductionOrderStatus[] statuses)
+            params ProductionOrderStatus[] statuses)
     {
         if (statuses.Contains(productionOrder!.Status))
         {
@@ -1394,10 +1419,10 @@
         if (statuses.Contains(ProductionOrderStatus.Completed) &&
             productionOrder.Status == ProductionOrderStatus.Completed)
         {
-            return "Completed";
+            return LocalizationService["Completed"];
         }
 
-        return "Pending";
+        return LocalizationService["Pending"];
     }
 
     private string GetStatusClass(

@@ -1689,4 +1689,111 @@
   <data name="QualityInspectionManagement" xml:space="preserve">
     <value>مدیریت بازرسی کیفیت</value>
   </data>
+	<data name="ProductionOrder" xml:space="preserve"><value>سفارش تولید</value></data>
+	<data name="Back" xml:space="preserve"><value>بازگشت</value></data>
+	<data name="Calculating" xml:space="preserve"><value>در حال محاسبه...</value></data>
+	<data name="CalculateMRP" xml:space="preserve"><value>محاسبه برنامه‌ریزی نیازمندی مواد</value></data>
+	<data name="Reserving" xml:space="preserve"><value>در حال رزرو...</value></data>
+	<data name="ReserveMaterials" xml:space="preserve"><value>رزرو مواد</value></data>
+	<data name="StartProduction" xml:space="preserve"><value>شروع تولید</value></data>
+	<data name="IssuingMaterials" xml:space="preserve"><value>در حال صدور مواد...</value></data>
+	<data name="IssueMaterials" xml:space="preserve"><value>صدور مواد</value></data>
+	<data name="ProductionProgress" xml:space="preserve"><value>پیشرفت تولید</value></data>
+	<data name="QualityControl" xml:space="preserve"><value>کنترل کیفیت</value></data>
+	<data name="ProductionCompleted" xml:space="preserve"><value>تولید تکمیل شد</value></data>
+	<data name="ProductionWorkflow" xml:space="preserve"><value>گردش کار تولید</value></data>
+	<data name="Planning" xml:space="preserve"><value>برنامه‌ریزی</value></data>
+	<data name="MaterialReadiness" xml:space="preserve"><value>آماده‌سازی مواد</value></data>
+	<data name="Production" xml:space="preserve"><value>تولید</value></data>
+	<data name="QualityCompletion" xml:space="preserve"><value>کیفیت / تکمیل</value></data>
+	<data name="MrpAndMaterialAvailability" xml:space="preserve"><value>برنامه‌ریزی نیازمندی مواد و موجودی مواد</value></data>
+	<data name="RequiredMaterialsReserved" xml:space="preserve"><value>مواد موردنیاز رزرو شده‌اند</value></data>
+	<data name="ManufacturingOperations" xml:space="preserve"><value>عملیات ساخت</value></data>
+	<data name="QcAndFinishedProduction" xml:space="preserve"><value>کنترل کیفیت و تکمیل تولید</value></data>
+	<data name="ProductionOrderInformation" xml:space="preserve"><value>اطلاعات سفارش تولید</value></data>
+	<data name="OrderNumber" xml:space="preserve"><value>شماره سفارش</value></data>
+	<data name="SalesOrder" xml:space="preserve"><value>سفارش فروش</value></data>
+	<data name="Customer" xml:space="preserve"><value>مشتری</value></data>
+	<data name="Status" xml:space="preserve"><value>وضعیت</value></data>
+	<data name="Created" xml:space="preserve"><value>تاریخ ایجاد</value></data>
+	<data name="PlannedStart" xml:space="preserve"><value>شروع برنامه‌ریزی‌شده</value></data>
+	<data name="PlannedEnd" xml:space="preserve"><value>پایان برنامه‌ریزی‌شده</value></data>
+	<data name="ActualStart" xml:space="preserve"><value>شروع واقعی</value></data>
+	<data name="ActualEnd" xml:space="preserve"><value>پایان واقعی</value></data>
+	<data name="Notes" xml:space="preserve"><value>یادداشت‌ها</value></data>
+	<data name="NoProductionLines" xml:space="preserve"><value>هیچ ردیف تولیدی یافت نشد.</value></data>
+	<data name="ProductionLines" xml:space="preserve"><value>ردیف‌های تولید</value></data>
+	<data name="Item" xml:space="preserve"><value>کالا</value></data>
+	<data name="Code" xml:space="preserve"><value>کد</value></data>
+	<data name="PlannedQuantity" xml:space="preserve"><value>مقدار برنامه‌ریزی‌شده</value></data>
+	<data name="ProducedQuantity" xml:space="preserve"><value>مقدار تولیدشده</value></data>
+	<data name="Remaining" xml:space="preserve"><value>باقی‌مانده</value></data>
+	<data name="Unit" xml:space="preserve"><value>واحد</value></data>
+	<data name="Planned" xml:space="preserve"><value>برنامه‌ریزی‌شده</value></data>
+	<data name="Produced" xml:space="preserve"><value>تولیدشده</value></data>
+	<data name="Completion" xml:space="preserve"><value>درصد تکمیل</value></data>
+	<data name="ProductionOperations" xml:space="preserve"><value>عملیات تولید</value></data>
+	<data name="OperationsCount" xml:space="preserve"><value>{0} عملیات</value></data>
+	<data name="NoProductionOperations" xml:space="preserve"><value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value></data>
+	<data name="Sequence" xml:space="preserve"><value>ردیف</value></data>
+	<data name="Operation" xml:space="preserve"><value>عملیات</value></data>
+	<data name="WorkCenter" xml:space="preserve"><value>مرکز کاری</value></data>
+	<data name="PlannedHours" xml:space="preserve"><value>ساعات برنامه‌ریزی‌شده</value></data>
+	<data name="ActualHours" xml:space="preserve"><value>ساعات واقعی</value></data>
+	<data name="Action" xml:space="preserve"><value>عملیات</value></data>
+	<data name="Open" xml:space="preserve"><value>باز کردن</value></data>
+	<data name="NotAssigned" xml:space="preserve"><value>تخصیص داده نشده</value></data>
+	<data name="ProductionSchedule" xml:space="preserve"><value>برنامه زمان‌بندی تولید</value></data>
+	<data name="SchedulesCount" xml:space="preserve"><value>{0} برنامه</value></data>
+	<data name="NoProductionSchedule" xml:space="preserve"><value>هنوز برنامه زمان‌بندی برای این سفارش تولید ایجاد نشده است.</value></data>
+	<data name="Machine" xml:space="preserve"><value>دستگاه</value></data>
+	<data name="Priority" xml:space="preserve"><value>اولویت</value></data>
+	<data name="MrpCreated" xml:space="preserve"><value>زمان ایجاد برنامه نیازمندی مواد</value></data>
+	<data name="Materials" xml:space="preserve"><value>مواد</value></data>
+	<data name="Shortages" xml:space="preserve"><value>کسری‌ها</value></data>
+	<data name="Material" xml:space="preserve"><value>ماده</value></data>
+	<data name="Required" xml:space="preserve"><value>موردنیاز</value></data>
+	<data name="Available" xml:space="preserve"><value>موجود</value></data>
+	<data name="Shortage" xml:space="preserve"><value>کسری</value></data>
+	<data name="NoMrpCalculation" xml:space="preserve"><value>هنوز محاسبه برنامه نیازمندی مواد انجام نشده است.</value></data>
+	<data name="MrpNoRequirements" xml:space="preserve"><value>محاسبه برنامه نیازمندی مواد انجام شد، اما هیچ نیازمندی ماده‌ای ایجاد نشد.</value></data>
+	<data name="MrpCalculationSuccess" xml:space="preserve"><value>محاسبه برنامه نیازمندی مواد با موفقیت انجام شد.</value></data>
+	<data name="MaterialIssuePosted" xml:space="preserve"><value>صدور مواد با موفقیت ثبت شد. تعداد {0} سند صدور مواد تولید ایجاد شد.</value></data>
+	<data name="NoReservedMaterialsForIssue" xml:space="preserve"><value>هیچ ماده رزروشده‌ای برای صدور در دسترس نیست.</value></data>
+	<data name="NoActiveProductionLocation" xml:space="preserve"><value>مکان موجودی فعال از نوع تولید یافت نشد.</value></data>
+	<data name="MaterialReservationInsufficient" xml:space="preserve"><value>رزرو مواد انجام نشد، زیرا موجودی یک یا چند ماده کافی نیست.</value></data>
+	<data name="ReservationSuccess" xml:space="preserve"><value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value></data>
+	<data name="ReservationMessage" xml:space="preserve"><value>رزرو مواد</value></data>
+	<data name="NoMaterialReservations" xml:space="preserve"><value>برای این سفارش تولید هیچ رزروی از مواد ایجاد نشده است.</value></data>
+	<data name="ReservedQuantity" xml:space="preserve"><value>مقدار رزروشده</value></data>
+	<data name="ReservedDate" xml:space="preserve"><value>تاریخ رزرو</value></data>
+	<data name="LoadingProductionOrder" xml:space="preserve"><value>در حال بارگذاری سفارش تولید...</value></data>
+	<data name="ProductionOrderNotFound" xml:space="preserve"><value>سفارش تولید یافت نشد.</value></data>
+	<data name="Pending" xml:space="preserve"><value>در انتظار</value></data>
+	<data name="MrpStatus" xml:space="preserve"><value>وضعیت</value></data>
+	<data name="ProductionItem" xml:space="preserve"><value>قلم تولید</value></data>
+	<data name="OperationCount" xml:space="preserve"><value>{0} عملیات</value></data>
+	<data name="WorkflowPlanning" xml:space="preserve"><value>۱. برنامه‌ریزی</value></data>
+	<data name="WorkflowMaterialReadiness" xml:space="preserve"><value>۲. آماده‌سازی مواد</value></data>
+	<data name="WorkflowProduction" xml:space="preserve"><value>۳. تولید</value></data>
+	<data name="WorkflowQualityCompletion" xml:space="preserve"><value>۴. کیفیت / تکمیل</value></data>
+	<data name="Completed" xml:space="preserve"><value>تکمیل‌شده</value></data>
+	<data name="MachineLabel" xml:space="preserve"><value>دستگاه</value></data>
+	<data name="WorkflowStatePending" xml:space="preserve"><value>در انتظار</value></data>
+	<data name="NoProductionLinesFound" xml:space="preserve"><value>هیچ ردیف تولیدی یافت نشد.</value></data>
+	<data name="NoOperationsDefined" xml:space="preserve"><value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value></data>
+	<data name="NoScheduleCreated" xml:space="preserve"><value>هنوز برنامه زمان‌بندی برای این سفارش تولید ایجاد نشده است.</value></data>
+	<data name="NoMrpPerformed" xml:space="preserve"><value>هنوز محاسبه برنامه‌ریزی نیازمندی مواد انجام نشده است.</value></data>
+	<data name="MrpNoRequirementsGenerated" xml:space="preserve"><value>محاسبه برنامه‌ریزی نیازمندی مواد انجام شد، اما هیچ نیازمندی ماده‌ای ایجاد نشد.</value></data>
+	<data name="MrpCalculationCompleted" xml:space="preserve"><value>محاسبه برنامه‌ریزی نیازمندی مواد با موفقیت انجام شد.</value></data>
+	<data name="NoReservedMaterialsAvailable" xml:space="preserve"><value>هیچ ماده رزروشده‌ای برای صدور در دسترس نیست.</value></data>
+	<data name="NoActiveProductionLocationFound" xml:space="preserve"><value>مکان موجودی فعال از نوع تولید یافت نشد.</value></data>
+	<data name="InsufficientMaterialsForReservation" xml:space="preserve"><value>رزرو مواد انجام نشد، زیرا موجودی یک یا چند ماده کافی نیست.</value></data>
+	<data name="AllMaterialsReservedSuccessfully" xml:space="preserve"><value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value></data>
+	<data name="MaterialsIssuedSuccessfully" xml:space="preserve"><value>صدور مواد با موفقیت ثبت شد. تعداد {0} سند صدور مواد تولید ایجاد شد.</value></data>
+	<data name="NoMaterialReservationsCreated" xml:space="preserve"><value>برای این سفارش تولید هیچ رزروی از مواد ایجاد نشده است.</value></data>
+	<data name="UnexpectedError" xml:space="preserve"><value>خطای غیرمنتظره‌ای رخ داد. لطفاً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.</value></data>
+	<data name="NoActiveBomForProductionItem" xml:space="preserve"><value>هیچ فهرست مواد فعالی برای این قلم تولید یافت نشد.</value></data>
+	<data name="BomHasNoComponentLines" xml:space="preserve"><value>فهرست مواد هیچ ردیف مؤلفه‌ای ندارد.</value></data>
+	<data name="PlannedQuantityMustBePositive" xml:space="preserve"><value>مقدار تولید برنامه‌ریزی‌شده باید بیشتر از صفر باشد.</value></data>
 </root>
