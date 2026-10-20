@@ -4,10 +4,13 @@
 @using HamiChap_MES_ERP.Models.Sales
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Services
+
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
 
-<PageTitle>Customer Approval Proof</PageTitle>
+<PageTitle>@LocalizationService["CustomerApprovalProof"]</PageTitle>
 
 <style>
     .proof-page { max-width: 1320px; margin: 0 auto; color: #20283a; }
@@ -88,10 +91,10 @@
 
 <div class="page-container proof-page">
     <div class="erp-page-header mb-3 no-print">
-        <div><div class="erp-page-title">Customer approval proof</div><div class="erp-page-subtitle">Review the proof, then print and choose Save as PDF.</div></div>
+        <div><div class="erp-page-title">@LocalizationService["CustomerApprovalProof"]</div><div class="erp-page-subtitle">@LocalizationService["ReviewProofPrintSavePdf"]</div></div>
         <div class="d-flex flex-wrap gap-2">
-            <button class="btn btn-outline-secondary" @onclick="BackToJob">Back to job</button>
-            <button class="btn btn-primary" @onclick="PrintProof"><i class="bi bi-printer"></i> Print / Save as PDF</button>
+            <button class="btn btn-outline-secondary" @onclick="BackToJob">@LocalizationService["BackToJob"]</button>
+            <button class="btn btn-primary" @onclick="PrintProof"><i class="bi bi-printer"></i> @LocalizationService["PrintSaveAsPdf"]</button>
         </div>
     </div>
 
@@ -109,19 +112,19 @@
             <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
                 <div>
                     <div class="proof-brand fs-3">HAMI CHAP</div>
-                    <div class="proof-subtle">Printing & Packaging · Customer Approval Proof</div>
+                    <div class="proof-subtle">@LocalizationService["PrintingPackagingCustomerApproval"]</div>
                 </div>
                 <div class="text-end">
-                    <div class="fs-5 fw-bold">@(request.JobType == SalesJobType.Roll ? "ROLL JOB" : "SHEET JOB")</div>
-                    <div class="proof-subtle">Proof # @request.RequestNumber</div>
-                    <div class="proof-subtle">Date: @request.RequestDate.ToString("yyyy-MM-dd")</div>
+                    <div class="fs-5 fw-bold">@LocalizationService[request.JobType == SalesJobType.Roll ? "RollJobUpper" : "SheetJobUpper"]</div>
+                    <div class="proof-subtle">@LocalizationService["ProofNumber"] @request.RequestNumber</div>
+                    <div class="proof-subtle">@LocalizationService["Date"]: @request.RequestDate.ToString("yyyy-MM-dd")</div>
                 </div>
             </div>
 
             <div class="row g-3">
                 <div class="col-lg-8">
                     <div class="proof-panel mb-3">
-                        <div class="proof-panel-title">Artwork preview</div>
+                        <div class="proof-panel-title">@LocalizationService["ArtworkPreview"]</div>
                         <div class="proof-panel-body">
                             @if (artworkFiles.Count > 0)
                             {
@@ -135,7 +138,7 @@
                                             }
                                             else
                                             {
-                                                <div class="text-center py-3"><i class="bi bi-file-earmark-pdf" style="font-size:2rem;color:#0e1641"></i><div><a href="@art.RelativePath" target="_blank" rel="noopener">Open file</a></div></div>
+                                                <div class="text-center py-3"><i class="bi bi-file-earmark-pdf" style="font-size:2rem;color:#0e1641"></i><div><a href="@art.RelativePath" target="_blank" rel="noopener">@LocalizationService["OpenFile"]</a></div></div>
                                             }
                                             <div class="filename">@art.OriginalFileName</div>
                                         </div>
@@ -144,29 +147,29 @@
                             }
                             else
                             {
-                                <div class="proof-artwork flex-column"><i class="bi bi-image text-secondary" style="font-size:2rem"></i><strong>Artwork not uploaded</strong></div>
+                                <div class="proof-artwork flex-column"><i class="bi bi-image text-secondary" style="font-size:2rem"></i><strong>@LocalizationService["ArtworkNotUploaded"]</strong></div>
                             }
                             <div class="proof-dimension">@DimensionsSummary</div>
                         </div>
                     </div>
                     <div class="proof-panel">
-                        <div class="proof-panel-title">Production notes</div>
+                        <div class="proof-panel-title">@LocalizationService["ProductionNotes"]</div>
                         <div class="proof-panel-body" style="min-height:80px; white-space:pre-wrap">@PrintingNotes</div>
                     </div>
                 </div>
                 <div class="col-lg-4">
                     <div class="proof-panel mb-3">
-                        <div class="proof-panel-title">Customer & job details</div>
+                        <div class="proof-panel-title">@LocalizationService["CustomerJobDetails"]</div>
                         <div class="proof-panel-body">
-                            <div class="proof-kv"><span class="proof-subtle">Customer</span><strong>@(request.Customer?.Name ?? "—")</strong></div>
-                            <div class="proof-kv"><span class="proof-subtle">Job title</span><strong>@JobTitle</strong></div>
-                            <div class="proof-kv"><span class="proof-subtle">Job type</span><strong>@(request.JobType == SalesJobType.Roll ? "Roll label" : "Sheet product")</strong></div>
-                            <div class="proof-kv"><span class="proof-subtle">Request no.</span><strong>@request.RequestNumber</strong></div>
-                            <div class="proof-kv"><span class="proof-subtle">Artwork file</span><span>@(string.IsNullOrWhiteSpace(artworkFileName) ? "—" : artworkFileName)</span></div>
+                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["Customer"]</span><strong>@(request.Customer?.Name ?? "—")</strong></div>
+                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["JobTitle"]</span><strong>@JobTitle</strong></div>
+                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["JobType"]</span><strong>@LocalizationService[request.JobType == SalesJobType.Roll ? "RollLabel" : "SheetProduct"]</strong></div>
+                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["RequestNumber"]</span><strong>@request.RequestNumber</strong></div>
+                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["ArtworkFile"]</span><span>@(string.IsNullOrWhiteSpace(artworkFileName) ? "—" : artworkFileName)</span></div>
                         </div>
                     </div>
                     <div class="proof-panel mb-3">
-                        <div class="proof-panel-title">Technical specifications</div>
+                        <div class="proof-panel-title">@LocalizationService["TechnicalSpecifications"]</div>
                         <div class="proof-panel-body">
                             @foreach (var item in technicalDetails)
                             {
@@ -175,9 +178,9 @@
                         </div>
                     </div>
                     <div class="proof-panel">
-                        <div class="proof-panel-title">Selected services</div>
+                        <div class="proof-panel-title">@LocalizationService["SelectedServices"]</div>
                         <div class="proof-panel-body">
-                            @if (selectedServices.Count == 0) { <span class="proof-subtle">No additional services selected.</span> }
+                            @if (selectedServices.Count == 0) { <span class="proof-subtle">@LocalizationService["NoAdditionalServicesSelected"]</span> }
                             @foreach (var service in selectedServices) { <span class="proof-pill">@service</span> }
                         </div>
                     </div>
@@ -189,18 +192,18 @@
                 <div class="row g-3 mt-1">
                     <div class="col-md-6">
                         <div class="proof-panel">
-                            <div class="proof-panel-title">Selected roll orientation</div>
+                            <div class="proof-panel-title">@LocalizationService["SelectedRollOrientation"]</div>
                             <div class="proof-panel-body">
                                 <div class="roll-diagram">
                                     @if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
                                     {
                                         <img class="roll-orientation-image"
                                              src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
-                                             alt="@($"Selected roll orientation {orientationNumber}")" />
+                                             alt="@($"{LocalizationService["SelectedRollOrientation"]} {orientationNumber}")" />
                                     }
                                     else
                                     {
-                                        <div class="roll-orientation-missing">No roll orientation selected.</div>
+                                        <div class="roll-orientation-missing">@LocalizationService["NoRollOrientationSelected"]</div>
                                     }
                                 </div>
                             </div>
@@ -208,11 +211,11 @@
                     </div>
                     <div class="col-md-6">
                         <div class="proof-panel">
-                            <div class="proof-panel-title">Printing colors — front and back</div>
+                            <div class="proof-panel-title">@LocalizationService["PrintingColorsFrontBack"]</div>
                             <div class="proof-panel-body">
                                 <div class="proof-two-col">
                                     <div class="proof-data-box">
-                                        <div class="proof-data-label">Front side</div>
+                                        <div class="proof-data-label">@LocalizationService["FrontSide"]</div>
                                         <div class="cmyk-grid">
                                             @foreach (var color in CmykColors)
                                             {
@@ -224,7 +227,7 @@
                                         </div>
                                     </div>
                                     <div class="proof-data-box">
-                                        <div class="proof-data-label">Back side</div>
+                                        <div class="proof-data-label">@LocalizationService["BackSide"]</div>
                                         <div class="cmyk-grid">
                                             @foreach (var color in CmykColors)
                                             {
@@ -236,20 +239,20 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="small text-muted mt-2">Highlighted tiles indicate selected process colors.</div>
+                                <div class="small text-muted mt-2">@LocalizationService["HighlightedTilesExplain"]</div>
                             </div>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="proof-panel">
-                            <div class="proof-panel-title">Customer approval</div><div class="proof-panel-body" style="min-height:110px"><div class="proof-kv"><span>Approved by</span><span>____________________</span></div><div class="proof-kv"><span>Date</span><span>____________________</span></div><div class="proof-kv"><span>Signature</span><span>____________________</span></div></div></div></div>
+                            <div class="proof-panel-title">@LocalizationService["CustomerApproval"]</div><div class="proof-panel-body" style="min-height:110px"><div class="proof-kv"><span>@LocalizationService["ApprovedBy"]</span><span>____________________</span></div><div class="proof-kv"><span>@LocalizationService["Date"]</span><span>____________________</span></div><div class="proof-kv"><span>@LocalizationService["Signature"]</span><span>____________________</span></div></div></div></div>
                 </div>
             }
             else
             {
-                <div class="proof-panel mt-3"><div class="proof-panel-title">Customer approval</div><div class="proof-panel-body"><div class="row"><div class="col-md-4">Approved by: ____________________</div><div class="col-md-4">Date: ____________________</div><div class="col-md-4">Signature: ____________________</div></div></div></div>
+                <div class="proof-panel mt-3"><div class="proof-panel-title">@LocalizationService["CustomerApproval"]</div><div class="proof-panel-body"><div class="row"><div class="col-md-4">@LocalizationService["ApprovedBy"]: ____________________</div><div class="col-md-4">@LocalizationService["Date"]: ____________________</div><div class="col-md-4">@LocalizationService["Signature"]: ____________________</div></div></div></div>
             }
-            <div class="proof-foot d-flex justify-content-between gap-3 flex-wrap"><span>HamiChap · Customer approval copy</span><span>Please review all dimensions, artwork and finishing selections before approval.</span></div>
+            <div class="proof-foot d-flex justify-content-between gap-3 flex-wrap"><span>@LocalizationService["CustomerApprovalCopy"]</span><span>@LocalizationService["ReviewDimensionsArtworkFinishing"]</span></div>
         </article>
     }
 </div>
@@ -274,15 +277,16 @@
     };
     private string JobTitle = "";
     private string PrintingNotes = "";
-    private string DimensionsSummary = "Dimensions not specified";
+    private string DimensionsSummary = "";
     private List<KeyValuePair<string,string>> technicalDetails = new();
     private List<string> selectedServices = new();
 
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true; errorMessage = null;
+        DimensionsSummary = LocalizationService["DimensionsNotSpecified"];
         request = await Db.SalesRequests.Include(x => x.Customer).FirstOrDefaultAsync(x => x.Id == RequestId);
-        if (request is null) { errorMessage = "Sales request not found."; isLoading = false; return; }
+        if (request is null) { errorMessage = LocalizationService["SalesRequestNotFound"]; isLoading = false; return; }
         try
         {
             if (request.JobType == SalesJobType.Roll)
@@ -295,12 +299,12 @@
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
                 rollOrientation = spec.RollOrientation ?? "";
                 LoadCmykSelections(request.JobSpecificationJson);
-                DimensionsSummary = $"Label pull: {Fmt(spec.LabelPull)} mm · Label width: {Fmt(spec.LabelWidth)} mm · Gap: {Fmt(spec.GapBetweenLabels)} mm";
+                DimensionsSummary = $"{LocalizationService["LabelPull"]}: {Fmt(spec.LabelPull)} mm · {LocalizationService["LabelWidth"]}: {Fmt(spec.LabelWidth)} mm · {LocalizationService["Gap"]}: {Fmt(spec.GapBetweenLabels)} mm";
                 technicalDetails = new() {
-                    new("Material", Empty(spec.PaperType)), new("Colors", spec.ColorCount?.ToString() ?? "—"),
-                    new("Roll diameter", spec.RollDiameter.HasValue ? Fmt(spec.RollDiameter) + " mm" : "—"),
-                    new("Label quantity", spec.LabelQuantity?.ToString("N0") ?? "—"),
-                    new("Hand gluing", spec.HandGluing ? "Yes" : "No"), new("Machine gluing", spec.MachineGluing ? "Yes" : "No")
+                    new(LocalizationService["Material"], Empty(spec.PaperType)), new(LocalizationService["Colors"], spec.ColorCount?.ToString() ?? "—"),
+                    new(LocalizationService["RollDiameter"], spec.RollDiameter.HasValue ? Fmt(spec.RollDiameter) + " mm" : "—"),
+                    new(LocalizationService["LabelQuantity"], spec.LabelQuantity?.ToString("N0") ?? "—"),
+                    new(LocalizationService["HandGluing"], spec.HandGluing ? LocalizationService["Yes"] : LocalizationService["No"]), new(LocalizationService["MachineGluing"], spec.MachineGluing ? LocalizationService["Yes"] : LocalizationService["No"])
                 };
                 selectedServices = spec.SelectedServices ?? new();
             }
@@ -312,17 +316,17 @@
                 artworkFiles = spec.ArtworkFiles ?? new();
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
-                DimensionsSummary = $"Cut size: {Fmt(spec.CutWidthCm)} × {Fmt(spec.CutLengthCm)} cm";
+                DimensionsSummary = $"{LocalizationService["CutSize"]}: {Fmt(spec.CutWidthCm)} × {Fmt(spec.CutLengthCm)} cm";
                 technicalDetails = new() {
-                    new("Sheet orientation", Empty(spec.SheetOrientation)), new("Paper", Empty(spec.PaperType)), new("Grammage", spec.Grammage.HasValue ? spec.Grammage + " gsm" : "—"),
-                    new("Print run", spec.PrintRunSheets?.ToString("N0") ?? "—"), new("Sheet count", spec.SheetCount?.ToString("N0") ?? "—"),
-                    new("Zinc / plate", Empty(spec.Zinc)), new("Die", Empty(spec.Die)), new("Cliché", Empty(spec.Cliche)),
-                    new("Production location", Empty(spec.ProductionLocation)), new("Payment method", Empty(spec.PaymentMethod)), new("Order number", Empty(spec.OrderNumber))
+                    new(LocalizationService["SheetOrientation"], Empty(spec.SheetOrientation)), new(LocalizationService["Paper"], Empty(spec.PaperType)), new(LocalizationService["Grammage"], spec.Grammage.HasValue ? spec.Grammage + " gsm" : "—"),
+                    new(LocalizationService["PrintRun"], spec.PrintRunSheets?.ToString("N0") ?? "—"), new(LocalizationService["SheetCount"], spec.SheetCount?.ToString("N0") ?? "—"),
+                    new(LocalizationService["ZincPlate"], Empty(spec.Zinc)), new(LocalizationService["Die"], Empty(spec.Die)), new(LocalizationService["Cliche"], Empty(spec.Cliche)),
+                    new(LocalizationService["ProductionLocation"], Empty(spec.ProductionLocation)), new(LocalizationService["PaymentMethod"], Empty(spec.PaymentMethod)), new(LocalizationService["OrderNumber"], Empty(spec.OrderNumber))
                 };
                 selectedServices = spec.SelectedServices ?? new();
             }
         }
-        catch (JsonException) { errorMessage = "Saved job specifications could not be read. Open and save the job form again."; }
+        catch (JsonException) { errorMessage = LocalizationService["SavedJobSpecificationsUnreadable"]; }
         isLoading = false;
     }
     private void LoadCmykSelections(string? json)

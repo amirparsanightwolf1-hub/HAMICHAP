@@ -9,21 +9,23 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Hosting
 @using System.IO
+@using HamiChap_MES_ERP.Services
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject IWebHostEnvironment HostEnvironment
+@inject LocalizationService LocalizationService
 
-<PageTitle>Sheet Job Specification</PageTitle>
+<PageTitle>@LocalizationService["SheetJobSpecification"]</PageTitle>
 
 <div class="page-container">
     <div class="erp-page-header mb-4">
         <div>
-            <div class="erp-page-title">Sheet Job</div>
-            <div class="erp-page-subtitle">Sheet printing, finishing, and material specifications</div>
+            <div class="erp-page-title">@LocalizationService["SheetJob"]</div>
+            <div class="erp-page-subtitle">@LocalizationService["SheetJobSubtitle"]</div>
         </div>
         <button class="btn btn-outline-secondary" @onclick="BackToRequest">
-            <i class="bi bi-arrow-left"></i> Back to request
+            <i class="bi bi-arrow-left"></i> @LocalizationService["BackToRequest"]
         </button>
     </div>
 
@@ -42,23 +44,23 @@
     else if (request is not null)
     {
         <div class="card shadow-sm mb-3">
-            <div class="card-header"><strong>Order information</strong></div>
+            <div class="card-header"><strong>@LocalizationService["OrderInformation"]</strong></div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label">تاریخ</label>
+                        <label class="form-label">@LocalizationService["Date"]</label>
                         <input class="form-control" value="@request.RequestDate.ToString("yyyy-MM-dd")" readonly />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">شماره سفارش</label>
+                        <label class="form-label">@LocalizationService["OrderNumber"]</label>
                         <input class="form-control" value="@request.RequestNumber" readonly />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Customer</label>
+                        <label class="form-label">@LocalizationService["Customer"]</label>
                         @if (!isCreatingCustomer)
                         {
                             <select class="form-select" @bind="selectedCustomerId">
-                                <option value="0">-- Select an existing customer --</option>
+                                <option value="0">-- @LocalizationService["SelectExistingCustomer"] --</option>
                                 @foreach (var customer in customers)
                                 {
                                     <option value="@customer.Id">@customer.Code - @customer.Name</option>
@@ -67,13 +69,13 @@
                             <button type="button"
                                     class="btn btn-link px-0"
                                     @onclick="StartNewCustomer">
-                                + Create a new customer
+                                + @LocalizationService["CreateNewCustomer"]
                             </button>
                         }
                         else
                         {
                             <div class="d-flex align-items-center gap-2">
-                                <span class="form-control bg-light">New customer</span>
+                                <span class="form-control bg-light">@LocalizationService["NewCustomer"]</span>
                                 <button type="button"
                                         class="btn btn-outline-secondary text-nowrap"
                                         @onclick="SelectExistingCustomer">
@@ -85,41 +87,41 @@
                     @if (isCreatingCustomer)
                     {
                         <div class="col-md-4">
-                            <label class="form-label">Customer code *</label>
+                            <label class="form-label">@LocalizationService["CustomerCodeRequired"]</label>
                             <InputText class="form-control" @bind-Value="newCustomerCode" />
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Customer name *</label>
+                            <label class="form-label">@LocalizationService["CustomerNameRequired"]</label>
                             <InputText class="form-control" @bind-Value="newCustomerName" />
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Phone</label>
+                            <label class="form-label">@LocalizationService["Phone"]</label>
                             <InputText class="form-control" @bind-Value="newCustomerPhone" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Email</label>
+                            <label class="form-label">@LocalizationService["Email"]</label>
                             <InputText class="form-control" @bind-Value="newCustomerEmail" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Address</label>
+                            <label class="form-label">@LocalizationService["Address"]</label>
                             <InputText class="form-control" @bind-Value="newCustomerAddress" />
                         </div>
                     }
                     <div class="col-md-6">
-                        <label class="form-label">عنوان کار</label>
+                        <label class="form-label">@LocalizationService["JobTitle"]</label>
                         <InputText class="form-control" @bind-Value="spec.JobTitle" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">معرف</label>
+                        <label class="form-label">@LocalizationService["Referrer"]</label>
                         <InputText class="form-control" @bind-Value="spec.Referrer" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">اقلام مورد نیاز</label>
+                        <label class="form-label">@LocalizationService["RequiredItems"]</label>
                         <InputText class="form-control" @bind-Value="spec.RequiredItems" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">نوع کاغذ</label>
-                        <input class="form-control" list="sheet-paper-types" @bind="spec.PaperType" placeholder="انتخاب کنید یا تایپ کنید" />
+                        <label class="form-label">@LocalizationService["PaperType"]</label>
+                        <input class="form-control" list="sheet-paper-types" @bind="spec.PaperType" placeholder="@LocalizationService["SelectOrType"]" />
                         <datalist id="sheet-paper-types">
                             <option value="گلاسه"></option>
                             <option value="تحریر"></option>
@@ -130,50 +132,50 @@
                             <option value="متالایز"></option>
                             <option value="کاغذ اختصاصی"></option>
                         </datalist>
-                        <small class="text-muted">می‌توانید گزینه استاندارد را انتخاب کنید یا نوع دیگری تایپ کنید.</small>
+                        <small class="text-muted">@LocalizationService["PaperTypeHelp"]</small>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">زینک</label>
+                        <label class="form-label">@LocalizationService["Zinc"]</label>
                         <InputText class="form-control" @bind-Value="spec.Zinc" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">قالب / دایکات</label>
+                        <label class="form-label">@LocalizationService["DieCut"]</label>
                         <InputText class="form-control" @bind-Value="spec.Die" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">کلیشه</label>
+                        <label class="form-label">@LocalizationService["Cliche"]</label>
                         <InputText class="form-control" @bind-Value="spec.Cliche" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">تیراژ چاپ (ورق)</label>
+                        <label class="form-label">@LocalizationService["PrintRunSheets"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.PrintRunSheets" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">طول بعد از برش (سانتی‌متر)</label>
+                        <label class="form-label">@LocalizationService["CutLengthCm"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.CutLengthCm" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">عرض بعد از برش (سانتی‌متر)</label>
+                        <label class="form-label">@LocalizationService["CutWidthCm"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.CutWidthCm" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Sheet orientation</label>
+                        <label class="form-label">@LocalizationService["SheetOrientation"]</label>
                         <select class="form-select" @bind="spec.SheetOrientation">
-                            <option value="">Select orientation</option><option value="Portrait">Portrait</option><option value="Landscape">Landscape</option>
+                            <option value="">@LocalizationService["SelectOrientation"]</option><option value="Portrait">@LocalizationService["Portrait"]</option><option value="Landscape">@LocalizationService["Landscape"]</option>
                         </select>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">گرماژ</label>
+                        <label class="form-label">@LocalizationService["Grammage"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.Grammage" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">تعداد ورق</label>
+                        <label class="form-label">@LocalizationService["SheetCount"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.SheetCount" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">محل تولید</label>
-                        <input class="form-control" list="sheet-production-locations" @bind="spec.ProductionLocation" placeholder="انتخاب یا ورود محل" />
+                        <label class="form-label">@LocalizationService["ProductionLocation"]</label>
+                        <input class="form-control" list="sheet-production-locations" @bind="spec.ProductionLocation" placeholder="@LocalizationService["SelectOrEnterLocation"]" />
                         <datalist id="sheet-production-locations">
                             <option value="داخل کارخانه"></option>
                             <option value="برون‌سپاری"></option>
@@ -181,8 +183,8 @@
                         </datalist>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">نحوه تسویه</label>
-                        <input class="form-control" list="sheet-payment-methods" @bind="spec.PaymentMethod" placeholder="انتخاب یا ورود روش تسویه" />
+                        <label class="form-label">@LocalizationService["PaymentMethod"]</label>
+                        <input class="form-control" list="sheet-payment-methods" @bind="spec.PaymentMethod" placeholder="@LocalizationService["SelectOrEnterPaymentMethod"]" />
                         <datalist id="sheet-payment-methods">
                             <option value="نقدی"></option>
                             <option value="اعتباری"></option>
@@ -191,11 +193,11 @@
                         </datalist>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">توضیحات چاپ و رنگ</label>
-                        <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="رنگ پنتون، رنگ اختصاصی، نکات چاپ و ..." />
+                        <label class="form-label">@LocalizationService["PrintingAndColorNotes"]</label>
+                        <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="@LocalizationService["PrintingNotesPlaceholder"]" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">شماره سفارش مشتری</label>
+                        <label class="form-label">@LocalizationService["CustomerOrderNumber"]</label>
                         <InputText class="form-control" @bind-Value="spec.OrderNumber" />
                     </div>
                 </div>
@@ -203,12 +205,12 @@
         </div>
 
         <div class="card shadow-sm mb-3">
-            <div class="card-header"><strong>خدمات تکمیلی و انتخاب رنگ</strong><span class="text-muted ms-2">(برای مشاهده هر گروه باز کنید)</span></div>
+            <div class="card-header"><strong>@LocalizationService["AdditionalServicesAndColorSelection"]</strong><span class="text-muted ms-2">(@LocalizationService["ExpandEachGroup"])</span></div>
             <div class="card-body">
                 @foreach (var group in ServiceGroups)
                 {
                     <details class="border rounded p-3 mb-2" @key="group.Key">
-                        <summary class="fw-semibold" style="cursor:pointer">@group.Key <span class="text-muted small">(@group.Value.Count(x => spec.SelectedServices.Contains(x)) انتخاب شده)</span></summary>
+                        <summary class="fw-semibold" style="cursor:pointer">@LocalizationService[group.Key] <span class="text-muted small">(@group.Value.Count(x => spec.SelectedServices.Contains(x)) @LocalizationService["Selected"])</span></summary>
                         <div class="row g-3 pt-3">
                             @foreach (var service in group.Value)
                             {
@@ -231,13 +233,13 @@
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
                 @if (isSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                Save specifications
+                @LocalizationService["SaveSpecifications"]
             </button>
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
-                <i class="bi bi-file-earmark-pdf"></i> Save and preview approval proof
+                <i class="bi bi-file-earmark-pdf"></i> @LocalizationService["SaveAndPreviewApprovalProof"]
             </button>
             <button class="btn btn-outline-primary" @onclick="SaveAndContinueAsync" disabled="@isSaving">
-                Save and continue to sales workflow
+                @LocalizationService["SaveAndContinueSalesWorkflow"]
             </button>
         </div>
     }
@@ -264,13 +266,13 @@
 
     private static readonly Dictionary<string, string[]> ServiceGroups = new()
     {
-        ["سلفون و لمینیت"] = new[] { "سلفون واتربیس مات", "سلفون واتربیس براق", "سلفون حرارتی مات", "سلفون حرارتی براق", "سلفون حرارتی متالایز" },
-        ["یووی و پوشش"] = new[] { "یووی موضعی" },
-        ["طلاکوب، نقره‌کوب و فویل"] = new[] { "طلاکوب", "نقره‌کوب", "رنگ فویل" },
-        ["برجسته‌کاری و قالب"] = new[] { "برجسته", "قالب" },
-        ["چسبانی، برش و بسته‌بندی"] = new[] { "جعبه‌چسبانی", "برش و بسته‌بندی" },
-        ["رنگ‌های پشت کار"] = new[] { "رنگ‌های پنتون پشت", "رنگ‌های ساختگی پشت", "طلایی پشت", "نقره‌ای پشت", "رنگ پشت C", "رنگ پشت M", "رنگ پشت Y", "رنگ پشت K" },
-        ["رنگ‌های روی کار"] = new[] { "رنگ‌های پنتون رو", "رنگ‌های ساختگی رو", "طلایی رو", "نقره‌ای رو", "رنگ رو C", "رنگ رو M", "رنگ رو Y", "رنگ رو K" }
+        ["ServiceGroupLamination"] = new[] { "سلفون واتربیس مات", "سلفون واتربیس براق", "سلفون حرارتی مات", "سلفون حرارتی براق", "سلفون حرارتی متالایز" },
+        ["ServiceGroupUvCoating"] = new[] { "یووی موضعی" },
+        ["ServiceGroupFoilStamping"] = new[] { "طلاکوب", "نقره‌کوب", "رنگ فویل" },
+        ["ServiceGroupEmbossingDie"] = new[] { "برجسته", "قالب" },
+        ["ServiceGroupGluingCuttingPackaging"] = new[] { "جعبه‌چسبانی", "برش و بسته‌بندی" },
+        ["ServiceGroupBackColors"] = new[] { "رنگ‌های پنتون پشت", "رنگ‌های ساختگی پشت", "طلایی پشت", "نقره‌ای پشت", "رنگ پشت C", "رنگ پشت M", "رنگ پشت Y", "رنگ پشت K" },
+        ["ServiceGroupFrontColors"] = new[] { "رنگ‌های پنتون رو", "رنگ‌های ساختگی رو", "طلایی رو", "نقره‌ای رو", "رنگ رو C", "رنگ رو M", "رنگ رو Y", "رنگ رو K" }
     };
 
     protected override async Task OnParametersSetAsync()
@@ -293,11 +295,11 @@
 
         if (request is null)
         {
-            errorMessage = "Sales request was not found.";
+            errorMessage = LocalizationService["SalesRequestNotFound"];
         }
         else if (request.JobType != SalesJobType.Sheet)
         {
-            errorMessage = "This request is not a Sheet Job.";
+            errorMessage = LocalizationService["RequestIsNotSheetJob"];
         }
         else if (!string.IsNullOrWhiteSpace(request.JobSpecificationJson))
         {
@@ -309,7 +311,7 @@
             catch (JsonException)
             {
                 spec = new();
-                errorMessage = "Saved specifications could not be read. Save to replace them.";
+                errorMessage = LocalizationService["SavedSpecificationsUnreadable"];
             }
         }
 
@@ -364,9 +366,9 @@
         spec.ArtworkFiles ??= new List<JobArtworkFile>();
         foreach (var file in pendingArtworks)
         {
-            if (file.Size > maxBytes) throw new InvalidOperationException($"Artwork '{file.Name}' must be 25 MB or smaller.");
+            if (file.Size > maxBytes) throw new InvalidOperationException(string.Format(LocalizationService["ArtworkMaxSize"], file.Name));
             var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-            if (!allowed.Contains(extension)) throw new InvalidOperationException($"Unsupported artwork format: {file.Name}");
+            if (!allowed.Contains(extension)) throw new InvalidOperationException(string.Format(LocalizationService["UnsupportedArtworkFormat"], file.Name));
             var safeName = $"request-{request.Id}-{Guid.NewGuid():N}{extension}";
             var fullPath = Path.Combine(uploadFolder, safeName);
             await using (var source = file.OpenReadStream(maxBytes))
@@ -392,12 +394,12 @@
 
         if (string.IsNullOrWhiteSpace(spec.JobTitle))
         {
-            errorMessage = "Job title is required.";
+            errorMessage = LocalizationService["JobTitleRequired"];
             return;
         }
         if (pendingArtworks.Count == 0 && (spec.ArtworkFiles?.Count ?? 0) == 0 && string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
         {
-            errorMessage = "Upload the customer artwork before saving the job.";
+            errorMessage = LocalizationService["UploadArtworkBeforeSaving"];
             return;
         }
 
@@ -416,14 +418,14 @@
             if (isCreatingCustomer)
             {
                 if (string.IsNullOrWhiteSpace(newCustomerCode))
-                    throw new InvalidOperationException("Customer code is required.");
+                    throw new InvalidOperationException(LocalizationService["CustomerCodeIsRequired"]);
 
                 if (string.IsNullOrWhiteSpace(newCustomerName))
-                    throw new InvalidOperationException("Customer name is required.");
+                    throw new InvalidOperationException(LocalizationService["CustomerNameIsRequired"]);
 
                 var code = newCustomerCode.Trim();
                 if (await Db.Customers.AnyAsync(x => x.Code == code))
-                    throw new InvalidOperationException($"Customer code '{code}' already exists.");
+                    throw new InvalidOperationException(string.Format(LocalizationService["CustomerCodeAlreadyExists"], code));
 
                 var newCustomer = new Customer
                 {
@@ -446,7 +448,7 @@
             {
                 var selectedCustomer = customers.FirstOrDefault(x => x.Id == selectedCustomerId);
                 if (selectedCustomer is null)
-                    throw new InvalidOperationException("Select an existing customer or create a new one.");
+                    throw new InvalidOperationException(LocalizationService["SelectOrCreateCustomer"]);
 
                 request.CustomerId = selectedCustomer.Id;
                 request.Customer = selectedCustomer;
@@ -469,7 +471,7 @@
                 isCreatingCustomer = false;
             }
 
-            successMessage = $"Specifications saved. Finished product: {item.Code} ({item.Name}).";
+            successMessage = string.Format(LocalizationService["SpecificationsSavedFinishedProduct"], item.Code, item.Name);
         }
         catch (Exception ex)
         {

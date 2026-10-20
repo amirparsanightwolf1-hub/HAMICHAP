@@ -1844,4 +1844,131 @@
 	<data name="SalesInvoiceStatus.Posted" xml:space="preserve"><value>Posted</value></data>
 	<data name="SalesInvoiceStatus.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
 	<data name="SalesInvoices" xml:space="preserve"><value>Sales Invoices</value></data>
+	<data name="SheetJobSpecification" xml:space="preserve"><value>Sheet Job Specification</value></data>
+	<data name="SheetJob" xml:space="preserve"><value>Sheet Job</value></data>
+	<data name="SheetJobSubtitle" xml:space="preserve"><value>Sheet printing, finishing, and material specifications</value></data>
+	<data name="BackToRequest" xml:space="preserve"><value>Back to request</value></data>
+	<data name="OrderInformation" xml:space="preserve"><value>Order information</value></data>
+	<data name="Date" xml:space="preserve"><value>Date</value></data>
+	<data name="OrderNumber" xml:space="preserve"><value>Order number</value></data>
+	<data name="Customer" xml:space="preserve"><value>Customer</value></data>
+	<data name="SelectExistingCustomer" xml:space="preserve"><value>Select existing customer</value></data>
+	<data name="CreateNewCustomer" xml:space="preserve"><value>Create a new customer</value></data>
+	<data name="NewCustomer" xml:space="preserve"><value>New customer</value></data>
+	<data name="CustomerCodeRequired" xml:space="preserve"><value>Customer code *</value></data>
+	<data name="CustomerNameRequired" xml:space="preserve"><value>Customer name *</value></data>
+	<data name="Phone" xml:space="preserve"><value>Phone</value></data>
+	<data name="Email" xml:space="preserve"><value>Email</value></data>
+	<data name="Address" xml:space="preserve"><value>Address</value></data>
+	<data name="JobTitle" xml:space="preserve"><value>Job title</value></data>
+	<data name="Referrer" xml:space="preserve"><value>Referrer</value></data>
+	<data name="RequiredItems" xml:space="preserve"><value>Required items</value></data>
+	<data name="PaperType" xml:space="preserve"><value>Paper type</value></data>
+	<data name="SelectOrType" xml:space="preserve"><value>Select or type</value></data>
+	<data name="PaperTypeHelp" xml:space="preserve"><value>Choose a standard option or type another paper type.</value></data>
+	<data name="Zinc" xml:space="preserve"><value>Printing plate</value></data>
+	<data name="DieCut" xml:space="preserve"><value>Die / die-cutting</value></data>
+	<data name="Cliche" xml:space="preserve"><value>Printing cliché</value></data>
+	<data name="PrintRunSheets" xml:space="preserve"><value>Print run (sheets)</value></data>
+	<data name="CutLengthCm" xml:space="preserve"><value>Cut length (cm)</value></data>
+	<data name="CutWidthCm" xml:space="preserve"><value>Cut width (cm)</value></data>
+	<data name="SheetOrientation" xml:space="preserve"><value>Sheet orientation</value></data>
+	<data name="SelectOrientation" xml:space="preserve"><value>Select orientation</value></data>
+	<data name="Portrait" xml:space="preserve"><value>Portrait</value></data>
+	<data name="Landscape" xml:space="preserve"><value>Landscape</value></data>
+	<data name="Grammage" xml:space="preserve"><value>Grammage</value></data>
+	<data name="SheetCount" xml:space="preserve"><value>Sheet count</value></data>
+	<data name="ProductionLocation" xml:space="preserve"><value>Production location</value></data>
+	<data name="SelectOrEnterLocation" xml:space="preserve"><value>Select or enter a location</value></data>
+	<data name="PaymentMethod" xml:space="preserve"><value>Payment method</value></data>
+	<data name="SelectOrEnterPaymentMethod" xml:space="preserve"><value>Select or enter a payment method</value></data>
+	<data name="PrintingAndColorNotes" xml:space="preserve"><value>Printing and color notes</value></data>
+	<data name="PrintingNotesPlaceholder" xml:space="preserve"><value>Pantone colors, custom colors, printing notes, etc.</value></data>
+	<data name="CustomerOrderNumber" xml:space="preserve"><value>Customer order number</value></data>
+	<data name="AdditionalServicesAndColorSelection" xml:space="preserve"><value>Additional services and color selection</value></data>
+	<data name="ExpandEachGroup" xml:space="preserve"><value>Expand a group to view its options</value></data>
+	<data name="Selected" xml:space="preserve"><value>selected</value></data>
+	<data name="SaveSpecifications" xml:space="preserve"><value>Save specifications</value></data>
+	<data name="SaveAndPreviewApprovalProof" xml:space="preserve"><value>Save and preview approval proof</value></data>
+	<data name="SaveAndContinueSalesWorkflow" xml:space="preserve"><value>Save and continue to sales workflow</value></data>
+	<data name="SalesRequestNotFound" xml:space="preserve"><value>Sales request was not found.</value></data>
+	<data name="RequestIsNotSheetJob" xml:space="preserve"><value>This request is not a Sheet Job.</value></data>
+	<data name="SavedSpecificationsUnreadable" xml:space="preserve"><value>Saved specifications could not be read. Save to replace them.</value></data>
+	<data name="JobTitleRequired" xml:space="preserve"><value>Job title is required.</value></data>
+	<data name="UploadArtworkBeforeSaving" xml:space="preserve"><value>Upload the customer artwork before saving the job.</value></data>
+	<data name="CustomerCodeIsRequired" xml:space="preserve"><value>Customer code is required.</value></data>
+	<data name="CustomerNameIsRequired" xml:space="preserve"><value>Customer name is required.</value></data>
+	<data name="CustomerCodeAlreadyExists" xml:space="preserve"><value>Customer code '{0}' already exists.</value></data>
+	<data name="SelectOrCreateCustomer" xml:space="preserve"><value>Select an existing customer or create a new one.</value></data>
+	<data name="SpecificationsSavedFinishedProduct" xml:space="preserve"><value>Specifications saved. Finished product: {0} ({1}).</value></data>
+	<data name="ArtworkMaxSize" xml:space="preserve"><value>Artwork '{0}' must be 25 MB or smaller.</value></data>
+	<data name="UnsupportedArtworkFormat" xml:space="preserve"><value>Unsupported artwork format: {0}.</value></data>
+	<data name="ServiceGroupLamination" xml:space="preserve"><value>Lamination</value></data>
+	<data name="ServiceGroupUvCoating" xml:space="preserve"><value>UV and coating</value></data>
+	<data name="ServiceGroupFoilStamping" xml:space="preserve"><value>Foil stamping</value></data>
+	<data name="ServiceGroupEmbossingDie" xml:space="preserve"><value>Embossing and die</value></data>
+	<data name="ServiceGroupGluingCuttingPackaging" xml:space="preserve"><value>Gluing, cutting, and packaging</value></data>
+	<data name="ServiceGroupBackColors" xml:space="preserve"><value>Back-side colors</value></data>
+	<data name="ServiceGroupFrontColors" xml:space="preserve"><value>Front-side colors</value></data>
+	<data name="CustomerApprovalProof" xml:space="preserve"><value>Customer Approval Proof</value></data>
+	<data name="ReviewProofPrintSavePdf" xml:space="preserve"><value>Review the proof, then print and choose Save as PDF.</value></data>
+	<data name="BackToJob" xml:space="preserve"><value>Back to job</value></data>
+	<data name="PrintSaveAsPdf" xml:space="preserve"><value>Print / Save as PDF</value></data>
+	<data name="PrintingPackagingCustomerApproval" xml:space="preserve"><value>Printing &amp; Packaging · Customer Approval Proof</value></data>
+	<data name="RollJobUpper" xml:space="preserve"><value>ROLL JOB</value></data>
+	<data name="SheetJobUpper" xml:space="preserve"><value>SHEET JOB</value></data>
+	<data name="ProofNumber" xml:space="preserve"><value>Proof #</value></data>
+	<data name="Date" xml:space="preserve"><value>Date</value></data>
+	<data name="ArtworkPreview" xml:space="preserve"><value>Artwork preview</value></data>
+	<data name="OpenFile" xml:space="preserve"><value>Open file</value></data>
+	<data name="ArtworkNotUploaded" xml:space="preserve"><value>Artwork not uploaded</value></data>
+	<data name="ProductionNotes" xml:space="preserve"><value>Production notes</value></data>
+	<data name="CustomerJobDetails" xml:space="preserve"><value>Customer &amp; job details</value></data>
+	<data name="Customer" xml:space="preserve"><value>Customer</value></data>
+	<data name="JobTitle" xml:space="preserve"><value>Job title</value></data>
+	<data name="JobType" xml:space="preserve"><value>Job type</value></data>
+	<data name="RollLabel" xml:space="preserve"><value>Roll label</value></data>
+	<data name="SheetProduct" xml:space="preserve"><value>Sheet product</value></data>
+	<data name="RequestNumber" xml:space="preserve"><value>Request no.</value></data>
+	<data name="ArtworkFile" xml:space="preserve"><value>Artwork file</value></data>
+	<data name="TechnicalSpecifications" xml:space="preserve"><value>Technical specifications</value></data>
+	<data name="SelectedServices" xml:space="preserve"><value>Selected services</value></data>
+	<data name="NoAdditionalServicesSelected" xml:space="preserve"><value>No additional services selected.</value></data>
+	<data name="SelectedRollOrientation" xml:space="preserve"><value>Selected roll orientation</value></data>
+	<data name="NoRollOrientationSelected" xml:space="preserve"><value>No roll orientation selected.</value></data>
+	<data name="PrintingColorsFrontBack" xml:space="preserve"><value>Printing colors — front and back</value></data>
+	<data name="FrontSide" xml:space="preserve"><value>Front side</value></data>
+	<data name="BackSide" xml:space="preserve"><value>Back side</value></data>
+	<data name="HighlightedTilesExplain" xml:space="preserve"><value>Highlighted tiles indicate selected process colors.</value></data>
+	<data name="CustomerApproval" xml:space="preserve"><value>Customer approval</value></data>
+	<data name="ApprovedBy" xml:space="preserve"><value>Approved by</value></data>
+	<data name="Signature" xml:space="preserve"><value>Signature</value></data>
+	<data name="CustomerApprovalCopy" xml:space="preserve"><value>HamiChap · Customer approval copy</value></data>
+	<data name="ReviewDimensionsArtworkFinishing" xml:space="preserve"><value>Please review all dimensions, artwork and finishing selections before approval.</value></data>
+	<data name="SalesRequestNotFound" xml:space="preserve"><value>Sales request not found.</value></data>
+	<data name="SavedJobSpecificationsUnreadable" xml:space="preserve"><value>Saved job specifications could not be read. Open and save the job form again.</value></data>
+	<data name="DimensionsNotSpecified" xml:space="preserve"><value>Dimensions not specified</value></data>
+	<data name="Material" xml:space="preserve"><value>Material</value></data>
+	<data name="Colors" xml:space="preserve"><value>Colors</value></data>
+	<data name="RollDiameter" xml:space="preserve"><value>Roll diameter</value></data>
+	<data name="LabelQuantity" xml:space="preserve"><value>Label quantity</value></data>
+	<data name="HandGluing" xml:space="preserve"><value>Hand gluing</value></data>
+	<data name="MachineGluing" xml:space="preserve"><value>Machine gluing</value></data>
+	<data name="Yes" xml:space="preserve"><value>Yes</value></data>
+	<data name="No" xml:space="preserve"><value>No</value></data>
+	<data name="SheetOrientation" xml:space="preserve"><value>Sheet orientation</value></data>
+	<data name="Paper" xml:space="preserve"><value>Paper</value></data>
+	<data name="Grammage" xml:space="preserve"><value>Grammage</value></data>
+	<data name="PrintRun" xml:space="preserve"><value>Print run</value></data>
+	<data name="SheetCount" xml:space="preserve"><value>Sheet count</value></data>
+	<data name="ZincPlate" xml:space="preserve"><value>Zinc / plate</value></data>
+	<data name="Die" xml:space="preserve"><value>Die</value></data>
+	<data name="Cliche" xml:space="preserve"><value>Cliché</value></data>
+	<data name="ProductionLocation" xml:space="preserve"><value>Production location</value></data>
+	<data name="PaymentMethod" xml:space="preserve"><value>Payment method</value></data>
+	<data name="OrderNumber" xml:space="preserve"><value>Order number</value></data>
+	<data name="LabelPull" xml:space="preserve"><value>Label pull</value></data>
+	<data name="LabelWidth" xml:space="preserve"><value>Label width</value></data>
+	<data name="Gap" xml:space="preserve"><value>Gap</value></data>
+	<data name="CutSize" xml:space="preserve"><value>Cut size</value></data>
 </root>
