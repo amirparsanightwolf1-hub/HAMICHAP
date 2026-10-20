@@ -6,9 +6,13 @@
 @using HamiChap_MES_ERP.Models.Sales
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Hosting
+@using System.IO
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
+@inject IWebHostEnvironment HostEnvironment
 
 <PageTitle>Sheet Job Specification</PageTitle>
 
@@ -115,7 +119,18 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">نوع کاغذ</label>
-                        <InputText class="form-control" @bind-Value="spec.PaperType" />
+                        <input class="form-control" list="sheet-paper-types" @bind="spec.PaperType" placeholder="انتخاب کنید یا تایپ کنید" />
+                        <datalist id="sheet-paper-types">
+                            <option value="گلاسه"></option>
+                            <option value="تحریر"></option>
+                            <option value="ایندربرد"></option>
+                            <option value="پشت طوسی"></option>
+                            <option value="کرافت"></option>
+                            <option value="کارتن"></option>
+                            <option value="متالایز"></option>
+                            <option value="کاغذ اختصاصی"></option>
+                        </datalist>
+                        <small class="text-muted">می‌توانید گزینه استاندارد را انتخاب کنید یا نوع دیگری تایپ کنید.</small>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">زینک</label>
@@ -142,6 +157,13 @@
                         <InputNumber class="form-control" @bind-Value="spec.CutWidthCm" />
                     </div>
                     <div class="col-md-4">
+                        <label class="form-label">Sheet orientation</label>
+                        <select class="form-select" @bind="spec.SheetOrientation">
+                            <option value="">Select orientation</option><option value="Portrait">Portrait</option><option value="Landscape">Landscape</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
                         <label class="form-label">گرماژ</label>
                         <InputNumber class="form-control" @bind-Value="spec.Grammage" />
                     </div>
@@ -151,11 +173,26 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">محل تولید</label>
-                        <InputText class="form-control" @bind-Value="spec.ProductionLocation" />
+                        <input class="form-control" list="sheet-production-locations" @bind="spec.ProductionLocation" placeholder="انتخاب یا ورود محل" />
+                        <datalist id="sheet-production-locations">
+                            <option value="داخل کارخانه"></option>
+                            <option value="برون‌سپاری"></option>
+                            <option value="تولید مشترک"></option>
+                        </datalist>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">نحوه تسویه</label>
-                        <InputText class="form-control" @bind-Value="spec.PaymentMethod" />
+                        <input class="form-control" list="sheet-payment-methods" @bind="spec.PaymentMethod" placeholder="انتخاب یا ورود روش تسویه" />
+                        <datalist id="sheet-payment-methods">
+                            <option value="نقدی"></option>
+                            <option value="اعتباری"></option>
+                            <option value="پیش‌پرداخت و تسویه نهایی"></option>
+                            <option value="طبق قرارداد"></option>
+                        </datalist>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">توضیحات چاپ و رنگ</label>
+                        <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="رنگ پنتون، رنگ اختصاصی، نکات چاپ و ..." />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">شماره سفارش مشتری</label>
@@ -166,22 +203,28 @@
         </div>
 
         <div class="card shadow-sm mb-3">
-            <div class="card-header"><strong>Services and print-color selections</strong></div>
+            <div class="card-header"><strong>خدمات تکمیلی و انتخاب رنگ</strong><span class="text-muted ms-2">(برای مشاهده هر گروه باز کنید)</span></div>
             <div class="card-body">
-                <div class="row g-3">
-                    @foreach (var service in Services)
-                    {
-                        <div class="col-sm-6 col-lg-4" @key="service">
-                            <div class="form-check">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       checked="@spec.SelectedServices.Contains(service)"
-                                       @onchange="args => ToggleService(service, args)" />
-                                <label class="form-check-label">@service</label>
-                            </div>
+                @foreach (var group in ServiceGroups)
+                {
+                    <details class="border rounded p-3 mb-2" @key="group.Key">
+                        <summary class="fw-semibold" style="cursor:pointer">@group.Key <span class="text-muted small">(@group.Value.Count(x => spec.SelectedServices.Contains(x)) انتخاب شده)</span></summary>
+                        <div class="row g-3 pt-3">
+                            @foreach (var service in group.Value)
+                            {
+                                <div class="col-sm-6 col-lg-4" @key="service">
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               checked="@spec.SelectedServices.Contains(service)"
+                                               @onchange="args => ToggleService(service, args)" />
+                                        <label class="form-check-label">@service</label>
+                                    </div>
+                                </div>
+                            }
                         </div>
-                    }
-                </div>
+                    </details>
+                }
             </div>
         </div>
 
@@ -189,6 +232,9 @@
             <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
                 @if (isSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
                 Save specifications
+            </button>
+            <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
+                <i class="bi bi-file-earmark-pdf"></i> Save and preview approval proof
             </button>
             <button class="btn btn-outline-primary" @onclick="SaveAndContinueAsync" disabled="@isSaving">
                 Save and continue to sales workflow
@@ -214,38 +260,17 @@
     private bool isSaving;
     private string? errorMessage;
     private string? successMessage;
+    private List<IBrowserFile> pendingArtworks = new();
 
-    private static readonly string[] Services =
+    private static readonly Dictionary<string, string[]> ServiceGroups = new()
     {
-        "سلفون واتربیس مات",
-        "سلفون واتربیس براق",
-        "سلفون حرارتی مات",
-        "سلفون حرارتی براق",
-        "سلفون حرارتی متالایز",
-        "یووی موضعی",
-        "طلاکوب",
-        "نقره‌کوب",
-        "رنگ فویل",
-        "برجسته",
-        "قالب",
-        "جعبه‌چسبانی",
-        "برش و بسته‌بندی",
-        "رنگ‌های پنتون پشت",
-        "رنگ‌های ساختگی پشت",
-        "طلایی پشت",
-        "نقره‌ای پشت",
-        "رنگ‌های پنتون رو",
-        "رنگ‌های ساختگی رو",
-        "طلایی رو",
-        "نقره‌ای رو",
-        "رنگ پشت C",
-        "رنگ پشت M",
-        "رنگ پشت Y",
-        "رنگ پشت K",
-        "رنگ رو C",
-        "رنگ رو M",
-        "رنگ رو Y",
-        "رنگ رو K"
+        ["سلفون و لمینیت"] = new[] { "سلفون واتربیس مات", "سلفون واتربیس براق", "سلفون حرارتی مات", "سلفون حرارتی براق", "سلفون حرارتی متالایز" },
+        ["یووی و پوشش"] = new[] { "یووی موضعی" },
+        ["طلاکوب، نقره‌کوب و فویل"] = new[] { "طلاکوب", "نقره‌کوب", "رنگ فویل" },
+        ["برجسته‌کاری و قالب"] = new[] { "برجسته", "قالب" },
+        ["چسبانی، برش و بسته‌بندی"] = new[] { "جعبه‌چسبانی", "برش و بسته‌بندی" },
+        ["رنگ‌های پشت کار"] = new[] { "رنگ‌های پنتون پشت", "رنگ‌های ساختگی پشت", "طلایی پشت", "نقره‌ای پشت", "رنگ پشت C", "رنگ پشت M", "رنگ پشت Y", "رنگ پشت K" },
+        ["رنگ‌های روی کار"] = new[] { "رنگ‌های پنتون رو", "رنگ‌های ساختگی رو", "طلایی رو", "نقره‌ای رو", "رنگ رو C", "رنگ رو M", "رنگ رو Y", "رنگ رو K" }
     };
 
     protected override async Task OnParametersSetAsync()
@@ -317,6 +342,50 @@
             spec.SelectedServices.Remove(service);
     }
 
+    private void ArtworkSelected(InputFileChangeEventArgs args)
+    {
+        pendingArtworks = args.GetMultipleFiles(20).ToList();
+        errorMessage = null;
+    }
+
+    private static bool IsPreviewableImage(string path) =>
+        path.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
+
+    private async Task SaveArtworkFileAsync()
+    {
+        if (request is null || pendingArtworks.Count == 0) return;
+        const long maxBytes = 25 * 1024 * 1024;
+        var allowed = new[] { ".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp" };
+        var uploadFolder = Path.Combine(HostEnvironment.WebRootPath, "uploads", "job-artwork");
+        Directory.CreateDirectory(uploadFolder);
+        spec.ArtworkFiles ??= new List<JobArtworkFile>();
+        foreach (var file in pendingArtworks)
+        {
+            if (file.Size > maxBytes) throw new InvalidOperationException($"Artwork '{file.Name}' must be 25 MB or smaller.");
+            var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+            if (!allowed.Contains(extension)) throw new InvalidOperationException($"Unsupported artwork format: {file.Name}");
+            var safeName = $"request-{request.Id}-{Guid.NewGuid():N}{extension}";
+            var fullPath = Path.Combine(uploadFolder, safeName);
+            await using (var source = file.OpenReadStream(maxBytes))
+            await using (var destination = File.Create(fullPath))
+                await source.CopyToAsync(destination);
+            spec.ArtworkFiles.Add(new JobArtworkFile { RelativePath = $"/uploads/job-artwork/{safeName}", OriginalFileName = Path.GetFileName(file.Name) });
+        }
+        var first = spec.ArtworkFiles.FirstOrDefault();
+        if (first is not null) { spec.ArtworkRelativePath = first.RelativePath; spec.ArtworkOriginalFileName = first.OriginalFileName; }
+        pendingArtworks.Clear();
+    }
+
+    private async Task SaveAndOpenProofAsync()
+    {
+        await SaveAsync();
+        if (string.IsNullOrWhiteSpace(errorMessage))
+            Navigation.NavigateTo($"/sales/requests/proof/{RequestId}");
+    }
+
     private async Task SaveAsync()
     {
         if (request is null) return;
@@ -324,6 +393,11 @@
         if (string.IsNullOrWhiteSpace(spec.JobTitle))
         {
             errorMessage = "Job title is required.";
+            return;
+        }
+        if (pendingArtworks.Count == 0 && (spec.ArtworkFiles?.Count ?? 0) == 0 && string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
+        {
+            errorMessage = "Upload the customer artwork before saving the job.";
             return;
         }
 
@@ -377,6 +451,8 @@
                 request.CustomerId = selectedCustomer.Id;
                 request.Customer = selectedCustomer;
             }
+
+            await SaveArtworkFileAsync();
 
             var item = await JobProductItemHelper.GetOrCreateAsync(
                 Db, request, spec.JobTitle, "products-sheet");

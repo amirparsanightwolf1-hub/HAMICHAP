@@ -41,14 +41,57 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">@LocalizationService["Customer"]</label>
-                    <select class="form-select" @bind="customerId">
-                        <option value="0">@LocalizationService["SelectCustomer"]</option>
-                        @foreach (var customer in customers)
-                        {
-                            <option value="@customer.Id">@customer.Code - @customer.Name</option>
-                        }
-                    </select>
+                    @if (!isCreatingCustomer)
+                    {
+                        <select class="form-select" @bind="customerId">
+                            <option value="0">@LocalizationService["SelectCustomer"]</option>
+                            @foreach (var customer in customers)
+                            {
+                                <option value="@customer.Id">@customer.Code - @customer.Name</option>
+                            }
+                        </select>
+                        <button type="button"
+                                class="btn btn-link px-0"
+                                @onclick="StartNewCustomer">
+                            + Create a new customer
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="form-control bg-light">New customer</span>
+                            <button type="button"
+                                    class="btn btn-outline-secondary text-nowrap"
+                                    @onclick="SelectExistingCustomer">
+                                Select existing
+                            </button>
+                        </div>
+                    }
                 </div>
+
+                @if (isCreatingCustomer)
+                {
+                    <div class="col-md-4">
+                        <label class="form-label">Customer code *</label>
+                        <InputText class="form-control" @bind-Value="newCustomerCode" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Customer name *</label>
+                        <InputText class="form-control" @bind-Value="newCustomerName" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Phone</label>
+                        <InputText class="form-control" @bind-Value="newCustomerPhone" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" @bind-Value="newCustomerEmail" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Address</label>
+                        <InputText class="form-control" @bind-Value="newCustomerAddress" />
+                    </div>
+                }
 
                 <div class="col-md-6">
                     <label class="form-label">Job type</label>
@@ -81,6 +124,12 @@
     private int customerId;
     private SalesJobType selectedJobType = SalesJobType.Roll;
     private bool isSaving;
+    private bool isCreatingCustomer;
+    private string newCustomerCode = "";
+    private string newCustomerName = "";
+    private string newCustomerPhone = "";
+    private string newCustomerEmail = "";
+    private string newCustomerAddress = "";
     private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
@@ -91,13 +140,38 @@
             .ToListAsync();
     }
 
+    private void StartNewCustomer()
+    {
+        isCreatingCustomer = true;
+        newCustomerCode = "";
+        newCustomerName = "";
+        newCustomerPhone = "";
+        newCustomerEmail = "";
+        newCustomerAddress = "";
+        errorMessage = null;
+    }
+
+    private void SelectExistingCustomer()
+    {
+        isCreatingCustomer = false;
+        errorMessage = null;
+    }
+
     private async Task CreateAsync()
     {
         errorMessage = null;
 
-        if (customerId <= 0)
+        if (!isCreatingCustomer && customerId <= 0)
         {
-            errorMessage = LocalizationService["CustomerRequired"];
+            errorMessage = "Select an existing customer or create a new one.";
+            return;
+        }
+
+        if (isCreatingCustomer &&
+            (string.IsNullOrWhiteSpace(newCustomerCode) ||
+             string.IsNullOrWhiteSpace(newCustomerName)))
+        {
+            errorMessage = "Customer code and customer name are required.";
             return;
         }
 
@@ -114,6 +188,31 @@
             {
                 throw new InvalidOperationException(
                     LocalizationService["UserNotAuthenticated"]);
+            }
+
+            if (isCreatingCustomer)
+            {
+                var code = newCustomerCode.Trim();
+
+                if (await Db.Customers.AnyAsync(x => x.Code == code))
+                    throw new InvalidOperationException($"Customer code '{code}' already exists.");
+
+                var newCustomer = new Customer
+                {
+                    Code = code,
+                    Name = newCustomerName.Trim(),
+                    Phone = newCustomerPhone.Trim(),
+                    Email = newCustomerEmail.Trim(),
+                    Address = newCustomerAddress.Trim(),
+                    IsActive = true
+                };
+
+                Db.Customers.Add(newCustomer);
+                await Db.SaveChangesAsync();
+
+                customerId = newCustomer.Id;
+                customers.Add(newCustomer);
+                isCreatingCustomer = false;
             }
 
             var request = await SalesRequestService.CreateRequestAsync(

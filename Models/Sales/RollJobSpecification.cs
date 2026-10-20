@@ -6,13 +6,20 @@ public sealed class RollJobSpecification
 
     // Reusable finished product in the inventory item master.
     public int? FinishedProductItemId { get; set; }
+    // Relative URL of the artwork uploaded specifically for this job.
+    public string ArtworkRelativePath { get; set; } = "";
+    public string ArtworkOriginalFileName { get; set; } = "";
+    // Multiple artwork files; singular properties above remain for backwards compatibility.\n
+    public List<JobArtworkFile> ArtworkFiles { get; set; } = new();
     public decimal? LabelPull { get; set; }
     public decimal? LabelWidth { get; set; }
     public decimal? GapBetweenLabels { get; set; }
     public int? LabelQuantity { get; set; }
     public string PaperType { get; set; } = "";
     public int? ColorCount { get; set; }
+    public string PrintingNotes { get; set; } = "";
     public decimal? RollDiameter { get; set; }
+    public string RollOrientation { get; set; } = "";
     public bool HandGluing { get; set; }
     public bool MachineGluing { get; set; }
 
