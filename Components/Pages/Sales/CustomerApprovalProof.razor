@@ -10,8 +10,22 @@
 <PageTitle>Customer Approval Proof</PageTitle>
 
 <style>
-    .proof-page { max-width: 1200px; margin: 0 auto; color: #20283a; }
-    .proof-sheet { background:#fff; border:1px solid #e0e5ed; padding:18px; border-radius:14px; box-shadow:0 14px 38px rgba(20,32,60,.08); }
+    .proof-page { max-width: 1320px; margin: 0 auto; color: #20283a; }
+    .proof-sheet { background:#fff; border:1px solid #e0e5ed; padding:22px; border-radius:16px; box-shadow:0 14px 38px rgba(20,32,60,.08); }
+    .proof-section { min-width:0; }
+    .proof-section-heading { display:flex; align-items:center; gap:8px; margin:0 0 10px; color:#17234a; font-size:.82rem; font-weight:800; letter-spacing:.045em; text-transform:uppercase; }
+    .proof-section-heading:before { content:""; width:4px; height:17px; flex:0 0 4px; border-radius:4px; background:#536a9a; }
+    .proof-two-col { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .proof-three-col { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    .proof-data-box { border:1px solid #e0e6ef; border-radius:10px; padding:10px 12px; background:linear-gradient(180deg,#fff,#fbfcfe); min-width:0; }
+    .proof-data-label { color:#69758a; font-size:.72rem; font-weight:650; text-transform:uppercase; letter-spacing:.035em; margin-bottom:4px; }
+    .proof-data-value { color:#20283a; font-size:.9rem; font-weight:700; overflow-wrap:anywhere; }
+    .cmyk-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; }
+    .cmyk-chip { min-width:0; border:1px solid #dce2eb; border-radius:9px; padding:7px 4px; display:flex; flex-direction:column; align-items:center; gap:4px; background:#fff; }
+    .cmyk-swatch { width:25px; height:25px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:850; border:1px solid rgba(0,0,0,.09); }
+    .cmyk-name { color:#4b566d; font-size:.68rem; font-weight:700; }
+    .cmyk-chip.active { border-color:#8a98b8; background:#f4f6fb; box-shadow:inset 0 0 0 1px #8a98b8; }
+    @@media (max-width:700px) { .proof-two-col,.proof-three-col { grid-template-columns:1fr; } }
     .proof-brand { color:#0e1641; font-weight:850; letter-spacing:.06em; }
     .proof-subtle { color:#69758a; }
     .proof-panel { border:1px solid #dfe5ee; border-radius:10px; overflow:hidden; background:#fff; }
@@ -173,19 +187,62 @@
             @if (request.JobType == SalesJobType.Roll)
             {
                 <div class="row g-3 mt-1">
-                    <div class="col-md-6"><div class="proof-panel"><div class="proof-panel-title">Selected roll orientation</div><div class="proof-panel-body"><div class="roll-diagram">
-                    @if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
-                    {
-                        <img class="roll-orientation-image"
-                             src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
-                             alt="@($"Selected roll orientation {orientationNumber}")" />
-                    }
-                    else
-                    {
-                        <div class="roll-orientation-missing">No roll orientation selected.</div>
-                    }
-                </div></div></div></div>
-                    <div class="col-md-6"><div class="proof-panel"><div class="proof-panel-title">Customer approval</div><div class="proof-panel-body" style="min-height:110px"><div class="proof-kv"><span>Approved by</span><span>____________________</span></div><div class="proof-kv"><span>Date</span><span>____________________</span></div><div class="proof-kv"><span>Signature</span><span>____________________</span></div></div></div></div>
+                    <div class="col-md-6">
+                        <div class="proof-panel">
+                            <div class="proof-panel-title">Selected roll orientation</div>
+                            <div class="proof-panel-body">
+                                <div class="roll-diagram">
+                                    @if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
+                                    {
+                                        <img class="roll-orientation-image"
+                                             src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
+                                             alt="@($"Selected roll orientation {orientationNumber}")" />
+                                    }
+                                    else
+                                    {
+                                        <div class="roll-orientation-missing">No roll orientation selected.</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="proof-panel">
+                            <div class="proof-panel-title">Printing colors — front and back</div>
+                            <div class="proof-panel-body">
+                                <div class="proof-two-col">
+                                    <div class="proof-data-box">
+                                        <div class="proof-data-label">Front side</div>
+                                        <div class="cmyk-grid">
+                                            @foreach (var color in CmykColors)
+                                            {
+                                                <div class="cmyk-chip @(IsCmykSelected("front", color.Key) ? "active" : "")">
+                                                    <div class="cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
+                                                    <div class="cmyk-name">@color.ValueName</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="proof-data-box">
+                                        <div class="proof-data-label">Back side</div>
+                                        <div class="cmyk-grid">
+                                            @foreach (var color in CmykColors)
+                                            {
+                                                <div class="cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
+                                                    <div class="cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
+                                                    <div class="cmyk-name">@color.ValueName</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="small text-muted mt-2">Highlighted tiles indicate selected process colors.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="proof-panel">
+                            <div class="proof-panel-title">Customer approval</div><div class="proof-panel-body" style="min-height:110px"><div class="proof-kv"><span>Approved by</span><span>____________________</span></div><div class="proof-kv"><span>Date</span><span>____________________</span></div><div class="proof-kv"><span>Signature</span><span>____________________</span></div></div></div></div>
                 </div>
             }
             else
@@ -205,7 +262,16 @@
     private string artworkPath = "";
     private string artworkFileName = "";
     private string rollOrientation = "";
+    private HashSet<string> frontCmyk = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> backCmyk = new(StringComparer.OrdinalIgnoreCase);
     private List<JobArtworkFile> artworkFiles = new();
+    private static readonly (string Key, string Value, string ValueName)[] CmykColors =
+    {
+        ("C", "#00A9E8", "Cyan"),
+        ("M", "#E6007E", "Magenta"),
+        ("Y", "#F2CC00", "Yellow"),
+        ("K", "#202124", "Black")
+    };
     private string JobTitle = "";
     private string PrintingNotes = "";
     private string DimensionsSummary = "Dimensions not specified";
@@ -228,6 +294,7 @@
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
                 rollOrientation = spec.RollOrientation ?? "";
+                LoadCmykSelections(request.JobSpecificationJson);
                 DimensionsSummary = $"Label pull: {Fmt(spec.LabelPull)} mm · Label width: {Fmt(spec.LabelWidth)} mm · Gap: {Fmt(spec.GapBetweenLabels)} mm";
                 technicalDetails = new() {
                     new("Material", Empty(spec.PaperType)), new("Colors", spec.ColorCount?.ToString() ?? "—"),
@@ -258,6 +325,70 @@
         catch (JsonException) { errorMessage = "Saved job specifications could not be read. Open and save the job form again."; }
         isLoading = false;
     }
+    private void LoadCmykSelections(string? json)
+    {
+        frontCmyk.Clear();
+        backCmyk.Clear();
+        if (string.IsNullOrWhiteSpace(json)) return;
+
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            foreach (var property in root.EnumerateObject())
+            {
+                var name = property.Name.Replace("_", "").Replace("-", "").ToLowerInvariant();
+                var target = name.Contains("front") ? frontCmyk
+                    : name.Contains("back") ? backCmyk
+                    : null;
+                if (target is null) continue;
+
+                var isCmykField = name.Contains("cmyk") || name.Contains("printcolor") ||
+                                  name.Contains("printingcolor") || name.Contains("color");
+                if (!isCmykField) continue;
+
+                if (property.Value.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in property.Value.EnumerateArray())
+                        AddCmykValue(target, item.ToString());
+                }
+                else if (property.Value.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var item in property.Value.EnumerateObject())
+                    {
+                        if (item.Value.ValueKind == JsonValueKind.True)
+                            AddCmykValue(target, item.Name);
+                        else if (item.Value.ValueKind == JsonValueKind.String)
+                            AddCmykValue(target, item.Value.GetString());
+                    }
+                }
+                else if (property.Value.ValueKind == JsonValueKind.String)
+                {
+                    foreach (var value in (property.Value.GetString() ?? "").Split(',', ';', ' ', '|'))
+                        AddCmykValue(target, value);
+                }
+            }
+        }
+        catch (JsonException) { }
+    }
+
+    private static void AddCmykValue(HashSet<string> target, string? value)
+    {
+        var normalized = value?.Trim().ToUpperInvariant();
+        if (normalized is "C" or "M" or "Y" or "K")
+            target.Add(normalized);
+        else if (normalized is not null)
+        {
+            foreach (var letter in normalized.Where(ch => ch is 'C' or 'M' or 'Y' or 'K'))
+                target.Add(letter.ToString());
+        }
+    }
+
+    private bool IsCmykSelected(string side, string key) =>
+        (side == "front" ? frontCmyk : backCmyk).Contains(key);
+
+    private static string CmykTextColor(string key) => key == "Y" ? "#242424" : "#FFFFFF";
+
     private static string Empty(string? s) => string.IsNullOrWhiteSpace(s) ? "—" : s;
     private static string Fmt(decimal? d) => d.HasValue ? d.Value.ToString("0.##") : "—";
     private static bool IsImage(string path) => new[] { ".png", ".jpg", ".jpeg", ".webp" }.Any(x => path.EndsWith(x, StringComparison.OrdinalIgnoreCase));

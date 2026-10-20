@@ -1,6 +1,7 @@
 @page "/sales/requests/roll/edit/{RequestId:long}"
 
 @using System.Text.Json
+@using System.Text.Json.Nodes
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Customers
 @using HamiChap_MES_ERP.Models.Sales
@@ -17,8 +18,19 @@
 <PageTitle>Roll Job Specification</PageTitle>
 
 <style>
+    .job-section { border:1px solid #dfe5ef; border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 5px 18px rgba(18,34,68,.045); }
+    .job-section > .card-header { padding:14px 18px; background:linear-gradient(120deg,#f7f9fc,#eef2f9); border-bottom:1px solid #e3e8f1; color:#1b294c; font-weight:750; }
+    .job-section > .card-body { padding:20px; }
+    .field-tile { height:100%; padding:12px; border:1px solid #e4e9f1; border-radius:12px; background:#fbfcfe; }
+    .field-tile .form-label { font-weight:650; color:#35415b; }
+    .cmyk-panel { border:1px solid #dfe5ef; border-radius:14px; padding:16px; background:#fbfcff; height:100%; }
+    .cmyk-options { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+    .cmyk-option { display:flex; align-items:center; justify-content:center; gap:8px; min-height:54px; border:1px solid #d9e0eb; border-radius:10px; background:#fff; font-weight:750; cursor:pointer; }
+    .cmyk-option.selected { border:2px solid #34466f; box-shadow:0 0 0 3px rgba(52,70,111,.10); background:#f4f7fc; }
+    .cmyk-letter { display:inline-flex; width:26px; height:26px; border-radius:7px; align-items:center; justify-content:center; color:#fff; font-weight:850; }
+    .cmyk-c { background:#00a9e8; } .cmyk-m { background:#e6007e; } .cmyk-y { background:#f2cc00; color:#252525; } .cmyk-k { background:#202124; }
     .orientation-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
-    .orientation-option { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; min-height:132px; padding:10px 8px; border:1px solid #dce2ec; border-radius:14px; background:linear-gradient(180deg,#fff 0%,#f8f9fc 100%); color:#26334b; transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease; }
+    .orientation-option { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; min-height:190px; padding:10px 8px; border:1px solid #dce2ec; border-radius:14px; background:linear-gradient(180deg,#fff 0%,#f8f9fc 100%); color:#26334b; transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease; }
     .orientation-option:hover { border-color:#7f91b5; box-shadow:0 5px 16px rgba(14,22,65,.08); transform:translateY(-1px); }
     .orientation-option.selected { border:2px solid #34466f; background:#f0f4fb; box-shadow:0 0 0 3px rgba(52,70,111,.09); }
     .orientation-picture {
@@ -30,7 +42,8 @@
                          }
     .orientation-caption { font-size:.86rem; font-weight:650; }
     .orientation-check { color:#34466f; font-size:.75rem; }
-    @@media(max-width:700px) { .orientation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @@media(max-width:900px) { .orientation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @@media(max-width:700px) { .job-section > .card-body { padding:13px; } .cmyk-options { gap:5px; } .cmyk-option { flex-direction:column; gap:4px; font-size:.8rem; } }
 </style>
 
 <div class="page-container">
@@ -58,7 +71,7 @@
     }
     else if (request is not null)
     {
-        <div class="card shadow-sm mb-3">
+        <div class="card job-section mb-4">
             <div class="card-header"><strong>Order information</strong></div>
             <div class="card-body">
                 <div class="row g-3">
@@ -152,7 +165,7 @@
             </div>
         </div>
 
-        <div class="card shadow-sm mb-3">
+        <div class="card job-section mb-4">
             <div class="card-header"><strong>Label specifications</strong></div>
             <div class="card-body">
                 <div class="row g-3">
@@ -201,6 +214,42 @@
                         <label class="form-label">توضیحات چاپ / رنگ اختصاصی</label>
                         <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="جزئیات سفارشی، رنگ پنتون و ..." />
                     </div>
+                    <div class="col-12">
+                        <div class="row g-3">
+                            <div class="col-lg-6">
+                                <div class="cmyk-panel">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <strong>Front printing colors</strong><span class="text-muted small">Select all colors used on the front</span>
+                                    </div>
+                                    <div class="cmyk-options">
+                                        @foreach (var color in CmykColors)
+                                        {
+                                            <button type="button" class="cmyk-option @(frontCmykColors.Contains(color.Key) ? "selected" : "")" aria-pressed="@frontCmykColors.Contains(color.Key)" @onclick="() => ToggleCmykColor(frontCmykColors, color.Key)">
+                                                <span class="cmyk-letter @color.Css">@color.Key</span><span>@color.Name</span>
+                                            </button>
+                                        }
+                                    </div>
+                                    <div class="small text-muted mt-2">Selected: @(frontCmykColors.Count == 0 ? "None" : string.Join(" · ", CmykColors.Where(c => frontCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="cmyk-panel">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <strong>Back printing colors</strong><span class="text-muted small">Select all colors used on the back</span>
+                                    </div>
+                                    <div class="cmyk-options">
+                                        @foreach (var color in CmykColors)
+                                        {
+                                            <button type="button" class="cmyk-option @(backCmykColors.Contains(color.Key) ? "selected" : "")" aria-pressed="@backCmykColors.Contains(color.Key)" @onclick="() => ToggleCmykColor(backCmykColors, color.Key)">
+                                                <span class="cmyk-letter @color.Css">@color.Key</span><span>@color.Name</span>
+                                            </button>
+                                        }
+                                    </div>
+                                    <div class="small text-muted mt-2">Selected: @(backCmykColors.Count == 0 ? "None" : string.Join(" · ", CmykColors.Where(c => backCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-md-4">
                         <label class="form-label">قطر بوبین</label>
                         <InputNumber class="form-control" @bind-Value="spec.RollDiameter" />
@@ -246,7 +295,7 @@
             </div>
         </div>
 
-        <div class="card shadow-sm mb-3">
+        <div class="card job-section mb-4">
             <div class="card-header">
                 <strong>خدمات تکمیلی</strong>
                 <span class="text-muted ms-2">(چند گزینه قابل انتخاب است)</span>
@@ -316,6 +365,18 @@
     private string? errorMessage;
     private string? successMessage;
     private List<IBrowserFile> pendingArtworks = new();
+    private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly (string Key, string Name, string Css)[] CmykColors =
+    {
+        ("C", "Cyan", "cmyk-c"), ("M", "Magenta", "cmyk-m"),
+        ("Y", "Yellow", "cmyk-y"), ("K", "Black", "cmyk-k")
+    };
+
+    private static void ToggleCmykColor(HashSet<string> selection, string color)
+    {
+        if (!selection.Add(color)) selection.Remove(color);
+    }
 
     private static readonly Dictionary<string, string[]> ServiceGroups = new()
     {
@@ -357,6 +418,9 @@
             {
                 spec = JsonSerializer.Deserialize<RollJobSpecification>(
                     request.JobSpecificationJson) ?? new();
+                var savedJson = JsonNode.Parse(request.JobSpecificationJson) as JsonObject;
+                frontCmykColors = ReadColorSelection(savedJson?["FrontCmykColors"]);
+                backCmykColors = ReadColorSelection(savedJson?["BackCmykColors"]);
             }
             catch (JsonException)
             {
@@ -366,6 +430,18 @@
         }
 
         isLoading = false;
+    }
+
+    private static HashSet<string> ReadColorSelection(JsonNode? node)
+    {
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (node is JsonArray array)
+            foreach (var item in array)
+            {
+                var value = item?.GetValue<string>();
+                if (value is "C" or "M" or "Y" or "K") result.Add(value);
+            }
+        return result;
     }
 
     private void StartNewCustomer()
@@ -510,7 +586,10 @@
                 Db, request, spec.JobTitle, "products-roll");
 
             spec.FinishedProductItemId = item.Id;
-            request.JobSpecificationJson = JsonSerializer.Serialize(spec);
+            var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
+            savedSpec["FrontCmykColors"] = new JsonArray(frontCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
+            savedSpec["BackCmykColors"] = new JsonArray(backCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
+            request.JobSpecificationJson = savedSpec.ToJsonString();
             await Db.SaveChangesAsync();
             await transaction.CommitAsync();
 
