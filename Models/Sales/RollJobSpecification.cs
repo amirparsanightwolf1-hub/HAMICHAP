@@ -9,7 +9,7 @@ public sealed class RollJobSpecification
     // Relative URL of the artwork uploaded specifically for this job.
     public string ArtworkRelativePath { get; set; } = "";
     public string ArtworkOriginalFileName { get; set; } = "";
-    // Multiple artwork files; singular properties above remain for backwards compatibility.\n
+    // Multiple artwork files; singular properties above remain for backwards compatibility.
     public List<JobArtworkFile> ArtworkFiles { get; set; } = new();
     public decimal? LabelPull { get; set; }
     public decimal? LabelWidth { get; set; }

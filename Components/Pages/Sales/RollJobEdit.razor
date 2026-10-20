@@ -16,6 +16,17 @@
 
 <PageTitle>Roll Job Specification</PageTitle>
 
+<style>
+    .orientation-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .orientation-option { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; min-height:132px; padding:10px 8px; border:1px solid #dce2ec; border-radius:14px; background:linear-gradient(180deg,#fff 0%,#f8f9fc 100%); color:#26334b; transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease; }
+    .orientation-option:hover { border-color:#7f91b5; box-shadow:0 5px 16px rgba(14,22,65,.08); transform:translateY(-1px); }
+    .orientation-option.selected { border:2px solid #34466f; background:#f0f4fb; box-shadow:0 0 0 3px rgba(52,70,111,.09); }
+    .orientation-picture { width:100%; max-width:105px; height:78px; }
+    .orientation-caption { font-size:.86rem; font-weight:650; }
+    .orientation-check { color:#34466f; font-size:.75rem; }
+    @@media (max-width: 700px) { .orientation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+</style>
+
 <div class="page-container">
     <div class="erp-page-header mb-4">
         <div>
@@ -123,11 +134,11 @@
                                 <span class="small text-muted">Saved: @spec.ArtworkOriginalFileName</span>
                             </div>
                         }
-                        @if (pendingArtwork is not null)
-                        foreach (var file in selectedFiles)
+                        @if (pendingArtworks.Count > 0)
                         {
-                            var fileName = file.Name;
-                            // Process or save this file here.
+                            <div class="small text-primary mt-1">
+                                Selected files: @string.Join(", ", pendingArtworks.Select(file => file.Name)) — will be saved when you save specifications.
+                            </div>
                         }
                     </div>
                 </div>
@@ -187,13 +198,34 @@
                         <label class="form-label">قطر بوبین</label>
                         <InputNumber class="form-control" @bind-Value="spec.RollDiameter" />
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Roll orientation / unwind direction</label>
-                        <select class="form-select" @bind="spec.RollOrientation">
-                            <option value="">Select orientation</option>
-                            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-                            <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
-                        </select>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Roll orientation / unwind direction</label>
+                        <div class="text-muted small mb-2">Choose the picture that matches how the labels should unwind. The selected option is highlighted.</div>
+                        <div class="orientation-grid">
+                            @for (var orientation = 1; orientation <= 8; orientation++)
+                            {
+                                var option = orientation.ToString();
+                                var angle = (orientation - 1) * 45;
+                                <button type="button"
+                                        class="orientation-option @(spec.RollOrientation == option ? "selected" : "")"
+                                        aria-pressed="@(spec.RollOrientation == option)"
+                                        @onclick="() => spec.RollOrientation = option">
+                                    <svg class="orientation-picture" viewBox="0 0 100 78" role="img" aria-label="Unwind orientation @orientation">
+                                        <circle cx="50" cy="40" r="20" fill="#f4f6fa" stroke="#34466f" stroke-width="5" />
+                                        <circle cx="50" cy="40" r="7" fill="#ffffff" stroke="#8993a8" stroke-width="2" />
+                                        <g transform="rotate(@angle 50 40)">
+                                            <path d="M50 20 L50 7 L42 14 M50 7 L58 14" fill="none" stroke="#d47719" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M44 21 L44 2 L56 2 L56 21 Z" fill="#dce5f5" stroke="#34466f" stroke-width="1.5" />
+                                        </g>
+                                    </svg>
+                                    <span class="orientation-caption">Option @orientation</span>
+                                    @if (spec.RollOrientation == option)
+                                    {
+                                        <span class="orientation-check"><i class="bi bi-check-circle-fill"></i> Selected</span>
+                                    }
+                                </button>
+                            }
+                        </div>
                     </div>
 
                     <div class="col-md-4 d-flex align-items-end">
@@ -267,7 +299,6 @@
 @code {
     [Parameter] public long RequestId { get; set; }
 
-    private List<IBrowserFile> pendingArtwork = new();
     private HamiChap_MES_ERP.Models.Sales.SalesRequest? request;
     private List<Customer> customers = new();
     private int selectedCustomerId;
@@ -283,7 +314,6 @@
     private string? errorMessage;
     private string? successMessage;
     private List<IBrowserFile> pendingArtworks = new();
-    private List<IBrowserFile> selectedFiles = new();
 
     private static readonly Dictionary<string, string[]> ServiceGroups = new()
     {
