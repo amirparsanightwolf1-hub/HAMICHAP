@@ -50,4 +50,10 @@ public class SalesRequest : BaseEntity
 
     public ICollection<SalesRequestLine> Lines { get; set; }
         = new List<SalesRequestLine>();
+
+    public SalesJobType JobType { get; set; } = SalesJobType.Roll;
+
+    // JSON stores only job specifications and service selections.
+    // Quotation and approval status continue to use the existing workflow fields.
+    public string JobSpecificationJson { get; set; } = "{}";
 }

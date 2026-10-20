@@ -1,7 +1,8 @@
-﻿@page "/sales/requests/create"
+@page "/sales/requests/create"
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Services
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
@@ -14,24 +15,16 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject LocalizationService LocalizationService
 
-<PageTitle>
-    @LocalizationService["SalesRequest"]
-</PageTitle>
+<PageTitle>@LocalizationService["SalesRequest"]</PageTitle>
 
 <div class="page-container">
     <div class="erp-page-header mb-4">
         <div>
-            <div class="erp-page-title">
-                @LocalizationService["SalesRequest"]
-            </div>
-            <div class="erp-page-subtitle">
-                @LocalizationService["CreateSalesRequest"]
-            </div>
+            <div class="erp-page-title">@LocalizationService["SalesRequest"]</div>
+            <div class="erp-page-subtitle">Choose a customer and job type</div>
         </div>
 
-        <button type="button"
-                class="btn btn-outline-secondary"
-                @onclick="GoBack">
+        <button type="button" class="btn btn-outline-secondary" @onclick="GoBack">
             <i class="bi bi-arrow-left"></i>
             @LocalizationService["Back"]
         </button>
@@ -39,39 +32,33 @@
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
-        <div class="alert alert-danger mb-4">
-            @errorMessage
-        </div>
+        <div class="alert alert-danger mb-4">@errorMessage</div>
     }
 
     <div class="card shadow-sm">
-        <div class="card-header">
-            <strong>
-                @LocalizationService["SalesRequestInformation"]
-            </strong>
-        </div>
-
+        <div class="card-header"><strong>Sales request information</strong></div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">
-                        @LocalizationService["Customer"]
-                    </label>
-
+                    <label class="form-label">@LocalizationService["Customer"]</label>
                     <select class="form-select" @bind="customerId">
-                        <option value="0">
-                            @LocalizationService["SelectCustomer"]
-                        </option>
+                        <option value="0">@LocalizationService["SelectCustomer"]</option>
                         @foreach (var customer in customers)
                         {
-                            <option value="@customer.Id">
-                                @customer.Code - @customer.Name
-                            </option>
+                            <option value="@customer.Id">@customer.Code - @customer.Name</option>
                         }
                     </select>
                 </div>
 
-                <div class="col-md-6 d-flex align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label">Job type</label>
+                    <select class="form-select" @bind="selectedJobType">
+                        <option value="@SalesJobType.Roll">Roll Job — رول</option>
+                        <option value="@SalesJobType.Sheet">Sheet Job — شیت</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex flex-wrap gap-2 mt-4">
                     <button type="button"
                             class="btn btn-primary"
                             @onclick="CreateAsync"
@@ -81,7 +68,7 @@
                             <span class="spinner-border spinner-border-sm me-1"></span>
                         }
                         <i class="bi bi-plus-circle"></i>
-                        @LocalizationService["Create"]
+                        Create job
                     </button>
                 </div>
             </div>
@@ -92,6 +79,7 @@
 @code {
     private List<Customer> customers = new();
     private int customerId;
+    private SalesJobType selectedJobType = SalesJobType.Roll;
     private bool isSaving;
     private string? errorMessage;
 
@@ -130,9 +118,14 @@
 
             var request = await SalesRequestService.CreateRequestAsync(
                 customerId,
-                user.Id);
+                user.Id,
+                selectedJobType);
 
-            Navigation.NavigateTo($"/sales/requests/edit/{request.Id}");
+            var route = selectedJobType == SalesJobType.Roll
+                ? $"/sales/requests/roll/edit/{request.Id}"
+                : $"/sales/requests/sheet/edit/{request.Id}";
+
+            Navigation.NavigateTo(route);
         }
         catch (Exception ex)
         {
@@ -144,8 +137,5 @@
         }
     }
 
-    private void GoBack()
-    {
-        Navigation.NavigateTo("/sales/requests");
-    }
+    private void GoBack() => Navigation.NavigateTo("/sales/requests");
 }

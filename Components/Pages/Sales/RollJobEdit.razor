@@ -1,0 +1,400 @@
+@page "/sales/requests/roll/edit/{RequestId:long}"
+
+@using System.Text.Json
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>Roll Job Specification</PageTitle>
+
+<div class="page-container">
+    <div class="erp-page-header mb-4">
+        <div>
+            <div class="erp-page-title">Roll Job</div>
+            <div class="erp-page-subtitle">Label specifications and selected services</div>
+        </div>
+        <button class="btn btn-outline-secondary" @onclick="BackToRequest">
+            <i class="bi bi-arrow-left"></i> Back to request
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success">@successMessage</div>
+    }
+    @if (isLoading)
+    {
+        <div class="text-muted">Loading job…</div>
+    }
+    else if (request is not null)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-header"><strong>Order information</strong></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Date</label>
+                        <input class="form-control" value="@request.RequestDate.ToString("yyyy-MM-dd")" readonly />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Request number</label>
+                        <input class="form-control" value="@request.RequestNumber" readonly />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Customer</label>
+                        @if (!isCreatingCustomer)
+                        {
+                            <select class="form-select" @bind="selectedCustomerId">
+                                <option value="0">-- Select an existing customer --</option>
+                                @foreach (var customer in customers)
+                                {
+                                    <option value="@customer.Id">@customer.Code - @customer.Name</option>
+                                }
+                            </select>
+                            <button type="button"
+                                    class="btn btn-link px-0"
+                                    @onclick="StartNewCustomer">
+                                + Create a new customer
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="form-control bg-light">New customer</span>
+                                <button type="button"
+                                        class="btn btn-outline-secondary text-nowrap"
+                                        @onclick="SelectExistingCustomer">
+                                    Select existing
+                                </button>
+                            </div>
+                        }
+                    </div>
+                    @if (isCreatingCustomer)
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label">Customer code *</label>
+                            <InputText class="form-control" @bind-Value="newCustomerCode" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Customer name *</label>
+                            <InputText class="form-control" @bind-Value="newCustomerName" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Phone</label>
+                            <InputText class="form-control" @bind-Value="newCustomerPhone" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <InputText class="form-control" @bind-Value="newCustomerEmail" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Address</label>
+                            <InputText class="form-control" @bind-Value="newCustomerAddress" />
+                        </div>
+                    }
+                    <div class="col-12">
+                        <label class="form-label">Job title</label>
+                        <InputText class="form-control" @bind-Value="spec.JobTitle" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header"><strong>Label specifications</strong></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">کشش لیبل</label>
+                        <InputNumber class="form-control" @bind-Value="spec.LabelPull" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">عرض لیبل</label>
+                        <InputNumber class="form-control" @bind-Value="spec.LabelWidth" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">فاصله بین دو لیبل</label>
+                        <InputNumber class="form-control" @bind-Value="spec.GapBetweenLabels" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">تعداد لیبل</label>
+                        <InputNumber class="form-control" @bind-Value="spec.LabelQuantity" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">نوع کاغذ</label>
+                        <InputText class="form-control" @bind-Value="spec.PaperType" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">تعداد رنگ</label>
+                        <InputNumber class="form-control" @bind-Value="spec.ColorCount" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">قطر بوبین</label>
+                        <InputNumber class="form-control" @bind-Value="spec.RollDiameter" />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="spec.HandGluing" />
+                            <label class="form-check-label">دست چسبان</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="spec.MachineGluing" />
+                            <label class="form-check-label">ماشین چسبان</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header"><strong>Services</strong></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach (var service in Services)
+                    {
+                        <div class="col-sm-6 col-lg-4" @key="service">
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       checked="@spec.SelectedServices.Contains(service)"
+                                       @onchange="args => ToggleService(service, args)" />
+                                <label class="form-check-label">@service</label>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
+                @if (isSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                Save specifications
+            </button>
+            <button class="btn btn-outline-primary" @onclick="SaveAndContinueAsync" disabled="@isSaving">
+                Save and continue to sales workflow
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public long RequestId { get; set; }
+
+    private HamiChap_MES_ERP.Models.Sales.SalesRequest? request;
+    private List<Customer> customers = new();
+    private int selectedCustomerId;
+    private bool isCreatingCustomer;
+    private string newCustomerCode = "";
+    private string newCustomerName = "";
+    private string newCustomerPhone = "";
+    private string newCustomerEmail = "";
+    private string newCustomerAddress = "";
+    private RollJobSpecification spec = new();
+    private bool isLoading = true;
+    private bool isSaving;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private static readonly string[] Services =
+    {
+        "یووی روتاری",
+        "یووی برجسته",
+        "یووی تخت",
+        "یووی موضعی",
+        "سلفون مات",
+        "سلفون براق",
+        "طلاکوب روتاری",
+        "طلاکوب تخت",
+        "رنگ فویل",
+        "قالب روتاری",
+        "قالب تخت",
+        "دیلن میلن"
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+
+        customers = await Db.Customers
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        request = await Db.SalesRequests
+            .Include(x => x.Customer)
+            .FirstOrDefaultAsync(x => x.Id == RequestId);
+
+        if (request is not null)
+            selectedCustomerId = request.CustomerId;
+
+        if (request is null)
+        {
+            errorMessage = "Sales request was not found.";
+        }
+        else if (request.JobType != SalesJobType.Roll)
+        {
+            errorMessage = "This request is not a Roll Job.";
+        }
+        else if (!string.IsNullOrWhiteSpace(request.JobSpecificationJson))
+        {
+            try
+            {
+                spec = JsonSerializer.Deserialize<RollJobSpecification>(
+                    request.JobSpecificationJson) ?? new();
+            }
+            catch (JsonException)
+            {
+                spec = new();
+                errorMessage = "Saved specifications could not be read. Save to replace them.";
+            }
+        }
+
+        isLoading = false;
+    }
+
+    private void StartNewCustomer()
+    {
+        isCreatingCustomer = true;
+        newCustomerCode = "";
+        newCustomerName = "";
+        newCustomerPhone = "";
+        newCustomerEmail = "";
+        newCustomerAddress = "";
+        errorMessage = null;
+    }
+
+    private void SelectExistingCustomer()
+    {
+        isCreatingCustomer = false;
+        errorMessage = null;
+    }
+
+    private void ToggleService(string service, ChangeEventArgs args)
+    {
+        var selected = args.Value is bool value && value;
+        if (selected && !spec.SelectedServices.Contains(service))
+            spec.SelectedServices.Add(service);
+        else if (!selected)
+            spec.SelectedServices.Remove(service);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (request is null) return;
+
+        if (string.IsNullOrWhiteSpace(spec.JobTitle))
+        {
+            errorMessage = "Job title is required.";
+            return;
+        }
+
+        Customer? customerCreatedThisAttempt = null;
+        var originalCustomerId = request.CustomerId;
+        var originalCustomer = request.Customer;
+
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+
+            // Keep customer creation/selection, item creation/reuse, and specifications in one transaction.
+            await using var transaction = await Db.Database.BeginTransactionAsync();
+
+            if (isCreatingCustomer)
+            {
+                if (string.IsNullOrWhiteSpace(newCustomerCode))
+                    throw new InvalidOperationException("Customer code is required.");
+
+                if (string.IsNullOrWhiteSpace(newCustomerName))
+                    throw new InvalidOperationException("Customer name is required.");
+
+                var code = newCustomerCode.Trim();
+                if (await Db.Customers.AnyAsync(x => x.Code == code))
+                    throw new InvalidOperationException($"Customer code '{code}' already exists.");
+
+                var newCustomer = new Customer
+                {
+                    Code = code,
+                    Name = newCustomerName.Trim(),
+                    Phone = newCustomerPhone.Trim(),
+                    Email = newCustomerEmail.Trim(),
+                    Address = newCustomerAddress.Trim(),
+                    IsActive = true
+                };
+
+                Db.Customers.Add(newCustomer);
+                await Db.SaveChangesAsync();
+
+                customerCreatedThisAttempt = newCustomer;
+                request.CustomerId = newCustomer.Id;
+                request.Customer = newCustomer;
+            }
+            else
+            {
+                var selectedCustomer = customers.FirstOrDefault(x => x.Id == selectedCustomerId);
+                if (selectedCustomer is null)
+                    throw new InvalidOperationException("Select an existing customer or create a new one.");
+
+                request.CustomerId = selectedCustomer.Id;
+                request.Customer = selectedCustomer;
+            }
+
+            var item = await JobProductItemHelper.GetOrCreateAsync(
+                Db, request, spec.JobTitle, "products-roll");
+
+            spec.FinishedProductItemId = item.Id;
+            request.JobSpecificationJson = JsonSerializer.Serialize(spec);
+            await Db.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            if (customerCreatedThisAttempt is not null)
+            {
+                customers.Add(customerCreatedThisAttempt);
+                selectedCustomerId = customerCreatedThisAttempt.Id;
+                isCreatingCustomer = false;
+            }
+
+            successMessage = $"Specifications saved. Finished product: {item.Code} ({item.Name}).";
+        }
+        catch (Exception ex)
+        {
+            if (customerCreatedThisAttempt is not null)
+            {
+                Db.Entry(customerCreatedThisAttempt).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+                request.CustomerId = originalCustomerId;
+                request.Customer = originalCustomer;
+                selectedCustomerId = originalCustomerId;
+            }
+
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task SaveAndContinueAsync()
+    {
+        await SaveAsync();
+        if (string.IsNullOrWhiteSpace(errorMessage))
+            BackToRequest();
+    }
+
+    private void BackToRequest() =>
+        Navigation.NavigateTo($"/sales/requests/edit/{RequestId}");
+}

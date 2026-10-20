@@ -27,6 +27,7 @@
 
 <div class="page-container">
 
+
     @if (isLoading)
     {
         <div class="text-center py-5">
@@ -59,6 +60,22 @@
 
             <div class="d-flex gap-2">
 
+                @if (request.JobType == SalesJobType.Roll)
+                {
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            @onclick='() => Navigation.NavigateTo($"/sales/requests/roll/edit/{request.Id}")'>
+                        Roll job specifications
+                    </button>
+                }
+                else
+                {
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            @onclick='() => Navigation.NavigateTo($"/sales/requests/sheet/edit/{request.Id}")'>
+                        Sheet job specifications
+                    </button>
+                }
                 <button type="button"
                         class="btn btn-outline-secondary"
                         @onclick="GoBack">

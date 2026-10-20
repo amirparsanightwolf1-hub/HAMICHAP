@@ -26,8 +26,9 @@ public class SalesRequestService
 
 
     public async Task<SalesRequest> CreateRequestAsync(
-        int customerId,
-        string userId)
+    int customerId,
+    string userId,
+    SalesJobType jobType = SalesJobType.Roll)
     {
 
         var number =
@@ -38,6 +39,8 @@ public class SalesRequestService
 
         var request = new SalesRequest
         {
+            JobType = jobType,
+
             RequestNumber = number,
 
             CustomerId = customerId,
