@@ -21,10 +21,16 @@
     .orientation-option { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; min-height:132px; padding:10px 8px; border:1px solid #dce2ec; border-radius:14px; background:linear-gradient(180deg,#fff 0%,#f8f9fc 100%); color:#26334b; transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease; }
     .orientation-option:hover { border-color:#7f91b5; box-shadow:0 5px 16px rgba(14,22,65,.08); transform:translateY(-1px); }
     .orientation-option.selected { border:2px solid #34466f; background:#f0f4fb; box-shadow:0 0 0 3px rgba(52,70,111,.09); }
-    .orientation-picture { width:100%; max-width:105px; height:78px; }
+    .orientation-picture {
+    width: 85px;
+    height: 160px;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: center;
+                         }
     .orientation-caption { font-size:.86rem; font-weight:650; }
     .orientation-check { color:#34466f; font-size:.75rem; }
-    @@media (max-width: 700px) { .orientation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @@media(max-width:700px) { .orientation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 </style>
 
 <div class="page-container">
@@ -135,11 +141,12 @@
                             </div>
                         }
                         @if (pendingArtworks.Count > 0)
-                        {
-                            <div class="small text-primary mt-1">
-                                Selected files: @string.Join(", ", pendingArtworks.Select(file => file.Name)) — will be saved when you save specifications.
-                            </div>
-                        }
+                            {
+                                <div class="small text-primary mt-1">
+                                    Selected: @string.Join(", ", pendingArtworks.Select(file => file.Name))
+                                    — will be saved when you save specifications.
+                                </div>
+                            }
                     </div>
                 </div>
             </div>
@@ -210,14 +217,9 @@
                                         class="orientation-option @(spec.RollOrientation == option ? "selected" : "")"
                                         aria-pressed="@(spec.RollOrientation == option)"
                                         @onclick="() => spec.RollOrientation = option">
-                                    <svg class="orientation-picture" viewBox="0 0 100 78" role="img" aria-label="Unwind orientation @orientation">
-                                        <circle cx="50" cy="40" r="20" fill="#f4f6fa" stroke="#34466f" stroke-width="5" />
-                                        <circle cx="50" cy="40" r="7" fill="#ffffff" stroke="#8993a8" stroke-width="2" />
-                                        <g transform="rotate(@angle 50 40)">
-                                            <path d="M50 20 L50 7 L42 14 M50 7 L58 14" fill="none" stroke="#d47719" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M44 21 L44 2 L56 2 L56 21 Z" fill="#dce5f5" stroke="#34466f" stroke-width="1.5" />
-                                        </g>
-                                    </svg>
+                                    <img src="@($"/images/roll-orientations/orientation-{orientation}.jpg")"
+                                        alt="Roll orientation @orientation"
+                                        class="orientation-picture" />
                                     <span class="orientation-caption">Option @orientation</span>
                                     @if (spec.RollOrientation == option)
                                     {
