@@ -28,8 +28,9 @@
     .proof-artwork-card { border:1px solid #dfe5ee; border-radius:8px; padding:6px; min-width:0; display:flex; flex-direction:column; align-items:stretch; background:#fff; }
     .proof-artwork-card img { display:block; width:100%; height:160px; object-fit:contain; object-position:center center; margin:auto; }
     .proof-artwork-card .filename { font-size:.72rem; color:#68748a; overflow-wrap:anywhere; text-align:center; padding-top:4px; }
-    .roll-diagram { border:1px solid #dfe5ee; border-radius:8px; min-height:72px; padding:8px; display:flex; align-items:center; justify-content:center; gap:12px; }
-    .roll-core { width:42px; height:42px; border:4px solid #667085; border-radius:50%; flex:0 0 auto; }
+    .roll-diagram { border:1px solid #dfe5ee; border-radius:8px; min-height:100px; padding:8px; display:flex; align-items:center; justify-content:center; gap:12px; }
+    .roll-orientation-image { display:block; width:85px; height:160px; max-width:100%; object-fit:contain; object-position:center; flex:0 1 auto; }
+    .roll-orientation-missing { color:#69758a; font-size:.85rem; text-align:center; }
     /* Form visual refresh */
     .page-container:not(.proof-page) .erp-page-header { padding:18px 20px; border:1px solid #e4e8f0; border-radius:16px; background:linear-gradient(120deg,#fff 0%,#f7f9fd 100%); box-shadow:0 8px 24px rgba(18,34,68,.045); }
     .page-container:not(.proof-page) .erp-page-title { color:#142044; font-weight:800; letter-spacing:-.025em; }
@@ -172,7 +173,18 @@
             @if (request.JobType == SalesJobType.Roll)
             {
                 <div class="row g-3 mt-1">
-                    <div class="col-md-6"><div class="proof-panel"><div class="proof-panel-title">Roll direction</div><div class="proof-panel-body"><div class="roll-diagram"><div class="roll-core"></div><div class="text-center"><div class="fw-semibold">Roll label</div><div class="proof-subtle small">Confirm unwind direction with customer</div></div></div></div></div></div>
+                    <div class="col-md-6"><div class="proof-panel"><div class="proof-panel-title">Selected roll orientation</div><div class="proof-panel-body"><div class="roll-diagram">
+                    @if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
+                    {
+                        <img class="roll-orientation-image"
+                             src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
+                             alt="@($"Selected roll orientation {orientationNumber}")" />
+                    }
+                    else
+                    {
+                        <div class="roll-orientation-missing">No roll orientation selected.</div>
+                    }
+                </div></div></div></div>
                     <div class="col-md-6"><div class="proof-panel"><div class="proof-panel-title">Customer approval</div><div class="proof-panel-body" style="min-height:110px"><div class="proof-kv"><span>Approved by</span><span>____________________</span></div><div class="proof-kv"><span>Date</span><span>____________________</span></div><div class="proof-kv"><span>Signature</span><span>____________________</span></div></div></div></div>
                 </div>
             }
@@ -192,6 +204,7 @@
     private string? errorMessage;
     private string artworkPath = "";
     private string artworkFileName = "";
+    private string rollOrientation = "";
     private List<JobArtworkFile> artworkFiles = new();
     private string JobTitle = "";
     private string PrintingNotes = "";
@@ -214,11 +227,12 @@
                 artworkFiles = spec.ArtworkFiles ?? new();
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
+                rollOrientation = spec.RollOrientation ?? "";
                 DimensionsSummary = $"Label pull: {Fmt(spec.LabelPull)} mm · Label width: {Fmt(spec.LabelWidth)} mm · Gap: {Fmt(spec.GapBetweenLabels)} mm";
                 technicalDetails = new() {
                     new("Material", Empty(spec.PaperType)), new("Colors", spec.ColorCount?.ToString() ?? "—"),
                     new("Roll diameter", spec.RollDiameter.HasValue ? Fmt(spec.RollDiameter) + " mm" : "—"),
-                    new("Label quantity", spec.LabelQuantity?.ToString("N0") ?? "—"), new("Roll orientation", Empty(spec.RollOrientation)),
+                    new("Label quantity", spec.LabelQuantity?.ToString("N0") ?? "—"),
                     new("Hand gluing", spec.HandGluing ? "Yes" : "No"), new("Machine gluing", spec.MachineGluing ? "Yes" : "No")
                 };
                 selectedServices = spec.SelectedServices ?? new();
