@@ -334,7 +334,7 @@
     <value>افزودن ردیف</value>
   </data>
   <data name="Address" xml:space="preserve">
-    <value>آدرس</value>
+    <value>نشانی</value>
   </data>
   <data name="Administration" xml:space="preserve">
     <value>مدیریت</value>
@@ -358,7 +358,7 @@
     <value>کاربر احراز هویت‌شده یافت نشد.</value>
   </data>
   <data name="Available" xml:space="preserve">
-    <value>موجودی قابل استفاده</value>
+    <value>موجود</value>
   </data>
   <data name="Back" xml:space="preserve">
     <value>بازگشت</value>
@@ -406,7 +406,7 @@
     <value>ایجاد مشتری</value>
   </data>
   <data name="Created" xml:space="preserve">
-    <value>ایجاد شده</value>
+    <value>تاریخ ایجاد</value>
   </data>
   <data name="CreateDelivery" xml:space="preserve">
     <value>ایجاد حواله</value>
@@ -628,7 +628,7 @@
     <value>در حال بارگذاری موجودی مشتری...</value>
   </data>
   <data name="LoadingProductionOrder" xml:space="preserve">
-    <value>در حال بارگذاری دستور تولید...</value>
+    <value>در حال بارگذاری سفارش تولید...</value>
   </data>
   <data name="LoadingRoles" xml:space="preserve">
     <value>در حال بارگذاری نقش‌ها...</value>
@@ -667,7 +667,7 @@
     <value>هنگامی که موجودی قابل استفاده به این مقدار یا کمتر برسد هشدار داده شود.</value>
   </data>
   <data name="Machine" xml:space="preserve">
-    <value>ماشین</value>
+    <value>دستگاه</value>
   </data>
   <data name="MainWarehouse" xml:space="preserve">
     <value>انبار اصلی</value>
@@ -682,7 +682,7 @@
     <value>عملیات ساخت</value>
   </data>
   <data name="Material" xml:space="preserve">
-    <value>ماده</value>
+    <value>جنس</value>
   </data>
   <data name="MaterialChecking" xml:space="preserve">
     <value>بررسی مواد</value>
@@ -697,7 +697,7 @@
     <value>صدور مواد با موفقیت ثبت شد. تعداد {0} سند صدور مواد تولید ایجاد شد.</value>
   </data>
   <data name="MaterialReadiness" xml:space="preserve">
-    <value>۲. آماده‌بودن مواد</value>
+    <value>آماده‌سازی مواد</value>
   </data>
   <data name="MaterialRequirementsPlanning" xml:space="preserve">
     <value>برنامه‌ریزی نیازمندی مواد</value>
@@ -727,7 +727,7 @@
     <value>محاسبه برنامه‌ریزی نیازمندی مواد انجام شد، اما هیچ نیازمندی موادی ایجاد نشد.</value>
   </data>
   <data name="MRPCreated" xml:space="preserve">
-    <value>برنامه‌ریزی نیازمندی مواد ایجاد شد</value>
+    <value>زمان ایجاد برنامه نیازمندی مواد</value>
   </data>
   <data name="MRPNotPerformedYet" xml:space="preserve">
     <value>هنوز محاسبه برنامه‌ریزی نیازمندی مواد انجام نشده است.</value>
@@ -748,7 +748,7 @@
     <value>خیر</value>
   </data>
   <data name="NoActiveProductionLocationFound" xml:space="preserve">
-    <value>مکان موجودی فعال برای تولید یافت نشد.</value>
+    <value>مکان موجودی فعال از نوع تولید یافت نشد.</value>
   </data>
   <data name="NoCategoriesFound" xml:space="preserve">
     <value>دسته‌بندی‌ای یافت نشد</value>
@@ -769,10 +769,10 @@
     <value>بچی یافت نشد</value>
   </data>
   <data name="NoMaterialReservationsCreated" xml:space="preserve">
-    <value>هیچ رزروی برای مواد این دستور تولید ایجاد نشده است.</value>
+    <value>برای این سفارش تولید هیچ رزروی از مواد ایجاد نشده است.</value>
   </data>
   <data name="NoProductionLinesFound" xml:space="preserve">
-    <value>ردیف تولیدی یافت نشد.</value>
+    <value>هیچ ردیف تولیدی یافت نشد.</value>
   </data>
   <data name="NoProductionOperationsDefined" xml:space="preserve">
     <value>هنوز عملیاتی برای این دستور تولید تعریف نشده است.</value>
@@ -796,7 +796,7 @@
     <value>هنوز هیچ نقشی ایجاد نشده است.</value>
   </data>
   <data name="NotAssigned" xml:space="preserve">
-    <value>تخصیص‌نیافته</value>
+    <value>تخصیص داده نشده</value>
   </data>
   <data name="Number" xml:space="preserve">
     <value>شماره</value>
@@ -823,7 +823,7 @@
     <value>مقدار سفارش</value>
   </data>
   <data name="OrderNumber" xml:space="preserve">
-    <value>شماره دستور</value>
+    <value>شماره سفارش</value>
   </data>
   <data name="OrderStatus" xml:space="preserve">
     <value>وضعیت سفارش</value>
@@ -913,10 +913,10 @@
     <value>عملیات تولید</value>
   </data>
   <data name="ProductionOrderInformation" xml:space="preserve">
-    <value>اطلاعات دستور تولید</value>
+    <value>اطلاعات سفارش تولید</value>
   </data>
   <data name="ProductionOrderNotFound" xml:space="preserve">
-    <value>دستور تولید یافت نشد.</value>
+    <value>سفارش تولید یافت نشد.</value>
   </data>
   <data name="ProductionOrders" xml:space="preserve">
     <value>دستورهای تولید</value>
@@ -931,7 +931,7 @@
     <value>رسید تولید</value>
   </data>
   <data name="ProductionSchedule" xml:space="preserve">
-    <value>برنامه تولید</value>
+    <value>برنامه زمان‌بندی تولید</value>
   </data>
   <data name="ProductionStage" xml:space="preserve">
     <value>۳. تولید</value>
@@ -955,7 +955,7 @@
     <value>کنترل کیفیت و تکمیل تولید</value>
   </data>
   <data name="QualityCompletion" xml:space="preserve">
-    <value>۴. کنترل کیفیت / تکمیل</value>
+    <value>کیفیت / تکمیل</value>
   </data>
   <data name="QualityControl" xml:space="preserve">
     <value>کنترل کیفیت</value>
@@ -1102,7 +1102,7 @@
     <value>کسری</value>
   </data>
   <data name="Shortages" xml:space="preserve">
-    <value>موارد کسری</value>
+    <value>کسری‌ها</value>
   </data>
   <data name="StartDate" xml:space="preserve">
     <value>تاریخ شروع</value>
@@ -1309,7 +1309,7 @@
     <value>تاریخ تحویل درخواستی</value>
   </data>
   <data name="SalesRequestNotFound" xml:space="preserve">
-    <value>درخواست فروش یافت نشد.</value>
+    <value>درخواست فروش پیدا نشد.</value>
   </data>
   <data name="SalesRequestSavedSuccessfully" xml:space="preserve">
     <value>درخواست فروش با موفقیت ذخیره شد.</value>
@@ -1645,31 +1645,31 @@
     <value>در حال صدور مواد...</value>
   </data>
   <data name="NoProductionSchedule" xml:space="preserve">
-    <value>هنوز زمان‌بندی تولیدی برای این سفارش ایجاد نشده است.</value>
+    <value>هنوز برنامه زمان‌بندی برای این سفارش تولید ایجاد نشده است.</value>
   </data>
   <data name="NoMRPCalculationPerformed" xml:space="preserve">
     <value>هنوز محاسبه برنامه‌ریزی نیازمندی مواد انجام نشده است.</value>
   </data>
   <data name="MRPNoRequirements" xml:space="preserve">
-    <value>محاسبه برنامه‌ریزی نیازمندی مواد انجام شد، اما نیازی به مواد ایجاد نشد.</value>
+    <value>محاسبه برنامه نیازمندی مواد انجام شد، اما هیچ نیازمندی ماده‌ای ایجاد نشد.</value>
   </data>
   <data name="MaterialReservations" xml:space="preserve">
     <value>رزروهای مواد</value>
   </data>
   <data name="NoMaterialReservations" xml:space="preserve">
-    <value>هیچ رزروی برای مواد این سفارش تولید ایجاد نشده است.</value>
+    <value>برای این سفارش تولید هیچ رزروی از مواد ایجاد نشده است.</value>
   </data>
   <data name="MRPCalculationSuccess" xml:space="preserve">
-    <value>محاسبه برنامه‌ریزی نیازمندی مواد با موفقیت انجام شد.</value>
+    <value>محاسبه برنامه نیازمندی مواد با موفقیت انجام شد.</value>
   </data>
   <data name="NoReservedMaterialsToIssue" xml:space="preserve">
     <value>مواد رزروشده‌ای برای صدور وجود ندارد.</value>
   </data>
   <data name="NoActiveProductionLocation" xml:space="preserve">
-    <value>هیچ محل انبار فعال برای تولید یافت نشد.</value>
+    <value>مکان موجودی فعال از نوع تولید یافت نشد.</value>
   </data>
   <data name="MaterialIssuePosted" xml:space="preserve">
-    <value>سند صدور مواد با موفقیت ثبت شد.</value>
+    <value>صدور مواد با موفقیت ثبت شد. تعداد {0} سند صدور مواد تولید ایجاد شد.</value>
   </data>
   <data name="CreatedProductionIssueDocuments" xml:space="preserve">
     <value>تعداد {0} سند صدور مواد تولید ایجاد شد.</value>
@@ -1681,7 +1681,7 @@
     <value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value>
   </data>
   <data name="MachineLabel" xml:space="preserve">
-    <value>ماشین {0}</value>
+    <value>دستگاه</value>
   </data>
   <data name="OperationNumber" xml:space="preserve">
     <value>عملیات شماره {0}</value>
@@ -1689,286 +1689,517 @@
   <data name="QualityInspectionManagement" xml:space="preserve">
     <value>مدیریت بازرسی کیفیت</value>
   </data>
-	<data name="ProductionOrder" xml:space="preserve"><value>سفارش تولید</value></data>
-	<data name="Back" xml:space="preserve"><value>بازگشت</value></data>
-	<data name="Calculating" xml:space="preserve"><value>در حال محاسبه...</value></data>
-	<data name="CalculateMRP" xml:space="preserve"><value>محاسبه برنامه‌ریزی نیازمندی مواد</value></data>
-	<data name="Reserving" xml:space="preserve"><value>در حال رزرو...</value></data>
-	<data name="ReserveMaterials" xml:space="preserve"><value>رزرو مواد</value></data>
-	<data name="StartProduction" xml:space="preserve"><value>شروع تولید</value></data>
-	<data name="IssuingMaterials" xml:space="preserve"><value>در حال صدور مواد...</value></data>
-	<data name="IssueMaterials" xml:space="preserve"><value>صدور مواد</value></data>
-	<data name="ProductionProgress" xml:space="preserve"><value>پیشرفت تولید</value></data>
-	<data name="QualityControl" xml:space="preserve"><value>کنترل کیفیت</value></data>
-	<data name="ProductionCompleted" xml:space="preserve"><value>تولید تکمیل شد</value></data>
-	<data name="ProductionWorkflow" xml:space="preserve"><value>گردش کار تولید</value></data>
-	<data name="Planning" xml:space="preserve"><value>برنامه‌ریزی</value></data>
-	<data name="MaterialReadiness" xml:space="preserve"><value>آماده‌سازی مواد</value></data>
-	<data name="Production" xml:space="preserve"><value>تولید</value></data>
-	<data name="QualityCompletion" xml:space="preserve"><value>کیفیت / تکمیل</value></data>
-	<data name="MrpAndMaterialAvailability" xml:space="preserve"><value>برنامه‌ریزی نیازمندی مواد و موجودی مواد</value></data>
-	<data name="RequiredMaterialsReserved" xml:space="preserve"><value>مواد موردنیاز رزرو شده‌اند</value></data>
-	<data name="ManufacturingOperations" xml:space="preserve"><value>عملیات ساخت</value></data>
-	<data name="QcAndFinishedProduction" xml:space="preserve"><value>کنترل کیفیت و تکمیل تولید</value></data>
-	<data name="ProductionOrderInformation" xml:space="preserve"><value>اطلاعات سفارش تولید</value></data>
-	<data name="OrderNumber" xml:space="preserve"><value>شماره سفارش</value></data>
-	<data name="SalesOrder" xml:space="preserve"><value>سفارش فروش</value></data>
-	<data name="Customer" xml:space="preserve"><value>مشتری</value></data>
-	<data name="Status" xml:space="preserve"><value>وضعیت</value></data>
-	<data name="Created" xml:space="preserve"><value>تاریخ ایجاد</value></data>
-	<data name="PlannedStart" xml:space="preserve"><value>شروع برنامه‌ریزی‌شده</value></data>
-	<data name="PlannedEnd" xml:space="preserve"><value>پایان برنامه‌ریزی‌شده</value></data>
-	<data name="ActualStart" xml:space="preserve"><value>شروع واقعی</value></data>
-	<data name="ActualEnd" xml:space="preserve"><value>پایان واقعی</value></data>
-	<data name="Notes" xml:space="preserve"><value>یادداشت‌ها</value></data>
-	<data name="NoProductionLines" xml:space="preserve"><value>هیچ ردیف تولیدی یافت نشد.</value></data>
-	<data name="ProductionLines" xml:space="preserve"><value>ردیف‌های تولید</value></data>
-	<data name="Item" xml:space="preserve"><value>کالا</value></data>
-	<data name="Code" xml:space="preserve"><value>کد</value></data>
-	<data name="PlannedQuantity" xml:space="preserve"><value>مقدار برنامه‌ریزی‌شده</value></data>
-	<data name="ProducedQuantity" xml:space="preserve"><value>مقدار تولیدشده</value></data>
-	<data name="Remaining" xml:space="preserve"><value>باقی‌مانده</value></data>
-	<data name="Unit" xml:space="preserve"><value>واحد</value></data>
-	<data name="Planned" xml:space="preserve"><value>برنامه‌ریزی‌شده</value></data>
-	<data name="Produced" xml:space="preserve"><value>تولیدشده</value></data>
-	<data name="Completion" xml:space="preserve"><value>درصد تکمیل</value></data>
-	<data name="ProductionOperations" xml:space="preserve"><value>عملیات تولید</value></data>
-	<data name="OperationsCount" xml:space="preserve"><value>{0} عملیات</value></data>
-	<data name="NoProductionOperations" xml:space="preserve"><value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value></data>
-	<data name="Sequence" xml:space="preserve"><value>ردیف</value></data>
-	<data name="Operation" xml:space="preserve"><value>عملیات</value></data>
-	<data name="WorkCenter" xml:space="preserve"><value>مرکز کاری</value></data>
-	<data name="PlannedHours" xml:space="preserve"><value>ساعات برنامه‌ریزی‌شده</value></data>
-	<data name="ActualHours" xml:space="preserve"><value>ساعات واقعی</value></data>
-	<data name="Action" xml:space="preserve"><value>عملیات</value></data>
-	<data name="Open" xml:space="preserve"><value>باز کردن</value></data>
-	<data name="NotAssigned" xml:space="preserve"><value>تخصیص داده نشده</value></data>
-	<data name="ProductionSchedule" xml:space="preserve"><value>برنامه زمان‌بندی تولید</value></data>
-	<data name="SchedulesCount" xml:space="preserve"><value>{0} برنامه</value></data>
-	<data name="NoProductionSchedule" xml:space="preserve"><value>هنوز برنامه زمان‌بندی برای این سفارش تولید ایجاد نشده است.</value></data>
-	<data name="Machine" xml:space="preserve"><value>دستگاه</value></data>
-	<data name="Priority" xml:space="preserve"><value>اولویت</value></data>
-	<data name="MrpCreated" xml:space="preserve"><value>زمان ایجاد برنامه نیازمندی مواد</value></data>
-	<data name="Materials" xml:space="preserve"><value>مواد</value></data>
-	<data name="Shortages" xml:space="preserve"><value>کسری‌ها</value></data>
-	<data name="Material" xml:space="preserve"><value>ماده</value></data>
-	<data name="Required" xml:space="preserve"><value>موردنیاز</value></data>
-	<data name="Available" xml:space="preserve"><value>موجود</value></data>
-	<data name="Shortage" xml:space="preserve"><value>کسری</value></data>
-	<data name="NoMrpCalculation" xml:space="preserve"><value>هنوز محاسبه برنامه نیازمندی مواد انجام نشده است.</value></data>
-	<data name="MrpNoRequirements" xml:space="preserve"><value>محاسبه برنامه نیازمندی مواد انجام شد، اما هیچ نیازمندی ماده‌ای ایجاد نشد.</value></data>
-	<data name="MrpCalculationSuccess" xml:space="preserve"><value>محاسبه برنامه نیازمندی مواد با موفقیت انجام شد.</value></data>
-	<data name="MaterialIssuePosted" xml:space="preserve"><value>صدور مواد با موفقیت ثبت شد. تعداد {0} سند صدور مواد تولید ایجاد شد.</value></data>
-	<data name="NoReservedMaterialsForIssue" xml:space="preserve"><value>هیچ ماده رزروشده‌ای برای صدور در دسترس نیست.</value></data>
-	<data name="NoActiveProductionLocation" xml:space="preserve"><value>مکان موجودی فعال از نوع تولید یافت نشد.</value></data>
-	<data name="MaterialReservationInsufficient" xml:space="preserve"><value>رزرو مواد انجام نشد، زیرا موجودی یک یا چند ماده کافی نیست.</value></data>
-	<data name="ReservationSuccess" xml:space="preserve"><value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value></data>
-	<data name="ReservationMessage" xml:space="preserve"><value>رزرو مواد</value></data>
-	<data name="NoMaterialReservations" xml:space="preserve"><value>برای این سفارش تولید هیچ رزروی از مواد ایجاد نشده است.</value></data>
-	<data name="ReservedQuantity" xml:space="preserve"><value>مقدار رزروشده</value></data>
-	<data name="ReservedDate" xml:space="preserve"><value>تاریخ رزرو</value></data>
-	<data name="LoadingProductionOrder" xml:space="preserve"><value>در حال بارگذاری سفارش تولید...</value></data>
-	<data name="ProductionOrderNotFound" xml:space="preserve"><value>سفارش تولید یافت نشد.</value></data>
-	<data name="Pending" xml:space="preserve"><value>در انتظار</value></data>
-	<data name="MrpStatus" xml:space="preserve"><value>وضعیت</value></data>
-	<data name="ProductionItem" xml:space="preserve"><value>قلم تولید</value></data>
-	<data name="OperationCount" xml:space="preserve"><value>{0} عملیات</value></data>
-	<data name="WorkflowPlanning" xml:space="preserve"><value>۱. برنامه‌ریزی</value></data>
-	<data name="WorkflowMaterialReadiness" xml:space="preserve"><value>۲. آماده‌سازی مواد</value></data>
-	<data name="WorkflowProduction" xml:space="preserve"><value>۳. تولید</value></data>
-	<data name="WorkflowQualityCompletion" xml:space="preserve"><value>۴. کیفیت / تکمیل</value></data>
-	<data name="Completed" xml:space="preserve"><value>تکمیل‌شده</value></data>
-	<data name="MachineLabel" xml:space="preserve"><value>دستگاه</value></data>
-	<data name="WorkflowStatePending" xml:space="preserve"><value>در انتظار</value></data>
-	<data name="NoProductionLinesFound" xml:space="preserve"><value>هیچ ردیف تولیدی یافت نشد.</value></data>
-	<data name="NoOperationsDefined" xml:space="preserve"><value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value></data>
-	<data name="NoScheduleCreated" xml:space="preserve"><value>هنوز برنامه زمان‌بندی برای این سفارش تولید ایجاد نشده است.</value></data>
-	<data name="NoMrpPerformed" xml:space="preserve"><value>هنوز محاسبه برنامه‌ریزی نیازمندی مواد انجام نشده است.</value></data>
-	<data name="MrpNoRequirementsGenerated" xml:space="preserve"><value>محاسبه برنامه‌ریزی نیازمندی مواد انجام شد، اما هیچ نیازمندی ماده‌ای ایجاد نشد.</value></data>
-	<data name="MrpCalculationCompleted" xml:space="preserve"><value>محاسبه برنامه‌ریزی نیازمندی مواد با موفقیت انجام شد.</value></data>
-	<data name="NoReservedMaterialsAvailable" xml:space="preserve"><value>هیچ ماده رزروشده‌ای برای صدور در دسترس نیست.</value></data>
-	<data name="NoActiveProductionLocationFound" xml:space="preserve"><value>مکان موجودی فعال از نوع تولید یافت نشد.</value></data>
-	<data name="InsufficientMaterialsForReservation" xml:space="preserve"><value>رزرو مواد انجام نشد، زیرا موجودی یک یا چند ماده کافی نیست.</value></data>
-	<data name="AllMaterialsReservedSuccessfully" xml:space="preserve"><value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value></data>
-	<data name="MaterialsIssuedSuccessfully" xml:space="preserve"><value>صدور مواد با موفقیت ثبت شد. تعداد {0} سند صدور مواد تولید ایجاد شد.</value></data>
-	<data name="NoMaterialReservationsCreated" xml:space="preserve"><value>برای این سفارش تولید هیچ رزروی از مواد ایجاد نشده است.</value></data>
-	<data name="UnexpectedError" xml:space="preserve"><value>خطای غیرمنتظره‌ای رخ داد. لطفاً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.</value></data>
-	<data name="NoActiveBomForProductionItem" xml:space="preserve"><value>هیچ فهرست مواد فعالی برای این قلم تولید یافت نشد.</value></data>
-	<data name="BomHasNoComponentLines" xml:space="preserve"><value>فهرست مواد هیچ ردیف مؤلفه‌ای ندارد.</value></data>
-	<data name="PlannedQuantityMustBePositive" xml:space="preserve"><value>مقدار تولید برنامه‌ریزی‌شده باید بیشتر از صفر باشد.</value></data>
-	<resheader name="resmimetype">
-		<value>text/microsoft-resx</value>
-	</resheader>
-	<resheader name="version">
-		<value>2.0</value>
-	</resheader>
-	<resheader name="reader">
-		<value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
-	</resheader>
-	<resheader name="writer">
-		<value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
-	</resheader>
-	<data name="Common.TextDirection" xml:space="preserve"><value>rtl</value></data>
-	<data name="Common.Loading" xml:space="preserve"><value>در حال بارگذاری...</value></data>
-	<data name="Common.Date" xml:space="preserve"><value>تاریخ</value></data>
-	<data name="Common.Customer" xml:space="preserve"><value>مشتری</value></data>
-	<data name="Common.Total" xml:space="preserve"><value>مبلغ کل</value></data>
-	<data name="Common.Status" xml:space="preserve"><value>وضعیت</value></data>
-	<data name="Common.Back" xml:space="preserve"><value>بازگشت</value></data>
-	<data name="Common.Item" xml:space="preserve"><value>کالا</value></data>
-	<data name="Common.Quantity" xml:space="preserve"><value>تعداد</value></data>
-	<data name="Common.Notes" xml:space="preserve"><value>توضیحات</value></data>
-	<data name="Common.Subtotal" xml:space="preserve"><value>جمع جزء</value></data>
-	<data name="Common.LoadFailed" xml:space="preserve"><value>بارگذاری فاکتورهای فروش انجام نشد. لطفاً دوباره تلاش کنید.</value></data>
-	<data name="SalesInvoices.PageTitle" xml:space="preserve"><value>فاکتورهای فروش</value></data>
-	<data name="SalesInvoices.Title" xml:space="preserve"><value>فاکتورهای فروش</value></data>
-	<data name="SalesInvoices.Description" xml:space="preserve"><value>پس از ثبت حواله فروش، فاکتور به‌صورت خودکار ایجاد می‌شود.</value></data>
-	<data name="SalesInvoices.Empty" xml:space="preserve"><value>هنوز فاکتور فروشی ایجاد نشده است.</value></data>
-	<data name="SalesInvoices.Invoice" xml:space="preserve"><value>شماره فاکتور</value></data>
-	<data name="SalesInvoices.Quotation" xml:space="preserve"><value>پیش‌فاکتور</value></data>
-	<data name="SalesInvoices.SalesOrder" xml:space="preserve"><value>سفارش فروش</value></data>
-	<data name="SalesInvoices.Delivery" xml:space="preserve"><value>حواله فروش</value></data>
-	<data name="SalesInvoice.PageTitle" xml:space="preserve"><value>فاکتور فروش</value></data>
-	<data name="SalesInvoice.Title" xml:space="preserve"><value>فاکتور فروش</value></data>
-	<data name="SalesInvoice.PrintSavePdf" xml:space="preserve"><value>چاپ / ذخیره PDF</value></data>
-	<data name="SalesInvoice.NotFound" xml:space="preserve"><value>فاکتور فروش پیدا نشد.</value></data>
-	<data name="SalesInvoice.DocumentHeading" xml:space="preserve"><value>فاکتور فروش</value></data>
-	<data name="SalesInvoice.BillTo" xml:space="preserve"><value>صورتحساب برای</value></data>
-	<data name="SalesInvoice.ApprovedQuotation" xml:space="preserve"><value>پیش‌فاکتور تأییدشده</value></data>
-	<data name="SalesInvoice.SalesOrder" xml:space="preserve"><value>سفارش فروش</value></data>
-	<data name="SalesInvoice.SalesDelivery" xml:space="preserve"><value>حواله فروش</value></data>
-	<data name="SalesInvoice.ApprovedUnitPrice" xml:space="preserve"><value>قیمت واحد تأییدشده</value></data>
-	<data name="SalesInvoice.LineTotal" xml:space="preserve"><value>مبلغ ردیف</value></data>
-	<data name="SalesInvoice.GeneratedNotice" xml:space="preserve"><value>این فاکتور بر اساس پیش‌فاکتور پذیرفته‌شده و حواله فروش ثبت‌شده ایجاد شده است.</value></data>
-	<data name="SalesInvoiceStatus.Draft" xml:space="preserve"><value>پیش‌نویس</value></data>
-	<data name="SalesInvoiceStatus.Posted" xml:space="preserve"><value>ثبت‌شده</value></data>
-	<data name="SalesInvoiceStatus.Cancelled" xml:space="preserve"><value>لغوشده</value></data>
-	<data name="SalesInvoices" xml:space="preserve"><value>فاکتورهای فروش</value></data>
-	<data name="SheetJobSpecification" xml:space="preserve"><value>مشخصات کار شیت</value></data>
-	<data name="SheetJob" xml:space="preserve"><value>کار شیت</value></data>
-	<data name="SheetJobSubtitle" xml:space="preserve"><value>مشخصات چاپ، خدمات تکمیلی و مواد اولیه شیت</value></data>
-	<data name="BackToRequest" xml:space="preserve"><value>بازگشت به درخواست</value></data>
-	<data name="OrderInformation" xml:space="preserve"><value>اطلاعات سفارش</value></data>
-	<data name="Date" xml:space="preserve"><value>تاریخ</value></data>
-	<data name="OrderNumber" xml:space="preserve"><value>شماره سفارش</value></data>
-	<data name="Customer" xml:space="preserve"><value>مشتری</value></data>
-	<data name="SelectExistingCustomer" xml:space="preserve"><value>انتخاب مشتری موجود</value></data>
-	<data name="CreateNewCustomer" xml:space="preserve"><value>ایجاد مشتری جدید</value></data>
-	<data name="NewCustomer" xml:space="preserve"><value>مشتری جدید</value></data>
-	<data name="CustomerCodeRequired" xml:space="preserve"><value>کد مشتری *</value></data>
-	<data name="CustomerNameRequired" xml:space="preserve"><value>نام مشتری *</value></data>
-	<data name="Phone" xml:space="preserve"><value>تلفن</value></data>
-	<data name="Email" xml:space="preserve"><value>ایمیل</value></data>
-	<data name="Address" xml:space="preserve"><value>نشانی</value></data>
-	<data name="JobTitle" xml:space="preserve"><value>عنوان کار</value></data>
-	<data name="Referrer" xml:space="preserve"><value>معرف</value></data>
-	<data name="RequiredItems" xml:space="preserve"><value>اقلام مورد نیاز</value></data>
-	<data name="PaperType" xml:space="preserve"><value>نوع کاغذ</value></data>
-	<data name="SelectOrType" xml:space="preserve"><value>انتخاب کنید یا تایپ کنید</value></data>
-	<data name="PaperTypeHelp" xml:space="preserve"><value>می‌توانید گزینه استاندارد را انتخاب کنید یا نوع دیگری وارد کنید.</value></data>
-	<data name="Zinc" xml:space="preserve"><value>زینک</value></data>
-	<data name="DieCut" xml:space="preserve"><value>قالب / دایکات</value></data>
-	<data name="Cliche" xml:space="preserve"><value>کلیشه</value></data>
-	<data name="PrintRunSheets" xml:space="preserve"><value>تیراژ چاپ (ورق)</value></data>
-	<data name="CutLengthCm" xml:space="preserve"><value>طول بعد از برش (سانتی‌متر)</value></data>
-	<data name="CutWidthCm" xml:space="preserve"><value>عرض بعد از برش (سانتی‌متر)</value></data>
-	<data name="SheetOrientation" xml:space="preserve"><value>جهت شیت</value></data>
-	<data name="SelectOrientation" xml:space="preserve"><value>انتخاب جهت</value></data>
-	<data name="Portrait" xml:space="preserve"><value>عمودی</value></data>
-	<data name="Landscape" xml:space="preserve"><value>افقی</value></data>
-	<data name="Grammage" xml:space="preserve"><value>گرماژ</value></data>
-	<data name="SheetCount" xml:space="preserve"><value>تعداد ورق</value></data>
-	<data name="ProductionLocation" xml:space="preserve"><value>محل تولید</value></data>
-	<data name="SelectOrEnterLocation" xml:space="preserve"><value>انتخاب یا ورود محل</value></data>
-	<data name="PaymentMethod" xml:space="preserve"><value>نحوه تسویه</value></data>
-	<data name="SelectOrEnterPaymentMethod" xml:space="preserve"><value>انتخاب یا ورود روش تسویه</value></data>
-	<data name="PrintingAndColorNotes" xml:space="preserve"><value>توضیحات چاپ و رنگ</value></data>
-	<data name="PrintingNotesPlaceholder" xml:space="preserve"><value>رنگ پنتون، رنگ اختصاصی، نکات چاپ و ...</value></data>
-	<data name="CustomerOrderNumber" xml:space="preserve"><value>شماره سفارش مشتری</value></data>
-	<data name="AdditionalServicesAndColorSelection" xml:space="preserve"><value>خدمات تکمیلی و انتخاب رنگ</value></data>
-	<data name="ExpandEachGroup" xml:space="preserve"><value>برای مشاهده گزینه‌ها، هر گروه را باز کنید</value></data>
-	<data name="Selected" xml:space="preserve"><value>انتخاب شده</value></data>
-	<data name="SaveSpecifications" xml:space="preserve"><value>ذخیره مشخصات</value></data>
-	<data name="SaveAndPreviewApprovalProof" xml:space="preserve"><value>ذخیره و پیش‌نمایش برگه تأیید</value></data>
-	<data name="SaveAndContinueSalesWorkflow" xml:space="preserve"><value>ذخیره و ادامه به گردش کار فروش</value></data>
-	<data name="SalesRequestNotFound" xml:space="preserve"><value>درخواست فروش پیدا نشد.</value></data>
-	<data name="RequestIsNotSheetJob" xml:space="preserve"><value>این درخواست از نوع کار شیت نیست.</value></data>
-	<data name="SavedSpecificationsUnreadable" xml:space="preserve"><value>مشخصات ذخیره‌شده قابل خواندن نیست. برای جایگزینی، ذخیره کنید.</value></data>
-	<data name="JobTitleRequired" xml:space="preserve"><value>عنوان کار الزامی است.</value></data>
-	<data name="UploadArtworkBeforeSaving" xml:space="preserve"><value>پیش از ذخیره کار، فایل طرح مشتری را بارگذاری کنید.</value></data>
-	<data name="CustomerCodeIsRequired" xml:space="preserve"><value>کد مشتری الزامی است.</value></data>
-	<data name="CustomerNameIsRequired" xml:space="preserve"><value>نام مشتری الزامی است.</value></data>
-	<data name="CustomerCodeAlreadyExists" xml:space="preserve"><value>کد مشتری «{0}» از قبل وجود دارد.</value></data>
-	<data name="SelectOrCreateCustomer" xml:space="preserve"><value>یک مشتری موجود انتخاب کنید یا مشتری جدیدی ایجاد کنید.</value></data>
-	<data name="SpecificationsSavedFinishedProduct" xml:space="preserve"><value>مشخصات ذخیره شد. محصول نهایی: {0} ({1}).</value></data>
-	<data name="ArtworkMaxSize" xml:space="preserve"><value>حجم فایل طرح «{0}» باید حداکثر ۲۵ مگابایت باشد.</value></data>
-	<data name="UnsupportedArtworkFormat" xml:space="preserve"><value>فرمت فایل طرح پشتیبانی نمی‌شود: {0}.</value></data>
-	<data name="ServiceGroupLamination" xml:space="preserve"><value>سلفون و لمینیت</value></data>
-	<data name="ServiceGroupUvCoating" xml:space="preserve"><value>یووی و پوشش</value></data>
-	<data name="ServiceGroupFoilStamping" xml:space="preserve"><value>طلاکوب، نقره‌کوب و فویل</value></data>
-	<data name="ServiceGroupEmbossingDie" xml:space="preserve"><value>برجسته‌کاری و قالب</value></data>
-	<data name="ServiceGroupGluingCuttingPackaging" xml:space="preserve"><value>چسبانی، برش و بسته‌بندی</value></data>
-	<data name="ServiceGroupBackColors" xml:space="preserve"><value>رنگ‌های پشت کار</value></data>
-	<data name="ServiceGroupFrontColors" xml:space="preserve"><value>رنگ‌های روی کار</value></data>
-	<data name="CustomerApprovalProof" xml:space="preserve"><value>برگه تأیید مشتری</value></data>
-	<data name="ReviewProofPrintSavePdf" xml:space="preserve"><value>برگه را بررسی کنید، سپس چاپ را انتخاب کرده و آن را به‌صورت PDF ذخیره کنید.</value></data>
-	<data name="BackToJob" xml:space="preserve"><value>بازگشت به کار</value></data>
-	<data name="PrintSaveAsPdf" xml:space="preserve"><value>چاپ / ذخیره به‌صورت PDF</value></data>
-	<data name="PrintingPackagingCustomerApproval" xml:space="preserve"><value>چاپ و بسته‌بندی · برگه تأیید مشتری</value></data>
-	<data name="RollJobUpper" xml:space="preserve"><value>کار رول</value></data>
-	<data name="SheetJobUpper" xml:space="preserve"><value>کار شیت</value></data>
-	<data name="ProofNumber" xml:space="preserve"><value>شماره برگه</value></data>
-	<data name="Date" xml:space="preserve"><value>تاریخ</value></data>
-	<data name="ArtworkPreview" xml:space="preserve"><value>پیش‌نمایش طرح</value></data>
-	<data name="OpenFile" xml:space="preserve"><value>باز کردن فایل</value></data>
-	<data name="ArtworkNotUploaded" xml:space="preserve"><value>طرحی بارگذاری نشده است</value></data>
-	<data name="ProductionNotes" xml:space="preserve"><value>توضیحات تولید</value></data>
-	<data name="CustomerJobDetails" xml:space="preserve"><value>اطلاعات مشتری و کار</value></data>
-	<data name="Customer" xml:space="preserve"><value>مشتری</value></data>
-	<data name="JobTitle" xml:space="preserve"><value>عنوان کار</value></data>
-	<data name="JobType" xml:space="preserve"><value>نوع کار</value></data>
-	<data name="RollLabel" xml:space="preserve"><value>لیبل رول</value></data>
-	<data name="SheetProduct" xml:space="preserve"><value>محصول شیتی</value></data>
-	<data name="RequestNumber" xml:space="preserve"><value>شماره درخواست</value></data>
-	<data name="ArtworkFile" xml:space="preserve"><value>فایل طرح</value></data>
-	<data name="TechnicalSpecifications" xml:space="preserve"><value>مشخصات فنی</value></data>
-	<data name="SelectedServices" xml:space="preserve"><value>خدمات انتخاب‌شده</value></data>
-	<data name="NoAdditionalServicesSelected" xml:space="preserve"><value>خدمات تکمیلی انتخاب نشده است.</value></data>
-	<data name="SelectedRollOrientation" xml:space="preserve"><value>جهت رول انتخاب‌شده</value></data>
-	<data name="NoRollOrientationSelected" xml:space="preserve"><value>جهت رول انتخاب نشده است.</value></data>
-	<data name="PrintingColorsFrontBack" xml:space="preserve"><value>رنگ‌های چاپ — رو و پشت</value></data>
-	<data name="FrontSide" xml:space="preserve"><value>روی کار</value></data>
-	<data name="BackSide" xml:space="preserve"><value>پشت کار</value></data>
-	<data name="HighlightedTilesExplain" xml:space="preserve"><value>خانه‌های مشخص‌شده نشان‌دهنده رنگ‌های فرایندی انتخاب‌شده هستند.</value></data>
-	<data name="CustomerApproval" xml:space="preserve"><value>تأیید مشتری</value></data>
-	<data name="ApprovedBy" xml:space="preserve"><value>تأییدکننده</value></data>
-	<data name="Signature" xml:space="preserve"><value>امضا</value></data>
-	<data name="CustomerApprovalCopy" xml:space="preserve"><value>حامی‌چاپ · نسخه تأیید مشتری</value></data>
-	<data name="ReviewDimensionsArtworkFinishing" xml:space="preserve"><value>لطفاً پیش از تأیید، ابعاد، طرح و خدمات تکمیلی را بررسی کنید.</value></data>
-	<data name="SalesRequestNotFound" xml:space="preserve"><value>درخواست فروش پیدا نشد.</value></data>
-	<data name="SavedJobSpecificationsUnreadable" xml:space="preserve"><value>مشخصات ذخیره‌شده قابل خواندن نیست. فرم کار را دوباره باز کرده و ذخیره کنید.</value></data>
-	<data name="DimensionsNotSpecified" xml:space="preserve"><value>ابعاد مشخص نشده است</value></data>
-	<data name="Material" xml:space="preserve"><value>جنس</value></data>
-	<data name="Colors" xml:space="preserve"><value>رنگ‌ها</value></data>
-	<data name="RollDiameter" xml:space="preserve"><value>قطر رول</value></data>
-	<data name="LabelQuantity" xml:space="preserve"><value>تعداد لیبل</value></data>
-	<data name="HandGluing" xml:space="preserve"><value>چسب‌کاری دستی</value></data>
-	<data name="MachineGluing" xml:space="preserve"><value>چسب‌کاری ماشینی</value></data>
-	<data name="Yes" xml:space="preserve"><value>بله</value></data>
-	<data name="No" xml:space="preserve"><value>خیر</value></data>
-	<data name="SheetOrientation" xml:space="preserve"><value>جهت شیت</value></data>
-	<data name="Paper" xml:space="preserve"><value>کاغذ</value></data>
-	<data name="Grammage" xml:space="preserve"><value>گرماژ</value></data>
-	<data name="PrintRun" xml:space="preserve"><value>تیراژ چاپ</value></data>
-	<data name="SheetCount" xml:space="preserve"><value>تعداد ورق</value></data>
-	<data name="ZincPlate" xml:space="preserve"><value>زینک / پلیت</value></data>
-	<data name="Die" xml:space="preserve"><value>قالب</value></data>
-	<data name="Cliche" xml:space="preserve"><value>کلیشه</value></data>
-	<data name="ProductionLocation" xml:space="preserve"><value>محل تولید</value></data>
-	<data name="PaymentMethod" xml:space="preserve"><value>نحوه تسویه</value></data>
-	<data name="OrderNumber" xml:space="preserve"><value>شماره سفارش</value></data>
-	<data name="LabelPull" xml:space="preserve"><value>پیشروی لیبل</value></data>
-	<data name="LabelWidth" xml:space="preserve"><value>عرض لیبل</value></data>
-	<data name="Gap" xml:space="preserve"><value>فاصله بین لیبل‌ها</value></data>
-	<data name="CutSize" xml:space="preserve"><value>ابعاد برش</value></data>
+  <data name="NoProductionLines" xml:space="preserve">
+    <value>هیچ ردیف تولیدی یافت نشد.</value>
+  </data>
+  <data name="NoProductionOperations" xml:space="preserve">
+    <value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value>
+  </data>
+  <data name="SchedulesCount" xml:space="preserve">
+    <value>{0} برنامه</value>
+  </data>
+  <data name="NoMrpCalculation" xml:space="preserve">
+    <value>هنوز محاسبه برنامه نیازمندی مواد انجام نشده است.</value>
+  </data>
+  <data name="NoReservedMaterialsForIssue" xml:space="preserve">
+    <value>هیچ ماده رزروشده‌ای برای صدور در دسترس نیست.</value>
+  </data>
+  <data name="ReservationSuccess" xml:space="preserve">
+    <value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value>
+  </data>
+  <data name="ReservationMessage" xml:space="preserve">
+    <value>رزرو مواد</value>
+  </data>
+  <data name="MrpStatus" xml:space="preserve">
+    <value>وضعیت</value>
+  </data>
+  <data name="ProductionItem" xml:space="preserve">
+    <value>قلم تولید</value>
+  </data>
+  <data name="OperationCount" xml:space="preserve">
+    <value>{0} عملیات</value>
+  </data>
+  <data name="WorkflowPlanning" xml:space="preserve">
+    <value>۱. برنامه‌ریزی</value>
+  </data>
+  <data name="WorkflowMaterialReadiness" xml:space="preserve">
+    <value>۲. آماده‌سازی مواد</value>
+  </data>
+  <data name="WorkflowProduction" xml:space="preserve">
+    <value>۳. تولید</value>
+  </data>
+  <data name="WorkflowQualityCompletion" xml:space="preserve">
+    <value>۴. کیفیت / تکمیل</value>
+  </data>
+  <data name="WorkflowStatePending" xml:space="preserve">
+    <value>در انتظار</value>
+  </data>
+  <data name="NoOperationsDefined" xml:space="preserve">
+    <value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value>
+  </data>
+  <data name="NoScheduleCreated" xml:space="preserve">
+    <value>هنوز برنامه زمان‌بندی برای این سفارش تولید ایجاد نشده است.</value>
+  </data>
+  <data name="NoMrpPerformed" xml:space="preserve">
+    <value>هنوز محاسبه برنامه‌ریزی نیازمندی مواد انجام نشده است.</value>
+  </data>
+  <data name="MrpNoRequirementsGenerated" xml:space="preserve">
+    <value>محاسبه برنامه‌ریزی نیازمندی مواد انجام شد، اما هیچ نیازمندی ماده‌ای ایجاد نشد.</value>
+  </data>
+  <data name="MrpCalculationCompleted" xml:space="preserve">
+    <value>محاسبه برنامه‌ریزی نیازمندی مواد با موفقیت انجام شد.</value>
+  </data>
+  <data name="NoReservedMaterialsAvailable" xml:space="preserve">
+    <value>هیچ ماده رزروشده‌ای برای صدور در دسترس نیست.</value>
+  </data>
+  <data name="InsufficientMaterialsForReservation" xml:space="preserve">
+    <value>رزرو مواد انجام نشد، زیرا موجودی یک یا چند ماده کافی نیست.</value>
+  </data>
+  <data name="AllMaterialsReservedSuccessfully" xml:space="preserve">
+    <value>تمام مواد موردنیاز با موفقیت رزرو شدند.</value>
+  </data>
+  <data name="MaterialsIssuedSuccessfully" xml:space="preserve">
+    <value>صدور مواد با موفقیت ثبت شد. تعداد {0} سند صدور مواد تولید ایجاد شد.</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>خطای غیرمنتظره‌ای رخ داد. لطفاً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.</value>
+  </data>
+  <data name="NoActiveBomForProductionItem" xml:space="preserve">
+    <value>هیچ فهرست مواد فعالی برای این قلم تولید یافت نشد.</value>
+  </data>
+  <data name="BomHasNoComponentLines" xml:space="preserve">
+    <value>فهرست مواد هیچ ردیف مؤلفه‌ای ندارد.</value>
+  </data>
+  <data name="PlannedQuantityMustBePositive" xml:space="preserve">
+    <value>مقدار تولید برنامه‌ریزی‌شده باید بیشتر از صفر باشد.</value>
+  </data>
+  <data name="Common.TextDirection" xml:space="preserve">
+    <value>rtl</value>
+  </data>
+  <data name="Common.Loading" xml:space="preserve">
+    <value>در حال بارگذاری...</value>
+  </data>
+  <data name="Common.Date" xml:space="preserve">
+    <value>تاریخ</value>
+  </data>
+  <data name="Common.Customer" xml:space="preserve">
+    <value>مشتری</value>
+  </data>
+  <data name="Common.Total" xml:space="preserve">
+    <value>مبلغ کل</value>
+  </data>
+  <data name="Common.Status" xml:space="preserve">
+    <value>وضعیت</value>
+  </data>
+  <data name="Common.Back" xml:space="preserve">
+    <value>بازگشت</value>
+  </data>
+  <data name="Common.Item" xml:space="preserve">
+    <value>کالا</value>
+  </data>
+  <data name="Common.Quantity" xml:space="preserve">
+    <value>تعداد</value>
+  </data>
+  <data name="Common.Notes" xml:space="preserve">
+    <value>توضیحات</value>
+  </data>
+  <data name="Common.Subtotal" xml:space="preserve">
+    <value>جمع جزء</value>
+  </data>
+  <data name="Common.LoadFailed" xml:space="preserve">
+    <value>بارگذاری فاکتورهای فروش انجام نشد. لطفاً دوباره تلاش کنید.</value>
+  </data>
+  <data name="SalesInvoices.PageTitle" xml:space="preserve">
+    <value>فاکتورهای فروش</value>
+  </data>
+  <data name="SalesInvoices.Title" xml:space="preserve">
+    <value>فاکتورهای فروش</value>
+  </data>
+  <data name="SalesInvoices.Description" xml:space="preserve">
+    <value>پس از ثبت حواله فروش، فاکتور به‌صورت خودکار ایجاد می‌شود.</value>
+  </data>
+  <data name="SalesInvoices.Empty" xml:space="preserve">
+    <value>هنوز فاکتور فروشی ایجاد نشده است.</value>
+  </data>
+  <data name="SalesInvoices.Invoice" xml:space="preserve">
+    <value>شماره فاکتور</value>
+  </data>
+  <data name="SalesInvoices.Quotation" xml:space="preserve">
+    <value>پیش‌فاکتور</value>
+  </data>
+  <data name="SalesInvoices.SalesOrder" xml:space="preserve">
+    <value>سفارش فروش</value>
+  </data>
+  <data name="SalesInvoices.Delivery" xml:space="preserve">
+    <value>حواله فروش</value>
+  </data>
+  <data name="SalesInvoice.PageTitle" xml:space="preserve">
+    <value>فاکتور فروش</value>
+  </data>
+  <data name="SalesInvoice.Title" xml:space="preserve">
+    <value>فاکتور فروش</value>
+  </data>
+  <data name="SalesInvoice.PrintSavePdf" xml:space="preserve">
+    <value>چاپ / ذخیره PDF</value>
+  </data>
+  <data name="SalesInvoice.NotFound" xml:space="preserve">
+    <value>فاکتور فروش پیدا نشد.</value>
+  </data>
+  <data name="SalesInvoice.DocumentHeading" xml:space="preserve">
+    <value>فاکتور فروش</value>
+  </data>
+  <data name="SalesInvoice.BillTo" xml:space="preserve">
+    <value>صورتحساب برای</value>
+  </data>
+  <data name="SalesInvoice.ApprovedQuotation" xml:space="preserve">
+    <value>پیش‌فاکتور تأییدشده</value>
+  </data>
+  <data name="SalesInvoice.SalesOrder" xml:space="preserve">
+    <value>سفارش فروش</value>
+  </data>
+  <data name="SalesInvoice.SalesDelivery" xml:space="preserve">
+    <value>حواله فروش</value>
+  </data>
+  <data name="SalesInvoice.ApprovedUnitPrice" xml:space="preserve">
+    <value>قیمت واحد تأییدشده</value>
+  </data>
+  <data name="SalesInvoice.LineTotal" xml:space="preserve">
+    <value>مبلغ ردیف</value>
+  </data>
+  <data name="SalesInvoice.GeneratedNotice" xml:space="preserve">
+    <value>این فاکتور بر اساس پیش‌فاکتور پذیرفته‌شده و حواله فروش ثبت‌شده ایجاد شده است.</value>
+  </data>
+  <data name="SalesInvoiceStatus.Draft" xml:space="preserve">
+    <value>پیش‌نویس</value>
+  </data>
+  <data name="SalesInvoiceStatus.Posted" xml:space="preserve">
+    <value>ثبت‌شده</value>
+  </data>
+  <data name="SalesInvoiceStatus.Cancelled" xml:space="preserve">
+    <value>لغوشده</value>
+  </data>
+  <data name="SalesInvoices" xml:space="preserve">
+    <value>فاکتورهای فروش</value>
+  </data>
+  <data name="SheetJobSpecification" xml:space="preserve">
+    <value>مشخصات کار شیت</value>
+  </data>
+  <data name="SheetJob" xml:space="preserve">
+    <value>کار شیت</value>
+  </data>
+  <data name="SheetJobSubtitle" xml:space="preserve">
+    <value>مشخصات چاپ، خدمات تکمیلی و مواد اولیه شیت</value>
+  </data>
+  <data name="BackToRequest" xml:space="preserve">
+    <value>بازگشت به درخواست</value>
+  </data>
+  <data name="OrderInformation" xml:space="preserve">
+    <value>اطلاعات سفارش</value>
+  </data>
+  <data name="SelectExistingCustomer" xml:space="preserve">
+    <value>انتخاب مشتری موجود</value>
+  </data>
+  <data name="CreateNewCustomer" xml:space="preserve">
+    <value>ایجاد مشتری جدید</value>
+  </data>
+  <data name="CustomerCodeRequired" xml:space="preserve">
+    <value>کد مشتری *</value>
+  </data>
+  <data name="CustomerNameRequired" xml:space="preserve">
+    <value>نام مشتری *</value>
+  </data>
+  <data name="JobTitle" xml:space="preserve">
+    <value>عنوان کار</value>
+  </data>
+  <data name="Referrer" xml:space="preserve">
+    <value>معرف</value>
+  </data>
+  <data name="RequiredItems" xml:space="preserve">
+    <value>اقلام مورد نیاز</value>
+  </data>
+  <data name="PaperType" xml:space="preserve">
+    <value>نوع کاغذ</value>
+  </data>
+  <data name="SelectOrType" xml:space="preserve">
+    <value>انتخاب کنید یا تایپ کنید</value>
+  </data>
+  <data name="PaperTypeHelp" xml:space="preserve">
+    <value>می‌توانید گزینه استاندارد را انتخاب کنید یا نوع دیگری وارد کنید.</value>
+  </data>
+  <data name="Zinc" xml:space="preserve">
+    <value>زینک</value>
+  </data>
+  <data name="DieCut" xml:space="preserve">
+    <value>قالب / دایکات</value>
+  </data>
+  <data name="Cliche" xml:space="preserve">
+    <value>کلیشه</value>
+  </data>
+  <data name="PrintRunSheets" xml:space="preserve">
+    <value>تیراژ چاپ (ورق)</value>
+  </data>
+  <data name="CutLengthCm" xml:space="preserve">
+    <value>طول بعد از برش (سانتی‌متر)</value>
+  </data>
+  <data name="CutWidthCm" xml:space="preserve">
+    <value>عرض بعد از برش (سانتی‌متر)</value>
+  </data>
+  <data name="SheetOrientation" xml:space="preserve">
+    <value>جهت شیت</value>
+  </data>
+  <data name="SelectOrientation" xml:space="preserve">
+    <value>انتخاب جهت</value>
+  </data>
+  <data name="Portrait" xml:space="preserve">
+    <value>عمودی</value>
+  </data>
+  <data name="Landscape" xml:space="preserve">
+    <value>افقی</value>
+  </data>
+  <data name="Grammage" xml:space="preserve">
+    <value>گرماژ</value>
+  </data>
+  <data name="SheetCount" xml:space="preserve">
+    <value>تعداد ورق</value>
+  </data>
+  <data name="SelectOrEnterLocation" xml:space="preserve">
+    <value>انتخاب یا ورود محل</value>
+  </data>
+  <data name="PaymentMethod" xml:space="preserve">
+    <value>نحوه تسویه</value>
+  </data>
+  <data name="SelectOrEnterPaymentMethod" xml:space="preserve">
+    <value>انتخاب یا ورود روش تسویه</value>
+  </data>
+  <data name="PrintingAndColorNotes" xml:space="preserve">
+    <value>توضیحات چاپ و رنگ</value>
+  </data>
+  <data name="PrintingNotesPlaceholder" xml:space="preserve">
+    <value>رنگ پنتون، رنگ اختصاصی، نکات چاپ و ...</value>
+  </data>
+  <data name="CustomerOrderNumber" xml:space="preserve">
+    <value>شماره سفارش مشتری</value>
+  </data>
+  <data name="AdditionalServicesAndColorSelection" xml:space="preserve">
+    <value>خدمات تکمیلی و انتخاب رنگ</value>
+  </data>
+  <data name="ExpandEachGroup" xml:space="preserve">
+    <value>برای مشاهده گزینه‌ها، هر گروه را باز کنید</value>
+  </data>
+  <data name="Selected" xml:space="preserve">
+    <value>انتخاب شده</value>
+  </data>
+  <data name="SaveSpecifications" xml:space="preserve">
+    <value>ذخیره مشخصات</value>
+  </data>
+  <data name="SaveAndPreviewApprovalProof" xml:space="preserve">
+    <value>ذخیره و پیش‌نمایش برگه تأیید</value>
+  </data>
+  <data name="SaveAndContinueSalesWorkflow" xml:space="preserve">
+    <value>ذخیره و ادامه به گردش کار فروش</value>
+  </data>
+  <data name="RequestIsNotSheetJob" xml:space="preserve">
+    <value>این درخواست از نوع کار شیت نیست.</value>
+  </data>
+  <data name="SavedSpecificationsUnreadable" xml:space="preserve">
+    <value>مشخصات ذخیره‌شده قابل خواندن نیست. برای جایگزینی، ذخیره کنید.</value>
+  </data>
+  <data name="JobTitleRequired" xml:space="preserve">
+    <value>عنوان کار الزامی است.</value>
+  </data>
+  <data name="UploadArtworkBeforeSaving" xml:space="preserve">
+    <value>پیش از ذخیره کار، فایل طرح مشتری را بارگذاری کنید.</value>
+  </data>
+  <data name="CustomerCodeIsRequired" xml:space="preserve">
+    <value>کد مشتری الزامی است.</value>
+  </data>
+  <data name="CustomerNameIsRequired" xml:space="preserve">
+    <value>نام مشتری الزامی است.</value>
+  </data>
+  <data name="CustomerCodeAlreadyExists" xml:space="preserve">
+    <value>کد مشتری «{0}» از قبل وجود دارد.</value>
+  </data>
+  <data name="SelectOrCreateCustomer" xml:space="preserve">
+    <value>یک مشتری موجود انتخاب کنید یا مشتری جدیدی ایجاد کنید.</value>
+  </data>
+  <data name="SpecificationsSavedFinishedProduct" xml:space="preserve">
+    <value>مشخصات ذخیره شد. محصول نهایی: {0} ({1}).</value>
+  </data>
+  <data name="ArtworkMaxSize" xml:space="preserve">
+    <value>حجم فایل طرح «{0}» باید حداکثر ۲۵ مگابایت باشد.</value>
+  </data>
+  <data name="UnsupportedArtworkFormat" xml:space="preserve">
+    <value>فرمت فایل طرح پشتیبانی نمی‌شود: {0}.</value>
+  </data>
+  <data name="ServiceGroupLamination" xml:space="preserve">
+    <value>سلفون و لمینیت</value>
+  </data>
+  <data name="ServiceGroupUvCoating" xml:space="preserve">
+    <value>یووی و پوشش</value>
+  </data>
+  <data name="ServiceGroupFoilStamping" xml:space="preserve">
+    <value>طلاکوب، نقره‌کوب و فویل</value>
+  </data>
+  <data name="ServiceGroupEmbossingDie" xml:space="preserve">
+    <value>برجسته‌کاری و قالب</value>
+  </data>
+  <data name="ServiceGroupGluingCuttingPackaging" xml:space="preserve">
+    <value>چسبانی، برش و بسته‌بندی</value>
+  </data>
+  <data name="ServiceGroupBackColors" xml:space="preserve">
+    <value>رنگ‌های پشت کار</value>
+  </data>
+  <data name="ServiceGroupFrontColors" xml:space="preserve">
+    <value>رنگ‌های روی کار</value>
+  </data>
+  <data name="CustomerApprovalProof" xml:space="preserve">
+    <value>برگه تأیید مشتری</value>
+  </data>
+  <data name="ReviewProofPrintSavePdf" xml:space="preserve">
+    <value>برگه را بررسی کنید، سپس چاپ را انتخاب کرده و آن را به‌صورت PDF ذخیره کنید.</value>
+  </data>
+  <data name="BackToJob" xml:space="preserve">
+    <value>بازگشت به کار</value>
+  </data>
+  <data name="PrintSaveAsPdf" xml:space="preserve">
+    <value>چاپ / ذخیره به‌صورت PDF</value>
+  </data>
+  <data name="PrintingPackagingCustomerApproval" xml:space="preserve">
+    <value>چاپ و بسته‌بندی · برگه تأیید مشتری</value>
+  </data>
+  <data name="RollJobUpper" xml:space="preserve">
+    <value>کار رول</value>
+  </data>
+  <data name="SheetJobUpper" xml:space="preserve">
+    <value>کار شیت</value>
+  </data>
+  <data name="ProofNumber" xml:space="preserve">
+    <value>شماره برگه</value>
+  </data>
+  <data name="ArtworkPreview" xml:space="preserve">
+    <value>پیش‌نمایش طرح</value>
+  </data>
+  <data name="OpenFile" xml:space="preserve">
+    <value>باز کردن فایل</value>
+  </data>
+  <data name="ArtworkNotUploaded" xml:space="preserve">
+    <value>طرحی بارگذاری نشده است</value>
+  </data>
+  <data name="ProductionNotes" xml:space="preserve">
+    <value>توضیحات تولید</value>
+  </data>
+  <data name="CustomerJobDetails" xml:space="preserve">
+    <value>اطلاعات مشتری و کار</value>
+  </data>
+  <data name="JobType" xml:space="preserve">
+    <value>نوع کار</value>
+  </data>
+  <data name="RollLabel" xml:space="preserve">
+    <value>لیبل رول</value>
+  </data>
+  <data name="SheetProduct" xml:space="preserve">
+    <value>محصول شیتی</value>
+  </data>
+  <data name="ArtworkFile" xml:space="preserve">
+    <value>فایل طرح</value>
+  </data>
+  <data name="TechnicalSpecifications" xml:space="preserve">
+    <value>مشخصات فنی</value>
+  </data>
+  <data name="SelectedServices" xml:space="preserve">
+    <value>خدمات انتخاب‌شده</value>
+  </data>
+  <data name="NoAdditionalServicesSelected" xml:space="preserve">
+    <value>خدمات تکمیلی انتخاب نشده است.</value>
+  </data>
+  <data name="SelectedRollOrientation" xml:space="preserve">
+    <value>جهت رول انتخاب‌شده</value>
+  </data>
+  <data name="NoRollOrientationSelected" xml:space="preserve">
+    <value>جهت رول انتخاب نشده است.</value>
+  </data>
+  <data name="PrintingColorsFrontBack" xml:space="preserve">
+    <value>رنگ‌های چاپ — رو و پشت</value>
+  </data>
+  <data name="FrontSide" xml:space="preserve">
+    <value>روی کار</value>
+  </data>
+  <data name="BackSide" xml:space="preserve">
+    <value>پشت کار</value>
+  </data>
+  <data name="HighlightedTilesExplain" xml:space="preserve">
+    <value>خانه‌های مشخص‌شده نشان‌دهنده رنگ‌های فرایندی انتخاب‌شده هستند.</value>
+  </data>
+  <data name="CustomerApproval" xml:space="preserve">
+    <value>تأیید مشتری</value>
+  </data>
+  <data name="ApprovedBy" xml:space="preserve">
+    <value>تأییدکننده</value>
+  </data>
+  <data name="Signature" xml:space="preserve">
+    <value>امضا</value>
+  </data>
+  <data name="CustomerApprovalCopy" xml:space="preserve">
+    <value>حامی‌چاپ · نسخه تأیید مشتری</value>
+  </data>
+  <data name="ReviewDimensionsArtworkFinishing" xml:space="preserve">
+    <value>لطفاً پیش از تأیید، ابعاد، طرح و خدمات تکمیلی را بررسی کنید.</value>
+  </data>
+  <data name="SavedJobSpecificationsUnreadable" xml:space="preserve">
+    <value>مشخصات ذخیره‌شده قابل خواندن نیست. فرم کار را دوباره باز کرده و ذخیره کنید.</value>
+  </data>
+  <data name="DimensionsNotSpecified" xml:space="preserve">
+    <value>ابعاد مشخص نشده است</value>
+  </data>
+  <data name="Colors" xml:space="preserve">
+    <value>رنگ‌ها</value>
+  </data>
+  <data name="RollDiameter" xml:space="preserve">
+    <value>قطر رول</value>
+  </data>
+  <data name="LabelQuantity" xml:space="preserve">
+    <value>تعداد لیبل</value>
+  </data>
+  <data name="HandGluing" xml:space="preserve">
+    <value>چسب‌کاری دستی</value>
+  </data>
+  <data name="MachineGluing" xml:space="preserve">
+    <value>چسب‌کاری ماشینی</value>
+  </data>
+  <data name="Paper" xml:space="preserve">
+    <value>کاغذ</value>
+  </data>
+  <data name="PrintRun" xml:space="preserve">
+    <value>تیراژ چاپ</value>
+  </data>
+  <data name="ZincPlate" xml:space="preserve">
+    <value>زینک / پلیت</value>
+  </data>
+  <data name="Die" xml:space="preserve">
+    <value>قالب</value>
+  </data>
+  <data name="LabelPull" xml:space="preserve">
+    <value>پیشروی لیبل</value>
+  </data>
+  <data name="LabelWidth" xml:space="preserve">
+    <value>عرض لیبل</value>
+  </data>
+  <data name="Gap" xml:space="preserve">
+    <value>فاصله بین لیبل‌ها</value>
+  </data>
+  <data name="CutSize" xml:space="preserve">
+    <value>ابعاد برش</value>
+  </data>
+  <data name="PendingApproval" xml:space="preserve">
+    <value>در انتظار تایید مدیر</value>
+  </data>
+  <data name="QuotationCreated" xml:space="preserve">
+    <value>پیش فاکتور ایجاد شده</value>
+  </data>
+  <data name="Confirmed" xml:space="preserve">
+    <value>تایید شده</value>
+  </data>
+  <data name="PartiallyDelivered" xml:space="preserve">
+    <value>تحویل جزئی</value>
+  </data>
 </root>

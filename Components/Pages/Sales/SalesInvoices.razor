@@ -10,87 +10,231 @@
 @inject LocalizationService LocalizationService
 
 <PageTitle>@LocalizationService["SalesInvoices.PageTitle"]</PageTitle>
+
 <div class="page-container" dir="@LocalizationService["Common.TextDirection"]">
+
     <div class="erp-page-header mb-4">
         <div>
-            <h3 class="erp-page-title">@LocalizationService["SalesInvoices.Title"]</h3>
-            <p class="erp-page-subtitle">@LocalizationService["SalesInvoices.Description"]</p>
+            <h3 class="erp-page-title">
+                @LocalizationService["SalesInvoices.Title"]
+            </h3>
+
+            <p class="erp-page-subtitle">
+                @LocalizationService["SalesInvoices.Description"]
+            </p>
         </div>
     </div>
+
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
-        <div class="alert alert-danger">@errorMessage</div>
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
     }
+
     @if (isLoading)
     {
         <div class="text-center py-5">
             <div class="spinner-border" role="status">
-                <span class="visually-hidden">@LocalizationService["Common.Loading"]</span>
+                <span class="visually-hidden">
+                    @LocalizationService["Common.Loading"]
+                </span>
             </div>
         </div>
     }
-    else if (invoices.Count == 0)
+    else if (totalCount == 0)
     {
-        <div class="alert alert-info">@LocalizationService["SalesInvoices.Empty"]</div>
+        <div class="alert alert-info">
+            @LocalizationService["SalesInvoices.Empty"]
+        </div>
     }
     else
     {
-        <div class="card"><div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead><tr>
-                    <th>@LocalizationService["SalesInvoices.Invoice"]</th>
-                    <th>@LocalizationService["Common.Date"]</th>
-                    <th>@LocalizationService["Common.Customer"]</th>
-                    <th>@LocalizationService["SalesInvoices.Quotation"]</th>
-                    <th>@LocalizationService["SalesInvoices.SalesOrder"]</th>
-                    <th>@LocalizationService["SalesInvoices.Delivery"]</th>
-                    <th class="text-end">@LocalizationService["Common.Total"]</th>
-                    <th>@LocalizationService["Common.Status"]</th>
-                </tr></thead>
-                <tbody>
-                @foreach (var invoice in invoices)
-                {
-                    <tr role="button" style="cursor:pointer" @onclick="() => OpenInvoice(invoice.Id)">
-                        <td class="fw-semibold">@invoice.InvoiceNumber</td>
-                        <td>@invoice.InvoiceDate.ToString("yyyy-MM-dd")</td>
-                        <td>@invoice.Customer?.Name</td>
-                        <td>@invoice.Quotation?.QuotationNumber</td>
-                        <td>@invoice.SalesOrder?.OrderNumber</td>
-                        <td>@invoice.SalesDelivery?.DeliveryNumber</td>
-                        <td class="text-end">@invoice.TotalAmount.ToString("N2")</td>
-                        <td>@LocalizationService[$"SalesInvoiceStatus.{invoice.Status}"]</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div></div>
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-responsive-cards">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@LocalizationService["SalesInvoices.Invoice"]</th>
+                            <th>@LocalizationService["Common.Date"]</th>
+                            <th>@LocalizationService["Common.Customer"]</th>
+                            <th>@LocalizationService["SalesInvoices.Quotation"]</th>
+                            <th>@LocalizationService["SalesInvoices.SalesOrder"]</th>
+                            <th>@LocalizationService["SalesInvoices.Delivery"]</th>
+                            <th class="text-end">@LocalizationService["Common.Total"]</th>
+                            <th>@LocalizationService["Common.Status"]</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var invoice in invoices)
+                        {
+                            <tr @key="invoice.Id"
+                                role="button"
+                                style="cursor: pointer"
+                                @onclick="() => OpenInvoice(invoice.Id)">
+
+                                <td class="fw-semibold">
+                                    @invoice.InvoiceNumber
+                                </td>
+
+                                <td>
+                                    @invoice.InvoiceDate.ToString("yyyy-MM-dd")
+                                </td>
+
+                                <td>
+                                    @invoice.Customer?.Name
+                                </td>
+
+                                <td>
+                                    @invoice.Quotation?.QuotationNumber
+                                </td>
+
+                                <td>
+                                    @invoice.SalesOrder?.OrderNumber
+                                </td>
+
+                                <td>
+                                    @invoice.SalesDelivery?.DeliveryNumber
+                                </td>
+
+                                <td class="text-end">
+                                    @invoice.TotalAmount.ToString("N2")
+                                </td>
+
+                                <td>
+                                    @LocalizationService[$"SalesInvoiceStatus.{invoice.Status}"]
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPages > 0)
+            {
+                <div class="d-flex flex-wrap justify-content-between align-items-center p-3 gap-2">
+
+                    <div class="text-muted small">
+                        @((currentPage - 1) * pageSize + 1)
+                        -
+                        @(Math.Min(currentPage * pageSize, totalCount))
+                        /
+                        @totalCount
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                @onclick="PreviousPage"
+                                disabled="@(currentPage <= 1 || isLoading)">
+                            @LocalizationService["Previous"]
+                        </button>
+
+                        <span class="small">
+                            @currentPage / @totalPages
+                        </span>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                @onclick="NextPage"
+                                disabled="@(currentPage >= totalPages || isLoading)">
+                            @LocalizationService["Next"]
+                        </button>
+                    </div>
+
+                </div>
+            }
+        </div>
     }
 </div>
 
 @code {
+    private const int pageSize = 20;
+
     private List<SalesInvoice> invoices = new();
+
     private bool isLoading = true;
     private string? errorMessage;
 
+    private int currentPage = 1;
+    private int totalCount;
+
+    private int totalPages =>
+        totalCount == 0
+            ? 0
+            : (int)Math.Ceiling(totalCount / (double)pageSize);
+
     protected override async Task OnInitializedAsync()
     {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
         try
         {
-            invoices = await Db.SalesInvoices.AsNoTracking()
+            var query = Db.SalesInvoices
+                .AsNoTracking();
+
+            totalCount = await query.CountAsync();
+
+            if (totalPages > 0 && currentPage > totalPages)
+            {
+                currentPage = totalPages;
+            }
+
+            if (totalPages == 0)
+            {
+                currentPage = 1;
+            }
+
+            invoices = await query
                 .Include(x => x.Customer)
                 .Include(x => x.Quotation)
                 .Include(x => x.SalesOrder)
                 .Include(x => x.SalesDelivery)
                 .OrderByDescending(x => x.InvoiceDate)
                 .ThenByDescending(x => x.Id)
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
         catch
         {
             errorMessage = LocalizationService["Common.LoadFailed"];
+            invoices = new();
+            totalCount = 0;
         }
-        finally { isLoading = false; }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-    private void OpenInvoice(long id) => Navigation.NavigateTo($"/sales/invoices/edit/{id}");
+    private async Task PreviousPage()
+    {
+        if (currentPage <= 1 || isLoading)
+            return;
+
+        currentPage--;
+        await LoadAsync();
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage >= totalPages || isLoading)
+            return;
+
+        currentPage++;
+        await LoadAsync();
+    }
+
+    private void OpenInvoice(long id)
+    {
+        Navigation.NavigateTo($"/sales/invoices/edit/{id}");
+    }
 }

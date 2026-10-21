@@ -4,6 +4,7 @@
 @using HamiChap_MES_ERP.Models.Sales
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Services
+@using HamiChap_MES_ERP.Models.Sales.Enums
 
 
 @inject ApplicationDbContext Db
@@ -383,15 +384,43 @@
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true;
+        quotation = null;
 
-        quotation = await Db.Quotations
-            .AsNoTracking()
-            .Include(x => x.Customer)
-            .Include(x => x.Lines)
-                .ThenInclude(x => x.Item)
-            .FirstOrDefaultAsync(x => x.Id == Id);
+        try
+        {
+            var result = await Db.Quotations
+                .AsNoTracking()
+                .Include(x => x.Customer)
+                .Include(x => x.Lines)
+                    .ThenInclude(x => x.Item)
+                .FirstOrDefaultAsync(x => x.Id == Id);
 
-        isLoading = false;
+            if (result == null)
+            {
+                Navigation.NavigateTo("/sales/quotations");
+                return;
+            }
+
+            var previewAllowed =
+                result.Status == QuotationStatus.Approved ||
+                result.Status == QuotationStatus.ReadyToSend ||
+                result.Status == QuotationStatus.SentToCustomer ||
+                result.Status == QuotationStatus.CustomerNegotiation ||
+                result.Status == QuotationStatus.Accepted ||
+                result.Status == QuotationStatus.Rejected;
+
+            if (!previewAllowed)
+            {
+                Navigation.NavigateTo($"/sales/quotations/edit/{Id}");
+                return;
+            }
+
+            quotation = result;
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private string T(string key)

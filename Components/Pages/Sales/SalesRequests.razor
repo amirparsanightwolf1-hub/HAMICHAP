@@ -16,7 +16,6 @@
 <div class="page-container">
 
     <div class="erp-page-header mb-4">
-
         <div>
             <div class="erp-page-title">
                 @LocalizationService["SalesRequests"]
@@ -30,12 +29,9 @@
         <button type="button"
                 class="btn btn-primary"
                 @onclick="CreateRequest">
-
             <i class="bi bi-plus-circle"></i>
             @LocalizationService["NewSalesRequest"]
-
         </button>
-
     </div>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -58,78 +54,52 @@
             @if (isLoading)
             {
                 <div class="text-center py-5">
-
-                    <div class="spinner-border"
-                         role="status">
-
+                    <div class="spinner-border" role="status">
                         <span class="visually-hidden">
                             @LocalizationService["Loading"]
                         </span>
-
                     </div>
-
                 </div>
             }
-            else if (!requests.Any())
+            else if (totalCount == 0)
             {
                 <div class="text-center text-muted py-5">
-
                     <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-
-                    @LocalizationService[
-                        "NoSalesRequestsFound"]
-
+                    @LocalizationService["NoSalesRequestsFound"]
                 </div>
             }
             else
             {
                 <div class="table-responsive">
-
-                    <table class="table table-hover align-middle mb-0">
-
-                        <thead>
-
+                    <table class="table table-hover align-middle mb-0 table-responsive-cards">
+                        <thead class="table-light">
                             <tr>
-
                                 <th>
                                     @LocalizationService["RequestNumber"]
                                 </th>
-
                                 <th>
                                     @LocalizationService["Customer"]
                                 </th>
-
                                 <th>
                                     @LocalizationService["RequestDate"]
                                 </th>
-
                                 <th>
-                                    @LocalizationService[
-                                        "RequestedDeliveryDate"]
+                                    @LocalizationService["RequestedDeliveryDate"]
                                 </th>
-
                                 <th>
                                     @LocalizationService["Status"]
                                 </th>
-
                                 <th>
-                                    @LocalizationService[
-                                        "AssignedEvaluator"]
+                                    @LocalizationService["AssignedEvaluator"]
                                 </th>
-
-                                <th style="width:100px;">
-                                </th>
-
+                                <th style="width: 100px;"></th>
                             </tr>
-
                         </thead>
 
                         <tbody>
-
                             @foreach (var request in requests)
                             {
-                                <tr>
-
+                                <tr @key="request.Id">
                                     <td>
                                         <span class="fw-semibold">
                                             @request.RequestNumber
@@ -141,22 +111,16 @@
                                     </td>
 
                                     <td>
-                                        @(request.RequestDate
-                                            .ToString("yyyy-MM-dd")
-                                        )
+                                        @request.RequestDate.ToString("yyyy-MM-dd")
                                     </td>
 
                                     <td>
-                                        @(
-                                            request.RequestedDeliveryDate?
-                                                .ToString("yyyy-MM-dd")
-                                            ?? "-"
-                                        )
+                                        @(request.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")
                                     </td>
 
                                     <td>
                                         <span class="badge bg-secondary">
-                                            @(LocalizationService.TranslateEnum(request.Status))
+                                            @LocalizationService.TranslateEnum(request.Status)
                                         </span>
                                     </td>
 
@@ -165,40 +129,74 @@
                                     </td>
 
                                     <td class="text-end">
-
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-primary"
                                                 @onclick="() => OpenRequest(request.Id)">
-
                                             <i class="bi bi-pencil"></i>
                                             @LocalizationService["Open"]
-
                                         </button>
-
                                     </td>
-
                                 </tr>
                             }
-
                         </tbody>
-
                     </table>
-
                 </div>
+
+                @if (totalPages > 0)
+                {
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 mb-3 px-3 gap-2">
+
+                        <div class="text-muted small">
+                            @((currentPage - 1) * pageSize + 1)
+                            -
+                            @(Math.Min(currentPage * pageSize, totalCount))
+                            /
+                            @totalCount
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    @onclick="PreviousPage"
+                                    disabled="@(currentPage <= 1 || isLoading)">
+                                @LocalizationService["Previous"]
+                            </button>
+
+                            <span class="small">
+                                @currentPage / @totalPages
+                            </span>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    @onclick="NextPage"
+                                    disabled="@(currentPage >= totalPages || isLoading)">
+                                @LocalizationService["Next"]
+                            </button>
+                        </div>
+
+                    </div>
+                }
             }
 
         </div>
     </div>
-
 </div>
 
 @code {
+    private const int pageSize = 20;
 
     private List<SalesRequest> requests = new();
 
     private bool isLoading = true;
-
     private string? errorMessage;
+
+    private int currentPage = 1;
+    private int totalCount;
+
+    private int totalPages =>
+        totalCount == 0
+            ? 0
+            : (int)Math.Ceiling(totalCount / (double)pageSize);
 
     protected override async Task OnInitializedAsync()
     {
@@ -212,22 +210,35 @@
 
         try
         {
-            requests =
-                await Db.SalesRequests
+            var query = Db.SalesRequests
+                .AsNoTracking();
 
-                    .Include(x => x.Customer)
+            totalCount = await query.CountAsync();
 
-                    .Include(x => x.AssignedToUser)
+            if (currentPage > totalPages && totalPages > 0)
+            {
+                currentPage = totalPages;
+            }
 
-                    .OrderByDescending(x => x.RequestDate)
+            if (totalPages == 0)
+            {
+                currentPage = 1;
+            }
 
-                    .ThenByDescending(x => x.Id)
-
-                    .ToListAsync();
+            requests = await query
+                .Include(x => x.Customer)
+                .Include(x => x.AssignedToUser)
+                .OrderByDescending(x => x.RequestDate)
+                .ThenByDescending(x => x.Id)
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
+            requests = new();
+            totalCount = 0;
         }
         finally
         {
@@ -235,36 +246,47 @@
         }
     }
 
-    private string GetEvaluatorName(
-        SalesRequest request)
+    private string GetEvaluatorName(SalesRequest request)
     {
         if (request.AssignedToUser == null)
             return "-";
 
-        var user =
-            request.AssignedToUser;
+        var user = request.AssignedToUser;
 
-        if (!string.IsNullOrWhiteSpace(
-                user.FirstName) ||
-            !string.IsNullOrWhiteSpace(
-                user.LastName))
+        if (!string.IsNullOrWhiteSpace(user.FirstName) ||
+            !string.IsNullOrWhiteSpace(user.LastName))
         {
-            return $"{user.FirstName} {user.LastName}"
-                .Trim();
+            return $"{user.FirstName} {user.LastName}".Trim();
         }
 
         return user.UserName ?? "-";
     }
 
+    private async Task PreviousPage()
+    {
+        if (currentPage <= 1 || isLoading)
+            return;
+
+        currentPage--;
+        await LoadAsync();
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage >= totalPages || isLoading)
+            return;
+
+        currentPage++;
+        await LoadAsync();
+    }
+
     private void CreateRequest()
     {
-        Navigation.NavigateTo(
-            "/sales/requests/create");
+        Navigation.NavigateTo("/sales/requests/create");
     }
 
     private void OpenRequest(long id)
     {
-        Navigation.NavigateTo(
-            $"/sales/requests/edit/{id}");
+        Navigation.NavigateTo($"/sales/requests/edit/{id}");
     }
 }

@@ -55,11 +55,19 @@
 
             <div class="d-flex gap-2">
 
-                <button type="button"
-                        class="btn btn-outline-primary"
-                        @onclick="OpenPreview">
-                    @LocalizationService["QuotationPreview"]
-                </button>
+                @if (quotation.Status == QuotationStatus.Approved ||
+                     quotation.Status == QuotationStatus.ReadyToSend ||
+                     quotation.Status == QuotationStatus.SentToCustomer ||
+                     quotation.Status == QuotationStatus.CustomerNegotiation ||
+                     quotation.Status == QuotationStatus.Accepted ||
+                     quotation.Status == QuotationStatus.Rejected)
+                {
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            @onclick="OpenPreview">
+                        @LocalizationService["QuotationPreview"]
+                    </button>
+                }
 
                 <button type="button"
                         class="btn btn-outline-secondary"

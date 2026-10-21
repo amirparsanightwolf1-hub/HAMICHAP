@@ -256,7 +256,7 @@
     <value>Posts accepted quantities to finished goods, rejected quantities to waste, and rework quantities to the rework location.</value>
   </data>
   <data name="ProductionLocation" xml:space="preserve">
-    <value>Production Location</value>
+    <value>Production location</value>
   </data>
   <data name="FinishedGoodsLocation" xml:space="preserve">
     <value>Finished Goods Location</value>
@@ -697,7 +697,7 @@
     <value>Material issue posted successfully. Created {0} Production Issue document(s).</value>
   </data>
   <data name="MaterialReadiness" xml:space="preserve">
-    <value>2. Material Readiness</value>
+    <value>Material Readiness</value>
   </data>
   <data name="MaterialRequirementsPlanning" xml:space="preserve">
     <value>Material Requirements Planning</value>
@@ -736,7 +736,7 @@
     <value>Name</value>
   </data>
   <data name="NewCustomer" xml:space="preserve">
-    <value>New Customer</value>
+    <value>New customer</value>
   </data>
   <data name="NewDocument" xml:space="preserve">
     <value>New Document</value>
@@ -823,7 +823,7 @@
     <value>Ordered Quantity</value>
   </data>
   <data name="OrderNumber" xml:space="preserve">
-    <value>Order Number</value>
+    <value>Order number</value>
   </data>
   <data name="OrderStatus" xml:space="preserve">
     <value>Order Status</value>
@@ -955,7 +955,7 @@
     <value>QC and finished production</value>
   </data>
   <data name="QualityCompletion" xml:space="preserve">
-    <value>4. Quality / Completion</value>
+    <value>Quality / Completion</value>
   </data>
   <data name="QualityControl" xml:space="preserve">
     <value>Quality Control</value>
@@ -1303,13 +1303,13 @@
     <value>Request Lines</value>
   </data>
   <data name="RequestNumber" xml:space="preserve">
-    <value>Request Number</value>
+    <value>Request no.</value>
   </data>
   <data name="RequestedDeliveryDate" xml:space="preserve">
     <value>Requested Delivery Date</value>
   </data>
   <data name="SalesRequestNotFound" xml:space="preserve">
-    <value>Sales request was not found.</value>
+    <value>Sales request not found.</value>
   </data>
   <data name="SalesRequestSavedSuccessfully" xml:space="preserve">
     <value>Sales request saved successfully.</value>
@@ -1669,7 +1669,7 @@
     <value>No active Production inventory location was found.</value>
   </data>
   <data name="MaterialIssuePosted" xml:space="preserve">
-    <value>Material issue posted successfully.</value>
+    <value>Material issue posted successfully. Created {0} Production Issue document(s).</value>
   </data>
   <data name="CreatedProductionIssueDocuments" xml:space="preserve">
     <value>Created {0} Production Issue document(s).</value>
@@ -1681,7 +1681,7 @@
     <value>All required materials have been reserved successfully.</value>
   </data>
   <data name="MachineLabel" xml:space="preserve">
-    <value>Machine {0}</value>
+    <value>Machine</value>
   </data>
   <data name="OperationNumber" xml:space="preserve">
     <value>Operation #{0}</value>
@@ -1689,286 +1689,517 @@
   <data name="QualityInspectionManagement" xml:space="preserve">
     <value>Quality Inspection Management</value>
   </data>
-	<data name="ProductionOrder" xml:space="preserve"><value>Production Order</value></data>
-	<data name="Back" xml:space="preserve"><value>Back</value></data>
-	<data name="Calculating" xml:space="preserve"><value>Calculating...</value></data>
-	<data name="CalculateMRP" xml:space="preserve"><value>Calculate MRP</value></data>
-	<data name="Reserving" xml:space="preserve"><value>Reserving...</value></data>
-	<data name="ReserveMaterials" xml:space="preserve"><value>Reserve Materials</value></data>
-	<data name="StartProduction" xml:space="preserve"><value>Start Production</value></data>
-	<data name="IssuingMaterials" xml:space="preserve"><value>Issuing Materials...</value></data>
-	<data name="IssueMaterials" xml:space="preserve"><value>Issue Materials</value></data>
-	<data name="ProductionProgress" xml:space="preserve"><value>Production Progress</value></data>
-	<data name="QualityControl" xml:space="preserve"><value>Quality Control</value></data>
-	<data name="ProductionCompleted" xml:space="preserve"><value>Production Completed</value></data>
-	<data name="ProductionWorkflow" xml:space="preserve"><value>Production Workflow</value></data>
-	<data name="Planning" xml:space="preserve"><value>Planning</value></data>
-	<data name="MaterialReadiness" xml:space="preserve"><value>Material Readiness</value></data>
-	<data name="Production" xml:space="preserve"><value>Production</value></data>
-	<data name="QualityCompletion" xml:space="preserve"><value>Quality / Completion</value></data>
-	<data name="MrpAndMaterialAvailability" xml:space="preserve"><value>MRP and material availability</value></data>
-	<data name="RequiredMaterialsReserved" xml:space="preserve"><value>Required materials reserved</value></data>
-	<data name="ManufacturingOperations" xml:space="preserve"><value>Manufacturing operations</value></data>
-	<data name="QcAndFinishedProduction" xml:space="preserve"><value>QC and finished production</value></data>
-	<data name="ProductionOrderInformation" xml:space="preserve"><value>Production Order Information</value></data>
-	<data name="OrderNumber" xml:space="preserve"><value>Order Number</value></data>
-	<data name="SalesOrder" xml:space="preserve"><value>Sales Order</value></data>
-	<data name="Customer" xml:space="preserve"><value>Customer</value></data>
-	<data name="Status" xml:space="preserve"><value>Status</value></data>
-	<data name="Created" xml:space="preserve"><value>Created</value></data>
-	<data name="PlannedStart" xml:space="preserve"><value>Planned Start</value></data>
-	<data name="PlannedEnd" xml:space="preserve"><value>Planned End</value></data>
-	<data name="ActualStart" xml:space="preserve"><value>Actual Start</value></data>
-	<data name="ActualEnd" xml:space="preserve"><value>Actual End</value></data>
-	<data name="Notes" xml:space="preserve"><value>Notes</value></data>
-	<data name="NoProductionLines" xml:space="preserve"><value>No production lines found.</value></data>
-	<data name="ProductionLines" xml:space="preserve"><value>Production Lines</value></data>
-	<data name="Item" xml:space="preserve"><value>Item</value></data>
-	<data name="Code" xml:space="preserve"><value>Code</value></data>
-	<data name="PlannedQuantity" xml:space="preserve"><value>Planned Quantity</value></data>
-	<data name="ProducedQuantity" xml:space="preserve"><value>Produced Quantity</value></data>
-	<data name="Remaining" xml:space="preserve"><value>Remaining</value></data>
-	<data name="Unit" xml:space="preserve"><value>Unit</value></data>
-	<data name="Planned" xml:space="preserve"><value>Planned</value></data>
-	<data name="Produced" xml:space="preserve"><value>Produced</value></data>
-	<data name="Completion" xml:space="preserve"><value>Completion</value></data>
-	<data name="ProductionOperations" xml:space="preserve"><value>Production Operations</value></data>
-	<data name="OperationsCount" xml:space="preserve"><value>{0} Operations</value></data>
-	<data name="NoProductionOperations" xml:space="preserve"><value>No production operations have been defined for this production order yet.</value></data>
-	<data name="Sequence" xml:space="preserve"><value>Seq.</value></data>
-	<data name="Operation" xml:space="preserve"><value>Operation</value></data>
-	<data name="WorkCenter" xml:space="preserve"><value>Work Center</value></data>
-	<data name="PlannedHours" xml:space="preserve"><value>Planned Hours</value></data>
-	<data name="ActualHours" xml:space="preserve"><value>Actual Hours</value></data>
-	<data name="Action" xml:space="preserve"><value>Action</value></data>
-	<data name="Open" xml:space="preserve"><value>Open</value></data>
-	<data name="NotAssigned" xml:space="preserve"><value>Not assigned</value></data>
-	<data name="ProductionSchedule" xml:space="preserve"><value>Production Schedule</value></data>
-	<data name="SchedulesCount" xml:space="preserve"><value>{0} Schedules</value></data>
-	<data name="NoProductionSchedule" xml:space="preserve"><value>No production schedule has been created for this production order yet.</value></data>
-	<data name="Machine" xml:space="preserve"><value>Machine</value></data>
-	<data name="Priority" xml:space="preserve"><value>Priority</value></data>
-	<data name="MrpCreated" xml:space="preserve"><value>MRP Created</value></data>
-	<data name="Materials" xml:space="preserve"><value>Materials</value></data>
-	<data name="Shortages" xml:space="preserve"><value>Shortages</value></data>
-	<data name="Material" xml:space="preserve"><value>Material</value></data>
-	<data name="Required" xml:space="preserve"><value>Required</value></data>
-	<data name="Available" xml:space="preserve"><value>Available</value></data>
-	<data name="Shortage" xml:space="preserve"><value>Shortage</value></data>
-	<data name="NoMrpCalculation" xml:space="preserve"><value>No MRP calculation has been performed yet.</value></data>
-	<data name="MrpNoRequirements" xml:space="preserve"><value>MRP calculation completed, but no material requirements were generated.</value></data>
-	<data name="MrpCalculationSuccess" xml:space="preserve"><value>MRP calculation completed successfully.</value></data>
-	<data name="MaterialIssuePosted" xml:space="preserve"><value>Material issue posted successfully. Created {0} Production Issue document(s).</value></data>
-	<data name="NoReservedMaterialsForIssue" xml:space="preserve"><value>No reserved materials are available for issue.</value></data>
-	<data name="NoActiveProductionLocation" xml:space="preserve"><value>No active Production inventory location was found.</value></data>
-	<data name="MaterialReservationInsufficient" xml:space="preserve"><value>Material reservation could not be completed because one or more materials are insufficient.</value></data>
-	<data name="ReservationSuccess" xml:space="preserve"><value>All required materials have been reserved successfully.</value></data>
-	<data name="ReservationMessage" xml:space="preserve"><value>Material Reservations</value></data>
-	<data name="NoMaterialReservations" xml:space="preserve"><value>No material reservations have been created for this production order.</value></data>
-	<data name="ReservedQuantity" xml:space="preserve"><value>Reserved Quantity</value></data>
-	<data name="ReservedDate" xml:space="preserve"><value>Reserved Date</value></data>
-	<data name="LoadingProductionOrder" xml:space="preserve"><value>Loading production order...</value></data>
-	<data name="ProductionOrderNotFound" xml:space="preserve"><value>Production order not found.</value></data>
-	<data name="Pending" xml:space="preserve"><value>Pending</value></data>
-	<data name="MrpStatus" xml:space="preserve"><value>Status</value></data>
-	<data name="ProductionItem" xml:space="preserve"><value>Production item</value></data>
-	<data name="OperationCount" xml:space="preserve"><value>{0} Operations</value></data>
-	<data name="WorkflowPlanning" xml:space="preserve"><value>1. Planning</value></data>
-	<data name="WorkflowMaterialReadiness" xml:space="preserve"><value>2. Material Readiness</value></data>
-	<data name="WorkflowProduction" xml:space="preserve"><value>3. Production</value></data>
-	<data name="WorkflowQualityCompletion" xml:space="preserve"><value>4. Quality / Completion</value></data>
-	<data name="Completed" xml:space="preserve"><value>Completed</value></data>
-	<data name="MachineLabel" xml:space="preserve"><value>Machine</value></data>
-	<data name="WorkflowStatePending" xml:space="preserve"><value>Pending</value></data>
-	<data name="NoProductionLinesFound" xml:space="preserve"><value>No production lines found.</value></data>
-	<data name="NoOperationsDefined" xml:space="preserve"><value>No production operations have been defined for this production order yet.</value></data>
-	<data name="NoScheduleCreated" xml:space="preserve"><value>No production schedule has been created for this production order yet.</value></data>
-	<data name="NoMrpPerformed" xml:space="preserve"><value>No MRP calculation has been performed yet.</value></data>
-	<data name="MrpNoRequirementsGenerated" xml:space="preserve"><value>MRP calculation completed, but no material requirements were generated.</value></data>
-	<data name="MrpCalculationCompleted" xml:space="preserve"><value>MRP calculation completed successfully.</value></data>
-	<data name="NoReservedMaterialsAvailable" xml:space="preserve"><value>No reserved materials are available for issue.</value></data>
-	<data name="NoActiveProductionLocationFound" xml:space="preserve"><value>No active Production inventory location was found.</value></data>
-	<data name="InsufficientMaterialsForReservation" xml:space="preserve"><value>Material reservation could not be completed because one or more materials are insufficient.</value></data>
-	<data name="AllMaterialsReservedSuccessfully" xml:space="preserve"><value>All required materials have been reserved successfully.</value></data>
-	<data name="MaterialsIssuedSuccessfully" xml:space="preserve"><value>Material issue posted successfully. Created {0} Production Issue document(s).</value></data>
-	<data name="NoMaterialReservationsCreated" xml:space="preserve"><value>No material reservations have been created for this production order.</value></data>
-	<data name="UnexpectedError" xml:space="preserve"><value>An unexpected error occurred. Please try again or contact support.</value></data>
-	<data name="NoActiveBomForProductionItem" xml:space="preserve"><value>No active bill of materials was found for this production item.</value></data>
-	<data name="BomHasNoComponentLines" xml:space="preserve"><value>The bill of materials has no component lines.</value></data>
-	<data name="PlannedQuantityMustBePositive" xml:space="preserve"><value>The planned production quantity must be greater than zero.</value></data>
-	<resheader name="resmimetype">
-		<value>text/microsoft-resx</value>
-	</resheader>
-	<resheader name="version">
-		<value>2.0</value>
-	</resheader>
-	<resheader name="reader">
-		<value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
-	</resheader>
-	<resheader name="writer">
-		<value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
-	</resheader>
-	<data name="Common.TextDirection" xml:space="preserve"><value>ltr</value></data>
-	<data name="Common.Loading" xml:space="preserve"><value>Loading...</value></data>
-	<data name="Common.Date" xml:space="preserve"><value>Date</value></data>
-	<data name="Common.Customer" xml:space="preserve"><value>Customer</value></data>
-	<data name="Common.Total" xml:space="preserve"><value>Total</value></data>
-	<data name="Common.Status" xml:space="preserve"><value>Status</value></data>
-	<data name="Common.Back" xml:space="preserve"><value>Back</value></data>
-	<data name="Common.Item" xml:space="preserve"><value>Item</value></data>
-	<data name="Common.Quantity" xml:space="preserve"><value>Quantity</value></data>
-	<data name="Common.Notes" xml:space="preserve"><value>Notes</value></data>
-	<data name="Common.Subtotal" xml:space="preserve"><value>Subtotal</value></data>
-	<data name="Common.LoadFailed" xml:space="preserve"><value>Unable to load sales invoices. Please try again.</value></data>
-	<data name="SalesInvoices.PageTitle" xml:space="preserve"><value>Sales Invoices</value></data>
-	<data name="SalesInvoices.Title" xml:space="preserve"><value>Sales Invoices</value></data>
-	<data name="SalesInvoices.Description" xml:space="preserve"><value>Invoices are generated automatically when a sales delivery is posted.</value></data>
-	<data name="SalesInvoices.Empty" xml:space="preserve"><value>No sales invoices have been generated yet.</value></data>
-	<data name="SalesInvoices.Invoice" xml:space="preserve"><value>Invoice</value></data>
-	<data name="SalesInvoices.Quotation" xml:space="preserve"><value>Quotation</value></data>
-	<data name="SalesInvoices.SalesOrder" xml:space="preserve"><value>Sales Order</value></data>
-	<data name="SalesInvoices.Delivery" xml:space="preserve"><value>Delivery</value></data>
-	<data name="SalesInvoice.PageTitle" xml:space="preserve"><value>Sales Invoice</value></data>
-	<data name="SalesInvoice.Title" xml:space="preserve"><value>Sales Invoice</value></data>
-	<data name="SalesInvoice.PrintSavePdf" xml:space="preserve"><value>Print / Save PDF</value></data>
-	<data name="SalesInvoice.NotFound" xml:space="preserve"><value>Sales invoice not found.</value></data>
-	<data name="SalesInvoice.DocumentHeading" xml:space="preserve"><value>SALES INVOICE</value></data>
-	<data name="SalesInvoice.BillTo" xml:space="preserve"><value>Bill To</value></data>
-	<data name="SalesInvoice.ApprovedQuotation" xml:space="preserve"><value>Approved Quotation</value></data>
-	<data name="SalesInvoice.SalesOrder" xml:space="preserve"><value>Sales Order</value></data>
-	<data name="SalesInvoice.SalesDelivery" xml:space="preserve"><value>Sales Delivery</value></data>
-	<data name="SalesInvoice.ApprovedUnitPrice" xml:space="preserve"><value>Approved Unit Price</value></data>
-	<data name="SalesInvoice.LineTotal" xml:space="preserve"><value>Line Total</value></data>
-	<data name="SalesInvoice.GeneratedNotice" xml:space="preserve"><value>Generated from the accepted quotation and posted sales delivery.</value></data>
-	<data name="SalesInvoiceStatus.Draft" xml:space="preserve"><value>Draft</value></data>
-	<data name="SalesInvoiceStatus.Posted" xml:space="preserve"><value>Posted</value></data>
-	<data name="SalesInvoiceStatus.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
-	<data name="SalesInvoices" xml:space="preserve"><value>Sales Invoices</value></data>
-	<data name="SheetJobSpecification" xml:space="preserve"><value>Sheet Job Specification</value></data>
-	<data name="SheetJob" xml:space="preserve"><value>Sheet Job</value></data>
-	<data name="SheetJobSubtitle" xml:space="preserve"><value>Sheet printing, finishing, and material specifications</value></data>
-	<data name="BackToRequest" xml:space="preserve"><value>Back to request</value></data>
-	<data name="OrderInformation" xml:space="preserve"><value>Order information</value></data>
-	<data name="Date" xml:space="preserve"><value>Date</value></data>
-	<data name="OrderNumber" xml:space="preserve"><value>Order number</value></data>
-	<data name="Customer" xml:space="preserve"><value>Customer</value></data>
-	<data name="SelectExistingCustomer" xml:space="preserve"><value>Select existing customer</value></data>
-	<data name="CreateNewCustomer" xml:space="preserve"><value>Create a new customer</value></data>
-	<data name="NewCustomer" xml:space="preserve"><value>New customer</value></data>
-	<data name="CustomerCodeRequired" xml:space="preserve"><value>Customer code *</value></data>
-	<data name="CustomerNameRequired" xml:space="preserve"><value>Customer name *</value></data>
-	<data name="Phone" xml:space="preserve"><value>Phone</value></data>
-	<data name="Email" xml:space="preserve"><value>Email</value></data>
-	<data name="Address" xml:space="preserve"><value>Address</value></data>
-	<data name="JobTitle" xml:space="preserve"><value>Job title</value></data>
-	<data name="Referrer" xml:space="preserve"><value>Referrer</value></data>
-	<data name="RequiredItems" xml:space="preserve"><value>Required items</value></data>
-	<data name="PaperType" xml:space="preserve"><value>Paper type</value></data>
-	<data name="SelectOrType" xml:space="preserve"><value>Select or type</value></data>
-	<data name="PaperTypeHelp" xml:space="preserve"><value>Choose a standard option or type another paper type.</value></data>
-	<data name="Zinc" xml:space="preserve"><value>Printing plate</value></data>
-	<data name="DieCut" xml:space="preserve"><value>Die / die-cutting</value></data>
-	<data name="Cliche" xml:space="preserve"><value>Printing cliché</value></data>
-	<data name="PrintRunSheets" xml:space="preserve"><value>Print run (sheets)</value></data>
-	<data name="CutLengthCm" xml:space="preserve"><value>Cut length (cm)</value></data>
-	<data name="CutWidthCm" xml:space="preserve"><value>Cut width (cm)</value></data>
-	<data name="SheetOrientation" xml:space="preserve"><value>Sheet orientation</value></data>
-	<data name="SelectOrientation" xml:space="preserve"><value>Select orientation</value></data>
-	<data name="Portrait" xml:space="preserve"><value>Portrait</value></data>
-	<data name="Landscape" xml:space="preserve"><value>Landscape</value></data>
-	<data name="Grammage" xml:space="preserve"><value>Grammage</value></data>
-	<data name="SheetCount" xml:space="preserve"><value>Sheet count</value></data>
-	<data name="ProductionLocation" xml:space="preserve"><value>Production location</value></data>
-	<data name="SelectOrEnterLocation" xml:space="preserve"><value>Select or enter a location</value></data>
-	<data name="PaymentMethod" xml:space="preserve"><value>Payment method</value></data>
-	<data name="SelectOrEnterPaymentMethod" xml:space="preserve"><value>Select or enter a payment method</value></data>
-	<data name="PrintingAndColorNotes" xml:space="preserve"><value>Printing and color notes</value></data>
-	<data name="PrintingNotesPlaceholder" xml:space="preserve"><value>Pantone colors, custom colors, printing notes, etc.</value></data>
-	<data name="CustomerOrderNumber" xml:space="preserve"><value>Customer order number</value></data>
-	<data name="AdditionalServicesAndColorSelection" xml:space="preserve"><value>Additional services and color selection</value></data>
-	<data name="ExpandEachGroup" xml:space="preserve"><value>Expand a group to view its options</value></data>
-	<data name="Selected" xml:space="preserve"><value>selected</value></data>
-	<data name="SaveSpecifications" xml:space="preserve"><value>Save specifications</value></data>
-	<data name="SaveAndPreviewApprovalProof" xml:space="preserve"><value>Save and preview approval proof</value></data>
-	<data name="SaveAndContinueSalesWorkflow" xml:space="preserve"><value>Save and continue to sales workflow</value></data>
-	<data name="SalesRequestNotFound" xml:space="preserve"><value>Sales request was not found.</value></data>
-	<data name="RequestIsNotSheetJob" xml:space="preserve"><value>This request is not a Sheet Job.</value></data>
-	<data name="SavedSpecificationsUnreadable" xml:space="preserve"><value>Saved specifications could not be read. Save to replace them.</value></data>
-	<data name="JobTitleRequired" xml:space="preserve"><value>Job title is required.</value></data>
-	<data name="UploadArtworkBeforeSaving" xml:space="preserve"><value>Upload the customer artwork before saving the job.</value></data>
-	<data name="CustomerCodeIsRequired" xml:space="preserve"><value>Customer code is required.</value></data>
-	<data name="CustomerNameIsRequired" xml:space="preserve"><value>Customer name is required.</value></data>
-	<data name="CustomerCodeAlreadyExists" xml:space="preserve"><value>Customer code '{0}' already exists.</value></data>
-	<data name="SelectOrCreateCustomer" xml:space="preserve"><value>Select an existing customer or create a new one.</value></data>
-	<data name="SpecificationsSavedFinishedProduct" xml:space="preserve"><value>Specifications saved. Finished product: {0} ({1}).</value></data>
-	<data name="ArtworkMaxSize" xml:space="preserve"><value>Artwork '{0}' must be 25 MB or smaller.</value></data>
-	<data name="UnsupportedArtworkFormat" xml:space="preserve"><value>Unsupported artwork format: {0}.</value></data>
-	<data name="ServiceGroupLamination" xml:space="preserve"><value>Lamination</value></data>
-	<data name="ServiceGroupUvCoating" xml:space="preserve"><value>UV and coating</value></data>
-	<data name="ServiceGroupFoilStamping" xml:space="preserve"><value>Foil stamping</value></data>
-	<data name="ServiceGroupEmbossingDie" xml:space="preserve"><value>Embossing and die</value></data>
-	<data name="ServiceGroupGluingCuttingPackaging" xml:space="preserve"><value>Gluing, cutting, and packaging</value></data>
-	<data name="ServiceGroupBackColors" xml:space="preserve"><value>Back-side colors</value></data>
-	<data name="ServiceGroupFrontColors" xml:space="preserve"><value>Front-side colors</value></data>
-	<data name="CustomerApprovalProof" xml:space="preserve"><value>Customer Approval Proof</value></data>
-	<data name="ReviewProofPrintSavePdf" xml:space="preserve"><value>Review the proof, then print and choose Save as PDF.</value></data>
-	<data name="BackToJob" xml:space="preserve"><value>Back to job</value></data>
-	<data name="PrintSaveAsPdf" xml:space="preserve"><value>Print / Save as PDF</value></data>
-	<data name="PrintingPackagingCustomerApproval" xml:space="preserve"><value>Printing &amp; Packaging · Customer Approval Proof</value></data>
-	<data name="RollJobUpper" xml:space="preserve"><value>ROLL JOB</value></data>
-	<data name="SheetJobUpper" xml:space="preserve"><value>SHEET JOB</value></data>
-	<data name="ProofNumber" xml:space="preserve"><value>Proof #</value></data>
-	<data name="Date" xml:space="preserve"><value>Date</value></data>
-	<data name="ArtworkPreview" xml:space="preserve"><value>Artwork preview</value></data>
-	<data name="OpenFile" xml:space="preserve"><value>Open file</value></data>
-	<data name="ArtworkNotUploaded" xml:space="preserve"><value>Artwork not uploaded</value></data>
-	<data name="ProductionNotes" xml:space="preserve"><value>Production notes</value></data>
-	<data name="CustomerJobDetails" xml:space="preserve"><value>Customer &amp; job details</value></data>
-	<data name="Customer" xml:space="preserve"><value>Customer</value></data>
-	<data name="JobTitle" xml:space="preserve"><value>Job title</value></data>
-	<data name="JobType" xml:space="preserve"><value>Job type</value></data>
-	<data name="RollLabel" xml:space="preserve"><value>Roll label</value></data>
-	<data name="SheetProduct" xml:space="preserve"><value>Sheet product</value></data>
-	<data name="RequestNumber" xml:space="preserve"><value>Request no.</value></data>
-	<data name="ArtworkFile" xml:space="preserve"><value>Artwork file</value></data>
-	<data name="TechnicalSpecifications" xml:space="preserve"><value>Technical specifications</value></data>
-	<data name="SelectedServices" xml:space="preserve"><value>Selected services</value></data>
-	<data name="NoAdditionalServicesSelected" xml:space="preserve"><value>No additional services selected.</value></data>
-	<data name="SelectedRollOrientation" xml:space="preserve"><value>Selected roll orientation</value></data>
-	<data name="NoRollOrientationSelected" xml:space="preserve"><value>No roll orientation selected.</value></data>
-	<data name="PrintingColorsFrontBack" xml:space="preserve"><value>Printing colors — front and back</value></data>
-	<data name="FrontSide" xml:space="preserve"><value>Front side</value></data>
-	<data name="BackSide" xml:space="preserve"><value>Back side</value></data>
-	<data name="HighlightedTilesExplain" xml:space="preserve"><value>Highlighted tiles indicate selected process colors.</value></data>
-	<data name="CustomerApproval" xml:space="preserve"><value>Customer approval</value></data>
-	<data name="ApprovedBy" xml:space="preserve"><value>Approved by</value></data>
-	<data name="Signature" xml:space="preserve"><value>Signature</value></data>
-	<data name="CustomerApprovalCopy" xml:space="preserve"><value>HamiChap · Customer approval copy</value></data>
-	<data name="ReviewDimensionsArtworkFinishing" xml:space="preserve"><value>Please review all dimensions, artwork and finishing selections before approval.</value></data>
-	<data name="SalesRequestNotFound" xml:space="preserve"><value>Sales request not found.</value></data>
-	<data name="SavedJobSpecificationsUnreadable" xml:space="preserve"><value>Saved job specifications could not be read. Open and save the job form again.</value></data>
-	<data name="DimensionsNotSpecified" xml:space="preserve"><value>Dimensions not specified</value></data>
-	<data name="Material" xml:space="preserve"><value>Material</value></data>
-	<data name="Colors" xml:space="preserve"><value>Colors</value></data>
-	<data name="RollDiameter" xml:space="preserve"><value>Roll diameter</value></data>
-	<data name="LabelQuantity" xml:space="preserve"><value>Label quantity</value></data>
-	<data name="HandGluing" xml:space="preserve"><value>Hand gluing</value></data>
-	<data name="MachineGluing" xml:space="preserve"><value>Machine gluing</value></data>
-	<data name="Yes" xml:space="preserve"><value>Yes</value></data>
-	<data name="No" xml:space="preserve"><value>No</value></data>
-	<data name="SheetOrientation" xml:space="preserve"><value>Sheet orientation</value></data>
-	<data name="Paper" xml:space="preserve"><value>Paper</value></data>
-	<data name="Grammage" xml:space="preserve"><value>Grammage</value></data>
-	<data name="PrintRun" xml:space="preserve"><value>Print run</value></data>
-	<data name="SheetCount" xml:space="preserve"><value>Sheet count</value></data>
-	<data name="ZincPlate" xml:space="preserve"><value>Zinc / plate</value></data>
-	<data name="Die" xml:space="preserve"><value>Die</value></data>
-	<data name="Cliche" xml:space="preserve"><value>Cliché</value></data>
-	<data name="ProductionLocation" xml:space="preserve"><value>Production location</value></data>
-	<data name="PaymentMethod" xml:space="preserve"><value>Payment method</value></data>
-	<data name="OrderNumber" xml:space="preserve"><value>Order number</value></data>
-	<data name="LabelPull" xml:space="preserve"><value>Label pull</value></data>
-	<data name="LabelWidth" xml:space="preserve"><value>Label width</value></data>
-	<data name="Gap" xml:space="preserve"><value>Gap</value></data>
-	<data name="CutSize" xml:space="preserve"><value>Cut size</value></data>
+  <data name="NoProductionLines" xml:space="preserve">
+    <value>No production lines found.</value>
+  </data>
+  <data name="NoProductionOperations" xml:space="preserve">
+    <value>No production operations have been defined for this production order yet.</value>
+  </data>
+  <data name="SchedulesCount" xml:space="preserve">
+    <value>{0} Schedules</value>
+  </data>
+  <data name="NoMrpCalculation" xml:space="preserve">
+    <value>No MRP calculation has been performed yet.</value>
+  </data>
+  <data name="NoReservedMaterialsForIssue" xml:space="preserve">
+    <value>No reserved materials are available for issue.</value>
+  </data>
+  <data name="ReservationSuccess" xml:space="preserve">
+    <value>All required materials have been reserved successfully.</value>
+  </data>
+  <data name="ReservationMessage" xml:space="preserve">
+    <value>Material Reservations</value>
+  </data>
+  <data name="MrpStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="ProductionItem" xml:space="preserve">
+    <value>Production item</value>
+  </data>
+  <data name="OperationCount" xml:space="preserve">
+    <value>{0} Operations</value>
+  </data>
+  <data name="WorkflowPlanning" xml:space="preserve">
+    <value>1. Planning</value>
+  </data>
+  <data name="WorkflowMaterialReadiness" xml:space="preserve">
+    <value>2. Material Readiness</value>
+  </data>
+  <data name="WorkflowProduction" xml:space="preserve">
+    <value>3. Production</value>
+  </data>
+  <data name="WorkflowQualityCompletion" xml:space="preserve">
+    <value>4. Quality / Completion</value>
+  </data>
+  <data name="WorkflowStatePending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="NoOperationsDefined" xml:space="preserve">
+    <value>No production operations have been defined for this production order yet.</value>
+  </data>
+  <data name="NoScheduleCreated" xml:space="preserve">
+    <value>No production schedule has been created for this production order yet.</value>
+  </data>
+  <data name="NoMrpPerformed" xml:space="preserve">
+    <value>No MRP calculation has been performed yet.</value>
+  </data>
+  <data name="MrpNoRequirementsGenerated" xml:space="preserve">
+    <value>MRP calculation completed, but no material requirements were generated.</value>
+  </data>
+  <data name="MrpCalculationCompleted" xml:space="preserve">
+    <value>MRP calculation completed successfully.</value>
+  </data>
+  <data name="NoReservedMaterialsAvailable" xml:space="preserve">
+    <value>No reserved materials are available for issue.</value>
+  </data>
+  <data name="InsufficientMaterialsForReservation" xml:space="preserve">
+    <value>Material reservation could not be completed because one or more materials are insufficient.</value>
+  </data>
+  <data name="AllMaterialsReservedSuccessfully" xml:space="preserve">
+    <value>All required materials have been reserved successfully.</value>
+  </data>
+  <data name="MaterialsIssuedSuccessfully" xml:space="preserve">
+    <value>Material issue posted successfully. Created {0} Production Issue document(s).</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred. Please try again or contact support.</value>
+  </data>
+  <data name="NoActiveBomForProductionItem" xml:space="preserve">
+    <value>No active bill of materials was found for this production item.</value>
+  </data>
+  <data name="BomHasNoComponentLines" xml:space="preserve">
+    <value>The bill of materials has no component lines.</value>
+  </data>
+  <data name="PlannedQuantityMustBePositive" xml:space="preserve">
+    <value>The planned production quantity must be greater than zero.</value>
+  </data>
+  <data name="Common.TextDirection" xml:space="preserve">
+    <value>ltr</value>
+  </data>
+  <data name="Common.Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Common.Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Common.Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Common.Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Common.Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Common.Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Common.Item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="Common.Quantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="Common.Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Common.Subtotal" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="Common.LoadFailed" xml:space="preserve">
+    <value>Unable to load sales invoices. Please try again.</value>
+  </data>
+  <data name="SalesInvoices.PageTitle" xml:space="preserve">
+    <value>Sales Invoices</value>
+  </data>
+  <data name="SalesInvoices.Title" xml:space="preserve">
+    <value>Sales Invoices</value>
+  </data>
+  <data name="SalesInvoices.Description" xml:space="preserve">
+    <value>Invoices are generated automatically when a sales delivery is posted.</value>
+  </data>
+  <data name="SalesInvoices.Empty" xml:space="preserve">
+    <value>No sales invoices have been generated yet.</value>
+  </data>
+  <data name="SalesInvoices.Invoice" xml:space="preserve">
+    <value>Invoice</value>
+  </data>
+  <data name="SalesInvoices.Quotation" xml:space="preserve">
+    <value>Quotation</value>
+  </data>
+  <data name="SalesInvoices.SalesOrder" xml:space="preserve">
+    <value>Sales Order</value>
+  </data>
+  <data name="SalesInvoices.Delivery" xml:space="preserve">
+    <value>Delivery</value>
+  </data>
+  <data name="SalesInvoice.PageTitle" xml:space="preserve">
+    <value>Sales Invoice</value>
+  </data>
+  <data name="SalesInvoice.Title" xml:space="preserve">
+    <value>Sales Invoice</value>
+  </data>
+  <data name="SalesInvoice.PrintSavePdf" xml:space="preserve">
+    <value>Print / Save PDF</value>
+  </data>
+  <data name="SalesInvoice.NotFound" xml:space="preserve">
+    <value>Sales invoice not found.</value>
+  </data>
+  <data name="SalesInvoice.DocumentHeading" xml:space="preserve">
+    <value>SALES INVOICE</value>
+  </data>
+  <data name="SalesInvoice.BillTo" xml:space="preserve">
+    <value>Bill To</value>
+  </data>
+  <data name="SalesInvoice.ApprovedQuotation" xml:space="preserve">
+    <value>Approved Quotation</value>
+  </data>
+  <data name="SalesInvoice.SalesOrder" xml:space="preserve">
+    <value>Sales Order</value>
+  </data>
+  <data name="SalesInvoice.SalesDelivery" xml:space="preserve">
+    <value>Sales Delivery</value>
+  </data>
+  <data name="SalesInvoice.ApprovedUnitPrice" xml:space="preserve">
+    <value>Approved Unit Price</value>
+  </data>
+  <data name="SalesInvoice.LineTotal" xml:space="preserve">
+    <value>Line Total</value>
+  </data>
+  <data name="SalesInvoice.GeneratedNotice" xml:space="preserve">
+    <value>Generated from the accepted quotation and posted sales delivery.</value>
+  </data>
+  <data name="SalesInvoiceStatus.Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="SalesInvoiceStatus.Posted" xml:space="preserve">
+    <value>Posted</value>
+  </data>
+  <data name="SalesInvoiceStatus.Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="SalesInvoices" xml:space="preserve">
+    <value>Sales Invoices</value>
+  </data>
+  <data name="SheetJobSpecification" xml:space="preserve">
+    <value>Sheet Job Specification</value>
+  </data>
+  <data name="SheetJob" xml:space="preserve">
+    <value>Sheet Job</value>
+  </data>
+  <data name="SheetJobSubtitle" xml:space="preserve">
+    <value>Sheet printing, finishing, and material specifications</value>
+  </data>
+  <data name="BackToRequest" xml:space="preserve">
+    <value>Back to request</value>
+  </data>
+  <data name="OrderInformation" xml:space="preserve">
+    <value>Order information</value>
+  </data>
+  <data name="SelectExistingCustomer" xml:space="preserve">
+    <value>Select existing customer</value>
+  </data>
+  <data name="CreateNewCustomer" xml:space="preserve">
+    <value>Create a new customer</value>
+  </data>
+  <data name="CustomerCodeRequired" xml:space="preserve">
+    <value>Customer code *</value>
+  </data>
+  <data name="CustomerNameRequired" xml:space="preserve">
+    <value>Customer name *</value>
+  </data>
+  <data name="JobTitle" xml:space="preserve">
+    <value>Job title</value>
+  </data>
+  <data name="Referrer" xml:space="preserve">
+    <value>Referrer</value>
+  </data>
+  <data name="RequiredItems" xml:space="preserve">
+    <value>Required items</value>
+  </data>
+  <data name="PaperType" xml:space="preserve">
+    <value>Paper type</value>
+  </data>
+  <data name="SelectOrType" xml:space="preserve">
+    <value>Select or type</value>
+  </data>
+  <data name="PaperTypeHelp" xml:space="preserve">
+    <value>Choose a standard option or type another paper type.</value>
+  </data>
+  <data name="Zinc" xml:space="preserve">
+    <value>Printing plate</value>
+  </data>
+  <data name="DieCut" xml:space="preserve">
+    <value>Die / die-cutting</value>
+  </data>
+  <data name="Cliche" xml:space="preserve">
+    <value>Cliché</value>
+  </data>
+  <data name="PrintRunSheets" xml:space="preserve">
+    <value>Print run (sheets)</value>
+  </data>
+  <data name="CutLengthCm" xml:space="preserve">
+    <value>Cut length (cm)</value>
+  </data>
+  <data name="CutWidthCm" xml:space="preserve">
+    <value>Cut width (cm)</value>
+  </data>
+  <data name="SheetOrientation" xml:space="preserve">
+    <value>Sheet orientation</value>
+  </data>
+  <data name="SelectOrientation" xml:space="preserve">
+    <value>Select orientation</value>
+  </data>
+  <data name="Portrait" xml:space="preserve">
+    <value>Portrait</value>
+  </data>
+  <data name="Landscape" xml:space="preserve">
+    <value>Landscape</value>
+  </data>
+  <data name="Grammage" xml:space="preserve">
+    <value>Grammage</value>
+  </data>
+  <data name="SheetCount" xml:space="preserve">
+    <value>Sheet count</value>
+  </data>
+  <data name="SelectOrEnterLocation" xml:space="preserve">
+    <value>Select or enter a location</value>
+  </data>
+  <data name="PaymentMethod" xml:space="preserve">
+    <value>Payment method</value>
+  </data>
+  <data name="SelectOrEnterPaymentMethod" xml:space="preserve">
+    <value>Select or enter a payment method</value>
+  </data>
+  <data name="PrintingAndColorNotes" xml:space="preserve">
+    <value>Printing and color notes</value>
+  </data>
+  <data name="PrintingNotesPlaceholder" xml:space="preserve">
+    <value>Pantone colors, custom colors, printing notes, etc.</value>
+  </data>
+  <data name="CustomerOrderNumber" xml:space="preserve">
+    <value>Customer order number</value>
+  </data>
+  <data name="AdditionalServicesAndColorSelection" xml:space="preserve">
+    <value>Additional services and color selection</value>
+  </data>
+  <data name="ExpandEachGroup" xml:space="preserve">
+    <value>Expand a group to view its options</value>
+  </data>
+  <data name="Selected" xml:space="preserve">
+    <value>selected</value>
+  </data>
+  <data name="SaveSpecifications" xml:space="preserve">
+    <value>Save specifications</value>
+  </data>
+  <data name="SaveAndPreviewApprovalProof" xml:space="preserve">
+    <value>Save and preview approval proof</value>
+  </data>
+  <data name="SaveAndContinueSalesWorkflow" xml:space="preserve">
+    <value>Save and continue to sales workflow</value>
+  </data>
+  <data name="RequestIsNotSheetJob" xml:space="preserve">
+    <value>This request is not a Sheet Job.</value>
+  </data>
+  <data name="SavedSpecificationsUnreadable" xml:space="preserve">
+    <value>Saved specifications could not be read. Save to replace them.</value>
+  </data>
+  <data name="JobTitleRequired" xml:space="preserve">
+    <value>Job title is required.</value>
+  </data>
+  <data name="UploadArtworkBeforeSaving" xml:space="preserve">
+    <value>Upload the customer artwork before saving the job.</value>
+  </data>
+  <data name="CustomerCodeIsRequired" xml:space="preserve">
+    <value>Customer code is required.</value>
+  </data>
+  <data name="CustomerNameIsRequired" xml:space="preserve">
+    <value>Customer name is required.</value>
+  </data>
+  <data name="CustomerCodeAlreadyExists" xml:space="preserve">
+    <value>Customer code '{0}' already exists.</value>
+  </data>
+  <data name="SelectOrCreateCustomer" xml:space="preserve">
+    <value>Select an existing customer or create a new one.</value>
+  </data>
+  <data name="SpecificationsSavedFinishedProduct" xml:space="preserve">
+    <value>Specifications saved. Finished product: {0} ({1}).</value>
+  </data>
+  <data name="ArtworkMaxSize" xml:space="preserve">
+    <value>Artwork '{0}' must be 25 MB or smaller.</value>
+  </data>
+  <data name="UnsupportedArtworkFormat" xml:space="preserve">
+    <value>Unsupported artwork format: {0}.</value>
+  </data>
+  <data name="ServiceGroupLamination" xml:space="preserve">
+    <value>Lamination</value>
+  </data>
+  <data name="ServiceGroupUvCoating" xml:space="preserve">
+    <value>UV and coating</value>
+  </data>
+  <data name="ServiceGroupFoilStamping" xml:space="preserve">
+    <value>Foil stamping</value>
+  </data>
+  <data name="ServiceGroupEmbossingDie" xml:space="preserve">
+    <value>Embossing and die</value>
+  </data>
+  <data name="ServiceGroupGluingCuttingPackaging" xml:space="preserve">
+    <value>Gluing, cutting, and packaging</value>
+  </data>
+  <data name="ServiceGroupBackColors" xml:space="preserve">
+    <value>Back-side colors</value>
+  </data>
+  <data name="ServiceGroupFrontColors" xml:space="preserve">
+    <value>Front-side colors</value>
+  </data>
+  <data name="CustomerApprovalProof" xml:space="preserve">
+    <value>Customer Approval Proof</value>
+  </data>
+  <data name="ReviewProofPrintSavePdf" xml:space="preserve">
+    <value>Review the proof, then print and choose Save as PDF.</value>
+  </data>
+  <data name="BackToJob" xml:space="preserve">
+    <value>Back to job</value>
+  </data>
+  <data name="PrintSaveAsPdf" xml:space="preserve">
+    <value>Print / Save as PDF</value>
+  </data>
+  <data name="PrintingPackagingCustomerApproval" xml:space="preserve">
+    <value>Printing &amp; Packaging · Customer Approval Proof</value>
+  </data>
+  <data name="RollJobUpper" xml:space="preserve">
+    <value>ROLL JOB</value>
+  </data>
+  <data name="SheetJobUpper" xml:space="preserve">
+    <value>SHEET JOB</value>
+  </data>
+  <data name="ProofNumber" xml:space="preserve">
+    <value>Proof #</value>
+  </data>
+  <data name="ArtworkPreview" xml:space="preserve">
+    <value>Artwork preview</value>
+  </data>
+  <data name="OpenFile" xml:space="preserve">
+    <value>Open file</value>
+  </data>
+  <data name="ArtworkNotUploaded" xml:space="preserve">
+    <value>Artwork not uploaded</value>
+  </data>
+  <data name="ProductionNotes" xml:space="preserve">
+    <value>Production notes</value>
+  </data>
+  <data name="CustomerJobDetails" xml:space="preserve">
+    <value>Customer &amp; job details</value>
+  </data>
+  <data name="JobType" xml:space="preserve">
+    <value>Job type</value>
+  </data>
+  <data name="RollLabel" xml:space="preserve">
+    <value>Roll label</value>
+  </data>
+  <data name="SheetProduct" xml:space="preserve">
+    <value>Sheet product</value>
+  </data>
+  <data name="ArtworkFile" xml:space="preserve">
+    <value>Artwork file</value>
+  </data>
+  <data name="TechnicalSpecifications" xml:space="preserve">
+    <value>Technical specifications</value>
+  </data>
+  <data name="SelectedServices" xml:space="preserve">
+    <value>Selected services</value>
+  </data>
+  <data name="NoAdditionalServicesSelected" xml:space="preserve">
+    <value>No additional services selected.</value>
+  </data>
+  <data name="SelectedRollOrientation" xml:space="preserve">
+    <value>Selected roll orientation</value>
+  </data>
+  <data name="NoRollOrientationSelected" xml:space="preserve">
+    <value>No roll orientation selected.</value>
+  </data>
+  <data name="PrintingColorsFrontBack" xml:space="preserve">
+    <value>Printing colors — front and back</value>
+  </data>
+  <data name="FrontSide" xml:space="preserve">
+    <value>Front side</value>
+  </data>
+  <data name="BackSide" xml:space="preserve">
+    <value>Back side</value>
+  </data>
+  <data name="HighlightedTilesExplain" xml:space="preserve">
+    <value>Highlighted tiles indicate selected process colors.</value>
+  </data>
+  <data name="CustomerApproval" xml:space="preserve">
+    <value>Customer approval</value>
+  </data>
+  <data name="ApprovedBy" xml:space="preserve">
+    <value>Approved by</value>
+  </data>
+  <data name="Signature" xml:space="preserve">
+    <value>Signature</value>
+  </data>
+  <data name="CustomerApprovalCopy" xml:space="preserve">
+    <value>HamiChap · Customer approval copy</value>
+  </data>
+  <data name="ReviewDimensionsArtworkFinishing" xml:space="preserve">
+    <value>Please review all dimensions, artwork and finishing selections before approval.</value>
+  </data>
+  <data name="SavedJobSpecificationsUnreadable" xml:space="preserve">
+    <value>Saved job specifications could not be read. Open and save the job form again.</value>
+  </data>
+  <data name="DimensionsNotSpecified" xml:space="preserve">
+    <value>Dimensions not specified</value>
+  </data>
+  <data name="Colors" xml:space="preserve">
+    <value>Colors</value>
+  </data>
+  <data name="RollDiameter" xml:space="preserve">
+    <value>Roll diameter</value>
+  </data>
+  <data name="LabelQuantity" xml:space="preserve">
+    <value>Label quantity</value>
+  </data>
+  <data name="HandGluing" xml:space="preserve">
+    <value>Hand gluing</value>
+  </data>
+  <data name="MachineGluing" xml:space="preserve">
+    <value>Machine gluing</value>
+  </data>
+  <data name="Paper" xml:space="preserve">
+    <value>Paper</value>
+  </data>
+  <data name="PrintRun" xml:space="preserve">
+    <value>Print run</value>
+  </data>
+  <data name="ZincPlate" xml:space="preserve">
+    <value>Zinc / plate</value>
+  </data>
+  <data name="Die" xml:space="preserve">
+    <value>Die</value>
+  </data>
+  <data name="LabelPull" xml:space="preserve">
+    <value>Label pull</value>
+  </data>
+  <data name="LabelWidth" xml:space="preserve">
+    <value>Label width</value>
+  </data>
+  <data name="Gap" xml:space="preserve">
+    <value>Gap</value>
+  </data>
+  <data name="CutSize" xml:space="preserve">
+    <value>Cut size</value>
+  </data>
+  <data name="PendingApproval" xml:space="preserve">
+    <value>PendingApproval</value>
+  </data>
+  <data name="QuotationCreated" xml:space="preserve">
+    <value>QuotationCreated</value>
+  </data>
+  <data name="Confirmed" xml:space="preserve">
+    <value>Confirmed</value>
+  </data>
+  <data name="PartiallyDelivered" xml:space="preserve">
+    <value>PartiallyDelivered</value>
+  </data>
 </root>
