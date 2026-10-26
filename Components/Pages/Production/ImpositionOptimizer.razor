@@ -1,0 +1,135 @@
+@page "/production/imposition-optimizer"
+@using Microsoft.AspNetCore.Components.Forms
+@using HamiChap_MES_ERP.Services.Imposition
+@inject IWebHostEnvironment HostEnvironment
+@inject ImpositionOptimizerService Optimizer
+
+<PageTitle>PDF Imposition Optimizer</PageTitle>
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+        <div><h2>PDF Imposition Optimizer</h2><p class="text-muted mb-0">Combine multiple artwork sizes in one mixed sheet or roll layout.</p></div>
+        <span class="badge bg-warning text-dark">Rectangular mixed nesting — review before production</span>
+    </div>
+    <div class="alert alert-info">Add multiple artwork PDFs or create artwork rows manually. The optimizer can mix rectangular artwork and solve the placement model exactly when it proves optimality. Set the minimum quantity of each artwork required on every sheet or roll repeat. For rolls, the height field below is the repeat length. Uploaded PDF geometry is not extracted automatically: enter and verify each artwork's dimensions. Irregular die-cut contours are not yet nested by their true vector shape.</div>
+
+    <div class="card shadow-sm mb-3"><div class="card-header fw-semibold">1. Add artwork PDFs (optional)</div><div class="card-body">
+        <InputFile OnChange="PdfsSelected" accept=".pdf,application/pdf" multiple class="form-control" />
+        <div class="form-text">Select multiple PDFs at once, up to 100 MB each. Each file creates an artwork row; dimensions and quantity must be entered below.</div>
+        @if (!string.IsNullOrWhiteSpace(uploadMessage)) { <div class="mt-2 alert @(uploadError ? "alert-danger" : "alert-success")">@uploadMessage</div> }
+    </div></div>
+
+    <div class="card shadow-sm mb-3"><div class="card-header d-flex justify-content-between align-items-center"><span class="fw-semibold">2. Artwork list</span><button class="btn btn-sm btn-outline-primary" @onclick="AddArtwork">+ Add artwork manually</button></div><div class="card-body">
+        <div class="table-responsive"><table class="table table-bordered align-middle">
+            <thead><tr><th>Artwork / PDF</th><th style="min-width:125px">Width (mm)</th><th style="min-width:125px">Height (mm)</th><th style="min-width:125px">Required quantity</th><th style="min-width:145px">Minimum per sheet / repeat</th><th>Rotate 90°</th><th></th></tr></thead>
+            <tbody>
+            @for (var i = 0; i < artworks.Count; i++)
+            {
+                var row = artworks[i]; var rowIndex = i;
+                <tr @key="row.Id">
+                    <td><InputText class="form-control" @bind-Value="row.Name" placeholder="Artwork name" />
+                        @if (!string.IsNullOrWhiteSpace(row.PdfPath)) { <div class="small text-muted mt-1">PDF saved: @row.PdfFileName</div> }
+                    </td>
+                    <td><InputNumber class="form-control" @bind-Value="row.WidthMm" /></td>
+                    <td><InputNumber class="form-control" @bind-Value="row.HeightMm" /></td>
+                    <td><InputNumber class="form-control" @bind-Value="row.Quantity" /></td>
+                    <td><InputNumber class="form-control" @bind-Value="row.MinimumPerRepeat" min="1" /></td>
+                    <td class="text-center"><InputCheckbox class="form-check-input" @bind-Value="row.AllowRotation" /></td>
+                    <td><button class="btn btn-sm btn-outline-danger" disabled="@(artworks.Count <= 1)" @onclick="() => RemoveArtwork(rowIndex)">Remove</button></td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+    </div></div>
+
+    <div class="card shadow-sm mb-3"><div class="card-header fw-semibold">3. Stock and layout settings (millimetres)</div><div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3"><label class="form-label">Layout type</label><InputSelect class="form-select" @bind-Value="layoutMode"><option value="Sheet">Sheet</option><option value="Roll">Roll</option></InputSelect></div>
+            <div class="col-md-3"><label class="form-label">Sheet / roll width</label><InputNumber class="form-control" @bind-Value="stockWidth" /></div>
+            @if (layoutMode == "Sheet") { <div class="col-md-3"><label class="form-label">Sheet height</label><InputNumber class="form-control" @bind-Value="stockHeight" /></div> }
+            else { <div class="col-md-3"><label class="form-label">Roll repeat length</label><InputNumber class="form-control" @bind-Value="stockHeight" /></div> }
+            <div class="col-md-3"><label class="form-label">Edge margin</label><InputNumber class="form-control" @bind-Value="margin" /></div>
+            <div class="col-md-3"><label class="form-label">Gap between pieces</label><InputNumber class="form-control" @bind-Value="gap" /></div>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(errorMessage)) { <div class="alert alert-danger mt-3">@errorMessage</div> }
+        <div class="d-flex gap-2 flex-wrap mt-3"><button class="btn btn-primary" @onclick="Calculate">Optimize mixed layout</button><button class="btn btn-outline-secondary" @onclick="ResetResults">Clear results</button></div>
+    </div></div>
+
+    @if (results.Count > 0)
+    {
+        <div class="alert alert-warning">The solver uses exact rectangular non-overlap constraints at 0.1 mm coordinate precision. “OPTIMALITY PROVEN” means the solver proved the maximum piece count for this model; “FEASIBLE” means it found a valid layout but did not prove it is the best. PDF vector cut contours are not extracted, so this is not irregular-shape nesting. The preview shows one sheet / one roll repeat.</div>
+        <h4 class="mt-4">Mixed-layout alternatives</h4>
+        <div class="row g-3 mb-4">@foreach (var item in results) { <div class="col-xl-6"><ImpositionAlternativeCard Item="item" RequestedQuantity="TotalQuantity" /></div> }</div>
+    }
+</div>
+
+@code {
+    private sealed class ArtworkRow
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Name { get; set; } = "Artwork 1";
+        public decimal WidthMm { get; set; } = 100;
+        public decimal HeightMm { get; set; } = 70;
+        public int Quantity { get; set; } = 1000;
+        public int MinimumPerRepeat { get; set; } = 1;
+        public bool AllowRotation { get; set; } = true;
+        public string? PdfPath { get; set; }
+        public string? PdfFileName { get; set; }
+    }
+
+    private List<ArtworkRow> artworks = new() { new ArtworkRow() };
+    private string layoutMode = "Sheet";
+    private decimal stockWidth = 700, stockHeight = 500, margin = 10, gap = 3;
+    private string? uploadMessage, errorMessage;
+    private bool uploadError;
+    private List<ImpositionAlternative> results = new();
+    private int TotalQuantity => artworks.Sum(a => Math.Max(0, a.Quantity));
+
+    private void AddArtwork() => artworks.Add(new ArtworkRow { Name = $"Artwork {artworks.Count + 1}", WidthMm = 100, HeightMm = 70, Quantity = 1000, MinimumPerRepeat = 1 });
+    private void RemoveArtwork(int index) { if (index >= 0 && index < artworks.Count && artworks.Count > 1) artworks.RemoveAt(index); ResetResults(); }
+
+    private async Task PdfsSelected(InputFileChangeEventArgs e)
+    {
+        uploadMessage = null; uploadError = false;
+        var files = e.GetMultipleFiles(50);
+        var saved = 0; var failures = new List<string>();
+        foreach (var file in files)
+        {
+            if (!string.Equals(Path.GetExtension(file.Name), ".pdf", StringComparison.OrdinalIgnoreCase)) { failures.Add($"{file.Name}: not a PDF"); continue; }
+            if (file.Size > 100 * 1024 * 1024) { failures.Add($"{file.Name}: exceeds 100 MB"); continue; }
+            try
+            {
+                var folder = Path.Combine(HostEnvironment.WebRootPath, "uploads", "imposition");
+                Directory.CreateDirectory(folder);
+                var safeName = Path.GetFileName(file.Name);
+                var storedName = $"{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}_{safeName}";
+                var path = Path.Combine(folder, storedName);
+                await using var source = file.OpenReadStream(100 * 1024 * 1024);
+                await using var target = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                await source.CopyToAsync(target);
+                var row = new ArtworkRow { Name = Path.GetFileNameWithoutExtension(safeName), PdfPath = path, PdfFileName = safeName, WidthMm = 100, HeightMm = 70, Quantity = 1000 };
+                if (artworks.Count == 1 && string.IsNullOrWhiteSpace(artworks[0].PdfPath) && artworks[0].Name == "Artwork 1" && artworks[0].WidthMm == 100 && artworks[0].HeightMm == 70 && artworks[0].Quantity == 1000) artworks[0] = row;
+                else artworks.Add(row);
+                saved++;
+            }
+            catch (Exception ex) { failures.Add($"{file.Name}: {ex.Message}"); }
+        }
+        uploadError = failures.Count > 0 && saved == 0;
+        uploadMessage = $"Added {saved} PDF artwork(s). Enter the actual dimensions and required quantities for every row." + (failures.Count > 0 ? " Issues: " + string.Join("; ", failures) : "");
+        ResetResults();
+    }
+
+    private void Calculate()
+    {
+        errorMessage = null; results.Clear();
+        try
+        {
+            var inputs = artworks.Select(a => new ImpositionArtwork(a.Name.Trim(), a.WidthMm, a.HeightMm, a.Quantity, a.AllowRotation, a.MinimumPerRepeat)).ToList();
+            results = Optimizer.OptimizeMixed(new MixedImpositionRequest(inputs, stockWidth, stockHeight, margin, gap, layoutMode == "Roll", 30)).ToList();
+            if (results.All(x => x.ProducedQuantity == 0)) errorMessage = "No artwork fits the usable stock dimensions. Check artwork sizes, stock width, margins and rotation settings.";
+            else if (results.Any(x => x.ProducedQuantity < TotalQuantity)) errorMessage = "Warning: one or more alternatives could not place every requested piece. Review dimensions and layout results.";
+        }
+        catch (Exception ex) { errorMessage = ex.Message; results.Clear(); }
+    }
+    private void ResetResults() { results.Clear(); errorMessage = null; }
+}

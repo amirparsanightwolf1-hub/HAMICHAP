@@ -1,0 +1,72 @@
+@using HamiChap_MES_ERP.Services.Imposition
+
+<div class="card h-100 shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center gap-2"><strong>@Item.Name</strong><span class="badge bg-secondary">@Item.Mode</span></div>
+    <div class="card-body">
+        <div class="row g-2 mb-3">
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">@YieldLabel</div><strong>@YieldValue</strong></div></div>
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Material waste</div><strong>@Item.WastePercent.ToString("0.##")%</strong></div></div>
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Utilization (area)</div><strong>@Item.UtilizationPercent.ToString("0.##")%</strong></div></div>
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Good pieces requested</div><strong>@RequestedQuantity.ToString("N0")</strong></div></div>
+        </div>
+        @if (Item.PiecesPerArtwork is not null || Item.SolverStatus != "Heuristic")
+        {
+            <div class="small mb-2">Pieces per sheet / repeat: <strong>@Item.PiecesPerSheet</strong> · Total planned output: <strong>@Item.ProducedQuantity</strong></div>
+            @if (Item.PiecesPerArtwork is not null) { <div class="small mb-2">Per repeat: @string.Join(" · ", Item.PiecesPerArtwork.Select(kv => $"{kv.Key}: {kv.Value}"))</div> }
+            @if (Item.PlannedQuantityPerArtwork is not null) { <div class="small mb-2">Planned output: @string.Join(" · ", Item.PlannedQuantityPerArtwork.Select(kv => $"{kv.Key}: {kv.Value:N0}"))</div> }
+            <div class="small mb-2">Solver: <strong>@Item.SolverStatus</strong></div>
+            @if (Item.Mode == "Sheet") { <div class="small mb-2">Sheets required: <strong>@Item.SheetsRequired</strong></div> }
+            else { <div class="small mb-2">Estimated roll length for full quantity: <strong>@(Item.RollLengthMm.ToString("N0")) mm</strong></div><div class="small text-muted mb-2">Preview shows one repeat row across the web, not the full roll length.</div> }
+        }
+        else
+        {
+            <div class="small mb-2">Across: @Item.Across · @(Item.Mode == "Sheet" ? "Rows" : "Labels across one repeat"): @PreviewRepeatCount · Pieces per @(Item.Mode == "Sheet" ? "sheet" : "repeat row"): @Item.PiecesPerSheet</div>
+            @if (Item.Mode == "Sheet") { <div class="small mb-2">Sheets required: <strong>@Item.SheetsRequired</strong> · Planned output: @Item.ProducedQuantity</div> }
+            else { <div class="small mb-2">Estimated roll length for full quantity: <strong>@(Item.RollLengthMm.ToString("N0")) mm</strong></div><div class="small text-muted mb-2">Preview shows one repeat row across the web, not the full roll length.</div> }
+        }
+        <div class="small text-muted mb-2">Waste area: @Item.WasteAreaMm2.ToString("N0") mm² · Used area: @Item.UsedAreaMm2.ToString("N0") mm²</div>
+        <div class="imposition-preview" aria-label="Proportional imposition layout preview">
+            <svg viewBox="@($"0 0 {PreviewWidth} {PreviewHeight}")" role="img" aria-label="@(Item.Mode == "Roll" ? "One roll repeat layout" : "Full sheet layout")" preserveAspectRatio="xMidYMid meet">
+                <rect x="0" y="0" width="@PreviewWidth" height="@PreviewHeight" class="stock-outline" />
+                @foreach (var p in PreviewPlacements)
+                {
+                    <rect @key="p.Index" x="@p.X" y="@p.Y" width="@p.Width" height="@p.Height" rx="1" class="@PieceClass(p)">
+                        <title>@(string.IsNullOrWhiteSpace(p.ArtworkName) ? $"Piece {p.Index}" : p.ArtworkName): @($"{p.Width:0.##} × {p.Height:0.##} mm")</title>
+                    </rect>
+                }
+            </svg>
+        </div>
+        @if (Item.Mode == "Roll")
+        {
+            <div class="small text-muted mt-2">Illustrated repeat height: @PreviewHeight.ToString("0.##") mm · Web width: @PreviewWidth.ToString("0.##") mm</div>
+        }
+    </div>
+</div>
+
+<style>
+.imposition-preview{width:100%;min-height:110px;max-height:380px;display:flex;align-items:center;justify-content:center;overflow:auto;padding:10px;border:1px solid #adb5bd;background:#f8f9fa;border-radius:5px;}
+.imposition-preview svg{display:block;width:100%;height:auto;max-height:360px;min-width:0;overflow:visible;}
+.stock-outline{fill:#fff;stroke:#6c757d;stroke-width:1;vector-effect:non-scaling-stroke;}
+.piece-outline{fill:#dbe2f1;stroke:#43507a;stroke-width:1;vector-effect:non-scaling-stroke;}
+.piece-1{fill:#dbe2f1;stroke:#43507a;stroke-width:1;vector-effect:non-scaling-stroke;}
+.piece-2{fill:#f8dfbd;stroke:#9a5b16;stroke-width:1;vector-effect:non-scaling-stroke;}
+.piece-3{fill:#d8eee5;stroke:#28745c;stroke-width:1;vector-effect:non-scaling-stroke;}
+.piece-4{fill:#eadcf5;stroke:#71459a;stroke-width:1;vector-effect:non-scaling-stroke;}
+.piece-0{fill:#dbe2f1;stroke:#43507a;stroke-width:1;vector-effect:non-scaling-stroke;}
+</style>
+
+@code {
+    [Parameter, EditorRequired] public ImpositionAlternative Item { get; set; } = default!;
+    [Parameter] public int RequestedQuantity { get; set; }
+
+    private decimal PreviewWidth => Item.StockWidthMm > 0 ? Item.StockWidthMm : 1m;
+
+    // A roll preview is intentionally limited to the first repeat row, not total roll length.
+    private decimal PreviewHeight => Item.StockHeightMm > 0 ? Item.StockHeightMm : 1m;
+
+    private int PreviewRepeatCount => Item.Mode == "Roll" ? 1 : Item.Down;
+    private IReadOnlyList<ImpositionPlacement> PreviewPlacements => Item.Placements;
+    private string PieceClass(ImpositionPlacement p) => p.ArtworkIndex <= 0 ? "piece-outline" : $"piece-{(p.ArtworkIndex % 4) + 1}";
+    private string YieldLabel => Item.Mode == "Sheet" ? "Sheets required" : "Total roll length";
+    private string YieldValue => Item.Mode == "Sheet" ? Item.SheetsRequired.ToString("N0") : $"{Item.RollLengthMm:N0} mm";
+}
