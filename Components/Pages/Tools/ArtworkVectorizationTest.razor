@@ -1,0 +1,344 @@
+@page "/tools/artwork-vectorization-test"
+@using Microsoft.AspNetCore.Components.Forms
+@using HamiChap_MES_ERP.Models.Imposition
+@using HamiChap_MES_ERP.Services.Imposition
+@inject ArtworkVectorizationService VectorizationService
+@inject ArtworkGeometryPreparationService GeometryPreparationService
+@inject ArtworkRectangleDecompositionService RectangleDecompositionService
+@inject IWebHostEnvironment Environment
+
+<PageTitle>Artwork Vectorization Test</PageTitle>
+
+<div class="container-fluid py-4">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Artwork Vectorization Test</h1>
+            <p class="text-muted mb-0">Upload a PDF to test existing vector-path extraction and raster-tracing fallback.</p>
+        </div>
+        <span class="badge text-bg-warning">Review required</span>
+    </div>
+
+    <div class="alert alert-info" role="alert">
+        This is a diagnostic page. Detected paths may be cut lines, crease lines, clipping paths, text, or printed graphics.
+        Do not use the output for production nesting until the intended cut contour has been reviewed.
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">Test input</div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-lg-6">
+                    <label class="form-label" for="pdfFile">PDF artwork</label>
+                    <InputFile id="pdfFile" OnChange="OnFileSelected" accept=".pdf,application/pdf" class="form-control" />
+                    @if (!string.IsNullOrWhiteSpace(_selectedFileName))
+                    {
+                        <div class="form-text">Selected: @_selectedFileName</div>
+                    }
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label" for="pageNumber">Page number</label>
+                    <input id="pageNumber" type="number" min="1" class="form-control" @bind="_pageNumber" />
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label" for="rasterSize">Raster max size</label>
+                    <input id="rasterSize" type="number" min="256" max="2400" step="100" class="form-control" @bind="_rasterMaxDimension" />
+                </div>
+                <div class="col-12 col-lg-2">
+                    <button type="button" class="btn btn-primary w-100" @onclick="RunVectorizationAsync" disabled="@(_selectedFile is null || _isProcessing)">
+                        @if (_isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                            <span>Processing…</span>
+                        }
+                        else
+                        {
+                            <span>Analyze PDF</span>
+                        }
+                    </button>
+                </div>
+            </div>
+            <div class="form-text mt-3">Maximum upload size: 100 MB. Raster tracing is only used if no usable closed vector contours are detected.</div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            <div class="fw-semibold mb-1">Processing failed</div>
+            @_errorMessage
+        </div>
+    }
+
+    @if (_result is not null)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span class="fw-semibold">Analysis result</span>
+                @if (_result.Success)
+                {
+                    <span class="badge text-bg-success">Vector output generated</span>
+                }
+                else
+                {
+                    <span class="badge text-bg-danger">No vector output</span>
+                }
+            </div>
+            <div class="card-body">
+                <p>@_result.Message</p>
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Source</div>
+                            <div class="fw-semibold">@SourceLabel(_result.Source)</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">PDF paths detected</div>
+                            <div class="fs-5 fw-semibold">@_result.DetectedPdfPaths</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Closed PDF contours</div>
+                            <div class="fs-5 fw-semibold">@_result.ClosedPdfContours</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Generated contours</div>
+                            <div class="fs-5 fw-semibold">@_result.GeneratedContours</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-4"><strong>PDF page:</strong> @_result.PageNumber</div>
+                    <div class="col-12 col-md-4"><strong>Page size:</strong> @(_result.PageWidthPoints.ToString("0.##")) × @(_result.PageHeightPoints.ToString("0.##")) pt</div>
+                    <div class="col-12 col-md-4"><strong>Manual review:</strong> @(_result.NeedsReview ? "Required" : "Not flagged")</div>
+                </div>
+
+                @if (_result.Warnings.Count > 0)
+                {
+                    <div class="alert alert-warning mb-0">
+                        <div class="fw-semibold mb-1">Warnings</div>
+                        <ul class="mb-0">
+                            @foreach (var warning in _result.Warnings)
+                            {
+                                <li>@warning</li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (_geometry is not null)
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-semibold">Standardized geometry for fitting</div>
+                <div class="card-body">
+                    <p>@_geometry.Message</p>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-md-3"><strong>Width:</strong> @_geometry.WidthMm.ToString("0.###") mm</div>
+                        <div class="col-6 col-md-3"><strong>Height:</strong> @_geometry.HeightMm.ToString("0.###") mm</div>
+                        <div class="col-6 col-md-3"><strong>Candidate paths:</strong> @_geometry.CandidateContourCount</div>
+                        <div class="col-6 col-md-3"><strong>Primary candidate:</strong> #@_geometry.PrimaryContourIndex</div>
+                        <div class="col-6 col-md-3"><strong>Auto rotation:</strong> @_geometry.AppliedRotationDegrees.ToString("0.###")°</div>
+                    </div>
+                    @if (_geometry.AllContoursSvgPath is not null && _geometry.PrimaryContourSvgPath is not null)
+                    {
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a class="btn btn-outline-primary" href="@_allGeometryUrl" target="_blank" rel="noopener">Open all normalized contours (SVG)</a>
+                            <a class="btn btn-primary" href="@_primaryGeometryUrl" target="_blank" rel="noopener">Open primary contour candidate (SVG)</a>
+                        </div>
+                    }
+                    <div class="alert alert-warning mb-0">
+                        <strong>Review required.</strong> The primary candidate is currently selected by largest path bounding-box area. It may be a frame, crease path, or printed graphic rather than the true cut line. Do not use it for production nesting until verified.
+                    </div>
+                    @if (_geometry.Warnings.Count > 0)
+                    {
+                        <ul class="small mt-3 mb-0">@foreach (var warning in _geometry.Warnings) { <li>@warning</li> }</ul>
+                    }
+                    @if (_geometry.Success && _geometry.PrimaryContourSvgPath is not null)
+                    {
+                        <div class="border-top mt-3 pt-3">
+                            <h2 class="h5">Shape-following rectangle decomposition</h2>
+                            <p class="text-muted">Conservatively covers the contour with non-overlapping axis-aligned rectangles. Smaller grid sizes follow the shape more closely but take longer.</p>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label" for="gridResolution">Grid resolution (mm)</label>
+                                    <input id="gridResolution" type="number" min="0.25" max="10" step="0.25" class="form-control" @bind="_gridResolutionMm" />
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-outline-primary" type="button" @onclick="DecomposeGeometryAsync" disabled="@_isDecomposing">
+                                        @(_isDecomposing ? "Decomposing…" : "Generate rectangles")
+                                    </button>
+                                </div>
+                            </div>
+                            @if (_decomposition is not null)
+                            {
+                                <div class="alert @(_decomposition.Success ? "alert-info" : "alert-danger") mt-3">
+                                    <div class="fw-semibold">@_decomposition.Message</div>
+                                    @if (_decomposition.Success)
+                                    {
+                                        <div>Rectangles: @_decomposition.Rectangles.Count · Grid: @_decomposition.GridResolutionMm mm · Artwork: @_decomposition.ArtworkWidthMm × @_decomposition.ArtworkHeightMm mm</div>
+                                    }
+                                </div>
+                                @if (_decomposition.PreviewSvgPath is not null && !string.IsNullOrWhiteSpace(_rectanglesUrl))
+                                {
+                                    <a class="btn btn-sm btn-outline-primary mb-3" href="@_rectanglesUrl" target="_blank" rel="noopener">Open rectangle decomposition SVG</a>
+                                    <div class="border rounded bg-light p-2" style="overflow:auto; max-height:600px">
+                                        <img src="@_rectanglesUrl" alt="Conservative rectangle decomposition preview" style="display:block;max-width:100%;height:auto;margin:0 auto;background:white" />
+                                    </div>
+                                }
+                                @if (_decomposition.Warnings.Count > 0)
+                                {
+                                    <ul class="small mt-3 mb-0">@foreach (var warning in _decomposition.Warnings) { <li>@warning</li> }</ul>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_svgUrl))
+        {
+            <div class="card shadow-sm">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span class="fw-semibold">Generated SVG preview</span>
+                    <a class="btn btn-sm btn-outline-primary" href="@_svgUrl" target="_blank" rel="noopener">Open SVG in new tab</a>
+                </div>
+                <div class="card-body">
+                    <div class="border rounded bg-light p-2" style="min-height: 320px; overflow: auto;">
+                        <img src="@_svgUrl" alt="Generated vector contour preview" style="display:block; max-width:100%; max-height:75vh; width:auto; height:auto; margin:0 auto; background:white;" />
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">The preview shows all extracted or traced closed contours, not an automatically classified cut path.</p>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private const long MaxUploadBytes = 100 * 1024 * 1024;
+
+    private IBrowserFile? _selectedFile;
+    private string? _selectedFileName;
+    private string? _errorMessage;
+    private string? _svgUrl;
+    private string? _allGeometryUrl;
+    private string? _primaryGeometryUrl;
+    private string? _rectanglesUrl;
+    private decimal _gridResolutionMm = 1m;
+    private bool _isDecomposing;
+    private ArtworkRectangleDecompositionResult? _decomposition;
+    private StandardArtworkGeometryResult? _geometry;
+    private bool _isProcessing;
+    private int _pageNumber = 1;
+    private int _rasterMaxDimension = 1600;
+    private ArtworkVectorizationResult? _result;
+
+    private void OnFileSelected(InputFileChangeEventArgs args)
+    {
+        _selectedFile = args.File;
+        _selectedFileName = args.File.Name;
+        _errorMessage = null;
+        _result = null;
+        _geometry = null;
+        _svgUrl = null;
+        _allGeometryUrl = null;
+        _primaryGeometryUrl = null;
+        _rectanglesUrl = null;
+        _decomposition = null;
+    }
+
+    private async Task RunVectorizationAsync()
+    {
+        if (_selectedFile is null)
+            return;
+
+        _isProcessing = true;
+        _errorMessage = null;
+        _result = null;
+        _geometry = null;
+        _svgUrl = null;
+        _allGeometryUrl = null;
+        _primaryGeometryUrl = null;
+        _rectanglesUrl = null;
+        _decomposition = null;
+
+        try
+        {
+            if (!_selectedFile.Name.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Please select a PDF file.");
+            if (_selectedFile.Size > MaxUploadBytes)
+                throw new InvalidOperationException("The PDF exceeds the 100 MB upload limit.");
+            if (_pageNumber < 1)
+                throw new InvalidOperationException("Page number must be at least 1.");
+
+            var webRoot = Environment.WebRootPath;
+            if (string.IsNullOrWhiteSpace(webRoot))
+                throw new InvalidOperationException("The web root directory is not configured.");
+
+            var outputDirectory = Path.Combine(webRoot, "uploads", "artwork-vectors");
+            await using var input = _selectedFile.OpenReadStream(MaxUploadBytes);
+            _result = await VectorizationService.VectorizeAsync(
+                input,
+                outputDirectory,
+                new ArtworkVectorizationOptions
+                {
+                    PageNumber = _pageNumber,
+                    RasterMaxDimension = Math.Clamp(_rasterMaxDimension, 256, 2400)
+                });
+
+            if (!string.IsNullOrWhiteSpace(_result.SvgFilePath))
+            {
+                var fileName = Path.GetFileName(_result.SvgFilePath);
+                _svgUrl = $"/uploads/artwork-vectors/{Uri.EscapeDataString(fileName)}?v={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+                _geometry = await GeometryPreparationService.PrepareAsync(_result, outputDirectory);
+                if (_geometry.AllContoursSvgPath is not null)
+                    _allGeometryUrl = $"/uploads/artwork-vectors/{Uri.EscapeDataString(Path.GetFileName(_geometry.AllContoursSvgPath))}?v={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+                if (_geometry.PrimaryContourSvgPath is not null)
+                    _primaryGeometryUrl = $"/uploads/artwork-vectors/{Uri.EscapeDataString(Path.GetFileName(_geometry.PrimaryContourSvgPath))}?v={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+
+    private async Task DecomposeGeometryAsync()
+    {
+        if (_geometry?.PrimaryContourSvgPath is null) return;
+        _isDecomposing = true;
+        _decomposition = null;
+        _rectanglesUrl = null;
+        try
+        {
+            var outputDirectory = Path.Combine(Environment.WebRootPath, "uploads", "artwork-vectors");
+            _decomposition = await RectangleDecompositionService.DecomposeAsync(
+                _geometry.PrimaryContourSvgPath, outputDirectory, Math.Clamp(_gridResolutionMm, 0.25m, 10m));
+            if (_decomposition.PreviewSvgPath is not null)
+                _rectanglesUrl = $"/uploads/artwork-vectors/{Uri.EscapeDataString(Path.GetFileName(_decomposition.PreviewSvgPath))}?v={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally { _isDecomposing = false; }
+    }
+
+    private static string SourceLabel(ArtworkVectorSource? source) => source switch
+    {
+        ArtworkVectorSource.ExistingPdfVectorPaths => "Existing PDF vectors",
+        ArtworkVectorSource.TracedFromRasterRender => "Raster trace",
+        _ => "Not detected"
+    };
+}

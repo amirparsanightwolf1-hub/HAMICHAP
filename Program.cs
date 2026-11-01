@@ -46,6 +46,9 @@ builder.Services.AddScoped<SalesDeliveryService>();
 builder.Services.AddScoped<QualityInspectionService>();
 builder.Services.AddScoped<ProductionQualityPostingService>();
 builder.Services.AddScoped<SalesInvoiceService>();
+builder.Services.AddScoped<ArtworkVectorizationService>();
+builder.Services.AddScoped<ArtworkGeometryPreparationService>();
+builder.Services.AddScoped<ArtworkRectangleDecompositionService>();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 builder.Services.AddAuthentication(options =>
