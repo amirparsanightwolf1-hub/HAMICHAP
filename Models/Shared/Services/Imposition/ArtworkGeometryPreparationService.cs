@@ -63,29 +63,78 @@ public sealed class ArtworkGeometryPreparationService
 
         // Apply the same rigid rotation to all review contours and the primary candidate so the
         // dominant straight edge is horizontal. Geometry is rotated, never stretched.
-        var allBounds = paths.Select(p => p.Bounds).Aggregate((a, b) => a.Union(b));
-        var rotatedAllBounds = RotateBounds(allBounds, rotationDegrees);
-        var allPath = Path.Combine(outputDirectory, $"artwork-all-{Guid.NewGuid():N}.svg");
-        var allSvg = CreateNormalizedSvg(paths.Select(p => p.Element), allBounds, rotatedAllBounds, mmPerUnitX, mmPerUnitY, rotationDegrees);
-        await File.WriteAllTextAsync(allPath, allSvg, new UTF8Encoding(false), cancellationToken);
+        // Generate the normalized SVG containing all contours for visual review only.
+        var allBounds = paths
+            .Select(p => p.Bounds)
+            .Aggregate((a, b) => a.Union(b));
 
+        var rotatedAllBounds = RotateBounds(allBounds, rotationDegrees);
+
+        var allPath = Path.Combine(
+            outputDirectory,
+            $"artwork-all-{Guid.NewGuid():N}.svg");
+
+        var allSvg = CreateNormalizedSvg(
+            paths.Select(p => p.Element),
+            allBounds,
+            rotatedAllBounds,
+            mmPerUnitX,
+            mmPerUnitY,
+            rotationDegrees);
+
+        await File.WriteAllTextAsync(
+            allPath,
+            allSvg,
+            new UTF8Encoding(false),
+            cancellationToken);
+
+
+        // Generate a separate SVG containing ONLY the selected primary contour candidate.
+        // This is the file that must be passed to rectangle decomposition.
         var rotatedPrimaryBounds = RotateBounds(primaryBounds, rotationDegrees);
-        var primaryPath = Path.Combine(outputDirectory, $"artwork-primary-{Guid.NewGuid():N}.svg");
-        var primarySvg = CreateNormalizedSvg(new[] { primary.Element }, primaryBounds, rotatedPrimaryBounds, mmPerUnitX, mmPerUnitY, rotationDegrees);
-        await File.WriteAllTextAsync(primaryPath, primarySvg, new UTF8Encoding(false), cancellationToken);
+
+        var primaryContourCandidatePath = Path.Combine(
+            outputDirectory,
+            $"artwork-primary-candidate-{Guid.NewGuid():N}.svg");
+
+        var primaryContourCandidateSvg = CreateNormalizedSvg(
+            new[] { primary.Element },
+            primaryBounds,
+            rotatedPrimaryBounds,
+            mmPerUnitX,
+            mmPerUnitY,
+            rotationDegrees);
+
+        await File.WriteAllTextAsync(
+            primaryContourCandidatePath,
+            primaryContourCandidateSvg,
+            new UTF8Encoding(false),
+            cancellationToken);
 
         var widthMm = (decimal)(rotatedPrimaryBounds.Width * mmPerUnitX);
         var heightMm = (decimal)(rotatedPrimaryBounds.Height * mmPerUnitY);
-        return new StandardArtworkGeometryResult(true, allPath, primaryPath, Math.Round(widthMm, 3), Math.Round(heightMm, 3),
-            paths.Count, primary.Index, "mm", true,
-            $"Standardized SVG geometry generated in millimetres. Applied a {rotationDegrees:0.###}° alignment rotation to make the longest detected segment horizontal.",
+
+        return new StandardArtworkGeometryResult(
+            true,
+            allPath,
+            primaryContourCandidatePath,
+            Math.Round(widthMm, 3),
+            Math.Round(heightMm, 3),
+            paths.Count,
+            primary.Index,
+            "mm",
+            true,
+            $"Primary contour candidate generated. Applied a {rotationDegrees:0.###}° alignment rotation.",
             new[]
             {
-                "Automatic rotation estimates the dominant edge from coordinate pairs in the primary SVG path. Curved paths or complex command sequences may produce an incorrect angle; review the preview.",
-                "The primary contour is selected by bounding-box area, not semantic cut-line recognition. Review it before nesting.",
-                "Path bounds are estimated from SVG path coordinate tokens. Curves may need accurate flattening before collision-safe nesting.",
-                "This is not yet a certified manufacturing contour."
-            }) { AppliedRotationDegrees = (decimal)rotationDegrees };
+        "The all-contours SVG is for visual review only.",
+        "Rectangle decomposition must use the primary contour candidate SVG.",
+        "The primary candidate is selected by bounding-box area and requires visual verification.",
+        "This is not yet a certified manufacturing contour."
+            })
+        {
+            AppliedRotationDegrees = (decimal)rotationDegrees
+        };
     }
 
     private static string CreateNormalizedSvg(IEnumerable<XElement> sourcePaths, Bounds sourceBounds, Bounds rotatedBounds,

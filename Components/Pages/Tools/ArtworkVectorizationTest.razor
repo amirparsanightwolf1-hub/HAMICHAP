@@ -231,7 +231,7 @@
     private string? _allGeometryUrl;
     private string? _primaryGeometryUrl;
     private string? _rectanglesUrl;
-    private decimal _gridResolutionMm = 1m;
+    private decimal _gridResolutionMm = 10m;
     private bool _isDecomposing;
     private ArtworkRectangleDecompositionResult? _decomposition;
     private StandardArtworkGeometryResult? _geometry;
@@ -324,7 +324,9 @@
         {
             var outputDirectory = Path.Combine(Environment.WebRootPath, "uploads", "artwork-vectors");
             _decomposition = await RectangleDecompositionService.DecomposeAsync(
-                _geometry.PrimaryContourSvgPath, outputDirectory, Math.Clamp(_gridResolutionMm, 0.25m, 10m));
+                _geometry.PrimaryContourSvgPath,
+                outputDirectory,
+                Math.Clamp(_gridResolutionMm, 0.25m, 10m));
             if (_decomposition.PreviewSvgPath is not null)
                 _rectanglesUrl = $"/uploads/artwork-vectors/{Uri.EscapeDataString(Path.GetFileName(_decomposition.PreviewSvgPath))}?v={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
         }
