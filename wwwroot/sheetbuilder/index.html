@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SheetBuilder - Auto-Pack Sheet Layout Builder | DTF, PnP &amp; More</title>
+    <meta name="description" content="Free sheet layout builder: automatically pack images onto any sheet or roll with zero wasted space. Used for DTF gang sheets, print-and-play cards, sticker sheets & more. No signup, runs 100% in your browser. Export to PDF or PNG up to 1200 DPI.">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="keywords" content="DTF gang sheet maker, free DTF gang sheet maker, gang sheet builder, gang sheet generator, DTF layout tool, direct to film gang sheet, free gang sheet software, DTF printing tool, gang sheet PDF export, DTF transfer sheet, bulk DTF printing, smart DTF layout, auto pack DTF designs, DTF gang sheet creator, DTF roll printing, free gang sheet creator, online gang sheet maker, DTF film layout, print and play layout tool, PnP sheet builder, print and play sheet maker, PnP card layout, board game print and play, PnP game printing, tabletop PnP layout, print and play PDF">
+    <meta name="author" content="Glare Studios">
+
+    <link rel="canonical" href="https://sheetbuilder.net/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SheetBuilder - Auto-Pack Sheet Layout Builder">
+    <meta property="og:description" content="Auto-pack images onto any sheet or roll with zero wasted space. Used for DTF gang sheets, PnP cards, sticker sheets & more. No signup, runs in your browser.">
+    <meta property="og:url" content="https://sheetbuilder.net/">
+    <meta property="og:image" content="https://sheetbuilder.net/logo.png">
+    <meta property="og:site_name" content="SheetBuilder">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SheetBuilder - Auto-Pack Sheet Layout Builder">
+    <meta name="twitter:description" content="Auto-pack images onto any sheet or roll with zero wasted space. Used for DTF gang sheets, PnP cards, sticker sheets & more. No signup, runs in your browser.">
+    <meta name="twitter:image" content="https://sheetbuilder.net/logo.png">
+
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="preconnect" href="https://www.clarity.ms">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "SheetBuilder",
+            "url": "https://sheetbuilder.net/builder.html",
+            "applicationCategory": "DesignApplication",
+            "operatingSystem": "Web",
+            "browserRequirements": "Requires a modern web browser with JavaScript enabled",
+            "description": "Free online DTF gang sheet builder and print-and-play layout tool. Upload images, set sizes and copy counts, auto-pack them onto any sheet or roll size, then export to high-resolution PDF or PNG. No account needed.",
+            "featureList": [
+                "DTF gang sheet layout generation",
+                "Print-and-play card and tile layout",
+                "Automatic image bin-packing with rotation support",
+                "Custom paper and roll sizes",
+                "Bleed lines and outer margin controls",
+                "High-resolution PDF and PNG export",
+                "Separate sheets by image size",
+                "Fill-until-pages for roll printing",
+                "Works entirely in the browser, no uploads to server"
+            ],
+            "screenshot": "https://sheetbuilder.net/logo.png",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "publisher": { "@type": "Organization", "name": "Glare Studios", "url": "https://sheetbuilder.net/" },
+            "isAccessibleForFree": true,
+            "license": "https://opensource.org/licenses/MIT"
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is a DTF gang sheet?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "A DTF (Direct-to-Film) gang sheet is a single sheet or roll that contains multiple designs packed together efficiently. Printing multiple designs at once reduces film waste and lowers the cost per transfer."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Is SheetBuilder free to use?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, SheetBuilder is completely free and open source. There is no account, subscription, or watermark. You can use it as many times as you like."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Does SheetBuilder upload my images to a server?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "No. SheetBuilder runs entirely in your browser. Your images never leave your device: no server uploads, no storage, no privacy risk."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What file formats can I export?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "SheetBuilder can export your gang sheet as a high-resolution PDF (perfect quality, high, medium, or low compression) or as a PNG at up to 1200 DPI."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Can I use SheetBuilder for roll printing?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes. Set a custom paper width and height to match your DTF roll dimensions (e.g. 600 mm wide by any length). Use the Fill Until Pages option to repeat the layout across multiple pages for roll-length output."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Can I use SheetBuilder for print-and-play games?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes. SheetBuilder is a popular free print-and-play layout tool. Upload your card or tile art as PNG files, set standard card dimensions, configure copy counts, and generate a packed sheet ready to print on A4 or Letter paper."
+                    }
+                }
+            ]
+        }
+    </script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WMKM4C2Q8J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied' });
+        gtag('js', new Date());
+        gtag('config', 'G-WMKM4C2Q8J');
+    </script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content header-content--home">
+                <img src="logo.png" alt="SheetBuilder" class="header-brand-image" onerror="this.style.display='none'">
+                <div class="header-home-nav">
+                    <a href="#pricing" class="header-pricing-btn">Pricing</a>
+                    <a href="builder.html" class="header-launch-btn">
+                        <i class="fa-solid fa-bullseye"></i> Open Builder
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <main>
+            <section class="hero-section">
+                <h1 class="hero-title">Auto-Pack Sheet Layout Builder</h1>
+                <p class="hero-subtitle">For DTF gang sheets, print-and-play cards, sticker sheets &amp; more</p>
+                <p class="hero-desc">Upload your images, set sizes and copy counts, and SheetBuilder <strong>automatically packs everything onto a print-ready sheet</strong> with zero wasted space. <strong>No account, no uploads, no cost.</strong> Works for any sheet-based print job.</p>
+                <div class="hero-cta-row">
+                    <a href="builder.html" class="cta-btn">
+                        <i class="fa-solid fa-bullseye"></i> Build a Sheet
+                    </a>
+                </div>
+                <ul class="hero-pills">
+                    <li><i class="fa-solid fa-check"></i> Free forever</li>
+                    <li><i class="fa-solid fa-check"></i> Open-source</li>
+                    <li><i class="fa-solid fa-check"></i> No account required</li>
+                    <li><i class="fa-solid fa-check"></i> Runs entirely in your browser</li>
+                    <li><i class="fa-solid fa-check"></i> Export to PDF or PNG up to 1200 DPI</li>
+                </ul>
+            </section>
+
+            <section id="features" class="features-section">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-card-header">
+                            <span class="feature-icon" aria-hidden="true"><i class="fa-solid fa-puzzle-piece"></i></span>
+                            <h3>Smart Auto-Packing Layout</h3>
+                        </div>
+                        <p>Our bin-packing algorithm <strong>automatically arranges all your DTF designs</strong> onto the sheet for maximum coverage. It optionally rotates images to squeeze more transfers per sheet, just like professional gang sheet layout software, but completely free.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-header">
+                            <span class="feature-icon" aria-hidden="true"><i class="fa-solid fa-scroll"></i></span>
+                            <h3>Custom Sheet &amp; Roll Sizes</h3>
+                        </div>
+                        <p>Set <strong>any paper width and height</strong> to match your DTF printer's roll or sheet. Whether you print on 13", 22", or 24" wide DTF film, SheetBuilder handles it. The Fill Until Pages option repeats layouts automatically for long roll-to-roll printing jobs.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-header">
+                            <span class="feature-icon" aria-hidden="true"><i class="fa-solid fa-file-export"></i></span>
+                            <h3>High-Res PDF &amp; PNG Export</h3>
+                        </div>
+                        <p>Export your gang sheet as a pixel-perfect PDF or a <strong>PNG at up to 1200 DPI</strong>. Perfect quality PDF mode produces lossless output ideal for professional DTF printing services. High DPI PNG export works great for RIP software and direct printer import.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-header">
+                            <span class="feature-icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
+                            <h3>100% Private &amp; Browser-Based</h3>
+                        </div>
+                        <p>SheetBuilder runs entirely in your browser. <strong>Your artwork never touches our servers.</strong> No uploads, no accounts, no watermarks. Your custom designs stay yours, making it the safest free DTF gang sheet creator for proprietary artwork.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-header">
+                            <span class="feature-icon" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></span>
+                            <h3>Separate Sheets by Image Size</h3>
+                        </div>
+                        <p>Automatically group different transfer sizes onto <strong>separate pages</strong>. When a DTF job mixes shirt-sized prints with small pocket prints, SheetBuilder keeps them organized on distinct sheets so your press operator can work efficiently.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-header">
+                            <span class="feature-icon" aria-hidden="true"><i class="fa-solid fa-expand"></i></span>
+                            <h3>Bleed Lines &amp; Margin Controls</h3>
+                        </div>
+                        <p>Add configurable <strong>outer margins, inter-image spacing, and bleed lines</strong> to every gang sheet. Bleed settings draw a dashed border around each design to assist cutting, essential for production-ready DTF transfer layouts and gang sheet orders.</p>
+                    </div>
+                </div>            </section>
+
+            <section id="pnp" class="pnp-section">
+                <details class="features-details">
+                <summary><h2><span class="section-icon" aria-hidden="true"><i class="fa-solid fa-dice"></i></span>SheetBuilder for Print-and-Play (PnP) Games</h2></summary>
+                <p class="features-intro">SheetBuilder is widely used by the tabletop and board game community as a free print-and-play layout tool. Whether you're playtesting a prototype or printing a final PnP release, the auto-packing engine handles all the tedious layout work for you.</p>
+                <div class="pnp-content">
+                    <div class="pnp-body">
+                        <p>Print-and-play designers and players need to fit as many cards, tiles, and tokens as possible onto a single sheet to minimize paper and ink usage. SheetBuilder's smart bin-packing algorithm does exactly that: upload your card faces as PNG images, set each one to standard card dimensions (e.g., 63 x 88 mm for poker-size cards or 44 x 67 mm for mini cards), enter how many copies you need, and hit Generate Layout. The tool arranges everything automatically with configurable spacing between cards so they're easy to cut.</p>
+                        <p>You can mix card sizes on the same sheet, separate different component types onto distinct pages using the Separate by Image Size option, and export the finished layout as a print-ready PDF or high-resolution PNG. Everything runs in your browser with no file uploads, which is important when working with unreleased or proprietary PnP game art.</p>
+                    </div>
+                    <div class="pnp-usecases">
+                        <h3>Common PnP use cases</h3>
+                        <ul class="pnp-list">
+                            <li><strong>Card games:</strong> Pack poker-size, tarot-size, or mini cards onto A4, Letter, or custom sheet sizes for home printing.</li>
+                            <li><strong>Tile-based games:</strong> Arrange square or rectangular tiles at any scale, with equal spacing for clean guillotine cuts.</li>
+                            <li><strong>Prototype testing:</strong> Quickly iterate on new card designs by uploading updated PNGs and regenerating the layout in seconds.</li>
+                            <li><strong>Token sheets:</strong> Fit dozens of small circular or square tokens onto a single page using rotation to maximize coverage.</li>
+                            <li><strong>Mixed components:</strong> Combine cards, tiles, and reference sheets on separate pages in one export run using the page-separation feature.</li>
+                            <li><strong>Publisher print files:</strong> Generate production-ready PDFs at 300 DPI or higher for sending to a professional print shop or POD service.</li>
+                        </ul>
+                    </div>
+                </div>
+                </details>
+            </section>
+
+            <section id="pricing" class="pricing-section">
+                <h2><span class="section-icon" aria-hidden="true"><i class="fa-solid fa-tag"></i></span>Pricing</h2>
+                <div class="pricing-tiers">
+                    <div class="pricing-tier">
+                        <div class="pricing-tier-name">Personal</div>
+                        <div class="pricing-tier-price">Free</div>
+                        <ul class="pricing-tier-features">
+                            <li><i class="fa-solid fa-check"></i> Unlimited sheets</li>
+                            <li><i class="fa-solid fa-check"></i> All features included</li>
+                            <li><i class="fa-solid fa-check"></i> No account required</li>
+                            <li><i class="fa-solid fa-check"></i> Runs in your browser</li>
+                        </ul>
+                        <p class="pricing-tier-note">Free for personal &amp; non-commercial use</p>
+                    </div>
+                    <div class="pricing-tier pricing-tier--pro">
+                        <div class="pricing-tier-badge">For Businesses</div>
+                        <div class="pricing-tier-name">Commercial</div>
+                        <div class="pricing-tier-price">$29 <span>one-time</span></div>
+                        <ul class="pricing-tier-features">
+                            <li><i class="fa-solid fa-check"></i> Everything in Personal</li>
+                            <li><i class="fa-solid fa-check"></i> Lifetime license</li>
+                            <li><i class="fa-solid fa-check"></i> Use output commercially</li>
+                            <li><i class="fa-solid fa-check"></i> Legally compliant for business</li>
+                            <li><i class="fa-solid fa-check"></i> Email support</li>
+                        </ul>
+                        <a href="https://buy.stripe.com/9B600j5Rb4jagK25Hjcwg0f" target="_blank" rel="noopener noreferrer" class="pricing-cta-btn">Get Commercial License →</a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="faq" class="faq-section">
+                <details class="features-details">
+                <summary><h2><span class="section-icon" aria-hidden="true"><i class="fa-solid fa-circle-question"></i></span>Frequently Asked Questions</h2></summary>
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <h3>What is a DTF gang sheet?</h3>
+                        <p>A DTF (Direct-to-Film) gang sheet is a single sheet or roll of transfer film that holds multiple designs packed together as efficiently as possible. Printing multiple transfers at once reduces film waste and lowers the cost per transfer. Gang sheets are standard practice for DTF print shops, custom apparel decorators, and heat-transfer resellers.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Is SheetBuilder free to use?</h3>
+                        <p>Yes. SheetBuilder is completely free, with no account, no subscription, and no watermark. It's also open source. You can use it as many times as you like to build gang sheets for personal or commercial DTF printing work. There's no hidden cost or trial limit.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>How is SheetBuilder different from other free DTF gang sheet makers?</h3>
+                        <p>Most free gang sheet builders either upload your files to a server, add watermarks, or limit how many designs you can use. SheetBuilder runs entirely in your browser, so nothing is uploaded anywhere. There are no limits on designs, copies, or exports. The smart bin-packing algorithm with rotation support is the same approach used by professional layout software.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Does SheetBuilder upload my images to a server?</h3>
+                        <p>No. SheetBuilder processes everything locally in your browser. Your images, artwork, and designs never leave your device: no server uploads, no cloud storage, no privacy risk. This makes it ideal for printing shops that work with proprietary or licensed artwork.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>What file formats are supported for import and export?</h3>
+                        <p>SheetBuilder accepts JPG, PNG, GIF, and WEBP image files. PNG with transparency is the best format for DTF transfers. For export, you can save your gang sheet as a high-resolution PDF (perfect, high, medium, or low compression) or as a PNG at 72, 150, 300, 600, or 1200 DPI. Most DTF RIP software and online print shops accept both formats.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Can I use SheetBuilder for DTF roll printing?</h3>
+                        <p>Yes. Set a custom paper width to match your roll (e.g., 600 mm for a 24" roll) and leave the height open-ended. Use the Fill Until Pages option to repeat the layout automatically until a target page count is reached, ideal for producing long roll-length DTF gang sheets with minimal waste.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>What is the smart layout algorithm?</h3>
+                        <p>SheetBuilder uses a rectangle bin-packing algorithm that places each design in the optimal position on the sheet. It tries both original and rotated orientations for every image to find the arrangement with the least wasted space. This is the same principle behind professional gang sheet generators used by large-format DTF printers and print-and-play layout tools.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Can I set different sizes and copy counts for each design?</h3>
+                        <p>Yes. Each image can have its own width, height (locked to aspect ratio), and copy count. You can also select multiple images at once and bulk-edit their size. This makes it easy to build gang sheets that mix large chest prints, small pocket logos, and sleeve designs, or PnP sheets that mix different card sizes all in one session.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Can I use SheetBuilder for print-and-play card games?</h3>
+                        <p>Yes. SheetBuilder is a popular free print-and-play layout tool for tabletop game designers and players. Upload your card art as PNG files, set standard card dimensions (poker size is 63 x 88 mm, mini cards are 44 x 67 mm), set your copy count, and generate a packed layout ready to print on A4 or Letter paper. The bleed and spacing controls make it easy to produce clean, cuttable PnP sheets.</p>
+                    </div>
+                </div>
+                </details>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>&copy; 2025 Glare Studios. All rights reserved.</p>
+                    <p class="footer-support">Support, feature requests &amp; <span class="footer-enterprise">enterprise licensing</span>: <a href="mailto:jakov@jandric.com">jakov@jandric.com</a></p>
+                </div>
+                <div class="footer-actions">
+                    <form action="https://paypal.me/itsjakovj" method="post" target="_top">
+                        <input type="hidden" name="business" value="jakov@jandric.com" />
+                        <input type="hidden" name="currency_code" value="USD" />
+                        <input type="hidden" name="item_name" value="Buy me a coffee" />
+                        <button type="submit" class="paypal-btn" title="Buy me a coffee">
+                            <span class="section-icon" aria-hidden="true"><i class="fa-solid fa-mug-hot"></i></span>Buy me a coffee
+                        </button>
+                    </form>
+
+                    <a class="github-btn" href="https://github.com/jakovjj/sheetbuilder" target="_blank" rel="noopener noreferrer" title="View on GitHub">
+                        <img class="github-logo" src="https://github.githubassets.com/favicons/favicon.svg" alt="GitHub" width="18" height="18" loading="lazy" referrerpolicy="no-referrer">
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="cookie-consent-banner" class="cookie-banner" hidden>
+        <i class="fa-solid fa-cookie-bite cookie-banner-icon" aria-hidden="true"></i>
+        <p>We use analytics cookies (Google Analytics &amp; Microsoft Clarity) to understand how SheetBuilder is used. Your images & files <strong>never leave your device</strong>, no uploads, no sharing, ever.</p>
+        <div class="cookie-banner-btns">
+            <button id="cookie-accept" type="button" class="cookie-btn-accept">Accept</button>
+            <button id="cookie-decline" type="button" class="cookie-btn-decline">Decline</button>
+        </div>
+    </div>
+    <script src="consent.js"></script>
+</body>
+</html>
