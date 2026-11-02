@@ -11,14 +11,14 @@
             <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Area utilization</div><strong>@Item.UtilizationPercent.ToString("0.##")%</strong></div></div>
             <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Requested quantity</div><strong>@RequestedQuantity.ToString("N0")</strong></div></div>
         </div>
-        <div class="small mb-2">Pieces in each repeat: <strong>@Item.PiecesPerSheet</strong> · Total planned output: <strong>@Item.ProducedQuantity.ToString("N0")</strong></div>
+        <div class="small mb-2">@(Item.Mode == "Sheet" ? "Pieces on preview sheet" : "Pieces in each repeat"): <strong>@Item.PiecesPerSheet.ToString("N0")</strong> · Total planned output: <strong>@Item.ProducedQuantity.ToString("N0")</strong></div>
         @if (Item.PiecesPerArtwork is not null)
         {
-            <div class="small mb-2">Per repeat: @string.Join(" · ", Item.PiecesPerArtwork.Select(kv => $"{kv.Key}: {kv.Value:N0}"))</div>
+            <div class="small mb-2">@(Item.Mode == "Sheet" ? "Preview sheet" : "Per repeat"): @string.Join(" · ", Item.PiecesPerArtwork.Select(kv => $"{kv.Key}: {kv.Value:N0}"))</div>
         }
         @if (Item.PlannedQuantityPerArtwork is not null)
         {
-            <div class="small mb-2">Planned output: @string.Join(" · ", Item.PlannedQuantityPerArtwork.Select(kv => $"{kv.Key}: {kv.Value:N0}"))</div>
+            <div class="small mb-2">Planned output: @string.Join(" · ", Item.PlannedQuantityPerArtwork.Select(PlannedLabel))</div>
         }
         <div class="small mb-2">Solver: <strong>@Item.SolverStatus</strong></div>
         @if (Item.Mode == "Sheet")
@@ -28,10 +28,13 @@
         else
         {
             <div class="small mb-2">Total roll length: <strong>@Item.RollLengthMm.ToString("N0") mm</strong></div>
-            <div class="small text-muted mb-2">The preview shows one repeat; the same layout is repeated for the full run.</div>
+            <div class="small text-muted mb-2">The preview shows one repeat; this pattern is repeated for the full run.</div>
         }
         <div class="small text-muted mb-2">Material area: @Item.StockAreaMm2.ToString("N0") mm² · Artwork area: @Item.UsedAreaMm2.ToString("N0") mm² · Waste area: @Item.WasteAreaMm2.ToString("N0") mm²</div>
 
+        <div class="d-flex justify-content-end mb-2">
+            <a class="btn btn-sm btn-outline-primary" href="@SvgDataUri" download="imposition-preview.svg">Export SVG preview</a>
+        </div>
         <div class="imposition-preview" aria-label="Rectangular imposition preview">
             <svg viewBox="@($"0 0 {PreviewWidth} {PreviewHeight}")" role="img"
                  aria-label="@(Item.Mode == "Roll" ? "One roll repeat layout" : "One sheet layout")"
@@ -62,10 +65,37 @@
 @code {
     [Parameter, EditorRequired] public ImpositionAlternative Item { get; set; } = default!;
     [Parameter] public int RequestedQuantity { get; set; }
+    [Parameter] public IReadOnlyDictionary<string, int>? RequestedQuantities { get; set; }
 
     private decimal PreviewWidth => Item.StockWidthMm > 0 ? Item.StockWidthMm : 1m;
     private decimal PreviewHeight => Item.StockHeightMm > 0 ? Item.StockHeightMm : 1m;
     private string YieldLabel => Item.Mode == "Sheet" ? "Sheets required" : "Total roll length";
     private string YieldValue => Item.Mode == "Sheet" ? Item.SheetsRequired.ToString("N0") : $"{Item.RollLengthMm:N0} mm";
     private string PieceClass(ImpositionPlacement p) => $"piece-{(Math.Abs(p.ArtworkIndex) % 4) + 1}";
+
+    private string PlannedLabel(KeyValuePair<string, int> item)
+    {
+        if (RequestedQuantities is not null &&
+            RequestedQuantities.TryGetValue(item.Key, out var requested) &&
+            item.Value > requested)
+            return $"{item.Key}: {item.Value:N0} (+{item.Value - requested:N0} extra)";
+        return $"{item.Key}: {item.Value:N0}";
+    }
+
+    private string SvgDataUri
+    {
+        get
+        {
+            var svg = new System.Text.StringBuilder();
+            svg.Append($"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {PreviewWidth.ToString(System.Globalization.CultureInfo.InvariantCulture)} {PreviewHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)}\">");
+            svg.Append($"<rect x=\"0\" y=\"0\" width=\"{PreviewWidth.ToString(System.Globalization.CultureInfo.InvariantCulture)}\" height=\"{PreviewHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)}\" fill=\"white\" stroke=\"#555\"/>");
+            foreach (var p in Item.Placements)
+            {
+                var fill = (Math.Abs(p.ArtworkIndex) % 4) switch { 0 => "#dbe2f1", 1 => "#f8dfbd", 2 => "#d8eee5", _ => "#eadcf5" };
+                svg.Append($"<rect x=\"{p.X.ToString(System.Globalization.CultureInfo.InvariantCulture)}\" y=\"{p.Y.ToString(System.Globalization.CultureInfo.InvariantCulture)}\" width=\"{p.Width.ToString(System.Globalization.CultureInfo.InvariantCulture)}\" height=\"{p.Height.ToString(System.Globalization.CultureInfo.InvariantCulture)}\" fill=\"{fill}\" stroke=\"#43507a\" stroke-width=\"0.6\"/>");
+            }
+            svg.Append("</svg>");
+            return "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(svg.ToString()));
+        }
+    }
 }

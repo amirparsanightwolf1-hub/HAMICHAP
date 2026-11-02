@@ -1,169 +1,812 @@
-```
 @page "/production/imposition-optimizer"
-@using Microsoft.AspNetCore.Components.Forms
 @using HamiChap_MES_ERP.Services.Imposition
-@using UglyToad.PdfPig
-@inject IWebHostEnvironment HostEnvironment
 @inject ImpositionOptimizerService Optimizer
 
-<PageTitle>PDF Imposition Optimizer</PageTitle>
-
-<div class="container-fluid py-3">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
-        <div><h2>PDF Imposition Optimizer</h2><p class="text-muted mb-0">Combine multiple artwork sizes in one mixed sheet or roll layout.</p></div>
-        <span class="badge bg-warning text-dark">Rectangular mixed nesting — review before production</span>
-    </div>
-    <div class="alert alert-info">Add artwork PDFs or create rows manually. PDF uploads automatically read the first page dimensions and treat the artwork as a rectangle. The optimizer calculates placements using those rectangular dimensions; die-cut contours are not considered. Set the minimum quantity required on every sheet or roll repeat. For rolls, the height field is the repeat length.</div>
-
-    <div class="card shadow-sm mb-3"><div class="card-header fw-semibold">1. Add artwork PDFs (optional)</div><div class="card-body">
-        <InputFile OnChange="PdfsSelected" accept=".pdf,application/pdf" multiple class="form-control" />
-        <div class="form-text">Select multiple PDFs at once, up to 100 MB each. Each PDF creates an artwork row with its first-page dimensions filled in automatically. Review the dimensions and enter the required quantity.</div>
-        @if (!string.IsNullOrWhiteSpace(uploadMessage)) { <div class="mt-2 alert @(uploadError ? "alert-danger" : "alert-success")">@uploadMessage</div> }
-    </div></div>
-
-    <div class="card shadow-sm mb-3"><div class="card-header d-flex justify-content-between align-items-center"><span class="fw-semibold">2. Artwork list</span><button class="btn btn-sm btn-outline-primary" @onclick="AddArtwork">+ Add artwork manually</button></div><div class="card-body">
-        <div class="table-responsive"><table class="table table-bordered align-middle">
-            <thead><tr><th>Artwork / PDF</th><th style="min-width:125px">Width (mm)</th><th style="min-width:125px">Height (mm)</th><th style="min-width:125px">Required quantity</th><th style="min-width:145px">Minimum per sheet / repeat</th><th>Rotate 90°</th><th></th></tr></thead>
-            <tbody>
-            @for (var i = 0; i < artworks.Count; i++)
-            {
-                var row = artworks[i]; var rowIndex = i;
-                <tr @key="row.Id">
-                    <td><InputText class="form-control" @bind-Value="row.Name" placeholder="Artwork name" />
-                        @if (!string.IsNullOrWhiteSpace(row.PdfPath)) { <div class="small text-muted mt-1">PDF saved: @row.PdfFileName</div> }
-                    </td>
-                    <td><InputNumber class="form-control" @bind-Value="row.WidthMm" /></td>
-                    <td><InputNumber class="form-control" @bind-Value="row.HeightMm" /></td>
-                    <td><InputNumber class="form-control" @bind-Value="row.Quantity" /></td>
-                    <td><InputNumber class="form-control" @bind-Value="row.MinimumPerRepeat" min="1" /></td>
-                    <td class="text-center"><InputCheckbox class="form-check-input" @bind-Value="row.AllowRotation" /></td>
-                    <td><button class="btn btn-sm btn-outline-danger" disabled="@(artworks.Count <= 1)" @onclick="() => RemoveArtwork(rowIndex)">Remove</button></td>
-                </tr>
-            }
-            </tbody>
-        </table></div>
-    </div></div>
-
-    <div class="card shadow-sm mb-3"><div class="card-header fw-semibold">3. Stock and layout settings (millimetres)</div><div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-3"><label class="form-label">Layout type</label><InputSelect class="form-select" @bind-Value="layoutMode"><option value="Sheet">Sheet</option><option value="Roll">Roll</option></InputSelect></div>
-            <div class="col-md-3"><label class="form-label">Sheet / roll width</label><InputNumber class="form-control" @bind-Value="stockWidth" /></div>
-            @if (layoutMode == "Sheet") { <div class="col-md-3"><label class="form-label">Sheet height</label><InputNumber class="form-control" @bind-Value="stockHeight" /></div> }
-            else { <div class="col-md-3"><label class="form-label">Roll repeat length</label><InputNumber class="form-control" @bind-Value="stockHeight" /></div> }
-            <div class="col-md-3"><label class="form-label">Edge margin</label><InputNumber class="form-control" @bind-Value="margin" /></div>
-            <div class="col-md-3"><label class="form-label">Gap between pieces</label><InputNumber class="form-control" @bind-Value="gap" /></div>
+<PageTitle>Imposition Optimizer</PageTitle>
+<div class="imp-shell">
+    <div class="imp-topline">
+        <div class="imp-tabs">
+            <button class="imp-tab @(tab == 0 ? "active" : "")" @onclick="() => GoTo(0)"><span>▤</span>Sheet</button>
+            <button class="imp-tab @(tab == 1 ? "active" : "")" @onclick="() => GoTo(1)"><span>▦</span>Parts</button>
+            <button class="imp-tab @(tab == 2 ? "active" : "")" @onclick="() => GoTo(2)"><span>⚙</span>Setup</button>
+            <button class="imp-tab @(tab == 3 ? "active" : "")" @onclick="() => GoTo(3)"><span>◉</span>View</button>
         </div>
-        @if (!string.IsNullOrWhiteSpace(errorMessage)) { <div class="alert alert-danger mt-3">@errorMessage</div> }
-        <div class="d-flex gap-2 flex-wrap mt-3"><button class="btn btn-primary" @onclick="Calculate">Optimize mixed layout</button><button class="btn btn-outline-secondary" @onclick="ResetResults">Clear results</button></div>
-    </div></div>
+        <div class="imp-stats">
+            <div class="imp-stat"><b>@D(PreviewStockW) × @D(PreviewStockH) @unit</b><small>Sheet format</small></div>
+            <div class="imp-stat"><b>@(ActiveResult?.PiecesPerSheet ?? 0)</b><small>Parts on sheet</small></div>
+            <div class="imp-stat"><b>@(ActiveResult?.SheetsRequired ?? 0)</b><small>Sheet copies</small></div>
+            <div class="imp-stat"><b>@(results.Count > 0 ? $"{ActiveResult!.UtilizationPercent:0}% / {ActiveResult!.WastePercent:0}%" : "—")</b><small>Fill / waste</small></div>
+            <div class="imp-stat"><b>@(ActiveResult?.SheetsRequired ?? 0)</b><small>Total sheets</small></div>
+            <div class="imp-stat"><b>@(EstimatedPaperKg.HasValue ? EstimatedPaperKg.Value.ToString("0.##") + " kg" : "—")</b><small>Paper weight required</small></div>
+            <div class="imp-stat"><b>@(ActiveResult?.ProducedQuantity ?? 0) / @TotalQty</b><small>Total placed</small></div>
+        </div>
+    </div>
 
-    @if (results.Count > 0)
+    <div class="imp-workspace">
+        <aside class="imp-sidebar">
+            @if (tab == 0)
+            {
+                <section class="imp-section">
+                    <h3>Material</h3>
+                    <label>Material type</label><select class="form-select" @bind="mode" @bind:after="ModeChanged"><option>Sheet</option><option>Roll</option></select>
+                    <label>Format</label><select class="form-select" @bind="formatName" @bind:after="ApplyFormat"><option value="Custom">Custom</option>@foreach (var f in Formats){
+                    <option value="@f.Name">@f.Name — @f.W × @f.H mm</option>
+                }
+            </select>
+            <div class="imp-grid2"><div><label>Width (mm)</label><InputNumber class="form-control" @bind-Value="stockW" @bind-Value:after="RefreshPreview" /></div><div><label>@(mode == "Sheet" ? "Height" : "Repeat") (mm)</label><InputNumber class="form-control" @bind-Value="stockH" @bind-Value:after="RefreshPreview" /></div></div>
+            <div class="imp-grid2 mt-2">
+                <div><label>Paper weight (gsm)</label><InputNumber class="form-control" min="1" step="1" @bind-Value="paperGsm" @bind-Value:after="RefreshPreview" /></div>
+                <div><label>@(mode == "Sheet" ? "Sheets available" : "Repeats available")</label><InputNumber class="form-control" min="0" step="1" @bind-Value="availableStockUnits" @bind-Value:after="RefreshPreview" /></div>
+            </div>
+            <div class="imp-material-summary">
+                <div><span>Required @(mode == "Sheet" ? "sheets" : "repeats")</span><b>@RequiredStockUnits.ToString("N0")</b></div>
+                <div><span>Available</span><b>@(availableStockUnits.HasValue ? availableStockUnits.Value.ToString("N0") : "—")</b></div>
+                <div><span>Shortage</span><b class="@(StockShortage.GetValueOrDefault() > 0 ? "text-danger" : "text-success")">@(StockShortage.HasValue ? StockShortage.Value.ToString("N0") : "—")</b></div>
+                <div><span>Remaining</span><b class="text-success">@(StockRemaining.HasValue ? StockRemaining.Value.ToString("N0") : "—")</b></div>
+                <div><span>Material area</span><b>@RequiredMaterialAreaM2.ToString("0.##") m²</b></div>
+                <div><span>Estimated paper weight</span><b>@(EstimatedPaperKg.HasValue ? EstimatedPaperKg.Value.ToString("N2") + " kg" : "—")</b></div>
+            </div>
+            <p class="imp-hint mb-0">Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage.</p>
+        </section>
+    }
+            else if (tab == 1)
     {
-        <div class="alert alert-warning">The solver uses exact rectangular non-overlap constraints at 0.1 mm coordinate precision. “OPTIMALITY PROVEN” means the solver proved the maximum piece count for this model; “FEASIBLE” means it found a valid layout but did not prove it is the best. PDF vector cut contours are not extracted, so this is not irregular-shape nesting. The preview shows one sheet / one roll repeat.</div>
-        <h4 class="mt-4">Mixed-layout alternatives</h4>
-        <div class="row g-3 mb-4">@foreach (var item in results) { <div class="col-xl-6"><ImpositionAlternativeCard Item="item" RequestedQuantity="TotalQuantity" /></div> }</div>
+        <section class="imp-section">
+            <div class="imp-section-head"><h3>Parts / Required quantities</h3><button class="imp-add" @onclick="AddPart">＋ Add part</button></div>
+            <p class="imp-hint">Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed.</p>
+            @foreach (var part in parts)
+            {
+                <div class="imp-part-row" @key="part.Id">
+                    <div class="imp-part-title">
+                        <span class="imp-dot" style="background:@PartStroke(parts.IndexOf(part))"></span>
+                        <InputText class="form-control" @bind-Value="part.Name" @bind-Value:after="RefreshPreview" placeholder="Part name" />
+                        <button class="imp-remove" title="Remove part" disabled="@(parts.Count == 1)" @onclick="() => RemovePart(parts.IndexOf(part))">×</button>
+                    </div>
+                    <div class="imp-grid2">
+                        <div><label>Width (mm)</label><InputNumber class="form-control" min="0.1" step="0.1" @bind-Value="part.W" @bind-Value:after="RefreshPreview" /></div>
+                        <div><label>Height (mm)</label><InputNumber class="form-control" min="0.1" step="0.1" @bind-Value="part.H" @bind-Value:after="RefreshPreview" /></div>
+                    </div>
+                    <div class="imp-quantity-field">
+                        <label>Required quantity (pieces)</label>
+                        <InputNumber class="form-control" min="1" step="1" @bind-Value="part.Qty" @bind-Value:after="RefreshPreview" />
+                        <small>How many finished pieces of this part are needed?</small>
+                    </div>
+                    <label class="imp-check"><InputCheckbox @bind-Value="part.Rotate" @bind-Value:after="RefreshPreview" /> Allow 90° rotation</label>
+                    <div class="imp-part-demand"><span>Required pieces</span><b>@Math.Max(0, part.Qty).ToString("N0")</b></div>
+                </div>
+            }
+            <div class="imp-demand-summary">
+                <div><span>Total required pieces</span><b>@TotalQty.ToString("N0")</b></div>
+                <div><span>Sheets / repeats needed</span><b>@(ActiveResult?.SheetsRequired.ToString("N0") ?? "—")</b></div>
+                <div><span>Pieces planned</span><b>@(ActiveResult?.ProducedQuantity.ToString("N0") ?? "—")</b></div>
+                <div><span>Extra pieces</span><b>@(results.FirstOrDefault() is { } r ? Math.Max(0, r.ProducedQuantity - TotalQty).ToString("N0") : "—")</b></div>
+            </div>
+        </section>
+    }
+    else if (tab == 2)
+    {
+        <section class="imp-section">
+            <div class="imp-section-head"><h3>Units</h3><span class="imp-help">ⓘ</span></div><p class="imp-hint">All sizes are given in them.</p>
+            <div class="imp-setting-line"><label>Unit</label><div class="imp-segment"><button class="@(unit == "mm" ? "selected" : "")" @onclick='() => SetUnit("mm")'>mm</button><button class="@(unit == "in" ? "selected" : "")" @onclick='() => SetUnit("in")'>in</button></div></div>
+        </section>
+        <section class="imp-section">
+            <div class="imp-section-head"><h3>Sheet margin</h3><span class="imp-help">ⓘ</span></div>
+            <div class="imp-grid2"><div><label>Top</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginTop" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>Right</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginRight" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>Bottom</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginBottom" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>Left</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginLeft" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div></div>
+        </section>
+        <section class="imp-section">
+            <div class="imp-section-head"><h3>Cutting</h3></div>
+            <label class="imp-toggle"><span>Identical sheets</span><InputCheckbox @bind-Value="identicalSheets" /></label>
+            <label class="imp-toggle"><span>Center on sheet</span><InputCheckbox @bind-Value="centerOnSheet" @bind-Value:after="RefreshPreview" /></label>
+        </section>
+        <section class="imp-section">
+            <div class="imp-section-head"><h3>Part spacing</h3></div><div><label>Gap between parts</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="gap" @bind-Value:after="RefreshPreview" /><small>mm</small></div></div>
+            <label class="imp-hint">Minimum copies per @(mode == "Sheet" ? "sheet" : "repeat")</label>
+            @foreach (var a in parts)
+            {
+                <div class="imp-min-row" @key="a.Id"><span>@a.Name</span><InputNumber class="form-control" min="1" @bind-Value="a.MinPerRepeat" @bind-Value:after="RefreshPreview" /></div>
+            }
+        </section>
+    }
+    else
+    {
+        <section class="imp-section"><h3>Optimization</h3><p class="imp-hint">Generate layouts using the selected sheet, parts, and setup.</p><button class="imp-primary" @onclick="Calculate">Find best layout</button><button class="imp-secondary" @onclick="ResetResults">Clear results</button>@if(!string.IsNullOrWhiteSpace(error)){
+            <div class="imp-error">@error</div>
+        }
+    </section>
+}
+<div class="imp-sidebar-bottom"><span>Step @(tab + 1) of 4</span><div>@if(tab > 0){
+    <button class="imp-secondary" @onclick="() => GoTo(tab - 1)">Back</button>
+}
+@if (tab < 3)
+{
+    <button class="imp-primary small" @onclick="() => GoTo(tab + 1)">Next</button>
+}
+</div></div>
+</aside>
+
+<main class="imp-preview-card">
+    <div class="imp-preview-toolbar"><div class="imp-layout-label">Layout <button type="button" @onclick="PreviousLayout" disabled="@(results.Count == 0 || selectedLayoutIndex == 0)">‹</button><b>@(results.Count == 0 ? "0 of 0" : $"{selectedLayoutIndex + 1} of {results.Count}")</b><button type="button" @onclick="NextLayout" disabled="@(results.Count == 0 || selectedLayoutIndex >= results.Count - 1)">›</button></div><div class="imp-zoom">−　⌕ 100%　＋　▣</div><div class="imp-actions"><button class="imp-primary" @onclick="Calculate">⇩ Save / Calculate</button></div></div>
+    <div class="imp-canvas">
+        <svg viewBox="-35 -35 @S(PreviewStockW + 100) @S(PreviewStockH + 95)" role="img" aria-label="Sheet imposition preview">
+            <defs><pattern id="impHatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#d5d9e0" stroke-width="2" /></pattern></defs>
+            <rect x="0" y="0" width="@S(PreviewStockW)" height="@S(PreviewStockH)" fill="#fff" stroke="#64748b" stroke-width="1.5" />
+            <rect x="0" y="0" width="@S(PreviewStockW)" height="@S(MTop)" fill="url(#impHatch)" />
+            <rect x="0" y="@S(PreviewStockH - MBottom)" width="@S(PreviewStockW)" height="@S(MBottom)" fill="url(#impHatch)" />
+            <rect x="0" y="@S(MTop)" width="@S(MLeft)" height="@S(Math.Max(0, PreviewStockH - MTop - MBottom))" fill="url(#impHatch)" />
+            <rect x="@S(PreviewStockW - MRight)" y="@S(MTop)" width="@S(MRight)" height="@S(Math.Max(0, PreviewStockH - MTop - MBottom))" fill="url(#impHatch)" />
+            <rect x="@S(MLeft)" y="@S(MTop)" width="@S(Math.Max(0, PreviewStockW - MLeft - MRight))" height="@S(Math.Max(0, PreviewStockH - MTop - MBottom))" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="5 4" />
+            @if (results.Count > 0 && ActiveResult is not null && ActiveResult.Placements.Count > 0)
+            {
+                <g transform="translate(@S(PreviewOffsetX) @S(PreviewOffsetY))">
+                    @foreach (var p in ActiveResult!.Placements)
+                    {
+                        <rect x="@S(p.X)" y="@S(p.Y)" width="@S(p.Width)" height="@S(p.Height)" fill="@PartFill(p.ArtworkIndex)" stroke="@PartStroke(p.ArtworkIndex)" stroke-width="1.4" />
+                        <foreignObject x="@S(p.X)" y="@S(p.Y + p.Height / 2 - 10)" width="@S(p.Width)" height="20"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:20px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:7px;color:#26364d;overflow:hidden;white-space:nowrap;">@p.ArtworkName</div></foreignObject>
+                    }
+                </g>
+            }
+            <g fill="#008b91" stroke="#008b91" stroke-width="1" font-size="12"><path d="M0 -15 V-22 M@S(PreviewStockW) -15 V-22 M0 -19 H@S(PreviewStockW)" fill="none" /><text x="@S(PreviewStockW / 2)" y="-24" text-anchor="middle">@D(PreviewStockW) @unit</text><path d="M@S(PreviewStockW+20) 0 H@S(PreviewStockW+26) M@S(PreviewStockW+20) @S(PreviewStockH) H@S(PreviewStockW+26) M@S(PreviewStockW+23) 0 V@S(PreviewStockH)" fill="none" /><text x="@S(PreviewStockW + 29)" y="@S(PreviewStockH / 2)" transform="rotate(90 @S(PreviewStockW + 29) @S(PreviewStockH / 2))" text-anchor="middle">@D(PreviewStockH) @unit</text><path d="M0 @S(PreviewStockH + 18) V@S(PreviewStockH+24) M@S(PreviewStockW) @S(PreviewStockH + 18) V@S(PreviewStockH+24) M0 @S(PreviewStockH + 21) H@S(PreviewStockW)" fill="none" /><text x="@S(PreviewStockW / 2)" y="@S(PreviewStockH + 38)" text-anchor="middle">@D(PreviewStockW) @unit</text></g>
+        </svg>
+    </div>
+    <div class="imp-preview-footer"><span>Usable area: @D(Math.Max(0, PreviewStockW - MLeft - MRight)) × @D(Math.Max(0, PreviewStockH - MTop - MBottom)) @unit</span><span>@(ActiveResult is not null ? $"{ActiveResult.Name} · {ActiveResult.WastePercent:0.##}% waste" : "Sheet format preview")</span></div>
+</main>
+</div>
+    @if (results.Count > 0)
+{
+    <div class="imp-results"><h3>Best 3 layouts — ranked by waste (lowest first)</h3><div class="row g-3">@foreach(var item in results){
+        <div class="col-xl-6"><ImpositionAlternativeCard Item="item" RequestedQuantity="TotalQty" RequestedQuantities="RequestedQtyByName" /></div>
+    }
+</div></div>
     }
 </div>
 
-@code {
-    private sealed class ArtworkRow
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Name { get; set; } = "Artwork 1";
-        public decimal WidthMm { get; set; } = 100;
-        public decimal HeightMm { get; set; } = 70;
-        public int Quantity { get; set; } = 1000;
-        public int MinimumPerRepeat { get; set; } = 1;
-        public bool AllowRotation { get; set; } = true;
-        public string? PdfPath { get; set; }
-        public string? PdfFileName { get; set; }
+<style>
+    .imp-shell {
+        padding: 12px 16px 24px;
+        background: #f4f5f8;
+        min-height: calc(100vh - 70px);
+        color: #172033
     }
 
-    private List<ArtworkRow> artworks = new() { new ArtworkRow() };
-    private string layoutMode = "Sheet";
-    private decimal stockWidth = 700, stockHeight = 500, margin = 10, gap = 3;
-    private string? uploadMessage, errorMessage;
-    private bool uploadError;
-    private List<ImpositionAlternative> results = new();
-    private int TotalQuantity => artworks.Sum(a => Math.Max(0, a.Quantity));
+    .imp-topline {
+        display: flex;
+        gap: 18px;
+        align-items: stretch;
+        margin-bottom: 12px
+    }
 
-    private void AddArtwork() => artworks.Add(new ArtworkRow { Name = $"Artwork {artworks.Count + 1}", WidthMm = 100, HeightMm = 70, Quantity = 1000, MinimumPerRepeat = 1 });
-    private void RemoveArtwork(int index) { if (index >= 0 && index < artworks.Count && artworks.Count > 1) artworks.RemoveAt(index); ResetResults(); }
+    .imp-tabs {
+        display: flex;
+        flex: 0 0 292px;
+        background: #fff;
+        border: 1px solid #e1e4eb;
+        border-radius: 13px;
+        padding: 5px;
+        box-shadow: 0 1px 3px #17203312
+    }
 
-    private async Task PdfsSelected(InputFileChangeEventArgs e)
-    {
-        uploadMessage = null; uploadError = false;
-        var files = e.GetMultipleFiles(50);
-        var saved = 0; var failures = new List<string>();
-        foreach (var file in files)
-        {
-            if (!string.Equals(Path.GetExtension(file.Name), ".pdf", StringComparison.OrdinalIgnoreCase)) { failures.Add($"{file.Name}: not a PDF"); continue; }
-            if (file.Size > 100 * 1024 * 1024) { failures.Add($"{file.Name}: exceeds 100 MB"); continue; }
-            try
-            {
-                var folder = Path.Combine(HostEnvironment.WebRootPath, "uploads", "imposition");
-                Directory.CreateDirectory(folder);
-                var safeName = Path.GetFileName(file.Name);
-                var storedName = $"{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}_{safeName}";
-                var path = Path.Combine(folder, storedName);
-                await using var source = file.OpenReadStream(100 * 1024 * 1024);
-                await using var target = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-                await source.CopyToAsync(target);
-                decimal widthMm;
-                decimal heightMm;
-                try
-                {
-                    using var pdf = PdfDocument.Open(path);
-                    if (pdf.NumberOfPages < 1)
-                        throw new InvalidDataException("The PDF has no pages.");
+    .imp-tab {
+        border: 0;
+        background: transparent;
+        color: #68738a;
+        border-radius: 9px;
+        flex: 1;
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px
+    }
 
-                    var firstPage = pdf.GetPage(1);
-                    // PDF page dimensions are reported in points (72 points = 1 inch).
-                    widthMm = Math.Round((decimal)firstPage.Width * 25.4m / 72m, 2);
-                    heightMm = Math.Round((decimal)firstPage.Height * 25.4m / 72m, 2);
-                    if (widthMm <= 0 || heightMm <= 0)
-                        throw new InvalidDataException("The first page has invalid dimensions.");
-                }
-                catch (Exception ex)
-                {
-                    try { File.Delete(path); } catch { }
-                    failures.Add($"{file.Name}: could not read PDF page dimensions ({ex.Message})");
-                    continue;
-                }
-
-                var row = new ArtworkRow
-                {
-                    Name = Path.GetFileNameWithoutExtension(safeName),
-                    PdfPath = path,
-                    PdfFileName = safeName,
-                    WidthMm = widthMm,
-                    HeightMm = heightMm,
-                    Quantity = 1000
-                };
-                if (artworks.Count == 1 && string.IsNullOrWhiteSpace(artworks[0].PdfPath) && artworks[0].Name == "Artwork 1" && artworks[0].WidthMm == 100 && artworks[0].HeightMm == 70 && artworks[0].Quantity == 1000) artworks[0] = row;
-                else artworks.Add(row);
-                saved++;
-            }
-            catch (Exception ex) { failures.Add($"{file.Name}: {ex.Message}"); }
+        .imp-tab span {
+            font-size: 18px
         }
-        uploadError = failures.Count > 0 && saved == 0;
-        uploadMessage = $"Added {saved} PDF artwork(s). First-page dimensions were detected automatically; review them and enter the required quantities." + (failures.Count > 0 ? " Issues: " + string.Join("; ", failures) : "");
-        ResetResults();
+
+        .imp-tab.active {
+            background: #5145f5;
+            color: #fff
+        }
+
+    .imp-stats {
+        display: grid;
+        grid-template-columns: repeat(7,minmax(100px,1fr));
+        gap: 7px;
+        flex: 1
+    }
+
+    .imp-stat {
+        background: #fff;
+        border: 1px solid #e1e4eb;
+        border-radius: 12px;
+        padding: 9px 11px;
+        min-width: 0;
+        box-shadow: 0 1px 3px #1720330b
+    }
+
+        .imp-stat b {
+            display: block;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .imp-stat small {
+            display: block;
+            color: #788398;
+            font-size: 11px;
+            margin-top: 3px
+        }
+
+    .imp-workspace {
+        display: grid;
+        grid-template-columns: 292px minmax(0,1fr);
+        gap: 18px;
+        min-height: calc(100vh - 250px)
+    }
+
+    .imp-sidebar {
+        background: #fff;
+        border: 1px solid #e1e4eb;
+        border-radius: 14px;
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        min-height: 600px;
+        box-shadow: 0 1px 3px #1720330b
+    }
+
+    .imp-section {
+        padding: 17px 2px;
+        border-bottom: 1px solid #e7e9ef
+    }
+
+        .imp-section h3 {
+            font-size: 13px;
+            font-weight: 700;
+            margin: 0
+        }
+
+        .imp-section label {
+            font-size: 11px;
+            color: #45516a;
+            margin: 12px 0 5px;
+            display: block
+        }
+
+        .imp-section .form-control, .imp-section .form-select {
+            font-size: 12px;
+            min-height: 31px;
+            border-color: #dce1ea;
+            padding: 5px 8px
+        }
+
+    .imp-section-head, .imp-setting-line, .imp-section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center
+    }
+
+    .imp-help {
+        color: #a3aabd
+    }
+
+    .imp-hint {
+        font-size: 10px;
+        color: #8b94a7;
+        margin: 7px 0 12px
+    }
+
+    .imp-segment {
+        display: flex;
+        border: 1px solid #dce1ea;
+        border-radius: 8px;
+        overflow: hidden
+    }
+
+        .imp-segment button {
+            border: 0;
+            background: #fff;
+            padding: 5px 18px;
+            font-size: 11px;
+            color: #58647b
+        }
+
+            .imp-segment button.selected {
+                background: #5145f5;
+                color: white
+            }
+
+    .imp-grid2 {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 5px;
+        width: 100%;
+    }
+
+        .imp-grid2 > div {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .imp-grid2 .form-control {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            padding: 3px 4px;
+            font-size: 10px;
+            box-sizing: border-box;
+        }
+
+    .imp-grid3 {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 8px
+    }
+
+    .imp-unit-input {
+        position: relative
+    }
+
+        .imp-unit-input small {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            color: #8791a4;
+            font-size: 10px
+        }
+
+        .imp-unit-input .form-control {
+            padding-right: 27px
+        }
+
+    .imp-toggle {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        margin: 12px 0 !important
+    }
+
+        .imp-toggle input {
+            width: 34px;
+            height: 18px;
+            accent-color: #5145f5
+        }
+
+    .imp-min-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 7px 0
+    }
+
+        .imp-min-row span {
+            font-size: 11px
+        }
+
+        .imp-min-row .form-control {
+            max-width: 76px
+        }
+
+    .imp-check {
+        display: flex !important;
+        align-items: center;
+        gap: 7px
+    }
+
+        .imp-check input {
+            accent-color: #5145f5
+        }
+
+    .imp-part-row {
+        padding: 12px 0;
+        border-bottom: 1px solid #edf0f4
+    }
+
+    .imp-part-title {
+        display: flex;
+        align-items: center;
+        gap: 7px
+    }
+
+        .imp-part-title .form-control {
+            flex: 1
+        }
+
+    .imp-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%
+    }
+
+    .imp-remove {
+        border: 0;
+        background: none;
+        color: #d44b55;
+        font-size: 18px
+    }
+
+    .imp-add {
+        border: 0;
+        background: #f0efff;
+        color: #5145f5;
+        border-radius: 7px;
+        padding: 5px 9px;
+        font-size: 11px
+    }
+
+    .imp-primary, .imp-secondary {
+        border: 1px solid #5145f5;
+        background: #5145f5;
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 13px;
+        font-size: 11px
+    }
+
+    .imp-secondary {
+        background: #fff;
+        color: #59647a;
+        border-color: #dce1ea
+    }
+
+    .imp-primary.small {
+        padding: 6px 12px
+    }
+
+    .imp-sidebar-bottom {
+        margin-top: auto;
+        padding: 13px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #8791a4;
+        font-size: 11px
+    }
+
+        .imp-sidebar-bottom div {
+            display: flex;
+            gap: 7px
+        }
+
+    .imp-preview-card {
+        background: #fff;
+        border: 1px solid #e1e4eb;
+        border-radius: 14px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        box-shadow: 0 1px 3px #1720330b
+    }
+
+    .imp-preview-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px
+    }
+
+    .imp-layout-label, .imp-zoom {
+        border: 1px solid #e5e8ef;
+        border-radius: 20px;
+        padding: 8px 12px;
+        font-size: 11px;
+        color: #657087
+    }
+
+        .imp-layout-label span {
+            padding: 0 12px;
+            color: #aab1bf
+        }
+
+        .imp-layout-label b {
+            color: #202b40
+        }
+
+    .imp-actions {
+        display: flex;
+        gap: 7px
+    }
+
+        .imp-actions button {
+            border: 1px solid #dce1ea;
+            background: #fff;
+            border-radius: 22px;
+            padding: 8px 13px;
+            font-size: 11px;
+            color: #344056
+        }
+
+            .imp-actions button.imp-primary {
+                background: #5145f5;
+                color: white;
+                border-color: #5145f5
+            }
+
+    .imp-canvas {
+        background: #f2f3f6;
+        border-radius: 8px;
+        flex: 1;
+        min-height: 550px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+        padding: 25px
+    }
+
+        .imp-canvas svg {
+            width: 100%;
+            height: auto;
+            max-height: calc(100vh - 320px);
+            min-height: 430px;
+            overflow: visible
+        }
+
+    .imp-preview-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 3px 0;
+        color: #818ba0;
+        font-size: 10px
+    }
+
+    .imp-results {
+        margin-top: 18px
+    }
+
+        .imp-results h3 {
+            font-size: 17px
+        }
+
+    .imp-error {
+        margin-top: 12px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #fff0f0;
+        color: #a92e38;
+        font-size: 11px
+    }
+
+    .imp-material-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 13px;
+        padding: 10px;
+        background: #f7f8fc;
+        border: 1px solid #e8ebf2;
+        border-radius: 9px
+    }
+
+        .imp-material-summary div {
+            display: flex;
+            flex-direction: column;
+            gap: 3px
+        }
+
+        .imp-material-summary span {
+            font-size: 10px;
+            color: #818ba0
+        }
+
+        .imp-material-summary b {
+            font-size: 13px;
+            color: #263248
+        }
+
+    .imp-quantity-field {
+        margin-top: 7px
+    }
+
+        .imp-quantity-field label {
+            margin-top: 8px !important
+        }
+
+        .imp-quantity-field small {
+            display: block;
+            color: #8791a4;
+            font-size: 10px;
+            margin-top: 4px
+        }
+
+    .imp-part-demand {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        padding: 6px 8px;
+        background: #f7f8fc;
+        border-radius: 6px;
+        font-size: 10px;
+        color: #788398
+    }
+
+        .imp-part-demand b {
+            font-size: 12px;
+            color: #263248
+        }
+
+    .imp-demand-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 10px;
+        background: #f0efff;
+        border: 1px solid #e2e0ff;
+        border-radius: 9px
+    }
+
+        .imp-demand-summary div {
+            display: flex;
+            flex-direction: column;
+            gap: 3px
+        }
+
+        .imp-demand-summary span {
+            font-size: 10px;
+            color: #777b91
+        }
+
+        .imp-demand-summary b {
+            font-size: 14px;
+            color: #263248
+        }
+
+    @@media(max-width:1250px) {
+        .imp-topline {
+            flex-wrap: wrap
+        }
+
+        .imp-stats {
+            grid-template-columns: repeat(4,1fr)
+        }
+
+        .imp-workspace {
+            grid-template-columns: 270px minmax(0,1fr)
+        }
+    }
+
+    @@media(max-width:800px) {
+        .imp-workspace {
+            grid-template-columns: 1fr
+        }
+
+        .imp-sidebar {
+            min-height: 0
+        }
+
+        .imp-canvas {
+            min-height: 380px
+        }
+
+            .imp-canvas svg {
+                min-height: 300px
+            }
+
+        .imp-zoom {
+            display: none
+        }
+
+        .imp-tabs {
+            flex-basis: 100%;
+            height: 64px
+        }
+
+        .imp-stats {
+            grid-template-columns: repeat(2,1fr)
+        }
+    }
+</style>
+
+@code {
+    private sealed class PartRow { public Guid Id { get; set; } = Guid.NewGuid(); public string Name { get; set; } = "Part 1"; public decimal W { get; set; } = 310; public decimal H { get; set; } = 160; public int Qty { get; set; } = 24; public int MinPerRepeat { get; set; } = 1; public bool Rotate { get; set; } = true; }
+    private sealed record StockFormat(string Name, decimal W, decimal H);
+    private readonly List<StockFormat> sheetFormats = new() { new("1400 × 1000", 1400, 1000), new("700 × 1000", 700, 1000), new("500 × 700", 500, 700), new("350 × 500", 350, 500), new("900 × 1200", 900, 1200), new("600 × 900", 600, 900), new("450 × 600", 450, 600), new("300 × 450", 300, 450) };
+    private readonly List<StockFormat> rollFormats = new() { new("330 mm roll", 330, 500), new("440 mm roll", 440, 500), new("520 mm roll", 520, 500), new("640 mm roll", 640, 500), new("700 mm roll", 700, 500) };
+    private List<PartRow> parts = new() { new PartRow() }; private int tab; private int selectedLayoutIndex; private string mode = "Sheet", formatName = "1400 × 1000", unit = "mm"; private decimal stockW = 1400, stockH = 1000, marginTop = 0, marginRight = 0, marginBottom = 0, marginLeft = 0, gap = 0, paperGsm = 300; private int? availableStockUnits; private bool identicalSheets, centerOnSheet; private string? error; private List<ImpositionAlternative> results = new();
+    private IEnumerable<StockFormat> Formats => mode == "Sheet" ? sheetFormats : rollFormats; private int TotalQty => parts.Sum(x => Math.Max(0, x.Qty));
+    private ImpositionAlternative? ActiveResult => results.Count == 0 ? null : results[Math.Clamp(selectedLayoutIndex, 0, results.Count - 1)];
+    private decimal PreviewStockW => ActiveResult?.StockWidthMm ?? stockW;
+    private decimal PreviewStockH => ActiveResult?.StockHeightMm ?? stockH;
+    private void PreviousLayout() { if (selectedLayoutIndex > 0) selectedLayoutIndex--; }
+    private void NextLayout() { if (selectedLayoutIndex < results.Count - 1) selectedLayoutIndex++; }
+    private int RequiredStockUnits => ActiveResult?.SheetsRequired ?? 0;
+    private int? StockShortage => availableStockUnits.HasValue ? Math.Max(0, RequiredStockUnits - availableStockUnits.Value) : null;
+    private int? StockRemaining => availableStockUnits.HasValue ? Math.Max(0, availableStockUnits.Value - RequiredStockUnits) : null;
+    private decimal RequiredMaterialAreaM2 => ActiveResult is { } r ? r.StockWidthMm * r.StockHeightMm / 1_000_000m * r.SheetsRequired : 0m;
+    private decimal? EstimatedPaperKg => results.Count == 0 || paperGsm <= 0 ? null : RequiredMaterialAreaM2 * paperGsm / 1000m; private IReadOnlyDictionary<string, int> RequestedQtyByName => parts.GroupBy(x => x.Name.Trim(), StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.Sum(x => x.Qty), StringComparer.Ordinal);
+    private decimal MTop => unit == "in" ? marginTop * 25.4m : marginTop; private decimal MRight => unit == "in" ? marginRight * 25.4m : marginRight; private decimal MBottom => unit == "in" ? marginBottom * 25.4m : marginBottom; private decimal MLeft => unit == "in" ? marginLeft * 25.4m : marginLeft;
+    private static string S(decimal n) => n.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+    // All solver geometry remains in millimetres; only the displayed dimension labels follow Setup > Units.
+    private string D(decimal millimetres) => (unit == "in" ? millimetres / 25.4m : millimetres).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+    private decimal PreviewOffsetX
+    {
+        get
+        {
+            var placements = ActiveResult?.Placements;
+            if (!centerOnSheet || placements is null || placements.Count == 0) return 0m;
+            var min = placements.Min(p => p.X); var max = placements.Max(p => p.X + p.Width);
+            var usableCenter = (MLeft + (PreviewStockW - MLeft - MRight) / 2m);
+            return usableCenter - (min + max) / 2m;
+        }
+    }
+    private decimal PreviewOffsetY
+    {
+        get
+        {
+            var placements = ActiveResult?.Placements;
+            if (!centerOnSheet || mode == "Roll" || placements is null || placements.Count == 0) return 0m;
+            var min = placements.Min(p => p.Y); var max = placements.Max(p => p.Y + p.Height);
+            var usableCenter = (MTop + (PreviewStockH - MTop - MBottom) / 2m);
+            return usableCenter - (min + max) / 2m;
+        }
+    }
+    private void GoTo(int n) { tab = Math.Clamp(n, 0, 3); if (tab == 1) RefreshPreview(); }
+    private void SetUnit(string value) { if (unit == value) return; if (value == "in") { marginTop /= 25.4m; marginRight /= 25.4m; marginBottom /= 25.4m; marginLeft /= 25.4m; } else { marginTop *= 25.4m; marginRight *= 25.4m; marginBottom *= 25.4m; marginLeft *= 25.4m; } unit = value; RefreshPreview(); }
+    private void ModeChanged() { formatName = Formats.First().Name; ApplyFormat(); }
+    private void ApplyFormat() { if (formatName == "Custom") return; var f = Formats.FirstOrDefault(x => x.Name == formatName); if (f is null) return; stockW = f.W; stockH = f.H; RefreshPreview(); }
+    private void AddPart() { parts.Add(new PartRow { Name = $"Part {parts.Count + 1}" }); RefreshPreview(); }
+    private void RemovePart(int i) { if (i >= 0 && i < parts.Count && parts.Count > 1) parts.RemoveAt(i); RefreshPreview(); }
+    private void RefreshPreview()
+    {
+        results.Clear(); selectedLayoutIndex = 0; error = null;
+        if (stockW <= 0 || stockH <= 0 || MTop < 0 || MRight < 0 || MBottom < 0 || MLeft < 0 || gap < 0 || MLeft + MRight >= stockW || MTop + MBottom >= stockH) return;
+        if (parts.Count == 0 || parts.Any(x => string.IsNullOrWhiteSpace(x.Name) || x.W <= 0 || x.H <= 0 || x.Qty <= 0 || x.MinPerRepeat < 1)) return;
+        try
+        {
+            var input = parts.Select(x => new ImpositionArtwork(x.Name.Trim(), x.W, x.H, x.Qty, x.Rotate, x.MinPerRepeat)).ToList();
+            var conservativeMargin = Math.Max(Math.Max(MTop, MBottom), Math.Max(MLeft, MRight));
+            results = Optimizer.OptimizeMixed(new MixedImpositionRequest(input, stockW, stockH, conservativeMargin, gap, mode == "Roll", 2)).ToList();
+        }
+        catch { results.Clear(); }
     }
 
     private void Calculate()
     {
-        errorMessage = null; results.Clear();
+        error = null; results.Clear(); selectedLayoutIndex = 0;
         try
         {
-            var inputs = artworks.Select(a => new ImpositionArtwork(a.Name.Trim(), a.WidthMm, a.HeightMm, a.Quantity, a.AllowRotation, a.MinimumPerRepeat)).ToList();
-            results = Optimizer.OptimizeMixed(new MixedImpositionRequest(inputs, stockWidth, stockHeight, margin, gap, layoutMode == "Roll", 30)).ToList();
-            if (results.All(x => x.ProducedQuantity == 0)) errorMessage = "No artwork fits the usable stock dimensions. Check artwork sizes, stock width, margins and rotation settings.";
-            else if (results.Any(x => x.ProducedQuantity < TotalQuantity)) errorMessage = "Warning: one or more alternatives could not place every requested piece. Review dimensions and layout results.";
+            if (mode != "Sheet")
+            {
+                var inputRoll = parts.Select(x => new ImpositionArtwork(x.Name.Trim(), x.W, x.H, x.Qty, x.Rotate, x.MinPerRepeat)).ToList();
+                var rollMargin = Math.Max(Math.Max(MTop, MBottom), Math.Max(MLeft, MRight));
+                results = Optimizer.OptimizeMixed(new MixedImpositionRequest(inputRoll, stockW, stockH, rollMargin, gap, true, 15)).ToList();
+            }
+            else
+            {
+                var input = parts.Select(x => new ImpositionArtwork(x.Name.Trim(), x.W, x.H, x.Qty, x.Rotate, x.MinPerRepeat)).ToList();
+                var conservativeMargin = Math.Max(Math.Max(MTop, MBottom), Math.Max(MLeft, MRight));
+                var candidates = new List<ImpositionAlternative>();
+                foreach (var format in sheetFormats)
+                {
+                    try
+                    {
+                        var found = Optimizer.OptimizeMixed(new MixedImpositionRequest(input, format.W, format.H, conservativeMargin, gap, false, 2));
+                        foreach (var layout in found)
+                            if (layout.ProducedQuantity >= TotalQty && layout.SheetsRequired > 0)
+                                candidates.Add(layout with { Name = format.Name });
+                    }
+                    catch { /* This stock size cannot produce a valid repeat; continue with the other defaults. */ }
+                }
+                results = candidates
+                    .OrderBy(x => x.WastePercent)
+                    .ThenBy(x => x.SheetsRequired)
+                    .ThenBy(x => x.StockWidthMm * x.StockHeightMm)
+                    .Take(3)
+                    .ToList();
+            }
+            if (results.Count == 0 || results.All(x => x.ProducedQuantity < TotalQty))
+                error = "No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation.";
         }
-        catch (Exception ex) { errorMessage = ex.Message; results.Clear(); }
+        catch (Exception ex) { error = ex.Message; results.Clear(); }
     }
-    private void ResetResults() { results.Clear(); errorMessage = null; }
+    private static readonly string[] PartColors = { "#dbeafe", "#dcfce7", "#fef3c7", "#fce7f3", "#ede9fe", "#ffedd5", "#cffafe", "#e2e8f0" }; private static readonly string[] PartBorders = { "#2563eb", "#16a34a", "#d97706", "#db2777", "#7c3aed", "#ea580c", "#0891b2", "#475569" }; private static string PartFill(int i) => PartColors[Math.Abs(i) % PartColors.Length]; private static string PartStroke(int i) => PartBorders[Math.Abs(i) % PartBorders.Length];
+    private void ResetResults() { results.Clear(); selectedLayoutIndex = 0; error = null; }
 }
-
-```
