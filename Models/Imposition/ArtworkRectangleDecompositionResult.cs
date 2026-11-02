@@ -12,4 +12,8 @@ public sealed record ArtworkRectangleDecompositionResult(
     string? PreviewSvgPath,
     bool NeedsReview,
     string Message,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    /// <summary>Path to the SVG compound path representing the geometric union of all generated rectangles.</summary>
+    public string? MergedShapeSvgPath { get; init; }
+}

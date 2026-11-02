@@ -1,3 +1,5 @@
+using HamiChap_MES_ERP.Models.Imposition;
+
 namespace HamiChap_MES_ERP.Services.Imposition;
 
 public sealed record ImpositionRequest(
@@ -32,9 +34,16 @@ public sealed record ImpositionAlternative(
     string SolverStatus = "Heuristic",
     IReadOnlyDictionary<string, int>? PlannedQuantityPerArtwork = null);
 
-public sealed record ImpositionPlacement(int Index, decimal X, decimal Y, decimal Width, decimal Height, string ArtworkName = "", int ArtworkIndex = 0);
+public sealed record ImpositionPlacement(
+    int Index, decimal X, decimal Y, decimal Width, decimal Height,
+    string ArtworkName = "", int ArtworkIndex = 0,
+    bool Rotated = false,
+    IReadOnlyList<ArtworkOccupiedRectangle>? OccupiedRectangles = null);
 
-public sealed record ImpositionArtwork(string Name, decimal WidthMm, decimal HeightMm, int Quantity, bool AllowRotation = true, int MinimumPerRepeat = 0);
+public sealed record ImpositionArtwork(
+    string Name, decimal WidthMm, decimal HeightMm, int Quantity,
+    bool AllowRotation = true, int MinimumPerRepeat = 0,
+    IReadOnlyList<ArtworkOccupiedRectangle>? OccupiedRectangles = null);
 
 public sealed record MixedImpositionRequest(
     IReadOnlyList<ImpositionArtwork> Artworks,
