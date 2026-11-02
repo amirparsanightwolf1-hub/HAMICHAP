@@ -8,46 +8,52 @@
         <div class="row g-2 mb-3">
             <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">@YieldLabel</div><strong>@YieldValue</strong></div></div>
             <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Material waste</div><strong>@Item.WastePercent.ToString("0.##")%</strong></div></div>
-            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Utilization (area)</div><strong>@Item.UtilizationPercent.ToString("0.##")%</strong></div></div>
-            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Good pieces requested</div><strong>@RequestedQuantity.ToString("N0")</strong></div></div>
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Area utilization</div><strong>@Item.UtilizationPercent.ToString("0.##")%</strong></div></div>
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Requested quantity</div><strong>@RequestedQuantity.ToString("N0")</strong></div></div>
         </div>
-        <div class="small mb-2">Pieces per sheet / repeat: <strong>@Item.PiecesPerSheet</strong> · Total planned output: <strong>@Item.ProducedQuantity</strong></div>
-        @if (Item.PiecesPerArtwork is not null) { <div class="small mb-2">Per repeat: @string.Join(" · ", Item.PiecesPerArtwork.Select(kv => $"{kv.Key}: {kv.Value}"))</div> }
-        @if (Item.PlannedQuantityPerArtwork is not null) { <div class="small mb-2">Planned output: @string.Join(" · ", Item.PlannedQuantityPerArtwork.Select(kv => $"{kv.Key}: {kv.Value:N0}"))</div> }
+        <div class="small mb-2">Pieces in each repeat: <strong>@Item.PiecesPerSheet</strong> · Total planned output: <strong>@Item.ProducedQuantity.ToString("N0")</strong></div>
+        @if (Item.PiecesPerArtwork is not null)
+        {
+            <div class="small mb-2">Per repeat: @string.Join(" · ", Item.PiecesPerArtwork.Select(kv => $"{kv.Key}: {kv.Value:N0}"))</div>
+        }
+        @if (Item.PlannedQuantityPerArtwork is not null)
+        {
+            <div class="small mb-2">Planned output: @string.Join(" · ", Item.PlannedQuantityPerArtwork.Select(kv => $"{kv.Key}: {kv.Value:N0}"))</div>
+        }
         <div class="small mb-2">Solver: <strong>@Item.SolverStatus</strong></div>
-        @if (Item.Mode == "Sheet") { <div class="small mb-2">Sheets required: <strong>@Item.SheetsRequired</strong></div> }
-        else { <div class="small mb-2">Estimated roll length for full quantity: <strong>@Item.RollLengthMm.ToString("N0") mm</strong></div><div class="small text-muted mb-2">Preview shows one repeat row across the web.</div> }
-        <div class="small text-muted mb-2">Waste area: @Item.WasteAreaMm2.ToString("N0") mm² · Used area: @Item.UsedAreaMm2.ToString("N0") mm²</div>
-        <div class="imposition-preview" aria-label="Contour-aware imposition preview">
-            <svg viewBox="@($"0 0 {PreviewWidth} {PreviewHeight}")" role="img" aria-label="@(Item.Mode == "Roll" ? "One roll repeat layout" : "Full sheet layout")" preserveAspectRatio="xMidYMid meet">
+        @if (Item.Mode == "Sheet")
+        {
+            <div class="small mb-2">Sheets required: <strong>@Item.SheetsRequired.ToString("N0")</strong></div>
+        }
+        else
+        {
+            <div class="small mb-2">Total roll length: <strong>@Item.RollLengthMm.ToString("N0") mm</strong></div>
+            <div class="small text-muted mb-2">The preview shows one repeat; the same layout is repeated for the full run.</div>
+        }
+        <div class="small text-muted mb-2">Material area: @Item.StockAreaMm2.ToString("N0") mm² · Artwork area: @Item.UsedAreaMm2.ToString("N0") mm² · Waste area: @Item.WasteAreaMm2.ToString("N0") mm²</div>
+
+        <div class="imposition-preview" aria-label="Rectangular imposition preview">
+            <svg viewBox="@($"0 0 {PreviewWidth} {PreviewHeight}")" role="img"
+                 aria-label="@(Item.Mode == "Roll" ? "One roll repeat layout" : "One sheet layout")"
+                 preserveAspectRatio="xMidYMid meet">
                 <rect x="0" y="0" width="@PreviewWidth" height="@PreviewHeight" class="stock-outline" />
-                @foreach (var p in PreviewPlacements)
+                @foreach (var p in Item.Placements)
                 {
-                    var components = DisplayComponents(p);
-                    <g @key="p.Index" transform="@PieceTransform(p)">
-                        @foreach (var r in components)
-                        {
-                            <rect x="@r.Xmm" y="@r.Ymm" width="@r.WidthMm" height="@r.HeightMm" class="@PieceClass(p)">
-                                <title>@p.ArtworkName — occupied contour rectangle</title>
-                            </rect>
-                        }
-                        @if (components.Count == 0)
-                        {
-                            <rect x="0" y="0" width="@p.Width" height="@p.Height" class="@PieceClass(p)" />
-                        }
-                    </g>
+                    <rect @key="p.Index" x="@p.X" y="@p.Y" width="@p.Width" height="@p.Height"
+                          class="@PieceClass(p)">
+                        <title>@p.ArtworkName — @p.Width × @p.Height mm@(p.Rotated ? " (rotated)" : "")</title>
+                    </rect>
                 }
             </svg>
         </div>
-        @if (Item.Mode == "Roll") { <div class="small text-muted mt-2">Illustrated repeat height: @PreviewHeight.ToString("0.##") mm · Web width: @PreviewWidth.ToString("0.##") mm</div> }
     </div>
 </div>
 
 <style>
 .imposition-preview{width:100%;min-height:110px;max-height:380px;display:flex;align-items:center;justify-content:center;overflow:auto;padding:10px;border:1px solid #adb5bd;background:#f8f9fa;border-radius:5px}
-.imposition-preview svg{display:block;width:100%;height:auto;max-height:360px;min-width:0;overflow:visible}
+.imposition-preview svg{display:block;width:100%;height:auto;max-height:360px;min-width:0}
 .stock-outline{fill:#fff;stroke:#6c757d;stroke-width:1;vector-effect:non-scaling-stroke}
-.piece-outline,.piece-1,.piece-0{fill:#dbe2f1;stroke:#43507a;stroke-width:1;vector-effect:non-scaling-stroke}
+.piece-1{fill:#dbe2f1;stroke:#43507a;stroke-width:1;vector-effect:non-scaling-stroke}
 .piece-2{fill:#f8dfbd;stroke:#9a5b16;stroke-width:1;vector-effect:non-scaling-stroke}
 .piece-3{fill:#d8eee5;stroke:#28745c;stroke-width:1;vector-effect:non-scaling-stroke}
 .piece-4{fill:#eadcf5;stroke:#71459a;stroke-width:1;vector-effect:non-scaling-stroke}
@@ -56,14 +62,10 @@
 @code {
     [Parameter, EditorRequired] public ImpositionAlternative Item { get; set; } = default!;
     [Parameter] public int RequestedQuantity { get; set; }
+
     private decimal PreviewWidth => Item.StockWidthMm > 0 ? Item.StockWidthMm : 1m;
     private decimal PreviewHeight => Item.StockHeightMm > 0 ? Item.StockHeightMm : 1m;
-    private IReadOnlyList<ImpositionPlacement> PreviewPlacements => Item.Placements;
-    private string PieceClass(ImpositionPlacement p) => p.ArtworkIndex <= 0 ? "piece-outline" : $"piece-{(p.ArtworkIndex % 4) + 1}";
     private string YieldLabel => Item.Mode == "Sheet" ? "Sheets required" : "Total roll length";
     private string YieldValue => Item.Mode == "Sheet" ? Item.SheetsRequired.ToString("N0") : $"{Item.RollLengthMm:N0} mm";
-    private IReadOnlyList<HamiChap_MES_ERP.Models.Imposition.ArtworkOccupiedRectangle> DisplayComponents(ImpositionPlacement p) =>
-        p.OccupiedRectangles ?? Array.Empty<HamiChap_MES_ERP.Models.Imposition.ArtworkOccupiedRectangle>();
-    private string PieceTransform(ImpositionPlacement p) =>
-        p.Rotated ? $"translate({p.X + p.Width} {p.Y}) rotate(90)" : $"translate({p.X} {p.Y})";
+    private string PieceClass(ImpositionPlacement p) => $"piece-{(Math.Abs(p.ArtworkIndex) % 4) + 1}";
 }
