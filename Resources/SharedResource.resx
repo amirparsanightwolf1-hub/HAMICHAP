@@ -2202,4 +2202,81 @@
   <data name="PartiallyDelivered" xml:space="preserve">
     <value>PartiallyDelivered</value>
   </data>
+  <data name="RollOrientationOption" xml:space="preserve">
+    <value>Roll orientation</value>
+  </data>
+  <data name="ServiceUvRotary" xml:space="preserve">
+    <value>Rotary UV</value>
+  </data>
+  <data name="ServiceUvEmbossed" xml:space="preserve">
+    <value>Embossed UV</value>
+  </data>
+  <data name="ServiceUvFlat" xml:space="preserve">
+    <value>Flat UV</value>
+  </data>
+  <data name="ServiceUvSpot" xml:space="preserve">
+    <value>Spot UV</value>
+  </data>
+  <data name="ServiceMatteLamination" xml:space="preserve">
+    <value>Matte lamination</value>
+  </data>
+  <data name="ServiceGlossLamination" xml:space="preserve">
+    <value>Gloss lamination</value>
+  </data>
+  <data name="ServiceRotaryFoil" xml:space="preserve">
+    <value>Rotary foil stamping</value>
+  </data>
+  <data name="ServiceFlatFoil" xml:space="preserve">
+    <value>Flat foil stamping</value>
+  </data>
+  <data name="ServiceFoilColor" xml:space="preserve">
+    <value>Foil color</value>
+  </data>
+  <data name="ServiceRotaryDie" xml:space="preserve">
+    <value>Rotary die</value>
+  </data>
+  <data name="ServiceFlatDie" xml:space="preserve">
+    <value>Flat die</value>
+  </data>
+  <data name="ServiceDylanMilan" xml:space="preserve">
+    <value>Dylan Milan</value>
+  </data>
+  <data name="CmykCyan" xml:space="preserve">
+    <value>Cyan</value>
+  </data>
+  <data name="CmykMagenta" xml:space="preserve">
+    <value>Magenta</value>
+  </data>
+  <data name="CmykYellow" xml:space="preserve">
+    <value>Yellow</value>
+  </data>
+  <data name="CmykBlack" xml:space="preserve">
+    <value>Black</value>
+  </data>
+  <data name="NewOrder" xml:space="preserve">
+    <value>New Order</value>
+  </data>
+
+	<data name="ChooseCustomerAndJobType" xml:space="preserve">
+  <value>Choose a customer and job type</value>
+</data>
+	<data name="JobType" xml:space="preserve">
+  <value>Job type</value>
+</data>
+	<data name="RollJob" xml:space="preserve">
+  <value>Roll Job</value>
+</data>
+	<data name="CreateJob" xml:space="preserve">
+  <value>Create job</value>
+</data>
+	<data name="SelectExisting" xml:space="preserve">
+  <value>Select existing</value>
+</data>
+	<data name="SelectExistingOrCreateCustomer" xml:space="preserve">
+  <value>Select an existing customer or create a new one.</value>
+</data>
+	<data name="CustomerCodeAndNameRequired" xml:space="preserve">
+  <value>Customer code and customer name are required.</value>
+</data>
+
 </root>

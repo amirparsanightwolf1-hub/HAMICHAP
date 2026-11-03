@@ -2202,4 +2202,64 @@
   <data name="PartiallyDelivered" xml:space="preserve">
     <value>تحویل جزئی</value>
   </data>
+  <data name="RollOrientationOption" xml:space="preserve">
+    <value>گزینه جهت رول</value>
+  </data>
+  <data name="ServiceUvRotary" xml:space="preserve">
+    <value>یووی روتاری</value>
+  </data>
+  <data name="ServiceUvEmbossed" xml:space="preserve">
+    <value>یووی برجسته</value>
+  </data>
+  <data name="ServiceUvFlat" xml:space="preserve">
+    <value>یووی تخت</value>
+  </data>
+  <data name="ServiceUvSpot" xml:space="preserve">
+    <value>یووی موضعی</value>
+  </data>
+  <data name="ServiceMatteLamination" xml:space="preserve">
+    <value>سلفون مات</value>
+  </data>
+  <data name="ServiceGlossLamination" xml:space="preserve">
+    <value>سلفون براق</value>
+  </data>
+  <data name="ServiceRotaryFoil" xml:space="preserve">
+    <value>طلاکوب روتاری</value>
+  </data>
+  <data name="ServiceFlatFoil" xml:space="preserve">
+    <value>طلاکوب تخت</value>
+  </data>
+  <data name="ServiceFoilColor" xml:space="preserve">
+    <value>رنگ فویل</value>
+  </data>
+  <data name="ServiceRotaryDie" xml:space="preserve">
+    <value>قالب روتاری</value>
+  </data>
+  <data name="ServiceFlatDie" xml:space="preserve">
+    <value>قالب تخت</value>
+  </data>
+  <data name="ServiceDylanMilan" xml:space="preserve">
+    <value>دیلن میلن</value>
+  </data>
+  <data name="CmykCyan" xml:space="preserve">
+    <value>فیروزه‌ای</value>
+  </data>
+  <data name="CmykMagenta" xml:space="preserve">
+    <value>ارغوانی</value>
+  </data>
+  <data name="CmykYellow" xml:space="preserve">
+    <value>زرد</value>
+  </data>
+  <data name="CmykBlack" xml:space="preserve">
+    <value>مشکی</value>
+  </data>
+  <data name="NewOrder" xml:space="preserve">
+    <value>ثبت سفارش جدید</value>
+  </data>
+	<data name="ChooseCustomerAndJobType" xml:space="preserve">
+  <value>مشتری و نوع کار را انتخاب کنید</value>
+</data>
+	<data name="CreateJob" xml:space="preserve">
+  <value>ایجاد کار</value>
+</data>
 </root>

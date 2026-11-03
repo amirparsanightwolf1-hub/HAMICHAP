@@ -10,91 +10,685 @@
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
 
-<PageTitle>@LocalizationService["CustomerApprovalProof"]</PageTitle>
-
 <style>
-    .proof-page { max-width: 1320px; margin: 0 auto; color: #20283a; }
-    .proof-sheet { background:#fff; border:1px solid #e0e5ed; padding:22px; border-radius:16px; box-shadow:0 14px 38px rgba(20,32,60,.08); }
-    .proof-section { min-width:0; }
-    .proof-section-heading { display:flex; align-items:center; gap:8px; margin:0 0 10px; color:#17234a; font-size:.82rem; font-weight:800; letter-spacing:.045em; text-transform:uppercase; }
-    .proof-section-heading:before { content:""; width:4px; height:17px; flex:0 0 4px; border-radius:4px; background:#536a9a; }
-    .proof-two-col { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-    .proof-three-col { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
-    .proof-data-box { border:1px solid #e0e6ef; border-radius:10px; padding:10px 12px; background:linear-gradient(180deg,#fff,#fbfcfe); min-width:0; }
-    .proof-data-label { color:#69758a; font-size:.72rem; font-weight:650; text-transform:uppercase; letter-spacing:.035em; margin-bottom:4px; }
-    .proof-data-value { color:#20283a; font-size:.9rem; font-weight:700; overflow-wrap:anywhere; }
-    .cmyk-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; }
-    .cmyk-chip { min-width:0; border:1px solid #dce2eb; border-radius:9px; padding:7px 4px; display:flex; flex-direction:column; align-items:center; gap:4px; background:#fff; }
-    .cmyk-swatch { width:25px; height:25px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:850; border:1px solid rgba(0,0,0,.09); }
-    .cmyk-name { color:#4b566d; font-size:.68rem; font-weight:700; }
-    .cmyk-chip.active { border-color:#8a98b8; background:#f4f6fb; box-shadow:inset 0 0 0 1px #8a98b8; }
-    @@media (max-width:700px) { .proof-two-col,.proof-three-col { grid-template-columns:1fr; } }
-    .proof-brand { color:#0e1641; font-weight:850; letter-spacing:.06em; }
-    .proof-subtle { color:#69758a; }
-    .proof-panel { border:1px solid #dfe5ee; border-radius:10px; overflow:hidden; background:#fff; }
-    .proof-panel-title { background:#f4f6fa; color:#17234a; font-weight:750; padding:7px 10px; border-bottom:1px solid #e2e7ef; font-size:.88rem; }
-    .proof-panel-body { padding:8px 10px; }
-    .proof-kv { display:grid; grid-template-columns:minmax(85px,.9fr) minmax(0,1.2fr); gap:8px; padding:4px 0; border-bottom:1px solid #edf0f5; overflow-wrap:anywhere; }
-    .proof-kv:last-child { border-bottom:0; }
-    .proof-artwork { width:100%; min-height:150px; border:1px solid #dfe5ee; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:8px; background:#f8fafc; }
-    .proof-artwork img { display:block; width:100%; height:100%; max-width:100%; max-height:100%; object-fit:contain; object-position:center center; margin:auto; }
-    .proof-dimension { color:#376d91; font-size:.9rem; font-weight:750; text-align:center; padding:7px; }
-    .proof-foot { border-top:1px solid #e2e7ef; margin-top:12px; padding-top:8px; color:#69758a; font-size:.75rem; }
-    .proof-pill { display:inline-block; background:#f3f5fa; border:1px solid #e0e5ef; color:#273452; border-radius:999px; padding:3px 7px; margin:2px; font-size:.76rem; }
-    .proof-artwork-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-    .proof-artwork-card { border:1px solid #dfe5ee; border-radius:8px; padding:6px; min-width:0; display:flex; flex-direction:column; align-items:stretch; background:#fff; }
-    .proof-artwork-card img { display:block; width:100%; height:160px; object-fit:contain; object-position:center center; margin:auto; }
-    .proof-artwork-card .filename { font-size:.72rem; color:#68748a; overflow-wrap:anywhere; text-align:center; padding-top:4px; }
-    .roll-diagram { border:1px solid #dfe5ee; border-radius:8px; min-height:100px; padding:8px; display:flex; align-items:center; justify-content:center; gap:12px; }
-    .roll-orientation-image { display:block; width:85px; height:160px; max-width:100%; object-fit:contain; object-position:center; flex:0 1 auto; }
-    .roll-orientation-missing { color:#69758a; font-size:.85rem; text-align:center; }
-    /* Form visual refresh */
-    .page-container:not(.proof-page) .erp-page-header { padding:18px 20px; border:1px solid #e4e8f0; border-radius:16px; background:linear-gradient(120deg,#fff 0%,#f7f9fd 100%); box-shadow:0 8px 24px rgba(18,34,68,.045); }
-    .page-container:not(.proof-page) .erp-page-title { color:#142044; font-weight:800; letter-spacing:-.025em; }
-    .page-container:not(.proof-page) .erp-page-subtitle { color:#68758c; }
-    .page-container:not(.proof-page) .card { border:1px solid #e1e6ef; border-radius:14px; overflow:hidden; box-shadow:0 5px 18px rgba(18,34,68,.04)!important; }
-    .page-container:not(.proof-page) .card-header { padding:13px 17px; background:#f7f9fc; border-bottom:1px solid #e7ebf2; color:#1b294c; }
-    .page-container:not(.proof-page) .card-body { padding:18px; }
-    .page-container:not(.proof-page) .form-label { color:#35415b; font-size:.9rem; font-weight:650; margin-bottom:6px; }
-    .page-container:not(.proof-page) .form-control,.page-container:not(.proof-page) .form-select { border-color:#d8dfeb; border-radius:9px; min-height:40px; }
-    .page-container:not(.proof-page) .form-control:focus,.page-container:not(.proof-page) .form-select:focus { border-color:#7788b5; box-shadow:0 0 0 .2rem rgba(52,70,111,.1); }
-    @@page { size: A4 landscape; margin: 5mm; }
+    .proof-page {
+        max-width: 1320px;
+        margin: 0 auto;
+        color: #20283a;
+    }
+
+    .proof-sheet {
+        background: #fff;
+        border: 1px solid #d7dce5;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 10px 28px rgba(20,32,60,.07);
+        direction: inherit;
+    }
+
+    .proof-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 2px solid #17234a;
+        padding: 0 0 10px;
+        margin-bottom: 12px;
+    }
+
+    .proof-logo {
+        display: block;
+        width: 58px;
+        height: 48px;
+        flex: 0 0 auto;
+        object-fit: contain;
+        object-position: center;
+    }
+
+    .proof-brand {
+        color: #0e1641;
+        font-weight: 900;
+        letter-spacing: .04em;
+        font-size: 1.3rem;
+        line-height: 1.2;
+    }
+
+    .proof-brand-subtitle,
+    .proof-muted {
+        color: #68748a;
+        font-size: .76rem;
+    }
+
+    .proof-header-meta {
+        text-align: end;
+        font-size: .78rem;
+        line-height: 1.7;
+    }
+
+    .proof-columns {
+        direction: ltr !important;
+        display: grid;
+        grid-template-columns: minmax(0, 1.75fr) minmax(280px, .85fr);
+        grid-template-areas: "left right";
+        gap: 12px;
+        align-items: start;
+    }
+
+    .proof-left-column {
+        grid-area: left;
+        grid-column: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .proof-right-column {
+        grid-area: right;
+        grid-column: 2;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .proof-panel {
+        border: 1px solid #cfd5df;
+        border-radius: 9px;
+        overflow: hidden;
+        background: #fff;
+        min-width: 0;
+    }
+
+    /* The large Artwork Preview panel has a fixed overall height.
+       Its body allocates the remaining space to the preview frame. */
+
+
+
+
+
+    .proof-panel-title {
+        background: #f3f5f8;
+        color: #17234a;
+        font-weight: 800;
+        padding: 6px 9px;
+        border-bottom: 1px solid #dce1e9;
+        font-size: .82rem;
+    }
+
+    .proof-panel-body {
+        padding: 8px;
+        min-width: 0;
+    }
+
+
+    /* Fixed-size frame: this height never changes */
+    .proof-artwork-frame {
+        position: relative;
+        width: 100%;
+        height: 550px;
+        overflow: hidden;
+    }
+
+    .proof-artwork-grid {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+    .proof-artwork-grid.count-1 {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+    }
+
+    .proof-artwork-grid.count-2 {
+        grid-template-rows: minmax(0, 1fr);
+    }
+
+    .proof-artwork-card {
+        position: relative;
+        min-width: 0;
+        min-height: 0;
+        box-sizing: border-box;
+        border: 1px solid #dce1e9;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    /* The image fills the card's box and shrinks to fit, never cropped */
+    .proof-artwork-card img {
+        position: absolute;
+        inset: 4px;
+        width: calc(100% - 8px);
+        height: calc(100% - 8px);
+        max-width: none;
+        max-height: none;
+        object-fit: contain;
+        object-position: center;
+    }
+
+
+
+
+
+
+
+
+    .proof-pdf-pages {
+        position: absolute;
+        inset: 4px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        box-sizing: border-box;
+    }
+
+        .proof-pdf-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            min-height: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            border: 1px solid #e1e5ec;
+            border-radius: 5px;
+            padding: 3px;
+        }
+
+        .proof-pdf-page canvas {
+            display: block;
+            max-width: 100%;
+            max-height: calc(100% - 14px);
+            margin: 0 auto;
+        }
+
+        .proof-pdf-page-number {
+            flex: 0 0 auto;
+            padding-top: 3px;
+            text-align: center;
+            font-size: 10px;
+            color: #69758a;
+        }
+
+    .proof-artwork-empty {
+        height: 100%;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 6px;
+        color: #68748a;
+        background: #f8fafc;
+        border: 1px dashed #cfd5df;
+        border-radius: 7px;
+    }
+
+    .proof-dimensions {
+        margin-top: 7px;
+        padding: 7px 8px;
+        border: 1px solid #dce1e9;
+        border-radius: 6px;
+        color: #17234a;
+        font-weight: 750;
+        text-align: center;
+        font-size: .82rem;
+        background: #fafbfd;
+    }
+
+    .proof-kv {
+        display: grid;
+        grid-template-columns: minmax(90px, .8fr) minmax(0, 1.2fr);
+        gap: 8px;
+        padding: 5px 7px;
+        border-bottom: 1px solid #edf0f4;
+        font-size: .79rem;
+        align-items: baseline;
+    }
+
+    .proof-kv:last-child {
+        border-bottom: 0;
+    }
+
+    .proof-kv-label {
+        color: #68748a;
+    }
+
+    .proof-kv-value {
+        color: #20283a;
+        font-weight: 750;
+        overflow-wrap: anywhere;
+    }
+
+    .proof-notes {
+        min-height: 105px;
+        white-space: pre-wrap;
+        font-size: .78rem;
+        line-height: 1.65;
+    }
+
+    .proof-service-groups {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .proof-service-group-title {
+        color: #17234a;
+        font-weight: 800;
+        font-size: .75rem;
+        padding-bottom: 4px;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #e7eaf0;
+    }
+
+    .proof-service-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px 7px;
+    }
+
+    .proof-service {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        font-size: .7rem;
+        line-height: 1.35;
+    }
+
+    .proof-service-indicator {
+        width: 13px;
+        height: 13px;
+        border: 1px solid #737d8d;
+        border-radius: 2px;
+        flex: 0 0 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 900;
+    }
+
+    .proof-service.is-selected .proof-service-indicator {
+        color: #fff;
+        background: #198754;
+        border-color: #198754;
+    }
+
+    .proof-service.is-not-selected {
+        color: #737d8d;
+    }
+
+    .proof-roll-orientation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 135px;
+        padding: 8px;
+        background: #fff;
+    }
+
+    .proof-roll-orientation img {
+        display: block;
+        width: auto;
+        height: 125px;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    .proof-two-col {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .proof-cmyk-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+    }
+
+    .proof-cmyk-chip {
+        min-width: 0;
+        border: 1px solid #dce2eb;
+        border-radius: 6px;
+        padding: 5px 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        background: #fff;
+    }
+
+    .proof-cmyk-chip.active {
+        border-color: #536a9a;
+        background: #f1f4fa;
+        box-shadow: inset 0 0 0 1px #536a9a;
+    }
+
+    .proof-cmyk-swatch {
+        width: 21px;
+        height: 21px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .68rem;
+        font-weight: 850;
+        border: 1px solid rgba(0,0,0,.1);
+    }
+
+    .proof-cmyk-name {
+        color: #4b566d;
+        font-size: .62rem;
+        font-weight: 700;
+    }
+
+    .proof-approval {
+        margin-top: 10px;
+    }
+
+    .proof-approval-fields {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        font-size: .78rem;
+    }
+
+    .proof-approval-line {
+        border-bottom: 1px dotted #7d8797;
+        min-height: 24px;
+        padding-bottom: 4px;
+    }
+
+    .proof-footer {
+        border-top: 1px solid #dce1e9;
+        margin-top: 9px;
+        padding-top: 6px;
+        color: #68748a;
+        font-size: .68rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    @@media (max-width: 850px) {
+        .proof-columns {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas:
+                "left"
+                "right";
+        }
+
+        .proof-left-column,
+        .proof-right-column {
+            grid-column: 1;
+        }
+    }
+
+    @@media (max-width: 560px) {
+        .proof-artwork-grid {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: none;
+            grid-auto-rows: minmax(0, 1fr);
+        }
+
+        .proof-service-list,
+        .proof-approval-fields {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@page {
+        size: A4 landscape;
+        margin: 5mm;
+    }
+
     @@media print {
-      html, body { width:287mm !important; height:200mm !important; margin:0 !important; padding:0 !important; background:#fff !important; }
-      body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-      .no-print, .page-container > .erp-page-header { display:none !important; }
-      .page-container.proof-page { width:287mm !important; max-width:none !important; height:200mm !important; max-height:200mm !important; margin:0 !important; padding:0 !important; overflow:hidden !important; }
-      .proof-sheet { width:287mm !important; height:200mm !important; max-height:200mm !important; box-sizing:border-box !important; overflow:hidden !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; padding:3mm !important; font-size:7.4pt !important; line-height:1.15 !important; }
-      .proof-sheet .fs-3 { font-size:17pt !important; }
-      .proof-sheet .fs-5 { font-size:11pt !important; }
-      .proof-sheet .mb-4 { margin-bottom:2mm !important; }
-      .proof-sheet .mb-3 { margin-bottom:1.5mm !important; }
-      .proof-sheet .row { --bs-gutter-x:2mm; --bs-gutter-y:1.5mm; }
-      .proof-panel, .proof-artwork-card, .roll-diagram { break-inside:avoid !important; }
-      .proof-panel-title { padding:1.2mm 2mm !important; font-size:7.3pt !important; }
-      .proof-panel-body { padding:1.3mm 2mm !important; }
-      .proof-kv { padding:.7mm 0 !important; gap:1.5mm !important; }
-      .proof-artwork-grid { grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:1.2mm !important; }
-      .proof-artwork-card { padding:1mm !important; }
-      .proof-artwork-card img { width:100% !important; height:29mm !important; max-height:29mm !important; object-fit:contain !important; object-position:center center !important; margin:auto !important; }
-      .proof-artwork-card .filename { font-size:6pt !important; padding-top:.5mm !important; }
-      .proof-artwork { min-height:32mm !important; padding:1mm !important; }
-      .proof-artwork img { max-height:30mm !important; object-fit:contain !important; object-position:center center !important; }
-      .proof-dimension { padding:1mm !important; font-size:7pt !important; }
-      .proof-pill { padding:.5mm 1.3mm !important; margin:.4mm !important; font-size:6.4pt !important; }
-      .roll-diagram { min-height:15mm !important; padding:1mm !important; }
-      .roll-core { width:9mm !important; height:9mm !important; border-width:1mm !important; }
-      .proof-foot { margin-top:1.5mm !important; padding-top:1mm !important; font-size:6.5pt !important; }
-      a { color:inherit !important; text-decoration:none !important; }
+        body * {
+            visibility: hidden !important;
+        }
+
+        .proof-page,
+        .proof-page * {
+            visibility: visible !important;
+        }
+
+        .proof-page {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 287mm !important;
+            max-width: 287mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        html, body {
+            width: 287mm !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+        }
+
+        .proof-sheet {
+            width: 287mm !important;
+            max-width: 287mm !important;
+            min-height: 0 !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 2mm !important;
+            box-sizing: border-box !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            font-size: 7pt !important;
+            line-height: 1.15 !important;
+            break-inside: avoid !important;
+        }
+
+        .proof-card-header {
+            margin-bottom: 2mm !important;
+            padding-bottom: 2mm !important;
+        }
+
+        .proof-logo {
+            width: 13mm !important;
+            height: 10mm !important;
+        }
+
+        .proof-columns {
+            direction: ltr !important;
+            grid-template-columns: minmax(0, 1.75fr) minmax(0, .85fr) !important;
+            grid-template-areas: "left right" !important;
+            gap: 2mm !important;
+        }
+
+        .proof-left-column {
+            grid-area: left !important;
+            grid-column: 1 !important;
+        }
+
+        .proof-right-column {
+            grid-area: right !important;
+            grid-column: 2 !important;
+        }
+
+        .proof-left-column,
+        .proof-right-column {
+            gap: 1.5mm !important;
+        }
+
+        .proof-panel-title {
+            padding: 1mm 1.5mm !important;
+            font-size: 6.8pt !important;
+        }
+
+        .proof-panel-body {
+            padding: 1.2mm !important;
+        }
+
+        .proof-artwork-frame {
+            height: 70mm !important;
+        }
+
+        .proof-artwork-grid {
+            gap: 1mm !important;
+        }
+
+        .proof-artwork-card img {
+            inset: 1mm !important;
+            width: calc(100% - 2mm) !important;
+            height: calc(100% - 2mm) !important;
+        }
+
+
+
+
+
+
+
+
+        .proof-pdf-pages {
+            position: absolute !important;
+            inset: 1mm !important;
+            max-height: none !important;
+            overflow: hidden !important;
+            gap: 1mm !important;
+        }
+
+        .proof-pdf-page {
+            padding: .5mm !important;
+        }
+
+        .proof-pdf-page-number {
+            font-size: 5pt !important;
+            padding-top: .4mm !important;
+        }
+
+        .proof-kv {
+            padding: .9mm 1mm !important;
+            font-size: 6.3pt !important;
+            gap: 1mm !important;
+        }
+
+        .proof-notes {
+            min-height: 22mm !important;
+            font-size: 6.2pt !important;
+        }
+
+        .proof-service-groups {
+            gap: 1.2mm !important;
+        }
+
+        .proof-service-group-title {
+            font-size: 6pt !important;
+            padding-bottom: .5mm !important;
+            margin-bottom: .5mm !important;
+        }
+
+        .proof-service-list {
+            gap: .6mm 1mm !important;
+        }
+
+        .proof-service {
+            font-size: 5.7pt !important;
+            gap: .7mm !important;
+        }
+
+        .proof-service-indicator {
+            width: 3mm !important;
+            height: 3mm !important;
+            flex-basis: 3mm !important;
+            font-size: 5pt !important;
+        }
+
+        .proof-roll-orientation {
+            min-height: 25mm !important;
+            padding: 1mm !important;
+        }
+
+        .proof-roll-orientation img {
+            height: 24mm !important;
+        }
+
+        .proof-two-col {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .proof-cmyk-grid {
+            gap: .8mm !important;
+        }
+
+        .proof-cmyk-chip {
+            padding: .8mm .3mm !important;
+            gap: .4mm !important;
+        }
+
+        .proof-cmyk-swatch {
+            width: 4mm !important;
+            height: 4mm !important;
+            font-size: 5pt !important;
+        }
+
+        .proof-cmyk-name {
+            font-size: 5pt !important;
+        }
+
+        .proof-approval {
+            margin-top: 2mm !important;
+        }
+
+        .proof-approval-fields {
+            font-size: 6pt !important;
+            gap: 3mm !important;
+        }
+
+        .proof-approval-line {
+            min-height: 5mm !important;
+        }
+
+        .proof-footer {
+            margin-top: 1.5mm !important;
+            padding-top: 1mm !important;
+            font-size: 5.5pt !important;
+        }
     }
 </style>
 
 <div class="page-container proof-page">
     <div class="erp-page-header mb-3 no-print">
-        <div><div class="erp-page-title">@LocalizationService["CustomerApprovalProof"]</div><div class="erp-page-subtitle">@LocalizationService["ReviewProofPrintSavePdf"]</div></div>
+        <div>
+            <div class="erp-page-title">@LocalizationService["CustomerApprovalProof"]</div>
+            <div class="erp-page-subtitle">@LocalizationService["ReviewProofPrintSavePdf"]</div>
+        </div>
         <div class="d-flex flex-wrap gap-2">
-            <button class="btn btn-outline-secondary" @onclick="BackToJob">@LocalizationService["BackToJob"]</button>
-            <button class="btn btn-primary" @onclick="PrintProof"><i class="bi bi-printer"></i> @LocalizationService["PrintSaveAsPdf"]</button>
+            <button class="btn btn-outline-secondary" @onclick="BackToJob">
+                @LocalizationService["BackToJob"]
+            </button>
+            <button class="btn btn-primary" @onclick="PrintProof">
+                <i class="bi bi-printer"></i> @LocalizationService["PrintSaveAsPdf"]
+            </button>
         </div>
     </div>
 
@@ -108,154 +702,242 @@
     }
     else if (request is not null)
     {
-        <article class="proof-sheet">
-            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
-                <div>
-                    <div class="proof-brand fs-3">HAMI CHAP</div>
-                    <div class="proof-subtle">@LocalizationService["PrintingPackagingCustomerApproval"]</div>
+        <article class="proof-sheet" dir="@(LocalizationService.IsPersian ? "rtl" : "ltr")">
+            <header class="proof-card-header">
+                <div class="d-flex align-items-center gap-3">
+                    <img class="proof-logo" src="/images/Logo%20Wings%20navy%20blue.png" alt="HamiChap logo" />
+                    <div>
+                        <div class="proof-brand">HAMI CHAP</div>
+                        <div class="proof-brand-subtitle">@LocalizationService["PrintingPackagingCustomerApproval"]</div>
+                    </div>
                 </div>
-                <div class="text-end">
-                    <div class="fs-5 fw-bold">@LocalizationService[request.JobType == SalesJobType.Roll ? "RollJobUpper" : "SheetJobUpper"]</div>
-                    <div class="proof-subtle">@LocalizationService["ProofNumber"] @request.RequestNumber</div>
-                    <div class="proof-subtle">@LocalizationService["Date"]: @request.RequestDate.ToString("yyyy-MM-dd")</div>
+                <div class="proof-header-meta">
+                    <div><strong>@LocalizationService[request.JobType == SalesJobType.Roll ? "RollJobUpper" : "SheetJobUpper"]</strong></div>
+                    <div>@LocalizationService["Date"]: <strong>@request.RequestDate.ToString("yyyy/MM/dd")</strong></div>
+                    <div>@LocalizationService["ProofNumber"]: <strong>@request.RequestNumber</strong></div>
                 </div>
-            </div>
+            </header>
 
-            <div class="row g-3">
-                <div class="col-lg-8">
-                    <div class="proof-panel mb-3">
+            <div class="proof-columns">
+                @* LEFT: ARTWORK AND ROLL ORIENTATION *@
+                <section class="proof-left-column" dir="@(LocalizationService.IsPersian ? "rtl" : "ltr")">
+                    <div class="proof-panel proof-artwork-panel">
                         <div class="proof-panel-title">@LocalizationService["ArtworkPreview"]</div>
                         <div class="proof-panel-body">
                             @if (artworkFiles.Count > 0)
                             {
-                                <div class="proof-artwork-grid">
-                                    @foreach (var art in artworkFiles)
+                                <div class="proof-artwork-frame">
+                                    <div class="proof-artwork-grid count-@(Math.Min(artworkFiles.Count, 4))">
+                                        @foreach (var art in artworkFiles)
                                     {
-                                        <div class="proof-artwork-card">
+                                        <div class="proof-artwork-card @(IsPdf(art.RelativePath) ? "proof-pdf-card" : "")">
                                             @if (IsImage(art.RelativePath))
                                             {
-                                                <img src="@art.RelativePath" alt="@art.OriginalFileName" />
+                                                <img src="@art.RelativePath" alt="Artwork preview" />
+                                            }
+                                            else if (IsPdf(art.RelativePath))
+                                            {
+                                                <PdfPagePreview Url="@art.RelativePath" />
                                             }
                                             else
                                             {
-                                                <div class="text-center py-3"><i class="bi bi-file-earmark-pdf" style="font-size:2rem;color:#0e1641"></i><div><a href="@art.RelativePath" target="_blank" rel="noopener">@LocalizationService["OpenFile"]</a></div></div>
+                                                <div class="text-center py-3">
+                                                    <i class="bi bi-file-earmark" style="font-size:2rem;color:#0e1641"></i>
+                                                    <div><a href="@art.RelativePath" target="_blank" rel="noopener">@LocalizationService["OpenFile"]</a></div>
+                                                </div>
                                             }
-                                            <div class="filename">@art.OriginalFileName</div>
                                         </div>
-                                    }
+                                        }
+                                    </div>
                                 </div>
                             }
                             else
                             {
-                                <div class="proof-artwork flex-column"><i class="bi bi-image text-secondary" style="font-size:2rem"></i><strong>@LocalizationService["ArtworkNotUploaded"]</strong></div>
+                                <div class="proof-artwork-frame">
+                                    <div class="proof-artwork-empty">
+                                    <i class="bi bi-image" style="font-size:2rem"></i>
+                                        <strong>@LocalizationService["ArtworkNotUploaded"]</strong>
+                                    </div>
+                                </div>
                             }
-                            <div class="proof-dimension">@DimensionsSummary</div>
-                        </div>
-                    </div>
-                    <div class="proof-panel">
-                        <div class="proof-panel-title">@LocalizationService["ProductionNotes"]</div>
-                        <div class="proof-panel-body" style="min-height:80px; white-space:pre-wrap">@PrintingNotes</div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="proof-panel mb-3">
-                        <div class="proof-panel-title">@LocalizationService["CustomerJobDetails"]</div>
-                        <div class="proof-panel-body">
-                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["Customer"]</span><strong>@(request.Customer?.Name ?? "—")</strong></div>
-                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["JobTitle"]</span><strong>@JobTitle</strong></div>
-                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["JobType"]</span><strong>@LocalizationService[request.JobType == SalesJobType.Roll ? "RollLabel" : "SheetProduct"]</strong></div>
-                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["RequestNumber"]</span><strong>@request.RequestNumber</strong></div>
-                            <div class="proof-kv"><span class="proof-subtle">@LocalizationService["ArtworkFile"]</span><span>@(string.IsNullOrWhiteSpace(artworkFileName) ? "—" : artworkFileName)</span></div>
-                        </div>
-                    </div>
-                    <div class="proof-panel mb-3">
-                        <div class="proof-panel-title">@LocalizationService["TechnicalSpecifications"]</div>
-                        <div class="proof-panel-body">
-                            @foreach (var item in technicalDetails)
-                            {
-                                <div class="proof-kv"><span class="proof-subtle">@item.Key</span><strong>@item.Value</strong></div>
-                            }
-                        </div>
-                    </div>
-                    <div class="proof-panel">
-                        <div class="proof-panel-title">@LocalizationService["SelectedServices"]</div>
-                        <div class="proof-panel-body">
-                            @if (selectedServices.Count == 0) { <span class="proof-subtle">@LocalizationService["NoAdditionalServicesSelected"]</span> }
-                            @foreach (var service in selectedServices) { <span class="proof-pill">@service</span> }
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            @if (request.JobType == SalesJobType.Roll)
-            {
-                <div class="row g-3 mt-1">
-                    <div class="col-md-6">
+                            @if (request.JobType == SalesJobType.Roll)
+                            {
+                                <div class="proof-dimensions">@DimensionsSummary</div>
+                            }
+                            else
+                            {
+                                <div class="proof-dimensions">@DimensionsSummary</div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (request.JobType == SalesJobType.Roll)
+                    {
                         <div class="proof-panel">
                             <div class="proof-panel-title">@LocalizationService["SelectedRollOrientation"]</div>
-                            <div class="proof-panel-body">
-                                <div class="roll-diagram">
-                                    @if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
-                                    {
-                                        <img class="roll-orientation-image"
-                                             src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
-                                             alt="@($"{LocalizationService["SelectedRollOrientation"]} {orientationNumber}")" />
-                                    }
-                                    else
-                                    {
-                                        <div class="roll-orientation-missing">@LocalizationService["NoRollOrientationSelected"]</div>
-                                    }
-                                </div>
+                            <div class="proof-roll-orientation">
+                                @if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
+                                {
+                                    <img src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
+                                         alt="@RollOrientationLabel" />
+                                }
+                                else
+                                {
+                                    <span class="proof-muted">@LocalizationService["NoRollOrientationSelected"]</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(rollOrientation))
+                            {
+                                <div class="proof-panel-body text-center proof-muted">@RollOrientationLabel</div>
+                            }
+                        </div>
+                    }
+
+                    <div class="proof-panel">
+                        <div class="proof-panel-title">@LocalizationService["ProductionNotes"]</div>
+                        <div class="proof-panel-body proof-notes">
+                            @(string.IsNullOrWhiteSpace(PrintingNotes) ? "—" : PrintingNotes)
+                        </div>
+                    </div>
+                </section>
+
+                @* RIGHT: PRESS-CARD DETAILS *@
+                <section class="proof-right-column" dir="@(LocalizationService.IsPersian ? "rtl" : "ltr")">
+                    <div class="proof-panel">
+                        <div class="proof-panel-title">@LocalizationService["CustomerJobDetails"]</div>
+                        <div class="proof-panel-body">
+                            <div class="proof-kv">
+                                <span class="proof-kv-label">@LocalizationService["Customer"]</span>
+                                <strong class="proof-kv-value">@(request.Customer?.Name ?? "—")</strong>
+                            </div>
+                            <div class="proof-kv">
+                                <span class="proof-kv-label">@LocalizationService["JobTitle"]</span>
+                                <strong class="proof-kv-value">@Empty(JobTitle)</strong>
+                            </div>
+                            <div class="proof-kv">
+                                <span class="proof-kv-label">@LocalizationService["JobType"]</span>
+                                <strong class="proof-kv-value">@LocalizationService[request.JobType == SalesJobType.Roll ? "RollLabel" : "SheetProduct"]</strong>
+                            </div>
+                            <div class="proof-kv">
+                                <span class="proof-kv-label">@LocalizationService["RequestNumber"]</span>
+                                <strong class="proof-kv-value">@request.RequestNumber</strong>
+                            </div>
+                            <div class="proof-kv">
+                                <span class="proof-kv-label">@LocalizationService["Date"]</span>
+                                <strong class="proof-kv-value">@request.RequestDate.ToString("yyyy/MM/dd")</strong>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
+
+                    <div class="proof-panel">
+                        <div class="proof-panel-title">@LocalizationService["TechnicalSpecifications"]</div>
+                        <div class="proof-panel-body">
+                            @if (request.JobType == SalesJobType.Roll)
+                            {
+                                @foreach (var item in technicalDetails)
+                                {
+                                    <div class="proof-kv">
+                                        <span class="proof-kv-label">@item.Key</span>
+                                        <strong class="proof-kv-value">@item.Value</strong>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                @foreach (var item in technicalDetails)
+                                {
+                                    <div class="proof-kv">
+                                        <span class="proof-kv-label">@item.Key</span>
+                                        <strong class="proof-kv-value">@item.Value</strong>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    @if (request.JobType == SalesJobType.Roll)
+                    {
                         <div class="proof-panel">
                             <div class="proof-panel-title">@LocalizationService["PrintingColorsFrontBack"]</div>
                             <div class="proof-panel-body">
                                 <div class="proof-two-col">
-                                    <div class="proof-data-box">
-                                        <div class="proof-data-label">@LocalizationService["FrontSide"]</div>
-                                        <div class="cmyk-grid">
+                                    <div>
+                                        <div class="proof-muted mb-1">@LocalizationService["FrontSide"]</div>
+                                        <div class="proof-cmyk-grid">
                                             @foreach (var color in CmykColors)
                                             {
-                                                <div class="cmyk-chip @(IsCmykSelected("front", color.Key) ? "active" : "")">
-                                                    <div class="cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
-                                                    <div class="cmyk-name">@color.ValueName</div>
+                                                <div class="proof-cmyk-chip @(IsCmykSelected("front", color.Key) ? "active" : "")">
+                                                    <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
+                                                    <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
                                                 </div>
                                             }
                                         </div>
                                     </div>
-                                    <div class="proof-data-box">
-                                        <div class="proof-data-label">@LocalizationService["BackSide"]</div>
-                                        <div class="cmyk-grid">
+                                    <div>
+                                        <div class="proof-muted mb-1">@LocalizationService["BackSide"]</div>
+                                        <div class="proof-cmyk-grid">
                                             @foreach (var color in CmykColors)
                                             {
-                                                <div class="cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
-                                                    <div class="cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
-                                                    <div class="cmyk-name">@color.ValueName</div>
+                                                <div class="proof-cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
+                                                    <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
+                                                    <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
                                                 </div>
                                             }
                                         </div>
                                     </div>
                                 </div>
-                                <div class="small text-muted mt-2">@LocalizationService["HighlightedTilesExplain"]</div>
+                                <div class="proof-muted mt-2">@LocalizationService["HighlightedTilesExplain"]</div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-12">
+
                         <div class="proof-panel">
-                            <div class="proof-panel-title">@LocalizationService["CustomerApproval"]</div><div class="proof-panel-body" style="min-height:110px"><div class="proof-kv"><span>@LocalizationService["ApprovedBy"]</span><span>____________________</span></div><div class="proof-kv"><span>@LocalizationService["Date"]</span><span>____________________</span></div><div class="proof-kv"><span>@LocalizationService["Signature"]</span><span>____________________</span></div></div></div></div>
+                            <div class="proof-panel-title">@LocalizationService["SelectedServices"]</div>
+                            <div class="proof-panel-body">
+                                <div class="proof-service-groups">
+                                    @foreach (var group in RollServiceGroups)
+                                    {
+                                        <section>
+                                            <div class="proof-service-group-title">@LocalizationService[group.TitleKey]</div>
+                                            <div class="proof-service-list">
+                                                @foreach (var service in group.Services)
+                                                {
+                                                    var selected = IsServiceSelected(service.Value);
+                                                    <div class="proof-service @(selected ? "is-selected" : "is-not-selected")">
+                                                        <span class="proof-service-indicator">@(selected ? "✓" : "")</span>
+                                                        <span>@LocalizationService[service.LabelKey]</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </section>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                </section>
+            </div>
+
+            <div class="proof-panel proof-approval">
+                <div class="proof-panel-title">@LocalizationService["CustomerApproval"]</div>
+                <div class="proof-panel-body">
+                    <div class="proof-approval-fields">
+                        <div class="proof-approval-line">@LocalizationService["ApprovedBy"]: ____________________</div>
+                        <div class="proof-approval-line">@LocalizationService["Date"]: ____________________</div>
+                        <div class="proof-approval-line">@LocalizationService["Signature"]: ____________________</div>
+                    </div>
                 </div>
-            }
-            else
-            {
-                <div class="proof-panel mt-3"><div class="proof-panel-title">@LocalizationService["CustomerApproval"]</div><div class="proof-panel-body"><div class="row"><div class="col-md-4">@LocalizationService["ApprovedBy"]: ____________________</div><div class="col-md-4">@LocalizationService["Date"]: ____________________</div><div class="col-md-4">@LocalizationService["Signature"]: ____________________</div></div></div></div>
-            }
-            <div class="proof-foot d-flex justify-content-between gap-3 flex-wrap"><span>@LocalizationService["CustomerApprovalCopy"]</span><span>@LocalizationService["ReviewDimensionsArtworkFinishing"]</span></div>
+            </div>
+
+            <footer class="proof-footer">
+                <span>@LocalizationService["CustomerApprovalCopy"]</span>
+                <span>@LocalizationService["ReviewDimensionsArtworkFinishing"]</span>
+            </footer>
         </article>
     }
 </div>
+
 
 @code {
     [Parameter] public long RequestId { get; set; }
@@ -270,16 +952,57 @@
     private List<JobArtworkFile> artworkFiles = new();
     private static readonly (string Key, string Value, string ValueName)[] CmykColors =
     {
-        ("C", "#00A9E8", "Cyan"),
-        ("M", "#E6007E", "Magenta"),
-        ("Y", "#F2CC00", "Yellow"),
-        ("K", "#202124", "Black")
+        ("C", "#00A9E8", "CmykCyan"),
+        ("M", "#E6007E", "CmykMagenta"),
+        ("Y", "#F2CC00", "CmykYellow"),
+        ("K", "#202124", "CmykBlack")
     };
     private string JobTitle = "";
     private string PrintingNotes = "";
     private string DimensionsSummary = "";
     private List<KeyValuePair<string,string>> technicalDetails = new();
     private List<string> selectedServices = new();
+
+
+    private sealed record ProofServiceGroup(
+        string TitleKey,
+        (string Value, string LabelKey)[] Services);
+
+    private static readonly ProofServiceGroup[] RollServiceGroups =
+    {
+        new("ServiceGroupUvCoating", new[]
+        {
+            ("یووی روتاری", "ServiceUvRotary"),
+            ("یووی برجسته", "ServiceUvEmbossed"),
+            ("یووی تخت", "ServiceUvFlat"),
+            ("یووی موضعی", "ServiceUvSpot")
+        }),
+        new("ServiceGroupLamination", new[]
+        {
+            ("سلفون مات", "ServiceMatteLamination"),
+            ("سلفون براق", "ServiceGlossLamination")
+        }),
+        new("ServiceGroupFoilStamping", new[]
+        {
+            ("طلاکوب روتاری", "ServiceRotaryFoil"),
+            ("طلاکوب تخت", "ServiceFlatFoil"),
+            ("رنگ فویل", "ServiceFoilColor")
+        }),
+        new("ServiceGroupEmbossingDie", new[]
+        {
+            ("قالب روتاری", "ServiceRotaryDie"),
+            ("قالب تخت", "ServiceFlatDie"),
+            ("دیلن میلن", "ServiceDylanMilan")
+        })
+    };
+
+    private bool IsServiceSelected(string storedValue) =>
+        selectedServices.Contains(storedValue, StringComparer.OrdinalIgnoreCase);
+
+    private string RollOrientationLabel =>
+        int.TryParse(rollOrientation, out var n) && n is >= 1 and <= 8
+            ? $"{LocalizationService["RollOrientationOption"]} {n}"
+            : LocalizationService["NoRollOrientationSelected"];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -400,4 +1123,6 @@
     private async Task PrintProof() { await Task.Yield(); await JSPrintFallback(); }
     [Inject] private Microsoft.JSInterop.IJSRuntime JS { get; set; } = default!;
     private async Task JSPrintFallback() => await JS.InvokeVoidAsync("window.print");
+    private static bool IsPdf(string path) =>
+    path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
 }

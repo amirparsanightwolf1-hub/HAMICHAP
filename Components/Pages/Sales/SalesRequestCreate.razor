@@ -1,3 +1,4 @@
+
 @page "/sales/requests/create"
 
 @using HamiChap_MES_ERP.Data
@@ -18,119 +19,237 @@
 <PageTitle>@LocalizationService["SalesRequest"]</PageTitle>
 
 <div class="page-container">
+
+    <!-- Page Header -->
     <div class="erp-page-header mb-4">
         <div>
-            <div class="erp-page-title">@LocalizationService["SalesRequest"]</div>
-            <div class="erp-page-subtitle">Choose a customer and job type</div>
+            <div class="erp-page-title">
+                @LocalizationService["SalesRequest"]
+            </div>
+
+            <div class="erp-page-subtitle">
+                @LocalizationService["ChooseCustomerAndJobType"]
+            </div>
         </div>
 
-        <button type="button" class="btn btn-outline-secondary" @onclick="GoBack">
+        <button type="button"
+                class="btn sales-action-btn sales-back-btn"
+                @onclick="GoBack">
+
             <i class="bi bi-arrow-left"></i>
             @LocalizationService["Back"]
+
         </button>
     </div>
 
+    <!-- Error Message -->
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
-        <div class="alert alert-danger mb-4">@errorMessage</div>
+        <div class="alert alert-danger mb-4">
+            @errorMessage
+        </div>
     }
 
+    <!-- Sales Request Form -->
     <div class="card shadow-sm">
-        <div class="card-header"><strong>Sales request information</strong></div>
+
+        <div class="card-header">
+            <strong>
+                @LocalizationService["SalesRequestInformation"]
+            </strong>
+        </div>
+
         <div class="card-body">
+
             <div class="row g-3">
+
+                <!-- Customer Selection -->
                 <div class="col-md-6">
-                    <label class="form-label">@LocalizationService["Customer"]</label>
+
+                    <label class="form-label">
+                        @LocalizationService["Customer"]
+                    </label>
+
                     @if (!isCreatingCustomer)
                     {
                         <select class="form-select" @bind="customerId">
-                            <option value="0">@LocalizationService["SelectCustomer"]</option>
+
+                            <option value="0">
+                                @LocalizationService["SelectCustomer"]
+                            </option>
+
                             @foreach (var customer in customers)
                             {
-                                <option value="@customer.Id">@customer.Code - @customer.Name</option>
+                                <option value="@customer.Id">
+                                    @customer.Code - @customer.Name
+                                </option>
                             }
+
                         </select>
-                        <button type="button"
-                                class="btn btn-link px-0"
-                                @onclick="StartNewCustomer">
-                            + Create a new customer
-                        </button>
+
+                        <div class="customer-action-wrapper">
+
+                            <button type="button"
+                                    class="btn sales-action-btn"
+                                    @onclick="StartNewCustomer">
+
+                                <i class="bi bi-person-plus"></i>
+                                @LocalizationService["CreateNewCustomer"]
+
+                            </button>
+
+                        </div>
                     }
                     else
                     {
                         <div class="d-flex align-items-center gap-2">
-                            <span class="form-control bg-light">New customer</span>
+
+                            <span class="form-control bg-light">
+                                @LocalizationService["NewCustomer"]
+                            </span>
+
                             <button type="button"
-                                    class="btn btn-outline-secondary text-nowrap"
+                                    class="btn sales-action-btn sales-select-btn"
                                     @onclick="SelectExistingCustomer">
-                                Select existing
+
+                                <i class="bi bi-people"></i>
+                                @LocalizationService["SelectExisting"]
+
                             </button>
+
                         </div>
                     }
+
                 </div>
 
+                <!-- New Customer Fields -->
                 @if (isCreatingCustomer)
                 {
                     <div class="col-md-4">
-                        <label class="form-label">Customer code *</label>
-                        <InputText class="form-control" @bind-Value="newCustomerCode" />
+
+                        <label class="form-label">
+                            @LocalizationService["CustomerCode"] *
+                        </label>
+
+                        <InputText class="form-control"
+                                   @bind-Value="newCustomerCode" />
+
                     </div>
+
                     <div class="col-md-4">
-                        <label class="form-label">Customer name *</label>
-                        <InputText class="form-control" @bind-Value="newCustomerName" />
+
+                        <label class="form-label">
+                            @LocalizationService["CustomerName"] *
+                        </label>
+
+                        <InputText class="form-control"
+                                   @bind-Value="newCustomerName" />
+
                     </div>
+
                     <div class="col-md-4">
-                        <label class="form-label">Phone</label>
-                        <InputText class="form-control" @bind-Value="newCustomerPhone" />
+
+                        <label class="form-label">
+                            @LocalizationService["Phone"]
+                        </label>
+
+                        <InputText class="form-control"
+                                   @bind-Value="newCustomerPhone" />
+
                     </div>
+
                     <div class="col-md-6">
-                        <label class="form-label">Email</label>
-                        <InputText class="form-control" @bind-Value="newCustomerEmail" />
+
+                        <label class="form-label">
+                            @LocalizationService["Email"]
+                        </label>
+
+                        <InputText class="form-control"
+                                   @bind-Value="newCustomerEmail" />
+
                     </div>
+
                     <div class="col-md-6">
-                        <label class="form-label">Address</label>
-                        <InputText class="form-control" @bind-Value="newCustomerAddress" />
+
+                        <label class="form-label">
+                            @LocalizationService["Address"]
+                        </label>
+
+                        <InputText class="form-control"
+                                   @bind-Value="newCustomerAddress" />
+
                     </div>
                 }
 
+                <!-- Job Type -->
                 <div class="col-md-6">
-                    <label class="form-label">Job type</label>
+
+                    <label class="form-label">
+                        @LocalizationService["JobType"]
+                    </label>
+
                     <select class="form-select" @bind="selectedJobType">
-                        <option value="@SalesJobType.Roll">Roll Job — رول</option>
-                        <option value="@SalesJobType.Sheet">Sheet Job — شیت</option>
+
+                        <option value="@SalesJobType.Roll">
+                            @LocalizationService["RollJob"]
+                        </option>
+
+                        <option value="@SalesJobType.Sheet">
+                            @LocalizationService["SheetJob"]
+                        </option>
+
                     </select>
+
                 </div>
 
-                <div class="col-12 d-flex flex-wrap gap-2 mt-4">
+                <!-- Create Job Button -->
+                <div class="col-12 sales-action-wrapper mt-4">
+
                     <button type="button"
-                            class="btn btn-primary"
+                            class="btn sales-action-btn sales-create-btn"
                             @onclick="CreateAsync"
                             disabled="@isSaving">
+
                         @if (isSaving)
                         {
                             <span class="spinner-border spinner-border-sm me-1"></span>
                         }
+
                         <i class="bi bi-plus-circle"></i>
-                        Create job
+
+                        @LocalizationService["CreateJob"]
+
                     </button>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
 @code {
+
     private List<Customer> customers = new();
+
     private int customerId;
+
     private SalesJobType selectedJobType = SalesJobType.Roll;
+
     private bool isSaving;
     private bool isCreatingCustomer;
+
     private string newCustomerCode = "";
     private string newCustomerName = "";
     private string newCustomerPhone = "";
     private string newCustomerEmail = "";
     private string newCustomerAddress = "";
+
     private string? errorMessage;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,16 +259,20 @@
             .ToListAsync();
     }
 
+
     private void StartNewCustomer()
     {
         isCreatingCustomer = true;
+
         newCustomerCode = "";
         newCustomerName = "";
         newCustomerPhone = "";
         newCustomerEmail = "";
         newCustomerAddress = "";
+
         errorMessage = null;
     }
+
 
     private void SelectExistingCustomer()
     {
@@ -157,13 +280,16 @@
         errorMessage = null;
     }
 
+
     private async Task CreateAsync()
     {
         errorMessage = null;
 
         if (!isCreatingCustomer && customerId <= 0)
         {
-            errorMessage = "Select an existing customer or create a new one.";
+            errorMessage =
+                LocalizationService["SelectExistingOrCreateCustomer"];
+
             return;
         }
 
@@ -171,7 +297,9 @@
             (string.IsNullOrWhiteSpace(newCustomerCode) ||
              string.IsNullOrWhiteSpace(newCustomerName)))
         {
-            errorMessage = "Customer code and customer name are required.";
+            errorMessage =
+                LocalizationService["CustomerCodeAndNameRequired"];
+
             return;
         }
 
@@ -195,7 +323,10 @@
                 var code = newCustomerCode.Trim();
 
                 if (await Db.Customers.AnyAsync(x => x.Code == code))
-                    throw new InvalidOperationException($"Customer code '{code}' already exists.");
+                {
+                    throw new InvalidOperationException(
+                        $"{LocalizationService["CustomerCodeAlreadyExists"]} {code}");
+                }
 
                 var newCustomer = new Customer
                 {
@@ -208,10 +339,13 @@
                 };
 
                 Db.Customers.Add(newCustomer);
+
                 await Db.SaveChangesAsync();
 
                 customerId = newCustomer.Id;
+
                 customers.Add(newCustomer);
+
                 isCreatingCustomer = false;
             }
 
@@ -236,5 +370,10 @@
         }
     }
 
-    private void GoBack() => Navigation.NavigateTo("/sales/requests");
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/sales/requests");
+    }
+
 }

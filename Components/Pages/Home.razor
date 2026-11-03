@@ -1,4 +1,12 @@
-﻿@page "/"
+﻿
+@page "/"
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject HamiChap_MES_ERP.Services.PermissionService PermissionService
+@inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
+@inject NavigationManager Navigation
 
 <div class="home-page">
 
@@ -12,11 +20,43 @@
 
             <a class="login-button"
                href="/Account/Login">
-                🔐 Login
+                🔐 @LocalizationService["Login"]
             </a>
+
+            @if (canCreateSalesRequest)
+            {
+                <button type="button"
+                        class="login-button"
+                        @onclick="CreateNewOrder">
+                    ➕ @LocalizationService["NewOrder"]
+                </button>
+            }
 
         </div>
 
     </div>
 
 </div>
+
+@code {
+    private bool canCreateSalesRequest;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState =
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            canCreateSalesRequest =
+                await PermissionService.HasPermissionAsync(
+                    authState.User,
+                    "Sales.Requests.Create");
+        }
+    }
+
+    private void CreateNewOrder()
+    {
+        Navigation.NavigateTo("/sales/requests/create");
+    }
+}

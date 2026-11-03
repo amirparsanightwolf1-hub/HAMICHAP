@@ -30,6 +30,7 @@
     border: 1px solid transparent;
     border-radius: 8px;
     text-align: left;
+    font-family: inherit;
     font-size: 15px;
     font-weight: 500;
     cursor: pointer;
