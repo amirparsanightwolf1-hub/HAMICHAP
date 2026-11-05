@@ -23,8 +23,7 @@ public class QuotationService
         _userManager = userManager;
     }
 
-    public async Task<Quotation> CreateFromRequestAsync(
-        long salesRequestId)
+    public async Task<Quotation> CreateFromRequestAsync(long salesRequestId)
     {
         var request = await _db.SalesRequests
             .Include(x => x.Lines)
@@ -34,15 +33,12 @@ public class QuotationService
         if (request == null)
             throw new InvalidOperationException("Sales request not found.");
 
-        // The separate evaluation stage has been removed.
-        // Legacy requests already marked EvaluationCompleted remain supported.
         if (request.Status != SalesRequestStatus.Submitted &&
             request.Status != SalesRequestStatus.EvaluationCompleted)
             throw new InvalidOperationException(
                 "Only submitted sales requests can be quoted.");
 
-        var number = await _numberSeries.GetNextNumberAsync(
-            NumberSeriesType.Quotation);
+        var number = await _numberSeries.GetNextNumberAsync(NumberSeriesType.Quotation);
 
         var quotation = new Quotation
         {
@@ -65,19 +61,12 @@ public class QuotationService
 
         _db.Quotations.Add(quotation);
         request.Status = SalesRequestStatus.QuotationCreated;
-
         await _db.SaveChangesAsync();
 
         return quotation;
     }
 
-    /// <summary>
-    /// Records the authenticated account entering quotation prices as the
-    /// evaluator on the originating sales request.
-    /// </summary>
-    public async Task AssignPricingUserAsEvaluatorAsync(
-        long quotationId,
-        string userId)
+    public async Task AssignPricingUserAsEvaluatorAsync(long quotationId, string userId)
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new UnauthorizedAccessException(
@@ -103,15 +92,10 @@ public class QuotationService
         if (!hasPricing)
             return;
 
-        // Assign the account that actually entered/saved the prices.
         quotation.SalesRequest.AssignedToUserId = userId;
         await _db.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Records the authenticated account entering quotation prices as the
-    /// evaluator on the originating sales request.
-    /// </summary>
     public async Task SubmitForApprovalAsync(long quotationId)
     {
         var quotation = await _db.Quotations
@@ -122,20 +106,14 @@ public class QuotationService
 
         if (quotation.Status != QuotationStatus.Draft &&
             quotation.Status != QuotationStatus.RevisionRequired)
-        {
             throw new InvalidOperationException(
                 "Only draft or revision-required quotations can be submitted for approval.");
-        }
 
         quotation.Status = QuotationStatus.PendingApproval;
-
         await _db.SaveChangesAsync();
     }
 
-    public async Task ApproveAsync(
-        long quotationId,
-        string userId,
-        string comment = "")
+    public async Task ApproveAsync(long quotationId, string userId, string comment = "")
     {
         await EnsureAdministratorAsync(userId);
 
@@ -146,10 +124,8 @@ public class QuotationService
             throw new InvalidOperationException("Quotation not found.");
 
         if (quotation.Status != QuotationStatus.PendingApproval)
-        {
             throw new InvalidOperationException(
                 "Only pending quotations can be approved.");
-        }
 
         quotation.Status = QuotationStatus.Approved;
 
@@ -164,10 +140,7 @@ public class QuotationService
         await _db.SaveChangesAsync();
     }
 
-    public async Task RejectAsync(
-        long quotationId,
-        string userId,
-        string comment)
+    public async Task RejectAsync(long quotationId, string userId, string comment)
     {
         await EnsureAdministratorAsync(userId);
 
@@ -178,10 +151,8 @@ public class QuotationService
             throw new InvalidOperationException("Quotation not found.");
 
         if (quotation.Status != QuotationStatus.PendingApproval)
-        {
             throw new InvalidOperationException(
                 "Only pending quotations can be rejected.");
-        }
 
         quotation.Status = QuotationStatus.RevisionRequired;
 
@@ -196,7 +167,11 @@ public class QuotationService
         await _db.SaveChangesAsync();
     }
 
-    public async Task MarkReadyToSendAsync(long quotationId)
+    /// <summary>
+    /// Records the customer's decision directly after internal approval.
+    /// Legacy intermediate statuses remain accepted for existing quotations.
+    /// </summary>
+    public async Task CustomerDecisionAsync(long quotationId, bool accepted)
     {
         var quotation = await _db.Quotations
             .FirstOrDefaultAsync(x => x.Id == quotationId);
@@ -204,56 +179,22 @@ public class QuotationService
         if (quotation == null)
             throw new InvalidOperationException("Quotation not found.");
 
-        if (quotation.Status != QuotationStatus.Approved)
-        {
+        var canRecordDecision =
+            quotation.Status == QuotationStatus.Approved ||
+            quotation.Status == QuotationStatus.ReadyToSend ||
+            quotation.Status == QuotationStatus.SentToCustomer ||
+            quotation.Status == QuotationStatus.CustomerNegotiation;
+
+        if (!canRecordDecision)
             throw new InvalidOperationException(
-                "Quotation must be approved before it can be marked ready to send.");
-        }
+                "A customer decision can only be recorded after the quotation has been approved.");
 
-        quotation.Status = QuotationStatus.ReadyToSend;
-
-        await _db.SaveChangesAsync();
-    }
-
-    public async Task SendToCustomerAsync(long quotationId)
-    {
-        var quotation = await _db.Quotations
-            .FirstOrDefaultAsync(x => x.Id == quotationId);
-
-        if (quotation == null)
-            throw new InvalidOperationException("Quotation not found.");
-
-        if (quotation.Status != QuotationStatus.ReadyToSend)
-        {
-            throw new InvalidOperationException(
-                "Only approved quotations marked ready to send can be sent to the customer.");
-        }
-
-        quotation.Status = QuotationStatus.SentToCustomer;
-
-        await _db.SaveChangesAsync();
-    }
-
-    public async Task CustomerDecisionAsync(
-        long quotationId,
-        bool accepted)
-    {
-        var quotation = await _db.Quotations
-            .FirstOrDefaultAsync(x => x.Id == quotationId);
-
-        if (quotation == null)
-            throw new InvalidOperationException("Quotation not found.");
-
-        if (quotation.Status != QuotationStatus.SentToCustomer &&
-            quotation.Status != QuotationStatus.CustomerNegotiation)
-        {
-            throw new InvalidOperationException(
-                "A customer decision can only be recorded after the quotation has been sent.");
-        }
-
+        // A customer rejection is a request to revise the price, not the end
+        // of the quotation workflow. Return it to Draft so pricing can be
+        // updated and submitted for internal approval again.
         quotation.Status = accepted
             ? QuotationStatus.Accepted
-            : QuotationStatus.Rejected;
+            : QuotationStatus.Draft;
 
         await _db.SaveChangesAsync();
     }
@@ -268,9 +209,7 @@ public class QuotationService
 
         if (user == null ||
             !await _userManager.IsInRoleAsync(user, "Administrator"))
-        {
             throw new UnauthorizedAccessException(
                 "Only an Administrator can approve or reject quotations.");
-        }
     }
 }
