@@ -1,5 +1,6 @@
 ﻿@page "/sales/requests/edit/{Id:long}"
 
+@using System.Text.Json
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Customers
 @using HamiChap_MES_ERP.Models.Inventory
@@ -11,8 +12,6 @@
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Models.Shared
 @using HamiChap_MES_ERP.Models.Shared.Services
-
-
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
@@ -26,8 +25,6 @@
 </PageTitle>
 
 <div class="page-container sales-request-page">
-
-
     @if (isLoading)
     {
         <div class="text-center py-5">
@@ -47,19 +44,16 @@
     else
     {
         <div class="erp-page-header sales-request-header mb-4">
-
             <div>
                 <div class="erp-page-title">
                     @LocalizationService["SalesRequest"]
                 </div>
-
                 <div class="erp-page-subtitle">
                     @request.RequestNumber
                 </div>
             </div>
 
             <div class="request-actions">
-
                 @if (request.JobType == SalesJobType.Roll)
                 {
                     <button type="button"
@@ -79,10 +73,8 @@
                 <button type="button"
                         class="btn btn-outline-secondary"
                         @onclick="GoBack">
-
                     <i class="bi bi-arrow-left"></i>
                     @LocalizationService["Back"]
-
                 </button>
 
                 @if (request.Status == SalesRequestStatus.Draft)
@@ -91,30 +83,24 @@
                             class="btn btn-primary"
                             @onclick="SaveAsync"
                             disabled="@isSaving">
-
                         @if (isSaving)
                         {
                             <span class="spinner-border spinner-border-sm me-1"></span>
                         }
-
                         <i class="bi bi-save"></i>
                         @LocalizationService["Save"]
-
                     </button>
 
                     <button type="button"
                             class="btn btn-success"
                             @onclick="SubmitAsync"
                             disabled="@isSubmitting">
-
                         @if (isSubmitting)
                         {
                             <span class="spinner-border spinner-border-sm me-1"></span>
                         }
-
                         <i class="bi bi-send"></i>
                         @LocalizationService["Submit"]
-
                     </button>
                 }
 
@@ -125,18 +111,14 @@
                             class="btn btn-primary"
                             @onclick="CreateQuotationAsync"
                             disabled="@isCreatingQuotation">
-
                         @if (isCreatingQuotation)
                         {
                             <span class="spinner-border spinner-border-sm me-1"></span>
                         }
-
                         <i class="bi bi-file-earmark-text"></i>
                         @LocalizationService["CreateQuotation"]
-
                     </button>
                 }
-
             </div>
         </div>
 
@@ -155,9 +137,7 @@
         }
 
         <!-- Request Information -->
-
         <div class="card shadow-sm mb-4">
-
             <div class="card-header">
                 <strong>
                     @LocalizationService["SalesRequestInformation"]
@@ -165,9 +145,7 @@
             </div>
 
             <div class="card-body">
-
                 <div class="request-info-list">
-
                     <div class="request-info-row">
                         <label>@LocalizationService["RequestNumber"]</label>
                         <input class="form-control"
@@ -179,6 +157,14 @@
                         <label>@LocalizationService["Customer"]</label>
                         <input class="form-control"
                                value="@GetCustomerName()"
+                               readonly />
+                    </div>
+
+                    <!-- Job Title: loaded from Sheet/Roll JobSpecificationJson -->
+                    <div class="request-info-row">
+                        <label>@LocalizationService["JobTitle"]</label>
+                        <input class="form-control"
+                               value="@jobTitle"
                                readonly />
                     </div>
 
@@ -198,7 +184,6 @@
 
                     <div class="request-info-row">
                         <label>@LocalizationService["RequestedDeliveryDate"]</label>
-
                         @if (request.Status == SalesRequestStatus.Draft)
                         {
                             <InputDate @bind-Value="request.RequestedDeliveryDate"
@@ -228,7 +213,6 @@
 
                     <div class="request-info-row request-notes-row">
                         <label>@LocalizationService["Notes"]</label>
-
                         @if (request.Status == SalesRequestStatus.Draft)
                         {
                             <textarea class="form-control"
@@ -242,18 +226,13 @@
                                       readonly>@request.Notes</textarea>
                         }
                     </div>
-
                 </div>
-
             </div>
         </div>
 
         <!-- Request Lines -->
-
         <div class="card shadow-sm">
-
             <div class="card-header d-flex justify-content-between align-items-center">
-
                 <strong>
                     @LocalizationService["RequestLines"]
                 </strong>
@@ -263,57 +242,41 @@
                     <button type="button"
                             class="btn btn-sm btn-primary"
                             @onclick="AddLine">
-
                         <i class="bi bi-plus-circle"></i>
                         @LocalizationService["AddLine"]
-
                     </button>
                 }
-
             </div>
 
             <div class="card-body p-0">
-
                 <div class="table-responsive">
-
                     <table class="table table-hover align-middle mb-0">
-
                         <thead>
-
                             <tr>
-
                                 <th style="min-width:260px;">
                                     @LocalizationService["Item"]
                                 </th>
-
                                 <th style="min-width:140px;"
                                     class="text-end">
                                     @LocalizationService["Quantity"]
                                 </th>
-
                                 <th style="min-width:140px;">
                                     @LocalizationService["Unit"]
                                 </th>
-
                                 <th style="min-width:250px;">
                                     @LocalizationService["Notes"]
                                 </th>
-
                                 @if (request.Status == SalesRequestStatus.Draft)
                                 {
                                     <th style="width:80px;"></th>
                                 }
-
                             </tr>
-
                         </thead>
 
                         <tbody>
-
                             @foreach (var line in request.Lines)
                             {
                                 <tr>
-
                                     <td>
                                         @if (request.Status == SalesRequestStatus.Draft)
                                         {
@@ -330,7 +293,6 @@
                                             <div class="fw-semibold">
                                                 @GetItemName(line)
                                             </div>
-
                                             <small class="text-muted">
                                                 @line.Item?.Code
                                             </small>
@@ -338,7 +300,6 @@
                                     </td>
 
                                     <td>
-
                                         @if (request.Status == SalesRequestStatus.Draft)
                                         {
                                             <input type="number"
@@ -353,16 +314,13 @@
                                                 @line.Quantity.ToString("N2")
                                             </div>
                                         }
-
                                     </td>
 
                                     <td>
-
                                         @if (request.Status == SalesRequestStatus.Draft)
                                         {
                                             <select class="form-select"
                                                     @bind="line.UnitId">
-
                                                 @foreach (var unit in units)
                                                 {
                                                     <option value="@unit.Id">
@@ -375,18 +333,15 @@
                                                         }
                                                     </option>
                                                 }
-
                                             </select>
                                         }
                                         else
                                         {
                                             @GetUnitName(line)
                                         }
-
                                     </td>
 
                                     <td>
-
                                         @if (request.Status == SalesRequestStatus.Draft)
                                         {
                                             <input type="text"
@@ -397,45 +352,35 @@
                                         {
                                             @line.Notes
                                         }
-
                                     </td>
 
                                     @if (request.Status == SalesRequestStatus.Draft)
                                     {
                                         <td class="text-center">
-
                                             <button type="button"
                                                     class="btn btn-sm btn-outline-danger delete-line-btn"
                                                     title="@LocalizationService["Delete"]"
                                                     @onclick="() => RemoveLine(line)">
-
                                                 <span>@LocalizationService["Delete"]</span>
-
                                             </button>
-
                                         </td>
                                     }
-
                                 </tr>
                             }
-
                         </tbody>
-
                     </table>
-
                 </div>
-
             </div>
         </div>
     }
 </div>
 
 @code {
-
     [Parameter]
     public long Id { get; set; }
 
     private SalesRequest? request;
+    private string jobTitle = "";
 
     private List<Customer> customers = new();
     private List<Item> items = new();
@@ -482,21 +427,18 @@
 
             request =
                 await Db.SalesRequests
-
                     .Include(x => x.Customer)
-
                     .Include(x => x.CreatedByUser)
-
                     .Include(x => x.AssignedToUser)
-
                     .Include(x => x.Lines)
                         .ThenInclude(x => x.Item)
-
                     .Include(x => x.Lines)
                         .ThenInclude(x => x.Unit)
-
                     .FirstOrDefaultAsync(x =>
                         x.Id == Id);
+
+            // JobTitle is saved at the root of JobSpecificationJson by Sheet Edit and Roll Edit.
+            jobTitle = ReadJobTitle(request?.JobSpecificationJson);
 
             if (request == null)
             {
@@ -512,6 +454,38 @@
         {
             isLoading = false;
         }
+    }
+
+    private static string ReadJobTitle(string? jobSpecificationJson)
+    {
+        if (string.IsNullOrWhiteSpace(jobSpecificationJson))
+            return string.Empty;
+
+        try
+        {
+            using var document = JsonDocument.Parse(jobSpecificationJson);
+
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+                return string.Empty;
+
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                if (string.Equals(
+                        property.Name,
+                        "JobTitle",
+                        StringComparison.OrdinalIgnoreCase) &&
+                    property.Value.ValueKind == JsonValueKind.String)
+                {
+                    return property.Value.GetString()?.Trim() ?? string.Empty;
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // Invalid or older JSON should not prevent the request page from loading.
+        }
+
+        return string.Empty;
     }
 
     private void AddLine()
@@ -643,7 +617,6 @@
             isSubmitting = false;
         }
     }
-
 
     private async Task CreateQuotationAsync()
     {
@@ -800,4 +773,4 @@
         Navigation.NavigateTo(
             "/sales/requests");
     }
-}   
+}
