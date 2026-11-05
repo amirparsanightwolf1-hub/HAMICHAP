@@ -1,4 +1,4 @@
-﻿@page "/sales/quotations/edit/{Id:long}"
+@page "/sales/quotations/edit/{Id:long}"
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
@@ -8,6 +8,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using System.Globalization
+@using System.Text.Json
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
@@ -21,7 +23,7 @@
     @LocalizationService["Quotation"]
 </PageTitle>
 
-<div class="page-container">
+<div class="page-container quotation-edit-page">
 
     @if (isLoading)
     {
@@ -41,7 +43,7 @@
     }
     else
     {
-        <div class="erp-page-header mb-4">
+        <div class="erp-page-header quotation-page-header mb-4">
 
             <div>
                 <div class="erp-page-title">
@@ -53,7 +55,7 @@
                 </div>
             </div>
 
-            <div class="d-flex gap-2">
+            <div class="quotation-actions">
 
                 @if (quotation.Status == QuotationStatus.Approved ||
                      quotation.Status == QuotationStatus.ReadyToSend ||
@@ -209,15 +211,15 @@
 
         <!-- Quotation Information -->
 
-        <div class="card shadow-sm mb-4">
+        <div class="card quotation-card mb-4">
 
-            <div class="card-header">
+            <div class="card-header quotation-card-header">
                 <strong>
                     @LocalizationService["QuotationInformation"]
                 </strong>
             </div>
 
-            <div class="card-body">
+            <div class="card-body quotation-card-body">
 
                 <div class="row g-3">
 
@@ -248,11 +250,23 @@
                     <div class="col-md-3">
 
                         <label class="form-label">
+                            @LocalizationService["JobTitle"]
+                        </label>
+
+                        <input class="form-control"
+                               value="@GetJobTitle()"
+                               readonly />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
                             @LocalizationService["QuotationDate"]
                         </label>
 
                         <input class="form-control"
-                               value="@quotation.QuotationDate.ToString("yyyy-MM-dd")"
+                               value="@FormatJalaliDate(quotation.QuotationDate)"
                                readonly />
 
                     </div>
@@ -263,9 +277,12 @@
                             @LocalizationService["Status"]
                         </label>
 
-                        <input class="form-control"
-                               value="@LocalizationService.TranslateEnum(quotation.Status)"
-                               readonly />
+                        <div class="quotation-status-value">
+                            <span class="quotation-status-badge @GetQuotationStatusCssClass(quotation.Status)">
+                                <span class="quotation-status-dot"></span>
+                                @LocalizationService.TranslateEnum(quotation.Status)
+                            </span>
+                        </div>
 
                     </div>
 
@@ -277,13 +294,16 @@
 
                         @if (IsEditable)
                         {
-                            <InputDate @bind-Value="quotation.ValidUntil"
-                                       class="form-control" />
+                            <input class="form-control"
+                                   value="@FormatJalaliDate(quotation.ValidUntil)"
+                                   @onchange="UpdateValidUntilFromJalali"
+                                   inputmode="numeric"
+                                   placeholder="1405/01/01" />
                         }
                         else
                         {
                             <input class="form-control"
-                                   value="@FormatDate(quotation.ValidUntil)"
+                                   value="@FormatJalaliDate(quotation.ValidUntil)"
                                    readonly />
                         }
 
@@ -309,26 +329,6 @@
 
                     </div>
 
-                    <div class="col-md-4">
-
-                        <label class="form-label">
-                            @LocalizationService["ProfitMargin"]
-                        </label>
-
-                        @if (IsEditable)
-                        {
-                            <InputNumber class="form-control"
-                                         @bind-Value="quotation.ProfitMargin" />
-                        }
-                        else
-                        {
-                            <input class="form-control"
-                                   value="@quotation.ProfitMargin.ToString("N2")"
-                                   readonly />
-                        }
-
-                    </div>
-
                 </div>
 
             </div>
@@ -336,19 +336,19 @@
 
         <!-- Quotation Lines -->
 
-        <div class="card shadow-sm mb-4">
+        <div class="card quotation-card mb-4">
 
-            <div class="card-header">
+            <div class="card-header quotation-card-header">
                 <strong>
                     @LocalizationService["QuotationLines"]
                 </strong>
             </div>
 
-            <div class="card-body p-0">
+            <div class="card-body p-0 quotation-table-body">
 
                 <div class="table-responsive">
 
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 quotation-lines-table">
 
                         <thead>
                             <tr>
@@ -440,107 +440,23 @@
             </div>
         </div>
 
-        <!-- Financial Summary -->
+        <!-- Quotation Notes -->
 
-        <div class="card shadow-sm mb-4">
-
-            <div class="card-header">
-                <strong>
-                    @LocalizationService["FinancialSummary"]
-                </strong>
+        <div class="card quotation-card mb-4">
+            <div class="card-header quotation-card-header">
+                <strong>@LocalizationService["Notes"]</strong>
             </div>
-
-            <div class="card-body">
-
-                <div class="row g-3">
-
-                    <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["MaterialCost"]
-                        </label>
-
-                        @if (IsEditable)
-                        {
-                            <InputNumber class="form-control"
-                                         @bind-Value="quotation.MaterialCost" />
-                        }
-                        else
-                        {
-                            <input class="form-control"
-                                   value="@quotation.MaterialCost.ToString("N2")"
-                                   readonly />
-                        }
-
-                    </div>
-
-                    <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["ProductionCost"]
-                        </label>
-
-                        @if (IsEditable)
-                        {
-                            <InputNumber class="form-control"
-                                         @bind-Value="quotation.ProductionCost" />
-                        }
-                        else
-                        {
-                            <input class="form-control"
-                                   value="@quotation.ProductionCost.ToString("N2")"
-                                   readonly />
-                        }
-
-                    </div>
-
-                    <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["ProfitMargin"]
-                        </label>
-
-                        <input class="form-control"
-                               value="@quotation.ProfitMargin.ToString("N2")"
-                               readonly="@(!IsEditable)" />
-
-                    </div>
-
-                    <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["FinalAmount"]
-                        </label>
-
-                        <input class="form-control fw-bold"
-                               value="@quotation.FinalAmount.ToString("N2")"
-                               readonly />
-
-                    </div>
-
-                </div>
-
-                <div class="mt-3">
-
-                    <label class="form-label">
-                        @LocalizationService["Notes"]
-                    </label>
-
-                    @if (IsEditable)
-                    {
-                        <InputTextArea class="form-control"
-                                       rows="4"
-                                       @bind-Value="quotation.Notes" />
-                    }
-                    else
-                    {
-                        <textarea class="form-control"
-                                  rows="4"
-                                  readonly>@quotation.Notes</textarea>
-                    }
-
-                </div>
-
+            <div class="card-body quotation-card-body">
+                @if (IsEditable)
+                {
+                    <InputTextArea class="form-control"
+                                   rows="4"
+                                   @bind-Value="quotation.Notes" />
+                }
+                else
+                {
+                    <textarea class="form-control" rows="4" readonly>@quotation.Notes</textarea>
+                }
             </div>
         </div>
     }
@@ -568,6 +484,20 @@
         quotation != null &&
         (quotation.Status == QuotationStatus.Draft ||
          quotation.Status == QuotationStatus.RevisionRequired);
+
+    private static string GetQuotationStatusCssClass(QuotationStatus status) => status switch
+    {
+        QuotationStatus.Draft => "quotation-status-draft",
+        QuotationStatus.PendingApproval => "quotation-status-pending",
+        QuotationStatus.RevisionRequired => "quotation-status-revision",
+        QuotationStatus.Approved => "quotation-status-approved",
+        QuotationStatus.Accepted => "quotation-status-accepted",
+        QuotationStatus.Rejected => "quotation-status-rejected",
+        QuotationStatus.Cancelled => "quotation-status-cancelled",
+        QuotationStatus.ReadyToSend or QuotationStatus.SentToCustomer or QuotationStatus.CustomerNegotiation => "quotation-status-customer",
+        QuotationStatus.Expired => "quotation-status-expired",
+        _ => "quotation-status-unknown"
+    };
 
     private void OpenPreview()
     {
@@ -918,10 +848,84 @@
     }
 
 
-    private string FormatDate(DateTime? date)
+    private string GetJobTitle()
     {
-        return date?.ToString("yyyy-MM-dd")
-            ?? "-";
+        var json = quotation?.SalesRequest?.JobSpecificationJson;
+        if (string.IsNullOrWhiteSpace(json))
+            return "-";
+
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+                return "-";
+
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                if (string.Equals(property.Name, "JobTitle", StringComparison.OrdinalIgnoreCase) &&
+                    property.Value.ValueKind == JsonValueKind.String)
+                {
+                    var title = property.Value.GetString()?.Trim();
+                    return string.IsNullOrWhiteSpace(title) ? "-" : title;
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // Older or malformed job specification data should not break the quotation page.
+        }
+
+        return "-";
+    }
+
+    private static string FormatJalaliDate(DateTime? date)
+    {
+        if (!date.HasValue)
+            return "-";
+
+        var calendar = new PersianCalendar();
+        return $"{calendar.GetYear(date.Value):0000}/{calendar.GetMonth(date.Value):00}/{calendar.GetDayOfMonth(date.Value):00}";
+    }
+
+    private void UpdateValidUntilFromJalali(ChangeEventArgs args)
+    {
+        if (quotation == null)
+            return;
+
+        var value = (args.Value?.ToString() ?? string.Empty).Trim()
+            .Replace('-', '/').Replace('.', '/')
+            .Replace('۰', '0').Replace('۱', '1').Replace('۲', '2')
+            .Replace('۳', '3').Replace('۴', '4').Replace('۵', '5')
+            .Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9')
+            .Replace('٠', '0').Replace('١', '1').Replace('٢', '2')
+            .Replace('٣', '3').Replace('٤', '4').Replace('٥', '5')
+            .Replace('٦', '6').Replace('٧', '7').Replace('٨', '8').Replace('٩', '9');
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            quotation.ValidUntil = null;
+            return;
+        }
+
+        var parts = value.Split('/');
+        if (parts.Length != 3 ||
+            !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var year) ||
+            !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var month) ||
+            !int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var day))
+        {
+            errorMessage = LocalizationService["InvalidJalaliFromDate"];
+            return;
+        }
+
+        try
+        {
+            quotation.ValidUntil = new PersianCalendar().ToDateTime(year, month, day, 0, 0, 0, 0);
+            errorMessage = null;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            errorMessage = LocalizationService["InvalidJalaliFromDate"];
+        }
     }
 
 

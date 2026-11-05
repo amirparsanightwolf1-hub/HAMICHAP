@@ -209,10 +209,6 @@
                                                             @SummaryItem(LocalizationService["QuotationDate"], quotation.QuotationDate.ToString("yyyy-MM-dd"))
                                                             @SummaryItem(LocalizationService["ValidUntil"], quotation.ValidUntil?.ToString("yyyy-MM-dd"))
                                                             @SummaryItem(LocalizationService["EstimatedDeliveryDays"], quotation.EstimatedDeliveryDays.ToString())
-                                                            @SummaryItem(LocalizationService["ProfitMargin"], quotation.ProfitMargin.ToString("N2"))
-                                                            @SummaryItem(LocalizationService["MaterialCost"], quotation.MaterialCost.ToString("N2"))
-                                                            @SummaryItem(LocalizationService["ProductionCost"], quotation.ProductionCost.ToString("N2"))
-                                                            @SummaryItem(LocalizationService["FinalAmount"], quotation.FinalAmount.ToString("N2"))
                                                         </div>
                                                         @if (!string.IsNullOrWhiteSpace(quotation.Notes))
                                                         {
