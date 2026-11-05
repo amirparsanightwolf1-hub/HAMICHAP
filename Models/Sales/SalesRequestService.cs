@@ -138,83 +138,10 @@ public class SalesRequestService
 
 
 
-    public async Task AssignEvaluatorAsync(
-        long requestId,
-        string employeeId)
-    {
-
-        var request =
-            await _db.SalesRequests
-                .FirstAsync(x =>
-                    x.Id == requestId);
-
-
-        request.AssignedToUserId =
-            employeeId;
-
-
-        request.Status =
-            SalesRequestStatus.UnderEvaluation;
-
-
-        await _db.SaveChangesAsync();
-    }
-
-
-
-
-
-    public async Task CompleteEvaluationAsync(
-        long requestId)
-    {
-
-        var request =
-            await _db.SalesRequests
-                .FirstAsync(x =>
-                    x.Id == requestId);
-
-
-
-        request.Status =
-            SalesRequestStatus.EvaluationCompleted;
-
-
-
-        await _db.SaveChangesAsync();
-    }
-
-
-
-
 
     public async Task CreateQuotationAsync(long requestId)
     {
         await _quotationService.CreateFromRequestAsync(requestId);
-    
-
-
-        var request =
-            await _db.SalesRequests
-                .FirstAsync(x =>
-                    x.Id == requestId);
-
-
-
-        if (request.Status !=
-            SalesRequestStatus.EvaluationCompleted)
-        {
-            throw new Exception(
-                "Request must be evaluated first");
-        }
-
-
-
-        request.Status =
-            SalesRequestStatus.QuotationCreated;
-
-
-
-        await _db.SaveChangesAsync();
     }
 
 }

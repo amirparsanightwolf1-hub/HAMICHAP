@@ -2,8 +2,13 @@
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using System.Globalization
 @using HamiChap_MES_ERP.Services
 @using Microsoft.EntityFrameworkCore
+@using System.Text.Json
+@using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Components.Web
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
@@ -70,77 +75,219 @@
             }
             else
             {
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 table-responsive-cards">
-                        <thead class="table-light">
-                            <tr>
-                                <th>
-                                    @LocalizationService["RequestNumber"]
-                                </th>
-                                <th>
-                                    @LocalizationService["Customer"]
-                                </th>
-                                <th>
-                                    @LocalizationService["RequestDate"]
-                                </th>
-                                <th>
-                                    @LocalizationService["RequestedDeliveryDate"]
-                                </th>
-                                <th>
-                                    @LocalizationService["Status"]
-                                </th>
-                                <th>
-                                    @LocalizationService["AssignedEvaluator"]
-                                </th>
-                                <th style="width: 100px;"></th>
-                            </tr>
-                        </thead>
 
-                        <tbody>
-                            @foreach (var request in requests)
+                <div class="sales-request-filters">
+                    <div class="sales-filter-field sales-search-field">
+                        <label for="salesRequestSearch">@LocalizationService["Search"]</label>
+                        <input id="salesRequestSearch"
+                               class="form-control"
+                               type="search"
+                               placeholder="@LocalizationService["SalesRequestSearchPlaceholder"]"
+                               @bind="searchText"
+                               @bind:event="oninput"
+                               @onkeydown="HandleSearchKeyDown" />
+                    </div>
+
+                    <div class="sales-filter-field">
+                        <label for="salesJobTypeFilter">@LocalizationService["JobType"]</label>
+                        <select id="salesJobTypeFilter" class="form-select" @bind="selectedJobType">
+                            <option value="">@LocalizationService["AllJobTypes"]</option>
+                            @foreach (var jobType in Enum.GetValues<SalesJobType>())
                             {
-                                <tr @key="request.Id">
-                                    <td>
-                                        <span class="fw-semibold">
-                                            @request.RequestNumber
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        @request.Customer?.Name
-                                    </td>
-
-                                    <td>
-                                        @request.RequestDate.ToString("yyyy-MM-dd")
-                                    </td>
-
-                                    <td>
-                                        @(request.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")
-                                    </td>
-
-                                    <td>
-                                        <span class="badge bg-secondary">
-                                            @LocalizationService.TranslateEnum(request.Status)
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        @GetEvaluatorName(request)
-                                    </td>
-
-                                    <td class="text-end">
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary"
-                                                @onclick="() => OpenRequest(request.Id)">
-                                            <i class="bi bi-pencil"></i>
-                                            @LocalizationService["Open"]
-                                        </button>
-                                    </td>
-                                </tr>
+                                <option value="@jobType">@LocalizationService.TranslateEnum(jobType)</option>
                             }
-                        </tbody>
-                    </table>
+                        </select>
+                    </div>
+
+                    <div class="sales-filter-field">
+                        <label for="salesRequestFromDate">@LocalizationService["FromDateJalali"]</label>
+                        <input id="salesRequestFromDate"
+                               class="form-control"
+                               type="text"
+                               inputmode="numeric"
+                               placeholder="@LocalizationService["JalaliDatePlaceholder"]"
+                               @bind="fromJalaliDate" />
+                    </div>
+
+                    <div class="sales-filter-field">
+                        <label for="salesRequestToDate">@LocalizationService["ToDateJalali"]</label>
+                        <input id="salesRequestToDate"
+                               class="form-control"
+                               type="text"
+                               inputmode="numeric"
+                               placeholder="@LocalizationService["JalaliDatePlaceholder"]"
+                               @bind="toJalaliDate" />
+                    </div>
+
+                    <div class="sales-filter-actions">
+                        <button type="button" class="btn btn-primary" @onclick="ApplyFiltersAsync" disabled="@isLoading">
+                            <i class="bi bi-search"></i> @LocalizationService["Apply"]
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">
+                            @LocalizationService["Clear"]
+                        </button>
+                    </div>
                 </div>
+
+                @if (!string.IsNullOrWhiteSpace(filterError))
+                {
+                    <div class="alert alert-warning mx-3 mt-2 mb-0">@filterError</div>
+                }
+
+                <div class="sales-status-legend" aria-label="Sales request status legend">
+                    <span class="sales-status-legend-title">@LocalizationService["Status"]:</span>
+                    @foreach (var status in Enum.GetValues<SalesRequestStatus>())
+                    {
+                        <button type="button"
+                                class="sales-status-legend-item sales-status-filter @(IsStatusSelected(status) ? "is-selected" : "")"
+                                aria-pressed="@IsStatusSelected(status)"
+                                title="@GetStatusFilterTitle(status)"
+                                @onclick="() => ToggleStatusFilterAsync(status)">
+                            <span class="sales-status-dot @GetStatusCssClass(status)"></span>
+                            @LocalizationService.TranslateEnum(status)
+                            @if (IsStatusSelected(status))
+                            {
+                                <i class="bi bi-check-circle-fill sales-status-filter-check"></i>
+                            }
+                        </button>
+                    }
+                </div>
+
+                @if (requests.Count == 0)
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        @LocalizationService["NoSalesRequestsFound"]
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 table-responsive-cards sales-requests-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>
+                                        @LocalizationService["RequestNumber"]
+                                    </th>
+                                    <th>
+                                        @LocalizationService["Customer"]
+                                    </th>
+                                    <th>
+                                        @LocalizationService["RequestDate"]
+                                    </th>
+                                    <th>
+                                        @LocalizationService["RequestedDeliveryDate"]
+                                    </th>
+                                    <th>
+                                        Job type
+                                    </th>
+                                    <th>
+                                        @LocalizationService["JobTitle"]
+                                    </th>
+                                    <th>
+                                        @LocalizationService["Status"]
+                                    </th>
+                                    <th>
+                                        @LocalizationService["AssignedEvaluator"]
+                                    </th>
+                                    <th style="width: 100px;"></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var request in requests)
+                                {
+                                    <tr @key="request.Id"
+                                        class="sales-request-row @GetStatusCssClass(request.Status) @(expandedRequestId == request.Id ? "is-expanded" : "")"
+                                        role="button"
+                                        tabindex="0"
+                                        aria-expanded="@(expandedRequestId == request.Id)"
+                                        @onclick="() => ToggleDetails(request.Id)"
+                                        @onkeydown="args => HandleRowKeyDown(args, request.Id)">
+                                        <td>
+                                            <span class="fw-semibold">
+                                                @request.RequestNumber
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            @request.Customer?.Name
+                                        </td>
+
+                                        <td>
+                                            @request.RequestDate.ToString("yyyy-MM-dd")
+                                        </td>
+
+                                        <td>
+                                            @(request.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")
+                                        </td>
+
+                                        <td>
+                                            <span class="sales-job-type-badge">@GetJobTypeLabel(request)</span>
+                                        </td>
+
+                                        <td>
+                                            <span class="sales-job-title-cell">@GetJobTitle(request)</span>
+                                        </td>
+
+                                        <td>
+                                            <span class="sales-status-badge @GetStatusCssClass(request.Status)">
+                                                <span class="sales-status-dot"></span>
+                                                @LocalizationService.TranslateEnum(request.Status)
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            @GetEvaluatorName(request)
+                                        </td>
+
+                                        <td class="text-end">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => OpenRequest(request.Id)"
+                                                    @onclick:stopPropagation="true">
+                                                <i class="bi bi-pencil"></i>
+                                                @LocalizationService["Open"]
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @if (expandedRequestId == request.Id)
+                                    {
+                                        <tr class="sales-request-summary-row" @key="@($"summary-{request.Id}")">
+                                            <td colspan="9">
+                                                <div class="sales-request-summary">
+                                                    <div class="sales-request-summary-heading">
+                                                        <div>
+                                                            <strong>@LocalizationService["JobTitle"]</strong>
+                                                            <span>@GetJobTitle(request)</span>
+                                                        </div>
+                                                        <span class="sales-summary-job-type">@GetJobTypeLabel(request)</span>
+                                                    </div>
+                                                    @if (GetSpecificationSummary(request).Count == 0)
+                                                    {
+                                                        <div class="sales-summary-empty">@LocalizationService["NoSalesRequestsFound"]</div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="sales-specification-grid">
+                                                            @foreach (var detail in GetSpecificationSummary(request))
+                                                            {
+                                                                <div class="sales-specification-item">
+                                                                    <span class="sales-specification-label">@detail.Label</span>
+                                                                    <strong class="sales-specification-value">@detail.Value</strong>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
 
                 @if (totalPages > 0)
                 {
@@ -186,12 +333,22 @@
     private const int pageSize = 20;
 
     private List<SalesRequest> requests = new();
+    private List<SalesRequest> allFilteredRequests = new();
 
     private bool isLoading = true;
     private string? errorMessage;
+    private string? filterError;
 
     private int currentPage = 1;
     private int totalCount;
+    private long? expandedRequestId;
+
+    private string searchText = "";
+    private string? selectedJobType = "";
+    // Empty means all statuses; otherwise only the selected statuses are shown.
+    private HashSet<SalesRequestStatus> selectedStatuses = new();
+    private string fromJalaliDate = "";
+    private string toJalaliDate = "";
 
     private int totalPages =>
         totalCount == 0
@@ -207,43 +364,166 @@
     {
         isLoading = true;
         errorMessage = null;
+        filterError = null;
 
         try
         {
-            var query = Db.SalesRequests
-                .AsNoTracking();
+            DateTime? fromDate = ParseJalaliDate(fromJalaliDate);
+            DateTime? toDate = ParseJalaliDate(toJalaliDate);
 
-            totalCount = await query.CountAsync();
+            if (!string.IsNullOrWhiteSpace(fromJalaliDate) && fromDate == null)
+                throw new InvalidOperationException(LocalizationService["InvalidJalaliFromDate"]);
+            if (!string.IsNullOrWhiteSpace(toJalaliDate) && toDate == null)
+                throw new InvalidOperationException(LocalizationService["InvalidJalaliToDate"]);
+            if (fromDate.HasValue && toDate.HasValue && fromDate.Value.Date > toDate.Value.Date)
+                throw new InvalidOperationException(LocalizationService["JalaliFromDateAfterToDate"]);
 
-            if (currentPage > totalPages && totalPages > 0)
+            var query = Db.SalesRequests.AsNoTracking();
+
+            if (Enum.TryParse<SalesJobType>(selectedJobType, out var jobType))
+                query = query.Where(x => x.JobType == jobType);
+
+            if (selectedStatuses.Count > 0)
+                query = query.Where(x => selectedStatuses.Contains(x.Status));
+
+            if (fromDate.HasValue)
+                query = query.Where(x => x.RequestDate >= fromDate.Value);
+
+            if (toDate.HasValue)
             {
-                currentPage = totalPages;
+                var dayAfter = toDate.Value.Date.AddDays(1);
+                query = query.Where(x => x.RequestDate < dayAfter);
             }
 
-            if (totalPages == 0)
-            {
-                currentPage = 1;
-            }
-
-            requests = await query
+            var filtered = await query
                 .Include(x => x.Customer)
                 .Include(x => x.AssignedToUser)
                 .OrderByDescending(x => x.RequestDate)
                 .ThenByDescending(x => x.Id)
+                .ToListAsync();
+
+            var term = searchText.Trim();
+            if (!string.IsNullOrWhiteSpace(term))
+            {
+                filtered = filtered.Where(x =>
+                    (x.RequestNumber?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (x.Customer?.Name?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    GetJobTitle(x).Contains(term, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            allFilteredRequests = filtered;
+            totalCount = allFilteredRequests.Count;
+
+            if (totalPages > 0 && currentPage > totalPages)
+                currentPage = totalPages;
+            if (totalPages == 0)
+                currentPage = 1;
+
+            requests = allFilteredRequests
                 .Skip((currentPage - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToList();
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
             requests = new();
+            allFilteredRequests = new();
             totalCount = 0;
         }
         finally
         {
             isLoading = false;
         }
+    }
+
+    private static DateTime? ParseJalaliDate(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        var normalized = value.Trim()
+            .Replace('-', '/')
+            .Replace('.', '/')
+            .Replace('۰', '0').Replace('۱', '1').Replace('۲', '2')
+            .Replace('۳', '3').Replace('۴', '4').Replace('۵', '5')
+            .Replace('۶', '6').Replace('۷', '7').Replace('۸', '8')
+            .Replace('۹', '9')
+            .Replace('٠', '0').Replace('١', '1').Replace('٢', '2')
+            .Replace('٣', '3').Replace('٤', '4').Replace('٥', '5')
+            .Replace('٦', '6').Replace('٧', '7').Replace('٨', '8')
+            .Replace('٩', '9');
+
+        var parts = normalized.Split('/');
+        if (parts.Length != 3 ||
+            !int.TryParse(parts[0], out var year) ||
+            !int.TryParse(parts[1], out var month) ||
+            !int.TryParse(parts[2], out var day))
+            return null;
+
+        try
+        {
+            var calendar = new PersianCalendar();
+            return calendar.ToDateTime(year, month, day, 0, 0, 0, 0);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    private bool IsStatusSelected(SalesRequestStatus status) =>
+        selectedStatuses.Count == 0 || selectedStatuses.Contains(status);
+
+    private string GetStatusFilterTitle(SalesRequestStatus status) =>
+        selectedStatuses.Count == 0
+            ? $"{LocalizationService["FilterByStatus"]}: {LocalizationService.TranslateEnum(status)}"
+            : selectedStatuses.Contains(status)
+                ? $"{LocalizationService["ShowingStatusClickToRemove"]}: {LocalizationService.TranslateEnum(status)}"
+                : $"{LocalizationService["AddStatusToFilter"]}: {LocalizationService.TranslateEnum(status)}";
+
+    private async Task ToggleStatusFilterAsync(SalesRequestStatus status)
+    {
+        if (selectedStatuses.Count == 0)
+        {
+            // First click narrows the list to this status only.
+            selectedStatuses.Add(status);
+        }
+        else if (!selectedStatuses.Add(status))
+        {
+            // Clicking an already-selected status removes it.
+            selectedStatuses.Remove(status);
+        }
+
+        currentPage = 1;
+        expandedRequestId = null;
+        await LoadAsync();
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        currentPage = 1;
+        expandedRequestId = null;
+        await LoadAsync();
+    }
+
+    private async Task ClearFiltersAsync()
+    {
+        searchText = "";
+        selectedJobType = "";
+        selectedStatuses.Clear();
+        fromJalaliDate = "";
+        toJalaliDate = "";
+        currentPage = 1;
+        expandedRequestId = null;
+        await LoadAsync();
+    }
+
+    private async Task HandleSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            await ApplyFiltersAsync();
     }
 
     private string GetEvaluatorName(SalesRequest request)
@@ -262,13 +542,153 @@
         return user.UserName ?? "-";
     }
 
+
+    private sealed record SpecificationSummaryItem(string Label, string Value);
+
+    private static string GetStatusCssClass(SalesRequestStatus status) => status switch
+    {
+        SalesRequestStatus.Draft => "status-draft",
+        SalesRequestStatus.Submitted => "status-submitted",
+        SalesRequestStatus.UnderEvaluation => "status-evaluation",
+        SalesRequestStatus.EvaluationCompleted => "status-evaluated",
+        SalesRequestStatus.QuotationCreated => "status-quotation",
+        SalesRequestStatus.Cancelled => "status-cancelled",
+        _ => "status-unknown"
+    };
+
+    private void ToggleDetails(long requestId)
+    {
+        expandedRequestId = expandedRequestId == requestId ? null : requestId;
+    }
+
+    private void HandleRowKeyDown(KeyboardEventArgs args, long requestId)
+    {
+        if (args.Key is "Enter" or " ")
+            ToggleDetails(requestId);
+    }
+
+    private string GetJobTypeLabel(SalesRequest request) =>
+        LocalizationService.TranslateEnum(request.JobType);
+
+    private string GetJobTitle(SalesRequest request)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(
+                string.IsNullOrWhiteSpace(request.JobSpecificationJson)
+                    ? "{}"
+                    : request.JobSpecificationJson);
+
+            if (document.RootElement.TryGetProperty("JobTitle", out var title) &&
+                title.ValueKind == JsonValueKind.String &&
+                !string.IsNullOrWhiteSpace(title.GetString()))
+                return title.GetString()!;
+
+            return "-";
+        }
+        catch
+        {
+            return "-";
+        }
+    }
+
+    private List<SpecificationSummaryItem> GetSpecificationSummary(SalesRequest request)
+    {
+        var result = new List<SpecificationSummaryItem>();
+
+        try
+        {
+            using var document = JsonDocument.Parse(
+                string.IsNullOrWhiteSpace(request.JobSpecificationJson)
+                    ? "{}"
+                    : request.JobSpecificationJson);
+
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+                return result;
+
+            foreach (var property in document.RootElement.EnumerateObject())
+            {
+                if (property.Name is "JobTitle" or "FinishedProductItemId" or
+                    "ArtworkRelativePath" or "ArtworkOriginalFileName" or
+                    "ArtworkFiles" or "Referrer")
+                    continue;
+
+                var value = FormatSpecificationValue(property.Value);
+                if (string.IsNullOrWhiteSpace(value) || value == "—")
+                    continue;
+
+                result.Add(new SpecificationSummaryItem(
+                    HumanizePropertyName(property.Name),
+                    value));
+            }
+
+            // Roll page also stores additional production workflow fields in the same JSON object.
+            if (document.RootElement.TryGetProperty("WorkflowFields", out var workflow) &&
+                workflow.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in workflow.EnumerateObject())
+                {
+                    var value = FormatSpecificationValue(property.Value);
+                    if (string.IsNullOrWhiteSpace(value) || value is "—" or "false" or "False")
+                        continue;
+
+                    result.Add(new SpecificationSummaryItem(
+                        HumanizePropertyName(property.Name),
+                        value));
+                }
+            }
+        }
+        catch
+        {
+            // Keep the request list usable if an older record contains malformed JSON.
+        }
+
+        return result;
+    }
+
+    private static string FormatSpecificationValue(JsonElement value) => value.ValueKind switch
+    {
+        JsonValueKind.String => value.GetString()?.Trim() ?? "",
+        JsonValueKind.Number => value.ToString(),
+        JsonValueKind.True => "Yes",
+        JsonValueKind.False => "No",
+        JsonValueKind.Array => string.Join(", ", value.EnumerateArray()
+            .Select(FormatSpecificationValue)
+            .Where(x => !string.IsNullOrWhiteSpace(x) && x != "No")),
+        JsonValueKind.Object => string.Join(", ", value.EnumerateObject()
+            .Select(x => $"{HumanizePropertyName(x.Name)}: {FormatSpecificationValue(x.Value)}")
+            .Where(x => !x.EndsWith(": "))),
+        _ => ""
+    };
+
+    private static string HumanizePropertyName(string name)
+    {
+        var spaced = Regex.Replace(name, "([a-z0-9])([A-Z])", "$1 $2");
+        return spaced switch
+        {
+            "Cut Length Cm" => "Cut length (cm)",
+            "Cut Width Cm" => "Cut width (cm)",
+            "Before Cut Length Cm" => "Before-cut length (cm)",
+            "Before Cut Width Cm" => "Before-cut width (cm)",
+            "Label Pull" => "Label pull",
+            "Label Width" => "Label width",
+            "Gap Between Labels" => "Gap between labels",
+            "Print Run Sheets" => "Print run (sheets)",
+            "Sheet Count" => "Sheet count",
+            "Color Count" => "Color count",
+            "Roll Diameter" => "Roll diameter",
+            _ => spaced
+        };
+    }
+
     private async Task PreviousPage()
     {
         if (currentPage <= 1 || isLoading)
             return;
 
         currentPage--;
-        await LoadAsync();
+        expandedRequestId = null;
+        requests = allFilteredRequests.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
     }
 
     private async Task NextPage()
@@ -277,7 +697,8 @@
             return;
 
         currentPage++;
-        await LoadAsync();
+        expandedRequestId = null;
+        requests = allFilteredRequests.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
     }
 
     private void CreateRequest()

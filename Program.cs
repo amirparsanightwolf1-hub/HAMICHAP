@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,9 +109,23 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.UseStaticFiles();
+// Serve runtime-uploaded files only.
+var uploadsPath = Path.Combine(
+    app.Environment.ContentRootPath,
+    "wwwroot",
+    "uploads");
 
+Directory.CreateDirectory(uploadsPath);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
+
+// Serve application assets and their compressed variants.
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
 

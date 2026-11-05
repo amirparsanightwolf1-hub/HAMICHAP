@@ -1,0 +1,410 @@
+
+/* =====================================
+   SALES REQUEST PAGE
+===================================== */
+
+.sales-request-page {
+    padding-bottom: 35px;
+    color: #343a56;
+}
+
+/* =====================================
+   PAGE HEADER
+===================================== */
+
+.sales-request-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 22px;
+    padding: 22px 25px;
+    background: #ffffff;
+    border: 1px solid #e8eaf0;
+    border-radius: 14px;
+    box-shadow: 0 3px 14px rgba(13, 23, 65, 0.045);
+}
+
+    .sales-request-header .erp-page-title {
+        color: #0d1741;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .sales-request-header .erp-page-subtitle {
+        color: #858ba0;
+        font-size: 14px;
+    }
+
+/* =====================================
+   ACTION BUTTONS
+===================================== */
+
+.request-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+    .request-actions .btn {
+        min-height: 42px;
+        padding: 10px 19px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.1px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+    }
+
+    /* Primary buttons */
+
+    .request-actions .btn-primary {
+        background-color: #0d1741;
+        border-color: #0d1741;
+        color: #ffffff;
+    }
+
+        .request-actions .btn-primary:hover {
+            background-color: #202e5b;
+            border-color: #202e5b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(13, 23, 65, 0.18);
+        }
+
+    /* Submit button */
+
+    .request-actions .btn-success {
+        background-color: #21845a;
+        border-color: #21845a;
+        color: #ffffff;
+    }
+
+        .request-actions .btn-success:hover {
+            background-color: #176b48;
+            border-color: #176b48;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(33, 132, 90, 0.18);
+        }
+
+    /* Secondary buttons */
+
+    .request-actions .btn-outline-primary {
+        color: #0d1741;
+        border: 1px solid #d6dbea;
+        background: #f8f9fc;
+    }
+
+        .request-actions .btn-outline-primary:hover {
+            background: #0d1741;
+            border-color: #0d1741;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+    /* Back button */
+
+    .request-actions .btn-outline-secondary {
+        color: #596078;
+        border: 1px solid #e0e3eb;
+        background: #ffffff;
+    }
+
+        .request-actions .btn-outline-secondary:hover {
+            background: #f0f2f7;
+            color: #0d1741;
+            border-color: #cbd0df;
+        }
+
+    /* Button icons */
+
+    .request-actions .btn i {
+        font-size: 15px;
+    }
+
+    /* Disabled state */
+
+    .request-actions .btn:disabled {
+        opacity: 0.6;
+        transform: none;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+
+/* =====================================
+   CARDS
+===================================== */
+
+.sales-request-page > .card {
+    border: 1px solid #e8eaf0;
+    border-radius: 13px;
+    overflow: hidden;
+    box-shadow: 0 3px 14px rgba(13, 23, 65, 0.045) !important;
+}
+
+    .sales-request-page > .card > .card-header {
+        background: #f8f9fc;
+        border-bottom: 1px solid #e9ebf1;
+        padding: 17px 22px;
+        color: #0d1741;
+    }
+
+    .sales-request-page > .card > .card-body {
+        padding: 24px;
+    }
+
+/* =====================================
+   FORM ELEMENTS
+===================================== */
+
+.sales-request-page .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #596078;
+    margin-bottom: 8px;
+}
+
+.sales-request-page .form-control,
+.sales-request-page .form-select {
+    min-height: 42px;
+    border: 1px solid #e0e3eb;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .sales-request-page .form-control:focus,
+    .sales-request-page .form-select:focus {
+        border-color: #69769e;
+        box-shadow: 0 0 0 3px rgba(13, 23, 65, 0.08);
+    }
+
+.sales-request-page textarea.form-control {
+    min-height: auto;
+}
+
+/* =====================================
+   REQUEST LINES TABLE
+===================================== */
+
+.sales-request-page .table thead th {
+    background: #f8f9fc;
+    color: #596078;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 15px 14px;
+    border-bottom: 1px solid #e5e8ef;
+    white-space: nowrap;
+}
+
+.sales-request-page .table tbody td {
+    padding: 14px;
+    vertical-align: middle;
+    border-color: #edf0f5;
+    font-size: 13px;
+}
+
+.sales-request-page .table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+    .sales-request-page .table tbody tr:hover {
+        background-color: #f8f9fc;
+    }
+
+/* Add line button */
+
+.sales-request-page .card-header .btn-primary {
+    background: #0d1741;
+    border-color: #0d1741;
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .sales-request-page .card-header .btn-primary:hover {
+        background: #202e5b;
+        transform: translateY(-2px);
+    }
+
+/* Delete button */
+
+.sales-request-page .btn-outline-danger {
+    border-radius: 8px;
+    min-width: 36px;
+    min-height: 36px;
+    transition: all 0.2s ease;
+}
+
+    .sales-request-page .btn-outline-danger:hover {
+        transform: translateY(-2px);
+    }
+
+/* =====================================
+   ALERTS
+===================================== */
+
+.sales-request-page .alert {
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media (max-width: 768px) {
+
+    .sales-request-header {
+        align-items: stretch;
+        padding: 18px;
+    }
+
+        .sales-request-header .erp-page-title {
+            font-size: 21px;
+        }
+
+    .request-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 10px;
+    }
+
+        .request-actions .btn {
+            width: 100%;
+            white-space: normal;
+            min-height: 44px;
+            padding: 10px 8px;
+            font-size: 12px;
+        }
+
+    .sales-request-page > .card > .card-body {
+        padding: 17px;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .request-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+.request-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 750px;
+    margin-left: auto;
+}
+
+.request-info-row {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+    direction: rtl;
+}
+
+    .request-info-row label {
+        margin: 0;
+        text-align: right;
+        font-weight: 600;
+        color: #343a56;
+        white-space: nowrap;
+    }
+
+    .request-info-row .form-control {
+        width: 100%;
+        min-height: 40px;
+        border: 1px solid #dce1eb;
+        border-radius: 8px;
+        text-align: right;
+        background: #fff;
+    }
+
+        .request-info-row .form-control:focus {
+            border-color: #0d1741;
+            box-shadow: 0 0 0 3px rgba(13, 23, 65, 0.08);
+        }
+
+.request-notes-row {
+    align-items: start;
+}
+
+    .request-notes-row label {
+        padding-top: 10px;
+    }
+
+@media (max-width: 600px) {
+    .request-info-list {
+        max-width: 100%;
+    }
+
+    .request-info-row {
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 10px;
+    }
+
+        .request-info-row label {
+            white-space: normal;
+        }
+}
+.delete-line-btn {
+    min-width: 65px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+    .delete-line-btn:hover {
+        background-color: #dc3545;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .searchable-select {
+        position: relative;
+        width: 100%;
+    }
+
+    .searchable-select-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        max-height: 250px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    .searchable-select-option {
+        padding: 9px 12px;
+        cursor: pointer;
+    }
+
+        .searchable-select-option:hover {
+            background: #f1f3f5;
+        }

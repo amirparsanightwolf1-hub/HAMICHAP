@@ -9,14 +9,109 @@
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
-@inject MrpService MrpService
-@inject InventoryReservationService InventoryReservationService
 @inject ProductionPostingService ProductionPostingService
 @inject ProductionExecutionService ProductionExecutionService
 
 <PageTitle>@LocalizationService["ProductionOrder"]</PageTitle>
 
-<div class="page-container">
+<style>
+    .production-order-page {
+        --po-border: #e5e9f0;
+        --po-muted: #667085;
+    }
+
+    .production-order-page .card {
+        border: 1px solid var(--po-border);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(16, 24, 40, .035);
+        overflow: hidden;
+    }
+
+    .production-order-page .card-header {
+        min-height: 54px;
+        display: flex;
+        align-items: center;
+        padding: 14px 20px;
+        background: #fbfcfe;
+        border-bottom: 1px solid var(--po-border);
+    }
+
+    .production-order-page .card-body {
+        padding: 22px;
+    }
+
+    .production-order-page .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #475467;
+        font-size: .875rem;
+        font-weight: 600;
+    }
+
+    .production-order-page .form-control {
+        min-height: 42px;
+        border-color: #d8dee8;
+        border-radius: 8px;
+        box-shadow: none;
+    }
+
+    .production-order-page .form-control:focus {
+        border-color: #7b8bb8;
+        box-shadow: 0 0 0 3px rgba(67, 80, 122, .10);
+    }
+
+    .production-order-page .form-control[readonly],
+    .production-order-page textarea[readonly] {
+        background: #f8fafc;
+        color: #344054;
+    }
+
+    .production-order-page .table {
+        margin-bottom: 0;
+    }
+
+    .production-order-page .table thead th {
+        padding: 13px 14px;
+        color: #667085;
+        background: #f8fafc;
+        border-bottom-color: var(--po-border);
+        font-size: .82rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .production-order-page .table tbody td {
+        padding: 13px 14px;
+        border-color: #edf0f4;
+        vertical-align: middle;
+    }
+
+    .production-order-page .material-request-table {
+        min-width: 790px;
+    }
+
+    .production-order-page .material-request-table .form-control {
+        min-height: 44px;
+    }
+
+    .production-order-page .section-hint {
+        color: var(--po-muted);
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    @@media (max-width: 767.98px) {
+        .production-order-page .card-body {
+            padding: 16px;
+        }
+
+        .production-order-page .card-header {
+            padding: 13px 16px;
+        }
+    }
+</style>
+
+<div class="page-container production-order-page">
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
@@ -60,41 +155,7 @@
                         @onclick="BackToList">
                     @LocalizationService["Back"]
                 </button>
-
-                @if (productionOrder.Status == ProductionOrderStatus.Planned ||
-                     productionOrder.Status == ProductionOrderStatus.MaterialChecking ||
-                     productionOrder.Status == ProductionOrderStatus.WaitingForMaterial)
-                {
-                    <button type="button"
-                            class="btn btn-primary"
-                            @onclick="CalculateMrp"
-                            disabled="@isCalculatingMrp">
-
-                        @(isCalculatingMrp
-                            ? LocalizationService["Calculating"]
-                            : LocalizationService["CalculateMRP"])
-
-                    </button>
-                }
-
-                @if (mrpPlan != null &&
-                     (productionOrder.Status == ProductionOrderStatus.Planned ||
-                      productionOrder.Status == ProductionOrderStatus.MaterialChecking ||
-                      productionOrder.Status == ProductionOrderStatus.WaitingForMaterial))
-                {
-                    <button type="button"
-                            class="btn btn-success"
-                            @onclick="ReserveMaterials"
-                            disabled="@isReservingMaterials">
-
-                        @(isReservingMaterials
-                            ? LocalizationService["Reserving"]
-                            : LocalizationService["ReserveMaterials"])
-
-                    </button>
-                }
-
-                @if (productionOrder.Status == ProductionOrderStatus.ReadyToStart)
+@if (productionOrder.Status == ProductionOrderStatus.ReadyToStart)
                 {
                     <button type="button"
                             class="btn btn-primary"
@@ -144,112 +205,7 @@
 
         </div>
 
-        <!-- ===================================================== -->
-        <!-- Production Workflow -->
-        <!-- ===================================================== -->
-
-        <div class="card mb-4">
-
-            <div class="card-header">
-                <strong>@LocalizationService["ProductionWorkflow"]</strong>
-            </div>
-
-            <div class="card-body">
-
-                <div class="row g-3">
-
-                    <div class="col-md-3">
-                        <div class="border rounded p-3 h-100">
-
-                            <div class="small text-muted">
-                                @LocalizationService["WorkflowPlanning"]
-                            </div>
-
-                            <div class="mt-1">
-                                <strong>
-                                    @GetWorkflowStateText(
-                                        ProductionOrderStatus.Planned,
-                                        ProductionOrderStatus.MaterialChecking,
-                                        ProductionOrderStatus.WaitingForMaterial)
-                                </strong>
-                            </div>
-
-                            <div class="small text-muted mt-2">
-                                @LocalizationService["MrpAndMaterialAvailability"]
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="border rounded p-3 h-100">
-
-                            <div class="small text-muted">
-                                @LocalizationService["WorkflowMaterialReadiness"]
-                            </div>
-
-                            <div class="mt-1">
-                                <strong>
-                                    @GetWorkflowStateText(
-                                        ProductionOrderStatus.ReadyToStart)
-                                </strong>
-                            </div>
-
-                            <div class="small text-muted mt-2">
-                                @LocalizationService["RequiredMaterialsReserved"]
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="border rounded p-3 h-100">
-
-                            <div class="small text-muted">
-                                @LocalizationService["WorkflowProduction"]
-                            </div>
-
-                            <div class="mt-1">
-                                <strong>
-                                    @GetWorkflowStateText(
-                                        ProductionOrderStatus.InProduction)
-                                </strong>
-                            </div>
-
-                            <div class="small text-muted mt-2">
-                                @LocalizationService["ManufacturingOperations"]
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="border rounded p-3 h-100">
-
-                            <div class="small text-muted">
-                                @LocalizationService["WorkflowQualityCompletion"]
-                            </div>
-
-                            <div class="mt-1">
-                                <strong>
-                                    @GetWorkflowStateText(
-                                        ProductionOrderStatus.QualityControl,
-                                        ProductionOrderStatus.Completed)
-                                </strong>
-                            </div>
-
-                            <div class="small text-muted mt-2">
-                                @LocalizationService["QcAndFinishedProduction"]
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
+        
 
         <!-- ===================================================== -->
         <!-- Production Order Information -->
@@ -263,9 +219,9 @@
 
             <div class="card-body">
 
-                <div class="row g-3">
+                <div class="row g-4">
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["OrderNumber"]
                         </label>
@@ -275,7 +231,7 @@
                                readonly />
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["SalesOrder"]
                         </label>
@@ -285,7 +241,7 @@
                                readonly />
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["Customer"]
                         </label>
@@ -295,7 +251,7 @@
                                readonly />
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["Status"]
                         </label>
@@ -307,7 +263,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["Created"]
                         </label>
@@ -317,7 +273,7 @@
                                readonly />
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["PlannedStart"]
                         </label>
@@ -327,7 +283,7 @@
                                readonly />
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["PlannedEnd"]
                         </label>
@@ -337,7 +293,7 @@
                                readonly />
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["ActualStart"]
                         </label>
@@ -347,7 +303,7 @@
                                readonly />
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-xl-3 col-md-6">
                         <label class="form-label">
                             @LocalizationService["ActualEnd"]
                         </label>
@@ -824,222 +780,124 @@
 
 
         <!-- ===================================================== -->
-        <!-- MRP -->
+        <!-- Operator Material Request -->
         <!-- ===================================================== -->
-        @if (!string.IsNullOrWhiteSpace(mrpMessage))
-        {
-            <div class="alert alert-success mb-4">
-                @mrpMessage
-            </div>
-        }
-
-        
         @if (!string.IsNullOrWhiteSpace(materialIssueMessage))
         {
-            <div class="alert alert-success mb-4">
-                @materialIssueMessage
-            </div>
+            <div class="alert alert-success mb-4">@materialIssueMessage</div>
         }
 
+        @if (!string.IsNullOrWhiteSpace(materialRequestMessage))
+        {
+            <div class="alert alert-success mb-4">@materialRequestMessage</div>
+        }
 
         <div class="card mb-4">
-
             <div class="card-header d-flex justify-content-between align-items-center">
-
-                <strong>
-                    Material Requirements Planning
-                </strong>
-
-                <button type="button"
-                        class="btn btn-sm btn-primary"
-                        @onclick="CalculateMrp"
-                        disabled="@isCalculatingMrp">
-
-                    @(isCalculatingMrp
-                        ? LocalizationService["Calculating"]
-                        : LocalizationService["CalculateMRP"])
-
-                </button>
-
+                <strong>Material Request</strong>
+                <span class="badge bg-info">Operator entered</span>
             </div>
-
-            @if (!string.IsNullOrWhiteSpace(reservationMessage))
-            {
-                <div class="alert alert-info mb-4">
-                    @reservationMessage
-                </div>
-            }
-
             <div class="card-body">
+                <p class="section-hint">Select the materials needed for this production order and enter the requested quantities. Submitting this request does not reserve or issue inventory.</p>
 
-                @if (mrpPlan == null)
+                <datalist id="production-material-items">
+                    @foreach (var item in activeItems)
+                    {
+                        <option value="@GetItemOption(item)" />
+                    }
+                </datalist>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th style="min-width:280px">Material</th>
+                                <th style="min-width:130px">Requested quantity</th>
+                                <th style="width:120px">Unit</th>
+                                <th style="min-width:180px">Note</th>
+                                <th style="width:70px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in requestLines)
+                            {
+                                <tr>
+                                    <td>
+                                        <input class="form-control" list="production-material-items"
+                                               value="@line.ItemSearchText"
+                                               @onchange="(e) => OnRequestItemChanged(line, e.Value?.ToString())"
+                                               placeholder="Search by item name or code" />
+                                        @if (line.ItemId == 0 && !string.IsNullOrWhiteSpace(line.ItemSearchText))
+                                        {
+                                            <small class="text-danger">Choose an item from the suggestions.</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number" min="0.001" step="0.001"
+                                               @bind="line.Quantity" @bind:event="oninput" />
+                                    </td>
+                                    <td><input class="form-control" value="@line.UnitSymbol" readonly /></td>
+                                    <td><input class="form-control" @bind="line.Notes" placeholder="Optional" /></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                title="Remove line" @onclick="() => RemoveRequestLine(line)">×</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
+                    <button type="button" class="btn btn-outline-primary" @onclick="AddRequestLine">
+                        + Add material line
+                    </button>
+                    <button type="button" class="btn btn-primary" @onclick="SubmitMaterialRequest"
+                            disabled="@isSavingMaterialRequest">
+                        @(isSavingMaterialRequest ? "Submitting..." : "Submit material request")
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Submitted Material Requests</strong></div>
+            <div class="card-body">
+                @if (materialRequests.Count == 0)
                 {
-                    <div class="text-muted">
-                        @LocalizationService["NoMrpCalculation"]
-                    </div>
-                }
-                else if (mrpPlan.Lines.Count == 0)
-                {
-                    <div class="alert alert-warning mb-0">
-                        MRP calculation completed, but no material
-                        requirements were generated.
-                    </div>
+                    <div class="text-muted">No material requests have been submitted for this production order.</div>
                 }
                 else
                 {
-                    <div class="mb-3">
-
-                        <div class="row g-3">
-
-                            <div class="col-md-3">
-
-                                <div class="small text-muted">
-                                    @LocalizationService["MrpCreated"]
-                                </div>
-
-                                <strong>
-                                    @mrpPlan.CreatedDate.ToString(
-                                        "yyyy-MM-dd HH:mm")
-                                </strong>
-
+                    @foreach (var request in materialRequests)
+                    {
+                        <div class="border rounded-3 p-3 p-md-4 mb-3">
+                            <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                <strong>Request #@request.Id</strong>
+                                <span class="badge bg-warning text-dark">@request.Status</span>
+                                <small class="text-muted">@request.RequestedDate.ToString("yyyy-MM-dd HH:mm")</small>
                             </div>
-
-                            <div class="col-md-3">
-
-                                <div class="small text-muted">
-                                    @LocalizationService["Status"]
-                                </div>
-
-                                <strong>
-                                    @mrpPlan.Status
-                                </strong>
-
+                            <div class="table-responsive">
+                                <table class="table table-sm mb-0">
+                                    <thead><tr><th>Material</th><th>Code</th><th>Quantity</th><th>Unit</th><th>Note</th></tr></thead>
+                                    <tbody>
+                                        @foreach (var requestedLine in request.Lines)
+                                        {
+                                            <tr>
+                                                <td>@requestedLine.Item?.Name</td>
+                                                <td>@requestedLine.Item?.Code</td>
+                                                <td>@requestedLine.Quantity.ToString("0.###")</td>
+                                                <td>@requestedLine.Unit?.Symbol</td>
+                                                <td>@requestedLine.Notes</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
-
-                            <div class="col-md-3">
-
-                                <div class="small text-muted">
-                                    @LocalizationService["Materials"]
-                                </div>
-
-                                <strong>
-                                    @mrpPlan.Lines.Count
-                                </strong>
-
-                            </div>
-
-                            <div class="col-md-3">
-
-                                <div class="small text-muted">
-                                    @LocalizationService["Shortages"]
-                                </div>
-
-                                <strong>
-                                    @mrpPlan.Lines.Count(
-                                        x => x.IsShortage)
-                                </strong>
-
-                            </div>
-
                         </div>
-
-                    </div>
-
-                    <div class="table-responsive">
-
-                        <table class="table table-hover align-middle">
-
-                            <thead>
-
-                                <tr>
-                                    <th>@LocalizationService["Material"]</th>
-                                    <th>@LocalizationService["Code"]</th>
-                                    <th>@LocalizationService["Required"]</th>
-                                    <th>@LocalizationService["Available"]</th>
-                                    <th>@LocalizationService["Shortage"]</th>
-                                    <th>@LocalizationService["Unit"]</th>
-                                    <th>@LocalizationService["Status"]</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                @foreach (var line in mrpPlan.Lines)
-                                {
-                                    <tr>
-
-                                        <td>
-                                            <strong>
-                                                @line.Item?.Name
-                                            </strong>
-                                        </td>
-
-                                        <td>
-                                            @line.Item?.Code
-                                        </td>
-
-                                        <td>
-                                            @line.RequiredQuantity.ToString(
-                                                "0.###")
-                                        </td>
-
-                                        <td>
-                                            @line.AvailableQuantity.ToString(
-                                                "0.###")
-                                        </td>
-
-                                        <td>
-
-                                            @if (line.IsShortage)
-                                            {
-                                                <strong>
-                                                    @line.ShortageQuantity.ToString(
-                                                        "0.###")
-                                                </strong>
-                                            }
-                                            else
-                                            {
-                                                <span>
-                                                    0
-                                                </span>
-                                            }
-
-                                        </td>
-
-                                        <td>
-                                            @line.Unit?.Symbol
-                                        </td>
-
-                                        <td>
-
-                                            @if (line.IsShortage)
-                                            {
-                                                <span class="badge bg-danger">
-                                                    @LocalizationService["Shortage"]
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-success">
-                                                    @LocalizationService["Available"]
-                                                </span>
-                                            }
-
-                                        </td>
-
-                                    </tr>
-                                }
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
+                    }
                 }
-
             </div>
-
         </div>
 
         <!-- ===================================================== -->
@@ -1148,17 +1006,8 @@
 
     private ProductionOrder? productionOrder;
 
-    private MaterialRequirementPlan? mrpPlan;
-
-    private bool isReservingMaterials;
-
-    private string? reservationMessage;
 
     private string? errorMessage;
-
-    private string? mrpMessage;
-
-    private bool isCalculatingMrp;
 
     private bool isIssuingMaterials;
 
@@ -1169,6 +1018,11 @@
     private List<ProductionSchedule> productionSchedules = new();
 
     private List<ProductionMaterialReservation> materialReservations = new();
+    private List<Item> activeItems = new();
+    private List<ProductionMaterialRequest> materialRequests = new();
+    private List<MaterialRequestDraftLine> requestLines = new() { new() };
+    private bool isSavingMaterialRequest;
+    private string? materialRequestMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -1208,6 +1062,19 @@
                 .OrderBy(x => x.Item.Name)
                 .ToListAsync();
 
+            activeItems = await Db.Items
+                .Include(x => x.Unit)
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+
+            materialRequests = await Db.ProductionMaterialRequests
+                .Where(x => x.ProductionOrderId == Id)
+                .Include(x => x.Lines).ThenInclude(x => x.Item)
+                .Include(x => x.Lines).ThenInclude(x => x.Unit)
+                .OrderByDescending(x => x.RequestedDate)
+                .ToListAsync();
+
             productionOperations = await Db.ProductionOperations
                 .Where(x => x.ProductionOrderId == Id)
                 .OrderBy(x => x.Sequence)
@@ -1228,27 +1095,76 @@
         }
     }
 
-    private async Task CalculateMrp()
+
+    private void AddRequestLine() => requestLines.Add(new MaterialRequestDraftLine());
+
+    private void RemoveRequestLine(MaterialRequestDraftLine line)
     {
-        if (productionOrder == null)
+        requestLines.Remove(line);
+        if (requestLines.Count == 0)
+            requestLines.Add(new MaterialRequestDraftLine());
+    }
+
+    private string GetItemOption(Item item) => $"{item.Code} - {item.Name}";
+
+    private void OnRequestItemChanged(MaterialRequestDraftLine line, string? selectedText)
+    {
+        line.ItemSearchText = selectedText ?? string.Empty;
+        var selected = activeItems.FirstOrDefault(x =>
+            string.Equals(GetItemOption(x), line.ItemSearchText, StringComparison.OrdinalIgnoreCase));
+
+        line.ItemId = selected?.Id ?? 0;
+        line.UnitId = selected?.UnitId ?? 0;
+        line.UnitSymbol = selected?.Unit?.Symbol ?? string.Empty;
+    }
+
+    private async Task SubmitMaterialRequest()
+    {
+        if (productionOrder == null || isSavingMaterialRequest)
             return;
 
-        if (isCalculatingMrp)
-            return;
-
+        materialRequestMessage = null;
         errorMessage = null;
-        mrpMessage = null;
+
+        var linesToSave = requestLines
+            .Where(x => x.ItemId > 0 || x.Quantity > 0 || !string.IsNullOrWhiteSpace(x.ItemSearchText))
+            .ToList();
+
+        if (linesToSave.Count == 0)
+        {
+            errorMessage = "Add at least one material before submitting the request.";
+            return;
+        }
+
+        if (linesToSave.Any(x => x.ItemId <= 0 || x.UnitId <= 0 || x.Quantity <= 0))
+        {
+            errorMessage = "Select a valid material and enter a quantity greater than zero for every request line.";
+            return;
+        }
 
         try
         {
-            isCalculatingMrp = true;
+            isSavingMaterialRequest = true;
+            var request = new ProductionMaterialRequest
+            {
+                ProductionOrderId = productionOrder.Id,
+                RequestedDate = DateTime.Now,
+                Status = "Requested",
+                Lines = linesToSave.Select(x => new ProductionMaterialRequestLine
+                {
+                    ItemId = x.ItemId,
+                    UnitId = x.UnitId,
+                    Quantity = x.Quantity,
+                    Notes = x.Notes?.Trim() ?? string.Empty
+                }).ToList()
+            };
 
-            mrpPlan =
-                await MrpService.CalculateAsync(
-                    productionOrder.Id);
+            Db.ProductionMaterialRequests.Add(request);
+            await Db.SaveChangesAsync();
 
-            mrpMessage =
-                LocalizationService["MrpCalculationSuccess"];
+            requestLines = new() { new MaterialRequestDraftLine() };
+            materialRequestMessage = $"Material request #{request.Id} submitted. Inventory quantities have not been reserved or issued.";
+            await LoadProductionOrderAsync();
         }
         catch (Exception ex)
         {
@@ -1256,8 +1172,18 @@
         }
         finally
         {
-            isCalculatingMrp = false;
+            isSavingMaterialRequest = false;
         }
+    }
+
+    private sealed class MaterialRequestDraftLine
+    {
+        public string ItemSearchText { get; set; } = string.Empty;
+        public int ItemId { get; set; }
+        public int UnitId { get; set; }
+        public decimal Quantity { get; set; }
+        public string UnitSymbol { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
     }
 
     private async Task IssueMaterials()
@@ -1324,56 +1250,6 @@
         }
     }
 
-    private async Task ReserveMaterials()
-    {
-        if (productionOrder == null)
-            return;
-
-        if (isReservingMaterials)
-            return;
-
-        errorMessage = null;
-        reservationMessage = null;
-
-        try
-        {
-            isReservingMaterials = true;
-
-            var result =
-                await InventoryReservationService
-                    .ReserveForProductionAsync(
-                        productionOrder.Id);
-
-            if (!result)
-            {
-                reservationMessage =
-                    "Material reservation could not be completed because " +
-                    "one or more materials are insufficient.";
-
-                return;
-            }
-
-            productionOrder.Status =
-                ProductionOrderStatus.ReadyToStart;
-
-            await Db.SaveChangesAsync();
-
-            reservationMessage =
-                LocalizationService["ReservationSuccess"];
-
-            await LoadProductionOrderAsync();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = GetLocalizedErrorMessage(ex);
-        }
-        finally
-        {
-            isReservingMaterials = false;
-        }
-    }
-
-
     private string GetLocalizedErrorMessage(Exception ex)
     {
         var message = ex.GetBaseException().Message;
@@ -1407,23 +1283,6 @@
             "/production/orders");
     }
 
-    private string GetWorkflowStateText(
-            params ProductionOrderStatus[] statuses)
-    {
-        if (statuses.Contains(productionOrder!.Status))
-        {
-            return LocalizationService.TranslateEnum(
-                productionOrder.Status);
-        }
-
-        if (statuses.Contains(ProductionOrderStatus.Completed) &&
-            productionOrder.Status == ProductionOrderStatus.Completed)
-        {
-            return LocalizationService["Completed"];
-        }
-
-        return LocalizationService["Pending"];
-    }
 
     private string GetStatusClass(
         ProductionOrderStatus status)

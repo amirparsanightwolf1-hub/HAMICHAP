@@ -1,4 +1,4 @@
-﻿@page "/sales/orders/edit/{Id:long}"
+@page "/sales/orders/edit/{Id:long}"
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
@@ -18,402 +18,180 @@
 <div class="page-container">
 
     @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-{
-    <div class="alert alert-danger">
-        @ErrorMessage
-    </div>
-}
+    {
+        <div class="alert alert-danger">@ErrorMessage</div>
+    }
 
     @if (isLoading)
     {
         <div class="text-center py-5">
             <div class="spinner-border" role="status">
-                <span class="visually-hidden">
-                    @LocalizationService["Loading"]
-                </span>
+                <span class="visually-hidden">@LocalizationService["Loading"]</span>
             </div>
         </div>
     }
     else if (salesOrder == null)
     {
-        <div class="alert alert-danger">
-            @LocalizationService["SalesOrderNotFound"]
-        </div>
+        <div class="alert alert-danger">@LocalizationService["SalesOrderNotFound"]</div>
     }
     else
     {
         <div class="erp-page-header mb-4">
-
             <div>
-                <div class="erp-page-title">
-                    @LocalizationService["SalesOrder"]
-                </div>
-
-                <div class="erp-page-subtitle">
-                    @salesOrder.OrderNumber
-                </div>
+                <div class="erp-page-title">@LocalizationService["SalesOrder"]</div>
+                <div class="erp-page-subtitle">@salesOrder.OrderNumber</div>
             </div>
 
             <div class="d-flex gap-2">
-
                 @if (salesOrder.Status != SalesOrderStatus.Cancelled)
                 {
                     <button type="button"
                             class="btn btn-primary"
-                            @onclick="CreateProductionOrderAsync">
-                        Create Production Order
+                            @onclick="OpenProductionPlanningAsync">
+                        Production Planning
                     </button>
                 }
 
-                <button type="button"
-                        class="btn btn-outline-secondary"
-                        @onclick="GoBack">
-
+                <button type="button" class="btn btn-outline-secondary" @onclick="GoBack">
                     <i class="bi bi-arrow-left"></i>
                     @LocalizationService["Back"]
-
                 </button>
-
             </div>
-
         </div>
 
         @if (!string.IsNullOrWhiteSpace(errorMessage))
         {
-            <div class="alert alert-danger mb-4">
-                @errorMessage
-            </div>
+            <div class="alert alert-danger mb-4">@errorMessage</div>
         }
 
-        <!-- Order Information -->
-
         <div class="card shadow-sm mb-4">
-
-            <div class="card-header">
-                <strong>
-                    @LocalizationService["SalesOrderInformation"]
-                </strong>
-            </div>
-
+            <div class="card-header"><strong>@LocalizationService["SalesOrderInformation"]</strong></div>
             <div class="card-body">
-
                 <div class="row g-3">
-
                     <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["OrderNumber"]
-                        </label>
-
-                        <input class="form-control"
-                               value="@salesOrder.OrderNumber"
-                               readonly />
-
+                        <label class="form-label">@LocalizationService["OrderNumber"]</label>
+                        <input class="form-control" value="@salesOrder.OrderNumber" readonly />
                     </div>
-
                     <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["Customer"]
-                        </label>
-
-                        <input class="form-control"
-                               value="@GetCustomerName()"
-                               readonly />
-
+                        <label class="form-label">@LocalizationService["Customer"]</label>
+                        <input class="form-control" value="@GetCustomerName()" readonly />
                     </div>
-
                     <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["OrderDate"]
-                        </label>
-
-                        <input class="form-control"
-                               value="@salesOrder.OrderDate.ToString("yyyy-MM-dd")"
-                               readonly />
-
+                        <label class="form-label">@LocalizationService["OrderDate"]</label>
+                        <input class="form-control" value="@salesOrder.OrderDate.ToString("yyyy-MM-dd")" readonly />
                     </div>
-
                     <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["Status"]
-                        </label>
-
-                        <input class="form-control"
-                               value="@LocalizationService.TranslateEnum(salesOrder.Status)"
-                               readonly />
-
+                        <label class="form-label">@LocalizationService["Status"]</label>
+                        <input class="form-control" value="@LocalizationService.TranslateEnum(salesOrder.Status)" readonly />
                     </div>
-
                     <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["DeliveryDate"]
-                        </label>
-
-                        <input class="form-control"
-                               value="@FormatDate(salesOrder.DeliveryDate)"
-                               readonly />
-
+                        <label class="form-label">@LocalizationService["DeliveryDate"]</label>
+                        <input class="form-control" value="@FormatDate(salesOrder.DeliveryDate)" readonly />
                     </div>
-
                     <div class="col-md-3">
-
-                        <label class="form-label">
-                            @LocalizationService["TotalAmount"]
-                        </label>
-
-                        <input class="form-control fw-bold"
-                               value="@salesOrder.TotalAmount.ToString("N2")"
-                               readonly />
-
+                        <label class="form-label">@LocalizationService["TotalAmount"]</label>
+                        <input class="form-control fw-bold" value="@salesOrder.TotalAmount.ToString("N2")" readonly />
                     </div>
-
                     <div class="col-md-6">
-
-                        <label class="form-label">
-                            @LocalizationService["Notes"]
-                        </label>
-
-                        <input class="form-control"
-                               value="@salesOrder.Notes"
-                               readonly />
-
+                        <label class="form-label">@LocalizationService["Notes"]</label>
+                        <input class="form-control" value="@salesOrder.Notes" readonly />
                     </div>
-
                 </div>
-
             </div>
         </div>
 
-        <!-- Order Lines -->
-
         <div class="card shadow-sm mb-4">
-
-            <div class="card-header">
-                <strong>
-                    @LocalizationService["SalesOrderLines"]
-                </strong>
-            </div>
-
+            <div class="card-header"><strong>@LocalizationService["SalesOrderLines"]</strong></div>
             <div class="card-body p-0">
-
                 <div class="table-responsive">
-
                     <table class="table table-hover align-middle mb-0">
-
                         <thead>
                             <tr>
-
-                                <th>
-                                    @LocalizationService["Item"]
-                                </th>
-
-                                <th class="text-end">
-                                    @LocalizationService["Quantity"]
-                                </th>
-
-                                <th>
-                                    @LocalizationService["Unit"]
-                                </th>
-
-                                <th class="text-end">
-                                    @LocalizationService["UnitPrice"]
-                                </th>
-
-                                <th class="text-end">
-                                    @LocalizationService["TotalPrice"]
-                                </th>
-
-                                <th class="text-end">
-                                    @LocalizationService["ProducedQuantity"]
-                                </th>
-
-                                <th class="text-end">
-                                    @LocalizationService["DeliveredQuantity"]
-                                </th>
-
+                                <th>@LocalizationService["Item"]</th>
+                                <th class="text-end">@LocalizationService["Quantity"]</th>
+                                <th>@LocalizationService["Unit"]</th>
+                                <th class="text-end">@LocalizationService["UnitPrice"]</th>
+                                <th class="text-end">@LocalizationService["TotalPrice"]</th>
+                                <th class="text-end">@LocalizationService["ProducedQuantity"]</th>
+                                <th class="text-end">@LocalizationService["DeliveredQuantity"]</th>
                             </tr>
                         </thead>
-
                         <tbody>
-
                             @foreach (var line in salesOrder.Lines)
                             {
                                 <tr>
-
                                     <td>
-                                        <div class="fw-semibold">
-                                            @line.Item?.Name
-                                        </div>
-
-                                        <small class="text-muted">
-                                            @line.Item?.Code
-                                        </small>
+                                        <div class="fw-semibold">@line.Item?.Name</div>
+                                        <small class="text-muted">@line.Item?.Code</small>
                                     </td>
-
-                                    <td class="text-end">
-                                        @line.Quantity.ToString("N2")
-                                    </td>
-
-                                    <td>
-                                        @GetUnitName(line)
-                                    </td>
-
-                                    <td class="text-end">
-                                        @line.UnitPrice.ToString("N2")
-                                    </td>
-
-                                    <td class="text-end fw-semibold">
-                                        @line.TotalPrice.ToString("N2")
-                                    </td>
-
-                                    <td class="text-end">
-                                        @line.ProducedQuantity.ToString("N2")
-                                    </td>
-
-                                    <td class="text-end">
-                                        @line.DeliveredQuantity.ToString("N2")
-                                    </td>
-
+                                    <td class="text-end">@line.Quantity.ToString("N2")</td>
+                                    <td>@GetUnitName(line)</td>
+                                    <td class="text-end">@line.UnitPrice.ToString("N2")</td>
+                                    <td class="text-end fw-semibold">@line.TotalPrice.ToString("N2")</td>
+                                    <td class="text-end">@line.ProducedQuantity.ToString("N2")</td>
+                                    <td class="text-end">@line.DeliveredQuantity.ToString("N2")</td>
                                 </tr>
                             }
-
                         </tbody>
-
                     </table>
-
                 </div>
-
             </div>
         </div>
 
-        <!-- Progress -->
-
         <div class="card shadow-sm">
-
-            <div class="card-header">
-                <strong>
-                    @LocalizationService["OrderProgress"]
-                </strong>
-            </div>
-
+            <div class="card-header"><strong>@LocalizationService["OrderProgress"]</strong></div>
             <div class="card-body">
-
                 @foreach (var line in salesOrder.Lines)
                 {
-                    var productionPercent =
-                        line.Quantity <= 0
-                            ? 0
-                            : Math.Min(
-                                100,
-                                line.ProducedQuantity /
-                                line.Quantity * 100);
-
-                    var deliveryPercent =
-                        line.Quantity <= 0
-                            ? 0
-                            : Math.Min(
-                                100,
-                                line.DeliveredQuantity /
-                                line.Quantity * 100);
+                    var productionPercent = line.Quantity <= 0 ? 0 : Math.Min(100, line.ProducedQuantity / line.Quantity * 100);
+                    var deliveryPercent = line.Quantity <= 0 ? 0 : Math.Min(100, line.DeliveredQuantity / line.Quantity * 100);
 
                     <div class="mb-4">
-
                         <div class="d-flex justify-content-between mb-1">
-
-                            <span class="fw-semibold">
-                                @line.Item?.Name
-                            </span>
-
-                            <span>
-                                @line.ProducedQuantity.ToString("N2")
-                                /
-                                @line.Quantity.ToString("N2")
-                            </span>
-
+                            <span class="fw-semibold">@line.Item?.Name</span>
+                            <span>@line.ProducedQuantity.ToString("N2") / @line.Quantity.ToString("N2")</span>
                         </div>
-
-                        <div class="progress mb-2"
-                             style="height: 20px;">
-
-                            <div class="progress-bar"
-                                 role="progressbar"
-                                 style="width:@($"{productionPercent:0.##}%")">
-
+                        <div class="progress mb-2" style="height:20px">
+                            <div class="progress-bar" role="progressbar" style="width:@($"{productionPercent:0.##}%")">
                                 @LocalizationService["Produced"]
-
                             </div>
-
                         </div>
-
                         <div class="d-flex justify-content-between mb-1">
-
-                            <span>
-                                @LocalizationService["Delivered"]
-                            </span>
-
-                            <span>
-                                @line.DeliveredQuantity.ToString("N2")
-                                /
-                                @line.Quantity.ToString("N2")
-                            </span>
-
+                            <span>@LocalizationService["Delivered"]</span>
+                            <span>@line.DeliveredQuantity.ToString("N2") / @line.Quantity.ToString("N2")</span>
                         </div>
-
-                        <div class="progress"
-                             style="height: 20px;">
-
-                            <div class="progress-bar"
-                                 role="progressbar"
-                                 style="width:@($"{deliveryPercent:0.##}%")">
-
+                        <div class="progress" style="height:20px">
+                            <div class="progress-bar" role="progressbar" style="width:@($"{deliveryPercent:0.##}%")">
                                 @LocalizationService["Delivered"]
-
                             </div>
-
                         </div>
-
                     </div>
                 }
-
             </div>
         </div>
     }
 </div>
 
 @code {
-
-    [Parameter]
-    public long Id { get; set; }
+    [Parameter] public long Id { get; set; }
 
     private SalesOrder? salesOrder;
-
     private bool isLoading = true;
-
     private string? errorMessage;
+    private string? ErrorMessage;
 
+    protected override async Task OnInitializedAsync() => await LoadAsync();
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadAsync();
-    }
-
-    private async Task CreateProductionOrderAsync()
+    private async Task OpenProductionPlanningAsync()
     {
         if (salesOrder == null)
             return;
 
         try
         {
-            var productionOrder =
-                await ProductionOrderService.CreateFromSalesOrderAsync(
-                    salesOrder.Id);
-
-            Navigation.NavigateTo(
-                $"/production/orders/edit/{productionOrder.Id}");
+            errorMessage = null;
+            var productionOrder = await ProductionOrderService.CreateFromSalesOrderAsync(salesOrder.Id);
+            Navigation.NavigateTo($"/production/planning");
         }
         catch (Exception ex)
         {
@@ -421,36 +199,21 @@
         }
     }
 
-
     private async Task LoadAsync()
     {
         isLoading = true;
         errorMessage = null;
-
         try
         {
-            salesOrder =
-                await Db.SalesOrders
-
-                    .Include(x => x.Customer)
-
-                    .Include(x => x.Quotation)
-
-                    .Include(x => x.Lines)
-                        .ThenInclude(x => x.Item)
-
-                    .Include(x => x.Lines)
-                        .ThenInclude(x => x.Unit)
-
-                    .FirstOrDefaultAsync(x =>
-                        x.Id == Id);
+            salesOrder = await Db.SalesOrders
+                .Include(x => x.Customer)
+                .Include(x => x.Quotation)
+                .Include(x => x.Lines).ThenInclude(x => x.Item)
+                .Include(x => x.Lines).ThenInclude(x => x.Unit)
+                .FirstOrDefaultAsync(x => x.Id == Id);
 
             if (salesOrder == null)
-            {
-                errorMessage =
-                    LocalizationService[
-                        "SalesOrderNotFound"];
-            }
+                errorMessage = LocalizationService["SalesOrderNotFound"];
         }
         catch (Exception ex)
         {
@@ -462,50 +225,26 @@
         }
     }
 
-    private string? ErrorMessage;
+    private string GetCustomerName() => salesOrder?.Customer?.Name ?? "-";
 
-    private string GetCustomerName()
+    private string GetUnitName(SalesOrderLine line)
     {
-        return salesOrder?.Customer?.Name
-            ?? "-";
+        if (line.Unit == null) return "-";
+        return !string.IsNullOrWhiteSpace(line.Unit.Symbol)
+            ? $"{line.Unit.Name} ({line.Unit.Symbol})"
+            : line.Unit.Name;
     }
 
-
-    private string GetUnitName(
-        SalesOrderLine line)
-    {
-        if (line.Unit == null)
-            return "-";
-
-        if (!string.IsNullOrWhiteSpace(
-                line.Unit.Symbol))
-        {
-            return $"{line.Unit.Name} ({line.Unit.Symbol})";
-        }
-
-        return line.Unit.Name;
-    }
-
-
-    private string FormatDate(
-        DateTime? date)
-    {
-        return date?.ToString("yyyy-MM-dd")
-            ?? "-";
-    }
-
+    private string FormatDate(DateTime? date) => date?.ToString("yyyy-MM-dd") ?? "-";
 
     private void GoBack()
     {
         if (salesOrder == null)
         {
-            Navigation.NavigateTo(
-                "/sales/requests");
-
+            Navigation.NavigateTo("/sales/requests");
             return;
         }
 
-        Navigation.NavigateTo(
-            $"/sales/quotations/edit/{salesOrder.QuotationId}");
+        Navigation.NavigateTo($"/sales/quotations/edit/{salesOrder.QuotationId}");
     }
 }

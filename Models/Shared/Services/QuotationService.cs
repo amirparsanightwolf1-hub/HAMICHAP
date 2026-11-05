@@ -1,4 +1,4 @@
-﻿using HamiChap_MES_ERP.Data;
+using HamiChap_MES_ERP.Data;
 using HamiChap_MES_ERP.Models.Sales;
 using HamiChap_MES_ERP.Models.Sales.Enums;
 using HamiChap_MES_ERP.Models.Shared;
@@ -179,10 +179,11 @@ public class QuotationService
         if (quotation == null)
             throw new InvalidOperationException("Quotation not found.");
 
-        if (quotation.Status != QuotationStatus.ReadyToSend)
+        if (quotation.Status != QuotationStatus.Approved &&
+            quotation.Status != QuotationStatus.ReadyToSend)
         {
             throw new InvalidOperationException(
-                "Only approved quotations marked ready to send can be sent to the customer.");
+                "Only approved quotations can be sent to the customer.");
         }
 
         quotation.Status = QuotationStatus.SentToCustomer;
@@ -207,9 +208,11 @@ public class QuotationService
                 "A customer decision can only be recorded after the quotation has been sent.");
         }
 
+        // A customer rejection returns the quotation to Draft so it can be edited
+        // and submitted through the approval workflow again.
         quotation.Status = accepted
             ? QuotationStatus.Accepted
-            : QuotationStatus.Rejected;
+            : QuotationStatus.Draft;
 
         await _db.SaveChangesAsync();
     }

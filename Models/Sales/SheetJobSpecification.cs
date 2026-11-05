@@ -23,6 +23,12 @@ public sealed class SheetJobSpecification
     public string OrderNumber { get; set; } = "";
 
     public int? PrintRunSheets { get; set; }
+
+    // Dimensions before cutting.
+    public decimal? BeforeCutLengthCm { get; set; }
+    public decimal? BeforeCutWidthCm { get; set; }
+
+    // Finished dimensions after cutting (existing fields retained for compatibility).
     public decimal? CutLengthCm { get; set; }
     public decimal? CutWidthCm { get; set; }
     public string SheetOrientation { get; set; } = "";

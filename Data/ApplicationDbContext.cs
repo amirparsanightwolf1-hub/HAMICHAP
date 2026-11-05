@@ -270,6 +270,36 @@ namespace HamiChap_MES_ERP.Data
                 .HasForeignKey(x => x.ProductionOrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<ProductionMaterialRequest>()
+                .HasOne(x => x.ProductionOrder)
+                .WithMany()
+                .HasForeignKey(x => x.ProductionOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ProductionMaterialRequest>()
+                .Property(x => x.Status).HasMaxLength(40);
+
+            builder.Entity<ProductionMaterialRequestLine>()
+                .Property(x => x.Quantity).HasPrecision(18, 3);
+
+            builder.Entity<ProductionMaterialRequestLine>()
+                .HasOne(x => x.Request)
+                .WithMany(x => x.Lines)
+                .HasForeignKey(x => x.ProductionMaterialRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ProductionMaterialRequestLine>()
+                .HasOne(x => x.Item)
+                .WithMany()
+                .HasForeignKey(x => x.ItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ProductionMaterialRequestLine>()
+                .HasOne(x => x.Unit)
+                .WithMany()
+                .HasForeignKey(x => x.UnitId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<ProductionMaterialReservation>()
                 .HasOne(x => x.ProductionOrder)
                 .WithMany()
@@ -657,7 +687,7 @@ namespace HamiChap_MES_ERP.Data
         public DbSet<Machine> Machines => Set<Machine>();
 
         public DbSet<InventoryLocation> InventoryLocations => Set<InventoryLocation>();
-    
+
         public DbSet<InventoryTransaction> InventoryTransactions
     => Set<InventoryTransaction>();
 
@@ -694,7 +724,7 @@ namespace HamiChap_MES_ERP.Data
         public DbSet<QuotationLine> QuotationLines
             => Set<QuotationLine>();
 
-        public DbSet<SalesInvoice> SalesInvoices 
+        public DbSet<SalesInvoice> SalesInvoices
             => Set<SalesInvoice>();
         public DbSet<SalesInvoiceLine> SalesInvoiceLines
             => Set<SalesInvoiceLine>();
@@ -719,6 +749,9 @@ namespace HamiChap_MES_ERP.Data
     => Set<MaterialRequirementPlan>();
         public DbSet<MaterialRequirementPlanLine> MaterialRequirementPlanLines
             => Set<MaterialRequirementPlanLine>();
+
+        public DbSet<ProductionMaterialRequest> ProductionMaterialRequests => Set<ProductionMaterialRequest>();
+        public DbSet<ProductionMaterialRequestLine> ProductionMaterialRequestLines => Set<ProductionMaterialRequestLine>();
 
         public DbSet<ProductionMaterialReservation> ProductionMaterialReservations
     => Set<ProductionMaterialReservation>();

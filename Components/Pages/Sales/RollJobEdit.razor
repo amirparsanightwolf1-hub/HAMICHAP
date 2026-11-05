@@ -10,50 +10,273 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Hosting
 @using System.IO
+@using HamiChap_MES_ERP.Services
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject IWebHostEnvironment HostEnvironment
+@inject LocalizationService LocalizationService
 
-<PageTitle>Roll Job Specification</PageTitle>
+<PageTitle>@LocalizationService["RollJobSpecification"]</PageTitle>
 
 <style>
-    .job-section { border:1px solid #dfe5ef; border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 5px 18px rgba(18,34,68,.045); }
-    .job-section > .card-header { padding:14px 18px; background:linear-gradient(120deg,#f7f9fc,#eef2f9); border-bottom:1px solid #e3e8f1; color:#1b294c; font-weight:750; }
-    .job-section > .card-body { padding:20px; }
-    .field-tile { height:100%; padding:12px; border:1px solid #e4e9f1; border-radius:12px; background:#fbfcfe; }
-    .field-tile .form-label { font-weight:650; color:#35415b; }
-    .cmyk-panel { border:1px solid #dfe5ef; border-radius:14px; padding:16px; background:#fbfcff; height:100%; }
-    .cmyk-options { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
-    .cmyk-option { display:flex; align-items:center; justify-content:center; gap:8px; min-height:54px; border:1px solid #d9e0eb; border-radius:10px; background:#fff; font-weight:750; cursor:pointer; }
-    .cmyk-option.selected { border:2px solid #34466f; box-shadow:0 0 0 3px rgba(52,70,111,.10); background:#f4f7fc; }
-    .cmyk-letter { display:inline-flex; width:26px; height:26px; border-radius:7px; align-items:center; justify-content:center; color:#fff; font-weight:850; }
-    .cmyk-c { background:#00a9e8; } .cmyk-m { background:#e6007e; } .cmyk-y { background:#f2cc00; color:#252525; } .cmyk-k { background:#202124; }
-    .orientation-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
-    .orientation-option { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; min-height:190px; padding:10px 8px; border:1px solid #dce2ec; border-radius:14px; background:linear-gradient(180deg,#fff 0%,#f8f9fc 100%); color:#26334b; transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease; }
-    .orientation-option:hover { border-color:#7f91b5; box-shadow:0 5px 16px rgba(14,22,65,.08); transform:translateY(-1px); }
-    .orientation-option.selected { border:2px solid #34466f; background:#f0f4fb; box-shadow:0 0 0 3px rgba(52,70,111,.09); }
+    .job-section {
+        border: 1px solid #dfe5ef;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 5px 18px rgba(18,34,68,.045);
+    }
+
+        .job-section > .card-header {
+            padding: 14px 18px;
+            background: linear-gradient(120deg,#f7f9fc,#eef2f9);
+            border-bottom: 1px solid #e3e8f1;
+            color: #1b294c;
+            font-weight: 750;
+        }
+
+        .job-section > .card-body {
+            padding: 20px;
+        }
+
+    .field-tile {
+        height: 100%;
+        padding: 12px;
+        border: 1px solid #e4e9f1;
+        border-radius: 12px;
+        background: #fbfcfe;
+    }
+
+        .field-tile .form-label {
+            font-weight: 650;
+            color: #35415b;
+        }
+
+    .order-info-grid {
+        display: grid;
+        grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+        gap: 12px 18px;
+        align-items: center;
+    }
+
+        .order-info-grid .form-label {
+            margin: 0;
+            font-weight: 650;
+            color: #35415b;
+        }
+
+    .workflow-fields-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 18px;
+    }
+
+    .label-specifications-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 18px;
+    }
+
+    .label-specification-field {
+        display: grid;
+        grid-template-columns: minmax(145px, 190px) minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+    }
+
+        .label-specification-field > label {
+            margin: 0;
+            font-weight: 600;
+            color: #35415b;
+        }
+
+    .label-specifications-grid > .col-12 {
+        grid-column: 1 / -1;
+    }
+
+    .workflow-field {
+        display: grid;
+        grid-template-columns: minmax(130px, 190px) minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+    }
+
+        .workflow-field label {
+            margin: 0;
+            font-weight: 600;
+            color: #35415b;
+        }
+
+    @@media(max-width:700px) {
+        .order-info-grid {
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+
+        .workflow-fields-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .label-specifications-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .label-specification-field {
+            grid-template-columns: 1fr;
+            gap: 5px;
+        }
+
+        .workflow-field {
+            grid-template-columns: 1fr;
+            gap: 5px;
+        }
+    }
+
+    .cmyk-panel {
+        border: 1px solid #dfe5ef;
+        border-radius: 14px;
+        padding: 16px;
+        background: #fbfcff;
+        height: 100%;
+    }
+
+    .cmyk-options {
+        display: grid;
+        grid-template-columns: repeat(4,minmax(0,1fr));
+        gap: 8px;
+    }
+
+    .cmyk-option {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 54px;
+        border: 1px solid #d9e0eb;
+        border-radius: 10px;
+        background: #fff;
+        font-weight: 750;
+        cursor: pointer;
+    }
+
+        .cmyk-option.selected {
+            border: 2px solid #34466f;
+            box-shadow: 0 0 0 3px rgba(52,70,111,.10);
+            background: #f4f7fc;
+        }
+
+    .cmyk-letter {
+        display: inline-flex;
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 850;
+    }
+
+    .cmyk-c {
+        background: #00a9e8;
+    }
+
+    .cmyk-m {
+        background: #e6007e;
+    }
+
+    .cmyk-y {
+        background: #f2cc00;
+        color: #252525;
+    }
+
+    .cmyk-k {
+        background: #202124;
+    }
+
+    .orientation-grid {
+        display: grid;
+        grid-template-columns: repeat(4,minmax(0,1fr));
+        gap: 12px;
+    }
+
+    .orientation-option {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        min-height: 190px;
+        padding: 10px 8px;
+        border: 1px solid #dce2ec;
+        border-radius: 14px;
+        background: linear-gradient(180deg,#fff 0%,#f8f9fc 100%);
+        color: #26334b;
+        transition: border-color .15s ease,box-shadow .15s ease,transform .15s ease;
+    }
+
+        .orientation-option:hover {
+            border-color: #7f91b5;
+            box-shadow: 0 5px 16px rgba(14,22,65,.08);
+            transform: translateY(-1px);
+        }
+
+        .orientation-option.selected {
+            border: 2px solid #34466f;
+            background: #f0f4fb;
+            box-shadow: 0 0 0 3px rgba(52,70,111,.09);
+        }
+
     .orientation-picture {
-    width: 85px;
-    height: 160px;
-    max-width: 100%;
-    object-fit: contain;
-    object-position: center;
-                         }
-    .orientation-caption { font-size:.86rem; font-weight:650; }
-    .orientation-check { color:#34466f; font-size:.75rem; }
-    @@media(max-width:900px) { .orientation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @@media(max-width:700px) { .job-section > .card-body { padding:13px; } .cmyk-options { gap:5px; } .cmyk-option { flex-direction:column; gap:4px; font-size:.8rem; } }
+        width: 85px;
+        height: 160px;
+        max-width: 100%;
+        object-fit: contain;
+        object-position: center;
+    }
+
+    .orientation-caption {
+        font-size: .86rem;
+        font-weight: 650;
+    }
+
+    .orientation-check {
+        color: #34466f;
+        font-size: .75rem;
+    }
+
+    @@media(max-width:900px) {
+        .orientation-grid {
+            grid-template-columns: repeat(2,minmax(0,1fr));
+        }
+    }
+
+    @@media(max-width:700px) {
+        .job-section > .card-body {
+            padding: 13px;
+        }
+
+        .cmyk-options {
+            gap: 5px;
+        }
+
+        .cmyk-option {
+            flex-direction: column;
+            gap: 4px;
+            font-size: .8rem;
+        }
+    }
 </style>
 
 <div class="page-container">
     <div class="erp-page-header mb-4">
         <div>
-            <div class="erp-page-title">Roll Job</div>
-            <div class="erp-page-subtitle">Label specifications and selected services</div>
+            <div class="erp-page-title">@LocalizationService["RollJob"]</div>
+            <div class="erp-page-subtitle">@LocalizationService["RollJobSubtitle"]</div>
         </div>
         <button class="btn btn-outline-secondary" @onclick="BackToRequest">
-            <i class="bi bi-arrow-left"></i> Back to request
+            <i class="bi bi-arrow-left"></i> @LocalizationService["BackToRequest"]
         </button>
     </div>
 
@@ -67,82 +290,71 @@
     }
     @if (isLoading)
     {
-        <div class="text-muted">Loading job…</div>
+        <div class="text-muted">@LocalizationService["LoadingJob"]</div>
     }
     else if (request is not null)
     {
         <div class="card job-section mb-4">
-            <div class="card-header"><strong>Order information</strong></div>
+            <div class="card-header"><strong>@LocalizationService["OrderInformation"]</strong></div>
             <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Date</label>
-                        <input class="form-control" value="@request.RequestDate.ToString("yyyy-MM-dd")" readonly />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Request number</label>
-                        <input class="form-control" value="@request.RequestNumber" readonly />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Customer</label>
+                <div class="order-info-grid">
+                    <label class="form-label">@LocalizationService["Date"]</label>
+                    <input class="form-control" value="@request.RequestDate.ToString("yyyy-MM-dd")" readonly />
+
+                    <label class="form-label">@LocalizationService["RequestNumber"]</label>
+                    <input class="form-control" value="@request.RequestNumber" readonly />
+
+                    <label class="form-label">@LocalizationService["Customer"]</label>
+                    <div>
                         @if (!isCreatingCustomer)
                         {
                             <select class="form-select" @bind="selectedCustomerId">
-                                <option value="0">-- Select an existing customer --</option>
+                                <option value="0">@LocalizationService["SelectExistingCustomerPrompt"]</option>
                                 @foreach (var customer in customers)
                                 {
                                     <option value="@customer.Id">@customer.Code - @customer.Name</option>
                                 }
                             </select>
-                            <button type="button"
-                                    class="btn btn-link px-0"
-                                    @onclick="StartNewCustomer">
-                                + Create a new customer
+                            <button type="button" class="btn btn-link px-0" @onclick="StartNewCustomer">
+                                @LocalizationService["CreateNewCustomer"]
                             </button>
                         }
                         else
                         {
                             <div class="d-flex align-items-center gap-2">
-                                <span class="form-control bg-light">New customer</span>
-                                <button type="button"
-                                        class="btn btn-outline-secondary text-nowrap"
-                                        @onclick="SelectExistingCustomer">
-                                    Select existing
+                                <span class="form-control bg-light">@LocalizationService["NewCustomer"]</span>
+                                <button type="button" class="btn btn-outline-secondary text-nowrap" @onclick="SelectExistingCustomer">
+                                    @LocalizationService["SelectExisting"]
                                 </button>
                             </div>
                         }
                     </div>
+
                     @if (isCreatingCustomer)
                     {
-                        <div class="col-md-4">
-                            <label class="form-label">Customer code *</label>
-                            <InputText class="form-control" @bind-Value="newCustomerCode" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Customer name *</label>
-                            <InputText class="form-control" @bind-Value="newCustomerName" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Phone</label>
-                            <InputText class="form-control" @bind-Value="newCustomerPhone" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            <InputText class="form-control" @bind-Value="newCustomerEmail" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Address</label>
-                            <InputText class="form-control" @bind-Value="newCustomerAddress" />
-                        </div>
+                        <label class="form-label">@LocalizationService["CustomerCodeRequired"]</label>
+                        <InputText class="form-control" @bind-Value="newCustomerCode" />
+
+                        <label class="form-label">@LocalizationService["CustomerNameRequired"]</label>
+                        <InputText class="form-control" @bind-Value="newCustomerName" />
+
+                        <label class="form-label">@LocalizationService["Phone"]</label>
+                        <InputText class="form-control" @bind-Value="newCustomerPhone" />
+
+                        <label class="form-label">@LocalizationService["Email"]</label>
+                        <InputText class="form-control" @bind-Value="newCustomerEmail" />
+
+                        <label class="form-label">@LocalizationService["Address"]</label>
+                        <InputText class="form-control" @bind-Value="newCustomerAddress" />
                     }
-                    <div class="col-12">
-                        <label class="form-label">Job title</label>
-                        <InputText class="form-control" @bind-Value="spec.JobTitle" />
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Artwork files *</label>
+
+                    <label class="form-label">@LocalizationService["JobTitle"]</label>
+                    <InputText class="form-control" @bind-Value="spec.JobTitle" />
+
+                    <label class="form-label">@LocalizationService["ArtworkFilesRequired"]</label>
+                    <div>
                         <InputFile OnChange="ArtworkSelected" multiple accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp" class="form-control" />
-                        <div class="form-text">Upload multiple artwork files. Maximum 25 MB per file.</div>
+                        <div class="form-text">@LocalizationService["ArtworkUploadInstructions"]</div>
                         @if (!string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
                         {
                             <div class="mt-2 d-flex align-items-center gap-3 flex-wrap">
@@ -150,68 +362,70 @@
                                 {
                                     <img src="@spec.ArtworkRelativePath" alt="Uploaded artwork preview" style="max-width:180px;max-height:120px;object-fit:contain;border:1px solid #dee2e6;border-radius:6px;padding:4px;" />
                                 }
-                                <span class="small text-muted">Saved: @spec.ArtworkOriginalFileName</span>
+                                <span class="small text-muted">@LocalizationService["SavedFile"]: @spec.ArtworkOriginalFileName</span>
                             </div>
                         }
                         @if (pendingArtworks.Count > 0)
-                            {
-                                <div class="small text-primary mt-1">
-                                    Selected: @string.Join(", ", pendingArtworks.Select(file => file.Name))
-                                    — will be saved when you save specifications.
-                                </div>
-                            }
+                        {
+                            <div class="small text-primary mt-1">
+                                Selected: @string.Join(", ", pendingArtworks.Select(file => file.Name))
+                                — will be saved when you save specifications.
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="card job-section mb-4">
-            <div class="card-header"><strong>Label specifications</strong></div>
+            <div class="card-header"><strong>@LocalizationService["LabelSpecifications"]</strong></div>
             <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">کشش لیبل</label>
+                <div class="label-specifications-grid">
+                    <div class="label-specification-field">
+                        <label>کشش لیبل</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelPull" />
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">عرض لیبل</label>
+                    <div class="label-specification-field">
+                        <label>عرض لیبل</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelWidth" />
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">فاصله بین دو لیبل</label>
+                    <div class="label-specification-field">
+                        <label>فاصله بین دو لیبل</label>
                         <InputNumber class="form-control" @bind-Value="spec.GapBetweenLabels" />
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">تعداد لیبل</label>
+                    <div class="label-specification-field">
+                        <label>تعداد لیبل</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelQuantity" />
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">نوع کاغذ / متریال</label>
-                        <input class="form-control" list="roll-paper-types" @bind="spec.PaperType" placeholder="انتخاب کنید یا تایپ کنید" />
-                        <datalist id="roll-paper-types">
-                            <option value="گلاسه"></option>
-                            <option value="نیمه گلاسه"></option>
-                            <option value="متالایز"></option>
-                            <option value="PVC"></option>
-                            <option value="حرارتی"></option>
-                            <option value="کاغذی"></option>
-                            <option value="شفاف"></option>
-                            <option value="صدفی"></option>
-                        </datalist>
-                        <small class="text-muted">گزینه استاندارد را انتخاب کنید یا متریال دلخواه را وارد کنید.</small>
+                    <div class="label-specification-field">
+                        <label>نوع کاغذ / متریال</label>
+                        <div>
+                            <input class="form-control" list="roll-paper-types" @bind="spec.PaperType" placeholder="انتخاب کنید یا تایپ کنید" />
+                            <datalist id="roll-paper-types">
+                                <option value="گلاسه"></option>
+                                <option value="نیمه گلاسه"></option>
+                                <option value="متالایز"></option>
+                                <option value="PVC"></option>
+                                <option value="حرارتی"></option>
+                                <option value="کاغذی"></option>
+                                <option value="شفاف"></option>
+                                <option value="صدفی"></option>
+                            </datalist>
+                            <small class="text-muted">گزینه استاندارد را انتخاب کنید یا متریال دلخواه را وارد کنید.</small>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">تعداد رنگ</label>
+                    <div class="label-specification-field">
+                        <label>تعداد رنگ</label>
                         <InputSelect class="form-select" @bind-Value="spec.ColorCount">
-                            <option value="">انتخاب تعداد رنگ</option>
+                            <option value="">@LocalizationService["SelectColorCount"]</option>
                             @for (var color = 1; color <= 10; color++)
                             {
                                 <option value="@color">@color</option>
                             }
                         </InputSelect>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">توضیحات چاپ / رنگ اختصاصی</label>
+                    <div class="label-specification-field">
+                        <label>توضیحات چاپ / رنگ اختصاصی</label>
                         <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="جزئیات سفارشی، رنگ پنتون و ..." />
                     </div>
                     <div class="col-12">
@@ -219,7 +433,7 @@
                             <div class="col-lg-6">
                                 <div class="cmyk-panel">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <strong>Front printing colors</strong><span class="text-muted small">Select all colors used on the front</span>
+                                        <strong>@LocalizationService["FrontPrintingColors"]</strong><span class="text-muted small">@LocalizationService["SelectAllColorsOnFront"]</span>
                                     </div>
                                     <div class="cmyk-options">
                                         @foreach (var color in CmykColors)
@@ -229,13 +443,13 @@
                                             </button>
                                         }
                                     </div>
-                                    <div class="small text-muted mt-2">Selected: @(frontCmykColors.Count == 0 ? "None" : string.Join(" · ", CmykColors.Where(c => frontCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
+                                    <div class="small text-muted mt-2">Selected: @(frontCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => frontCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
                                 </div>
                             </div>
                             <div class="col-lg-6">
                                 <div class="cmyk-panel">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <strong>Back printing colors</strong><span class="text-muted small">Select all colors used on the back</span>
+                                        <strong>@LocalizationService["BackPrintingColors"]</strong><span class="text-muted small">@LocalizationService["SelectAllColorsOnBack"]</span>
                                     </div>
                                     <div class="cmyk-options">
                                         @foreach (var color in CmykColors)
@@ -245,18 +459,18 @@
                                             </button>
                                         }
                                     </div>
-                                    <div class="small text-muted mt-2">Selected: @(backCmykColors.Count == 0 ? "None" : string.Join(" · ", CmykColors.Where(c => backCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
+                                    <div class="small text-muted mt-2">Selected: @(backCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => backCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label">قطر بوبین</label>
+                    <div class="label-specification-field">
+                        <label>قطر بوبین</label>
                         <InputNumber class="form-control" @bind-Value="spec.RollDiameter" />
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-semibold">Roll orientation / unwind direction</label>
-                        <div class="text-muted small mb-2">Choose the picture that matches how the labels should unwind. The selected option is highlighted.</div>
+                        <label class="form-label fw-semibold">@LocalizationService["RollOrientationUnwindDirection"]</label>
+                        <div class="text-muted small mb-2">@LocalizationService["ChooseRollOrientation"]</div>
                         <div class="orientation-grid">
                             @for (var orientation = 1; orientation <= 8; orientation++)
                             {
@@ -267,12 +481,12 @@
                                         aria-pressed="@(spec.RollOrientation == option)"
                                         @onclick="() => spec.RollOrientation = option">
                                     <img src="@($"/images/roll-orientations/orientation-{orientation}.jpg")"
-                                        alt="Roll orientation @orientation"
-                                        class="orientation-picture" />
-                                    <span class="orientation-caption">Option @orientation</span>
+                                         alt="Roll orientation @orientation"
+                                         class="orientation-picture" />
+                                    <span class="orientation-caption">@LocalizationService["Option"] @orientation</span>
                                     @if (spec.RollOrientation == option)
                                     {
-                                        <span class="orientation-check"><i class="bi bi-check-circle-fill"></i> Selected</span>
+                                        <span class="orientation-check"><i class="bi bi-check-circle-fill"></i> @LocalizationService["Selected"]</span>
                                     }
                                 </button>
                             }
@@ -297,8 +511,8 @@
 
         <div class="card job-section mb-4">
             <div class="card-header">
-                <strong>خدمات تکمیلی</strong>
-                <span class="text-muted ms-2">(چند گزینه قابل انتخاب است)</span>
+                <strong>@LocalizationService["AdditionalServices"]</strong>
+                <span class="text-muted ms-2">(@LocalizationService["MultipleOptionsCanBeSelected"])</span>
             </div>
             <div class="card-body">
                 <div class="row g-3">
@@ -332,16 +546,54 @@
             </div>
         </div>
 
+        <div class="card job-section mb-4">
+            <div class="card-header">
+                <strong>اطلاعات گردش کار و تولید</strong>
+            </div>
+            <div class="card-body">
+                <div class="workflow-fields-grid">
+                    @foreach (var field in WorkflowFieldLabels)
+                    {
+                        <div class="workflow-field" @key="field.Key">
+                            @if (field.IsCheckbox)
+                            {
+                                <div class="form-check">
+                                    <input id="workflow-@field.Key"
+                                           class="form-check-input"
+                                           type="checkbox"
+                                           checked="@IsWorkflowChecked(field.Key)"
+                                           @onchange="args => SetWorkflowCheckbox(field.Key, args)" />
+                                    <label class="form-check-label" for="workflow-@field.Key">@field.Label</label>
+                                </div>
+                            }
+                            else
+                            {
+                                <label for="workflow-@field.Key">@field.Label</label>
+                                <input id="workflow-@field.Key"
+                                       class="form-control"
+                                       type="@(field.IsNumber ? "number" : "text")"
+                                       min="@(field.IsNumber ? "0" : null)"
+                                       @bind="workflowFields[field.Key]" />
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
-                @if (isSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                Save specifications
+                @if (isSaving)
+                {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                @LocalizationService["SaveSpecifications"]
             </button>
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
-                <i class="bi bi-file-earmark-pdf"></i> Save and preview approval proof
+                <i class="bi bi-file-earmark-pdf"></i> @LocalizationService["SaveAndPreviewApprovalProof"]
             </button>
             <button class="btn btn-outline-primary" @onclick="SaveAndContinueAsync" disabled="@isSaving">
-                Save and continue to sales workflow
+                @LocalizationService["SaveAndContinueSalesWorkflow"]
             </button>
         </div>
     }
@@ -364,6 +616,35 @@
     private bool isSaving;
     private string? errorMessage;
     private string? successMessage;
+
+    // Workflow values are stored inside JobSpecificationJson, so no database migration is required.
+    private Dictionary<string, string> workflowFields = CreateWorkflowFields();
+
+    private static readonly (string Key, string Label, bool IsCheckbox, bool IsNumber)[] WorkflowFieldLabels =
+    {
+        ("DesignAndImposition", "طراحی و فرم‌بندی", true, false),
+        ("PlateSupply", "تامین زینک", false, false),
+        ("PlateCount", "تعداد زینک", false, true),
+        ("Paper", "کاغذ", false, false),
+        ("PrintingPlate", "کلیشه", true, false),
+        ("Die", "قالب", true, false),
+        ("FoilStamping", "طلاکوب", true, false),
+        ("Lamination", "سلفون", true, false),
+        ("DieCutSlitting", "دایکات اسلیت", true, false),
+        ("SettlementMethod", "نحوه تسویه", false, false)
+    };
+
+    private static Dictionary<string, string> CreateWorkflowFields() =>
+        WorkflowFieldLabels.ToDictionary(x => x.Key, x => x.IsCheckbox ? "false" : string.Empty);
+
+    private bool IsWorkflowChecked(string key) =>
+        workflowFields.TryGetValue(key, out var value) && bool.TryParse(value, out var isChecked) && isChecked;
+
+    private void SetWorkflowCheckbox(string key, ChangeEventArgs args)
+    {
+        workflowFields[key] = args.Value is bool value && value ? "true" : "false";
+    }
+
     private List<IBrowserFile> pendingArtworks = new();
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
@@ -380,7 +661,6 @@
 
     private static readonly Dictionary<string, string[]> ServiceGroups = new()
     {
-        ["پوشش و یووی"] = new[] { "یووی روتاری", "یووی برجسته", "یووی تخت", "یووی موضعی" },
         ["سلفون و لمینیت"] = new[] { "سلفون مات", "سلفون براق" },
         ["طلاکوب و فویل"] = new[] { "طلاکوب روتاری", "طلاکوب تخت", "رنگ فویل" },
         ["قالب و عملیات تکمیلی"] = new[] { "قالب روتاری", "قالب تخت", "دیلن میلن" }
@@ -406,11 +686,11 @@
 
         if (request is null)
         {
-            errorMessage = "Sales request was not found.";
+            errorMessage = LocalizationService["SalesRequestNotFound"];
         }
         else if (request.JobType != SalesJobType.Roll)
         {
-            errorMessage = "This request is not a Roll Job.";
+            errorMessage = LocalizationService["NotRollJob"];
         }
         else if (!string.IsNullOrWhiteSpace(request.JobSpecificationJson))
         {
@@ -419,13 +699,21 @@
                 spec = JsonSerializer.Deserialize<RollJobSpecification>(
                     request.JobSpecificationJson) ?? new();
                 var savedJson = JsonNode.Parse(request.JobSpecificationJson) as JsonObject;
+                workflowFields = CreateWorkflowFields();
+                if (savedJson?["WorkflowFields"] is JsonObject savedWorkflow)
+                {
+                    foreach (var field in WorkflowFieldLabels)
+                    {
+                        workflowFields[field.Key] = savedWorkflow[field.Key]?.GetValue<string>() ?? string.Empty;
+                    }
+                }
                 frontCmykColors = ReadColorSelection(savedJson?["FrontCmykColors"]);
                 backCmykColors = ReadColorSelection(savedJson?["BackCmykColors"]);
             }
             catch (JsonException)
             {
                 spec = new();
-                errorMessage = "Saved specifications could not be read. Save to replace them.";
+                errorMessage = LocalizationService["SavedSpecificationsUnreadable"];
             }
         }
 
@@ -492,9 +780,9 @@
         spec.ArtworkFiles ??= new List<JobArtworkFile>();
         foreach (var file in pendingArtworks)
         {
-            if (file.Size > maxBytes) throw new InvalidOperationException($"Artwork '{file.Name}' must be 25 MB or smaller.");
+            if (file.Size > maxBytes) throw new InvalidOperationException(string.Format(LocalizationService["ArtworkMaxSize"], file.Name));
             var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-            if (!allowed.Contains(extension)) throw new InvalidOperationException($"Unsupported artwork format: {file.Name}");
+            if (!allowed.Contains(extension)) throw new InvalidOperationException(string.Format(LocalizationService["UnsupportedArtworkFormat"], file.Name));
             var safeName = $"request-{request.Id}-{Guid.NewGuid():N}{extension}";
             var fullPath = Path.Combine(uploadFolder, safeName);
             await using (var source = file.OpenReadStream(maxBytes))
@@ -520,12 +808,12 @@
 
         if (string.IsNullOrWhiteSpace(spec.JobTitle))
         {
-            errorMessage = "Job title is required.";
+            errorMessage = LocalizationService["JobTitleRequired"];
             return;
         }
         if (pendingArtworks.Count == 0 && (spec.ArtworkFiles?.Count ?? 0) == 0 && string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
         {
-            errorMessage = "Upload the customer artwork before saving the job.";
+            errorMessage = LocalizationService["UploadArtworkBeforeSaving"];
             return;
         }
 
@@ -544,14 +832,14 @@
             if (isCreatingCustomer)
             {
                 if (string.IsNullOrWhiteSpace(newCustomerCode))
-                    throw new InvalidOperationException("Customer code is required.");
+                    throw new InvalidOperationException(LocalizationService["CustomerCodeIsRequired"]);
 
                 if (string.IsNullOrWhiteSpace(newCustomerName))
-                    throw new InvalidOperationException("Customer name is required.");
+                    throw new InvalidOperationException(LocalizationService["CustomerNameIsRequired"]);
 
                 var code = newCustomerCode.Trim();
                 if (await Db.Customers.AnyAsync(x => x.Code == code))
-                    throw new InvalidOperationException($"Customer code '{code}' already exists.");
+                    throw new InvalidOperationException(string.Format(LocalizationService["CustomerCodeAlreadyExists"], code));
 
                 var newCustomer = new Customer
                 {
@@ -574,7 +862,7 @@
             {
                 var selectedCustomer = customers.FirstOrDefault(x => x.Id == selectedCustomerId);
                 if (selectedCustomer is null)
-                    throw new InvalidOperationException("Select an existing customer or create a new one.");
+                    throw new InvalidOperationException(LocalizationService["SelectOrCreateCustomer"]);
 
                 request.CustomerId = selectedCustomer.Id;
                 request.Customer = selectedCustomer;
@@ -589,6 +877,10 @@
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(frontCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
             savedSpec["BackCmykColors"] = new JsonArray(backCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
+            var workflowJson = new JsonObject();
+            foreach (var field in WorkflowFieldLabels)
+                workflowJson[field.Key] = workflowFields[field.Key] ?? string.Empty;
+            savedSpec["WorkflowFields"] = workflowJson;
             request.JobSpecificationJson = savedSpec.ToJsonString();
             await Db.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -600,7 +892,7 @@
                 isCreatingCustomer = false;
             }
 
-            successMessage = $"Specifications saved. Finished product: {item.Code} ({item.Name}).";
+            successMessage = string.Format(LocalizationService["SpecificationsSavedFinishedProduct"], item.Code, item.Name);
         }
         catch (Exception ex)
         {

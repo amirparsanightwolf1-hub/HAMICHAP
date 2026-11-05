@@ -899,6 +899,80 @@ namespace HamiChap_MES_ERP.Migrations
                     b.ToTable("ProductionMaterialConsumptions");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequest", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ProductionOrderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("RequestedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionOrderId");
+
+                    b.ToTable("ProductionMaterialRequests");
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequestLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("ProductionMaterialRequestId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("ProductionMaterialRequestId");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("ProductionMaterialRequestLines");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialReservation", b =>
                 {
                     b.Property<long>("Id")
@@ -1011,8 +1085,17 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<DateTime?>("ActualStartDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("AvoidNightShift")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AvoidOvertime")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("EstimatedDurationMinutes")
+                        .HasColumnType("int");
 
                     b.Property<string>("Notes")
                         .IsRequired()
@@ -2624,6 +2707,44 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequest", b =>
+                {
+                    b.HasOne("HamiChap_MES_ERP.Models.Production.ProductionOrder", "ProductionOrder")
+                        .WithMany()
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductionOrder");
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequestLine", b =>
+                {
+                    b.HasOne("HamiChap_MES_ERP.Models.Inventory.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequest", "Request")
+                        .WithMany("Lines")
+                        .HasForeignKey("ProductionMaterialRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Inventory.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Request");
+
+                    b.Navigation("Unit");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialReservation", b =>
                 {
                     b.HasOne("HamiChap_MES_ERP.Models.Inventory.InventoryLocation", "InventoryLocation")
@@ -3363,6 +3484,11 @@ namespace HamiChap_MES_ERP.Migrations
                 });
 
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.MaterialRequirementPlan", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequest", b =>
                 {
                     b.Navigation("Lines");
                 });

@@ -101,7 +101,7 @@
     }
 
     /* The large Artwork Preview panel has a fixed overall height.
-       Its body allocates the remaining space to the preview frame. */
+           Its body allocates the remaining space to the preview frame. */
 
 
 
@@ -139,14 +139,14 @@
         gap: 7px;
     }
 
-    .proof-artwork-grid.count-1 {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: minmax(0, 1fr);
-    }
+        .proof-artwork-grid.count-1 {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: minmax(0, 1fr);
+        }
 
-    .proof-artwork-grid.count-2 {
-        grid-template-rows: minmax(0, 1fr);
-    }
+        .proof-artwork-grid.count-2 {
+            grid-template-rows: minmax(0, 1fr);
+        }
 
     .proof-artwork-card {
         position: relative;
@@ -159,17 +159,17 @@
         background: #fff;
     }
 
-    /* The image fills the card's box and shrinks to fit, never cropped */
-    .proof-artwork-card img {
-        position: absolute;
-        inset: 4px;
-        width: calc(100% - 8px);
-        height: calc(100% - 8px);
-        max-width: none;
-        max-height: none;
-        object-fit: contain;
-        object-position: center;
-    }
+        /* The image fills the card's box and shrinks to fit, never cropped */
+        .proof-artwork-card img {
+            position: absolute;
+            inset: 4px;
+            width: calc(100% - 8px);
+            height: calc(100% - 8px);
+            max-width: none;
+            max-height: none;
+            object-fit: contain;
+            object-position: center;
+        }
 
 
 
@@ -191,19 +191,19 @@
         box-sizing: border-box;
     }
 
-        .proof-pdf-page {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 0;
-            min-height: 0;
-            box-sizing: border-box;
-            overflow: hidden;
-            border: 1px solid #e1e5ec;
-            border-radius: 5px;
-            padding: 3px;
-        }
+    .proof-pdf-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+        min-height: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+        border: 1px solid #e1e5ec;
+        border-radius: 5px;
+        padding: 3px;
+    }
 
         .proof-pdf-page canvas {
             display: block;
@@ -212,13 +212,13 @@
             margin: 0 auto;
         }
 
-        .proof-pdf-page-number {
-            flex: 0 0 auto;
-            padding-top: 3px;
-            text-align: center;
-            font-size: 10px;
-            color: #69758a;
-        }
+    .proof-pdf-page-number {
+        flex: 0 0 auto;
+        padding-top: 3px;
+        text-align: center;
+        font-size: 10px;
+        color: #69758a;
+    }
 
     .proof-artwork-empty {
         height: 100%;
@@ -255,6 +255,18 @@
         font-size: .79rem;
         align-items: baseline;
     }
+
+    /* Sheet technical specifications: two specification items side by side. */
+    .proof-technical-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 10px;
+        align-items: start;
+    }
+
+        .proof-technical-grid .proof-kv {
+            min-width: 0;
+        }
 
     .proof-kv:last-child {
         border-bottom: 0;
@@ -339,13 +351,13 @@
         background: #fff;
     }
 
-    .proof-roll-orientation img {
-        display: block;
-        width: auto;
-        height: 125px;
-        max-width: 100%;
-        object-fit: contain;
-    }
+        .proof-roll-orientation img {
+            display: block;
+            width: auto;
+            height: 125px;
+            max-width: 100%;
+            object-fit: contain;
+        }
 
     .proof-two-col {
         display: grid;
@@ -371,11 +383,11 @@
         background: #fff;
     }
 
-    .proof-cmyk-chip.active {
-        border-color: #536a9a;
-        background: #f1f4fa;
-        box-shadow: inset 0 0 0 1px #536a9a;
-    }
+        .proof-cmyk-chip.active {
+            border-color: #536a9a;
+            background: #f1f4fa;
+            box-shadow: inset 0 0 0 1px #536a9a;
+        }
 
     .proof-cmyk-swatch {
         width: 21px;
@@ -387,6 +399,13 @@
         font-size: .68rem;
         font-weight: 850;
         border: 1px solid rgba(0,0,0,.1);
+    }
+
+    /* Preserve the actual CMYK swatch colors in browser print/PDF output. */
+    .proof-cmyk-swatch,
+    .proof-cmyk-chip.active {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
     .proof-cmyk-name {
@@ -626,17 +645,17 @@
             padding: 1mm !important;
         }
 
-        .proof-roll-orientation img {
-            height: 24mm !important;
-        }
+            .proof-roll-orientation img {
+                height: 24mm !important;
+            }
 
         .proof-two-col {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-    }
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
 
-    .proof-cmyk-grid {
+        .proof-cmyk-grid {
             gap: .8mm !important;
         }
 
@@ -673,6 +692,62 @@
             padding-top: 1mm !important;
             font-size: 5.5pt !important;
         }
+        /* Slightly compact Sheet proofs to improve A4 landscape fit. */
+        .proof-sheet.sheet-proof {
+            width: 280mm !important;
+            max-width: 280mm !important;
+            margin: 0 auto !important;
+            padding: 1.5mm !important;
+            font-size: 6.7pt !important;
+            line-height: 1.1 !important;
+        }
+
+        .sheet-proof .proof-card-header {
+            margin-bottom: 1.5mm !important;
+            padding-bottom: 1.5mm !important;
+        }
+
+        .sheet-proof .proof-artwork-frame {
+            height: 65mm !important;
+        }
+
+        .sheet-proof .proof-left-column,
+        .sheet-proof .proof-right-column {
+            gap: 1.2mm !important;
+        }
+
+        .sheet-proof .proof-panel-title {
+            padding: .8mm 1.2mm !important;
+            font-size: 6.5pt !important;
+        }
+
+        .sheet-proof .proof-panel-body {
+            padding: 1mm !important;
+        }
+
+        .sheet-proof .proof-kv {
+            padding: .7mm .8mm !important;
+            font-size: 6pt !important;
+        }
+
+        .sheet-proof .proof-notes {
+            min-height: 18mm !important;
+            font-size: 5.9pt !important;
+        }
+
+        .sheet-proof .proof-approval {
+            margin-top: 1.5mm !important;
+        }
+
+        .sheet-proof .proof-footer {
+            margin-top: 1mm !important;
+            padding-top: .8mm !important;
+        }
+
+        .sheet-proof .proof-cmyk-swatch {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
     }
 </style>
 
@@ -702,7 +777,7 @@
     }
     else if (request is not null)
     {
-        <article class="proof-sheet" dir="@(LocalizationService.IsPersian ? "rtl" : "ltr")">
+        <article class="proof-sheet @(request.JobType == SalesJobType.Sheet ? "sheet-proof" : "")" dir="@(LocalizationService.IsPersian ? "rtl" : "ltr")">
             <header class="proof-card-header">
                 <div class="d-flex align-items-center gap-3">
                     <img class="proof-logo" src="/images/Logo%20Wings%20navy%20blue.png" alt="HamiChap logo" />
@@ -729,24 +804,24 @@
                                 <div class="proof-artwork-frame">
                                     <div class="proof-artwork-grid count-@(Math.Min(artworkFiles.Count, 4))">
                                         @foreach (var art in artworkFiles)
-                                    {
-                                        <div class="proof-artwork-card @(IsPdf(art.RelativePath) ? "proof-pdf-card" : "")">
-                                            @if (IsImage(art.RelativePath))
-                                            {
-                                                <img src="@art.RelativePath" alt="Artwork preview" />
-                                            }
-                                            else if (IsPdf(art.RelativePath))
-                                            {
-                                                <PdfPagePreview Url="@art.RelativePath" />
-                                            }
-                                            else
-                                            {
-                                                <div class="text-center py-3">
-                                                    <i class="bi bi-file-earmark" style="font-size:2rem;color:#0e1641"></i>
-                                                    <div><a href="@art.RelativePath" target="_blank" rel="noopener">@LocalizationService["OpenFile"]</a></div>
-                                                </div>
-                                            }
-                                        </div>
+                                        {
+                                            <div class="proof-artwork-card @(IsPdf(art.RelativePath) ? "proof-pdf-card" : "")">
+                                                @if (IsImage(art.RelativePath))
+                                                {
+                                                    <img src="@art.RelativePath" alt="Artwork preview" />
+                                                }
+                                                else if (IsPdf(art.RelativePath))
+                                                {
+                                                    <PdfPagePreview Url="@art.RelativePath" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="text-center py-3">
+                                                        <i class="bi bi-file-earmark" style="font-size:2rem;color:#0e1641"></i>
+                                                        <div><a href="@art.RelativePath" target="_blank" rel="noopener">@LocalizationService["OpenFile"]</a></div>
+                                                    </div>
+                                                }
+                                            </div>
                                         }
                                     </div>
                                 </div>
@@ -755,7 +830,7 @@
                             {
                                 <div class="proof-artwork-frame">
                                     <div class="proof-artwork-empty">
-                                    <i class="bi bi-image" style="font-size:2rem"></i>
+                                        <i class="bi bi-image" style="font-size:2rem"></i>
                                         <strong>@LocalizationService["ArtworkNotUploaded"]</strong>
                                     </div>
                                 </div>
@@ -767,7 +842,8 @@
                             }
                             else
                             {
-                                <div class="proof-dimensions">@DimensionsSummary</div>
+                                <div class="proof-dimensions">@DimensionsBeforeCutSummary</div>
+                                <div class="proof-dimensions">@DimensionsAfterCutSummary</div>
                             }
                         </div>
                     </div>
@@ -845,52 +921,54 @@
                             }
                             else
                             {
-                                @foreach (var item in technicalDetails)
-                                {
-                                    <div class="proof-kv">
-                                        <span class="proof-kv-label">@item.Key</span>
-                                        <strong class="proof-kv-value">@item.Value</strong>
-                                    </div>
-                                }
+                                <div class="proof-technical-grid">
+                                    @foreach (var item in technicalDetails)
+                                    {
+                                        <div class="proof-kv">
+                                            <span class="proof-kv-label">@item.Key</span>
+                                            <strong class="proof-kv-value">@item.Value</strong>
+                                        </div>
+                                    }
+                                </div>
                             }
+                        </div>
+                    </div>
+
+                    <div class="proof-panel">
+                        <div class="proof-panel-title">@LocalizationService["PrintingColorsFrontBack"]</div>
+                        <div class="proof-panel-body">
+                            <div class="proof-two-col">
+                                <div>
+                                    <div class="proof-muted mb-1">@LocalizationService["FrontSide"]</div>
+                                    <div class="proof-cmyk-grid">
+                                        @foreach (var color in CmykColors)
+                                        {
+                                            <div class="proof-cmyk-chip @(IsCmykSelected("front", color.Key) ? "active" : "")">
+                                                <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
+                                                <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="proof-muted mb-1">@LocalizationService["BackSide"]</div>
+                                    <div class="proof-cmyk-grid">
+                                        @foreach (var color in CmykColors)
+                                        {
+                                            <div class="proof-cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
+                                                <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
+                                                <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="proof-muted mt-2">@LocalizationService["HighlightedTilesExplain"]</div>
                         </div>
                     </div>
 
                     @if (request.JobType == SalesJobType.Roll)
                     {
-                        <div class="proof-panel">
-                            <div class="proof-panel-title">@LocalizationService["PrintingColorsFrontBack"]</div>
-                            <div class="proof-panel-body">
-                                <div class="proof-two-col">
-                                    <div>
-                                        <div class="proof-muted mb-1">@LocalizationService["FrontSide"]</div>
-                                        <div class="proof-cmyk-grid">
-                                            @foreach (var color in CmykColors)
-                                            {
-                                                <div class="proof-cmyk-chip @(IsCmykSelected("front", color.Key) ? "active" : "")">
-                                                    <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
-                                                    <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="proof-muted mb-1">@LocalizationService["BackSide"]</div>
-                                        <div class="proof-cmyk-grid">
-                                            @foreach (var color in CmykColors)
-                                            {
-                                                <div class="proof-cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
-                                                    <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
-                                                    <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="proof-muted mt-2">@LocalizationService["HighlightedTilesExplain"]</div>
-                            </div>
-                        </div>
-
                         <div class="proof-panel">
                             <div class="proof-panel-title">@LocalizationService["SelectedServices"]</div>
                             <div class="proof-panel-body">
@@ -906,6 +984,32 @@
                                                     <div class="proof-service @(selected ? "is-selected" : "is-not-selected")">
                                                         <span class="proof-service-indicator">@(selected ? "✓" : "")</span>
                                                         <span>@LocalizationService[service.LabelKey]</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </section>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="proof-panel">
+                            <div class="proof-panel-title">@LocalizationService["SelectedServices"]</div>
+                            <div class="proof-panel-body">
+                                <div class="proof-service-groups">
+                                    @foreach (var group in SheetServiceGroups)
+                                    {
+                                        <section>
+                                            <div class="proof-service-group-title">@LocalizationService[group.TitleKey]</div>
+                                            <div class="proof-service-list">
+                                                @foreach (var service in group.Services)
+                                                {
+                                                    var selected = IsServiceSelected(service.Value);
+                                                    <div class="proof-service @(selected ? "is-selected" : "is-not-selected")">
+                                                        <span class="proof-service-indicator">@(selected ? "✓" : "")</span>
+                                                        <span>@service.LabelKey</span>
                                                     </div>
                                                 }
                                             </div>
@@ -949,6 +1053,12 @@
     private string rollOrientation = "";
     private HashSet<string> frontCmyk = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmyk = new(StringComparer.OrdinalIgnoreCase);
+    private string frontPantoneColors = "";
+    private string backPantoneColors = "";
+    private string mixedFrontColors = "";
+    private string mixedBackColors = "";
+    private string finishType = "";
+    private string plateProvider = "";
     private List<JobArtworkFile> artworkFiles = new();
     private static readonly (string Key, string Value, string ValueName)[] CmykColors =
     {
@@ -960,7 +1070,9 @@
     private string JobTitle = "";
     private string PrintingNotes = "";
     private string DimensionsSummary = "";
-    private List<KeyValuePair<string,string>> technicalDetails = new();
+    private string DimensionsBeforeCutSummary = "";
+    private string DimensionsAfterCutSummary = "";
+    private List<KeyValuePair<string, string>> technicalDetails = new();
     private List<string> selectedServices = new();
 
 
@@ -993,6 +1105,38 @@
             ("قالب روتاری", "ServiceRotaryDie"),
             ("قالب تخت", "ServiceFlatDie"),
             ("دیلن میلن", "ServiceDylanMilan")
+        })
+    };
+
+    private static readonly ProofServiceGroup[] SheetServiceGroups =
+    {
+        new("ServiceGroupLamination", new[]
+        {
+            ("سلفون واتربیس مات", "سلفون واتربیس مات"),
+            ("سلفون واتربیس براق", "سلفون واتربیس براق"),
+            ("سلفون حرارتی مات", "سلفون حرارتی مات"),
+            ("سلفون حرارتی براق", "سلفون حرارتی براق"),
+            ("سلفون حرارتی متالایز", "سلفون حرارتی متالایز")
+        }),
+        new("ServiceGroupUvCoating", new[]
+        {
+            ("یووی موضعی", "یووی موضعی")
+        }),
+        new("ServiceGroupFoilStamping", new[]
+        {
+            ("طلاکوب", "طلاکوب"),
+            ("نقره‌کوب", "نقره‌کوب"),
+            ("رنگ فویل", "رنگ فویل")
+        }),
+        new("ServiceGroupEmbossingDie", new[]
+        {
+            ("برجسته", "برجسته"),
+            ("قالب", "قالب")
+        }),
+        new("ServiceGroupGluingCuttingPackaging", new[]
+        {
+            ("جعبه‌چسبانی", "جعبه‌چسبانی"),
+            ("برش و بسته‌بندی", "برش و بسته‌بندی")
         })
     };
 
@@ -1039,12 +1183,30 @@
                 artworkFiles = spec.ArtworkFiles ?? new();
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
-                DimensionsSummary = $"{LocalizationService["CutSize"]}: {Fmt(spec.CutWidthCm)} × {Fmt(spec.CutLengthCm)} cm";
+                DimensionsBeforeCutSummary = $"{LocalizationService["BeforeCutDimensions"]}: {LocalizationService["DimensionWidth"]} {Fmt(spec.BeforeCutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.BeforeCutLengthCm)} cm";
+                DimensionsAfterCutSummary = $"{LocalizationService["AfterCutDimensions"]}: {LocalizationService["DimensionWidth"]} {Fmt(spec.CutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.CutLengthCm)} cm";
+                LoadCmykSelections(request.JobSpecificationJson);
+                frontPantoneColors = ReadJsonStringProperty(request.JobSpecificationJson, "FrontPantoneColors");
+                backPantoneColors = ReadJsonStringProperty(request.JobSpecificationJson, "BackPantoneColors");
+                mixedFrontColors = ReadJsonStringProperty(request.JobSpecificationJson, "MixedFrontColors");
+                mixedBackColors = ReadJsonStringProperty(request.JobSpecificationJson, "MixedBackColors");
+                finishType = ReadJsonStringProperty(request.JobSpecificationJson, "FinishType");
+                plateProvider = ReadJsonStringProperty(request.JobSpecificationJson, "PlateProvider");
                 technicalDetails = new() {
-                    new(LocalizationService["SheetOrientation"], Empty(spec.SheetOrientation)), new(LocalizationService["Paper"], Empty(spec.PaperType)), new(LocalizationService["Grammage"], spec.Grammage.HasValue ? spec.Grammage + " gsm" : "—"),
-                    new(LocalizationService["PrintRun"], spec.PrintRunSheets?.ToString("N0") ?? "—"), new(LocalizationService["SheetCount"], spec.SheetCount?.ToString("N0") ?? "—"),
-                    new(LocalizationService["ZincPlate"], Empty(spec.Zinc)), new(LocalizationService["Die"], Empty(spec.Die)), new(LocalizationService["Cliche"], Empty(spec.Cliche)),
-                    new(LocalizationService["ProductionLocation"], Empty(spec.ProductionLocation)), new(LocalizationService["PaymentMethod"], Empty(spec.PaymentMethod)), new(LocalizationService["OrderNumber"], Empty(spec.OrderNumber))
+                    new(LocalizationService["Paper"], Empty(spec.PaperType)),
+                    new(LocalizationService["Grammage"], spec.Grammage.HasValue ? spec.Grammage + " gsm" : "—"),
+                    new(LocalizationService["PrintRun"], spec.PrintRunSheets?.ToString("N0") ?? "—"),
+                    new(LocalizationService["SheetCount"], spec.SheetCount?.ToString("N0") ?? "—"),
+                    new(LocalizationService["ZincPlate"], Empty(spec.Zinc)),
+                    new(LocalizationService["Die"], Empty(spec.Die)),
+                    new(LocalizationService["Cliche"], Empty(spec.Cliche)),
+                    new(LocalizationService["OrderNumber"], Empty(spec.OrderNumber)),
+                    new(LocalizationService["FrontPantoneColors"], Empty(frontPantoneColors)),
+                    new(LocalizationService["BackPantoneColors"], Empty(backPantoneColors)),
+                    new(LocalizationService["MixedFrontColors"], Empty(mixedFrontColors)),
+                    new(LocalizationService["MixedBackColors"], Empty(mixedBackColors)),
+                    new(LocalizationService["FinishType"], LocalizeFinishType(finishType)),
+                    new(LocalizationService["PlateProvider"], LocalizePlateProvider(plateProvider))
                 };
                 selectedServices = spec.SelectedServices ?? new();
             }
@@ -1115,6 +1277,38 @@
         (side == "front" ? frontCmyk : backCmyk).Contains(key);
 
     private static string CmykTextColor(string key) => key == "Y" ? "#242424" : "#FFFFFF";
+
+    private static string ReadJsonStringProperty(string? json, string propertyName)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return "";
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            return document.RootElement.TryGetProperty(propertyName, out var value) &&
+                   value.ValueKind == JsonValueKind.String
+                ? value.GetString() ?? ""
+                : "";
+        }
+        catch (JsonException)
+        {
+            return "";
+        }
+    }
+
+    private string LocalizeFinishType(string? value) => value switch
+    {
+        "Hybrid" => LocalizationService["FinishHybrid"],
+        "Opaque varnish" => LocalizationService["FinishOpaqueVarnish"],
+        "Clear varnish" => LocalizationService["FinishClearVarnish"],
+        _ => Empty(value)
+    };
+
+    private string LocalizePlateProvider(string? value) => value switch
+    {
+        "Press" => LocalizationService["PlateProviderPress"],
+        "Customer" => LocalizationService["PlateProviderCustomer"],
+        _ => Empty(value)
+    };
 
     private static string Empty(string? s) => string.IsNullOrWhiteSpace(s) ? "—" : s;
     private static string Fmt(decimal? d) => d.HasValue ? d.Value.ToString("0.##") : "—";

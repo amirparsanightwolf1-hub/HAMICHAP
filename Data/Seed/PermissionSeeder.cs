@@ -393,6 +393,17 @@ public static class PermissionSeeder
 
 
             // =========================
+            // =========================
+            // Sales Quotations
+            // =========================
+
+            new()
+            {
+                Name = "Sales.Quotations.Approve",
+                Description = "Approve or reject sales quotations"
+            },
+
+
             // Sales Deliveries
             // =========================
 

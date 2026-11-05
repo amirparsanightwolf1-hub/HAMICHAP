@@ -1,4 +1,4 @@
-﻿@page "/sales/quotations/edit/{Id:long}"
+@page "/sales/quotations/edit/{Id:long}"
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
@@ -56,7 +56,6 @@
             <div class="d-flex gap-2">
 
                 @if (quotation.Status == QuotationStatus.Approved ||
-                     quotation.Status == QuotationStatus.ReadyToSend ||
                      quotation.Status == QuotationStatus.SentToCustomer ||
                      quotation.Status == QuotationStatus.CustomerNegotiation ||
                      quotation.Status == QuotationStatus.Accepted ||
@@ -145,25 +144,8 @@
                     </button>
                 }
 
-                @if (quotation.Status == QuotationStatus.Approved)
-                {
-                    <button type="button"
-                            class="btn btn-primary"
-                            @onclick="MarkReadyToSendAsync"
-                            disabled="@isMarkingReady">
-
-                        @if (isMarkingReady)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1"></span>
-                        }
-
-                        <i class="bi bi-check2-square"></i>
-                        @LocalizationService["ReadyToSend"]
-
-                    </button>
-                }
-
-                @if (quotation.Status == QuotationStatus.ReadyToSend)
+                @if (quotation.Status == QuotationStatus.Approved ||
+                     quotation.Status == QuotationStatus.ReadyToSend)
                 {
                     <button type="button"
                             class="btn btn-primary"
@@ -591,7 +573,6 @@
     private bool isSubmitting;
     private bool isApproving;
     private bool isRejecting;
-    private bool isMarkingReady;
     private bool isSending;
     private bool isDeciding;
     private bool isCreatingSalesOrder;
@@ -781,35 +762,6 @@
         finally
         {
             isRejecting = false;
-        }
-    }
-
-
-    private async Task MarkReadyToSendAsync()
-    {
-        if (quotation == null)
-            return;
-
-        errorMessage = null;
-        successMessage = null;
-
-        try
-        {
-            isMarkingReady = true;
-
-            await QuotationService
-                .MarkReadyToSendAsync(
-                    quotation.Id);
-
-            await LoadAsync();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
-        }
-        finally
-        {
-            isMarkingReady = false;
         }
     }
 
