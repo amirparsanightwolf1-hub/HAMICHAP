@@ -1,4 +1,4 @@
-using HamiChap_MES_ERP.Data;
+﻿using HamiChap_MES_ERP.Data;
 using HamiChap_MES_ERP.Models.Sales;
 using HamiChap_MES_ERP.Models.Sales.Enums;
 using HamiChap_MES_ERP.Models.Shared;
@@ -34,9 +34,12 @@ public class QuotationService
         if (request == null)
             throw new InvalidOperationException("Sales request not found.");
 
-        if (request.Status != SalesRequestStatus.EvaluationCompleted)
+        // The separate evaluation stage has been removed.
+        // Legacy requests already marked EvaluationCompleted remain supported.
+        if (request.Status != SalesRequestStatus.Submitted &&
+            request.Status != SalesRequestStatus.EvaluationCompleted)
             throw new InvalidOperationException(
-                "Request evaluation is not completed.");
+                "Only submitted sales requests can be quoted.");
 
         var number = await _numberSeries.GetNextNumberAsync(
             NumberSeriesType.Quotation);
@@ -68,6 +71,47 @@ public class QuotationService
         return quotation;
     }
 
+    /// <summary>
+    /// Records the authenticated account entering quotation prices as the
+    /// evaluator on the originating sales request.
+    /// </summary>
+    public async Task AssignPricingUserAsEvaluatorAsync(
+        long quotationId,
+        string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new UnauthorizedAccessException(
+                "An authenticated user is required to assign the evaluator.");
+
+        var quotation = await _db.Quotations
+            .Include(x => x.SalesRequest)
+            .Include(x => x.Lines)
+            .FirstOrDefaultAsync(x => x.Id == quotationId);
+
+        if (quotation == null)
+            throw new InvalidOperationException("Quotation not found.");
+
+        if (quotation.SalesRequest == null)
+            throw new InvalidOperationException(
+                "The sales request linked to this quotation was not found.");
+
+        var hasPricing =
+            quotation.Lines.Any(x => x.UnitPrice > 0) ||
+            quotation.MaterialCost > 0 ||
+            quotation.ProductionCost > 0;
+
+        if (!hasPricing)
+            return;
+
+        // Assign the account that actually entered/saved the prices.
+        quotation.SalesRequest.AssignedToUserId = userId;
+        await _db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Records the authenticated account entering quotation prices as the
+    /// evaluator on the originating sales request.
+    /// </summary>
     public async Task SubmitForApprovalAsync(long quotationId)
     {
         var quotation = await _db.Quotations
@@ -179,11 +223,10 @@ public class QuotationService
         if (quotation == null)
             throw new InvalidOperationException("Quotation not found.");
 
-        if (quotation.Status != QuotationStatus.Approved &&
-            quotation.Status != QuotationStatus.ReadyToSend)
+        if (quotation.Status != QuotationStatus.ReadyToSend)
         {
             throw new InvalidOperationException(
-                "Only approved quotations can be sent to the customer.");
+                "Only approved quotations marked ready to send can be sent to the customer.");
         }
 
         quotation.Status = QuotationStatus.SentToCustomer;
@@ -208,11 +251,9 @@ public class QuotationService
                 "A customer decision can only be recorded after the quotation has been sent.");
         }
 
-        // A customer rejection returns the quotation to Draft so it can be edited
-        // and submitted through the approval workflow again.
         quotation.Status = accepted
             ? QuotationStatus.Accepted
-            : QuotationStatus.Draft;
+            : QuotationStatus.Rejected;
 
         await _db.SaveChangesAsync();
     }
