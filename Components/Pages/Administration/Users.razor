@@ -12,12 +12,12 @@
 
 <PageTitle>Users</PageTitle>
 
-<h3>Users Management</h3>
-
-<button class="btn btn-primary mb-3" @onclick="@(() => Nav.NavigateTo("/administration/users/create"))">
-    Add Employee
-</button>
-
+<div class="erp-page-header">
+    <h3 class="erp-page-title">Users Management</h3>
+    <button class="btn btn-primary" @onclick="@(() => Nav.NavigateTo("/administration/users/create"))">
+        Add Employee
+    </button>
+</div>
 
 @if (users == null)
 {
