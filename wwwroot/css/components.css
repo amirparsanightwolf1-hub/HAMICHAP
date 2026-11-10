@@ -183,3 +183,33 @@ a.btn {
 }
 
 
+
+
+/* Extracted static inline declarations from Razor pages. */
+.erp-inline-block { display: inline-block; }
+.erp-width-100 { width: 100px; }
+.erp-width-120 { width: 120px; }
+.erp-width-190 { width: 190px; }
+.erp-width-80 { width: 80px; }
+.erp-width-180 { width: 180px; }
+.erp-min-width-280 { min-width:280px; }
+.erp-min-width-130 { min-width:130px; }
+.erp-min-width-180 { min-width:180px; }
+.erp-min-width-150 { min-width:150px; }
+.erp-min-width-220 { min-width:220px; }
+.erp-min-width-260 { min-width:260px; }
+.erp-min-width-140 { min-width:140px; }
+.erp-min-width-250 { min-width:250px; }
+.erp-width-70 { width:70px; }
+.erp-height-10 { height: 10px; }
+.erp-height-6 { height: 6px; }
+.erp-height-20 { height:20px; }
+.erp-clickable { cursor: pointer; }
+.erp-proof-heading-icon { font-size:2rem;color:#0e1641; }
+.erp-icon-2rem { font-size:2rem; }
+.erp-job-preview-image { max-width:180px;max-height:120px;object-fit:contain;border:1px solid #dee2e6;border-radius:6px;padding:4px; }
+.erp-imposition-piece-label { width:100%;height:20px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:7px;color:#26364d;overflow:hidden;white-space:nowrap; }
+.erp-artwork-scroll { overflow:auto; max-height:600px; }
+.erp-artwork-image { display:block;max-width:100%;height:auto;margin:0 auto;background:white; }
+.erp-artwork-viewport { min-height: 320px; overflow: auto; }
+.erp-artwork-full-image { display:block; max-width:100%; max-height:75vh; width:auto; height:auto; margin:0 auto; background:white; }
