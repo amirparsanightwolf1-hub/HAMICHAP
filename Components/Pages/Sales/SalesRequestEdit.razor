@@ -253,22 +253,22 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
-                                <th style="min-width:260px;">
+                                <th class="erp-min-width-260" >
                                     @LocalizationService["Item"]
                                 </th>
-                                <th style="min-width:140px;"
-                                    class="text-end">
+                                <th 
+                                    class="text-end erp-min-width-140">
                                     @LocalizationService["Quantity"]
                                 </th>
-                                <th style="min-width:140px;">
+                                <th class="erp-min-width-140" >
                                     @LocalizationService["Unit"]
                                 </th>
-                                <th style="min-width:250px;">
+                                <th class="erp-min-width-250" >
                                     @LocalizationService["Notes"]
                                 </th>
                                 @if (request.Status == SalesRequestStatus.Draft)
                                 {
-                                    <th style="width:80px;"></th>
+                                    <th class="erp-width-80" ></th>
                                 }
                             </tr>
                         </thead>
