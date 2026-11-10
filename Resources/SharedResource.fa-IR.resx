@@ -2493,4 +2493,8 @@
     <value>عملیات با موفقیت زمان‌بندی شد.</value>
   </data>
   <data name="ScheduleDay" xml:space="preserve"><value>روز برنامه‌ریزی</value></data>
+  <data name="EstimatedHours" xml:space="preserve"><value>ساعت تخمینی</value></data>
+  <data name="RegularShift" xml:space="preserve"><value>شیفت عادی (۰۸:۰۰ تا ۱۷:۰۰)</value></data>
+  <data name="OvertimeShift" xml:space="preserve"><value>اضافه‌کاری (۱۷:۰۰ تا ۲۲:۰۰)</value></data>
+  <data name="NightShift" xml:space="preserve"><value>شیفت شب (۲۲:۰۰ تا ۰۸:۰۰)</value></data>
 </root>
