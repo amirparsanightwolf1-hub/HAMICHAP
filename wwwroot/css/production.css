@@ -1091,3 +1091,52 @@
         }
     }
 
+
+
+/* Production manager machine calendar: same navy panels and shift colors as the original planner. */
+.machine-schedule .machine-calendar-scroll { overflow-x: auto; }
+.machine-schedule .machine-calendar-grid {
+    display: grid;
+    grid-template-columns: minmax(140px, 190px) repeat(var(--machine-days), minmax(150px, 1fr));
+    min-width: max-content;
+    border: 1px solid var(--planning-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.machine-schedule .machine-calendar-corner,
+.machine-schedule .machine-calendar-date,
+.machine-schedule .machine-calendar-machine {
+    background: var(--planning-navy-soft);
+    color: var(--planning-navy);
+    padding: 12px;
+    border: 0;
+    border-inline-end: 1px solid var(--planning-border);
+    border-bottom: 1px solid var(--planning-border);
+    text-align: start;
+}
+.machine-schedule .machine-calendar-date { font-weight: 700; cursor: pointer; }
+.machine-schedule .machine-calendar-date:hover { background: #dce5f5; }
+.machine-schedule .machine-calendar-machine small { display: block; color: var(--planning-muted); }
+.machine-schedule .machine-calendar-cell {
+    padding: 8px;
+    min-height: 110px;
+    border-inline-end: 1px solid var(--planning-border);
+    border-bottom: 1px solid var(--planning-border);
+    background: var(--planning-surface);
+}
+.machine-schedule .machine-calendar-cell .month-order-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    white-space: normal;
+    margin-bottom: 6px;
+    padding: 9px;
+    border-radius: 7px;
+}
+.machine-schedule .machine-calendar-cell .month-order-chip small { font-size: .75rem; }
+.machine-schedule .queue-order { cursor: default; }
+@media (max-width: 900px) {
+    .machine-schedule .planning-layout { grid-template-columns: 1fr; }
+    .machine-schedule .planning-order-panel,
+    .machine-schedule .planning-calendar-panel { grid-column: 1; position: static; }
+}
