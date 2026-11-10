@@ -4,9 +4,9 @@
 
 :root {
     /* Brand / semantic colors */
-    --erp-primary: #0b568d;
-    --erp-primary-dark: #073b61;
-    --erp-primary-light: #e8f2f9;
+    --erp-primary: #0d1741;
+    --erp-primary-dark: #202e5b;
+    --erp-primary-light: #eef1f8;
     --erp-accent: #2563eb;
     --erp-success: #198754;
     --erp-success-light: #e6f4ea;
@@ -15,22 +15,22 @@
     --erp-danger: #dc3545;
     --erp-danger-light: #fbe9eb;
     --erp-text: #1f2937;
-    --erp-heading: #073b61;
+    --erp-heading: #0d1741;
     --erp-muted: #64748b;
-    --erp-border: #e2e8f0;
-    --erp-background: #f4f7fa;
+    --erp-border: #dfe4ee;
+    --erp-background: #f6f8fc;
     --erp-surface: #ffffff;
     /* Shape / elevation */
     --erp-radius-sm: 6px;
-    --erp-radius: 8px;
-    --erp-radius-lg: 12px;
+    --erp-radius: 10px;
+    --erp-radius-lg: 14px;
     --erp-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     --erp-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.10);
     /* Motion */
     --erp-transition-fast: 0.15s ease;
     --erp-transition: 0.2s ease;
     /* Focus ring */
-    --erp-focus-ring: 0 0 0 0.2rem rgba(11, 86, 141, 0.25);
+    --erp-focus-ring: 0 0 0 0.2rem rgba(13, 23, 65, 0.16);
 }
 
 

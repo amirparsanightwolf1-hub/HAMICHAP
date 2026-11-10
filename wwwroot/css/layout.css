@@ -1,3 +1,4 @@
+/* Source: Components/Layout/MainLayout.razor.css */
 /* =========================================
    Application Layout
    ========================================= */
@@ -17,7 +18,7 @@
     width: 260px;
     min-width: 260px;
     min-height: 100vh;
-    background: linear-gradient( 180deg, #0b568d 0%, #073b61 100% );
+    background: linear-gradient( 180deg, var(--erp-primary) 0%, var(--erp-primary-dark) 100% );
     color: white;
     padding: 22px 16px;
 }
@@ -91,7 +92,7 @@
         width: 46px;
         height: 42px;
         padding: 0;
-        background: #0b568d;
+        background: var(--erp-primary);
         color: white;
         border: none;
         border-radius: 7px;
@@ -229,7 +230,7 @@
 
     /* Current page */
     .menu-button.active {
-        background: #2563eb;
+        background: var(--erp-primary);
         color: white;
         border-color: rgba(255, 255, 255, 0.15);
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
@@ -260,3 +261,4 @@
     .sidebar-backdrop.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 2400; }
     .language-switcher { bottom: 10px; right: 10px; }
 }
+

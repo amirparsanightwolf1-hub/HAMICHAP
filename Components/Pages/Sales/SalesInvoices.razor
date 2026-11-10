@@ -69,9 +69,9 @@
                     <tbody>
                         @foreach (var invoice in invoices)
                         {
-                            <tr @key="invoice.Id"
+                            <tr class="erp-clickable" @key="invoice.Id"
                                 role="button"
-                                style="cursor: pointer"
+                                
                                 @onclick="() => OpenInvoice(invoice.Id)">
 
                                 <td class="fw-semibold">

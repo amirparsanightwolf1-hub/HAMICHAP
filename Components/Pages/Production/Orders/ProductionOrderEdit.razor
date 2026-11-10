@@ -14,102 +14,7 @@
 
 <PageTitle>@LocalizationService["ProductionOrder"]</PageTitle>
 
-<style>
-    .production-order-page {
-        --po-border: #e5e9f0;
-        --po-muted: #667085;
-    }
 
-    .production-order-page .card {
-        border: 1px solid var(--po-border);
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(16, 24, 40, .035);
-        overflow: hidden;
-    }
-
-    .production-order-page .card-header {
-        min-height: 54px;
-        display: flex;
-        align-items: center;
-        padding: 14px 20px;
-        background: #fbfcfe;
-        border-bottom: 1px solid var(--po-border);
-    }
-
-    .production-order-page .card-body {
-        padding: 22px;
-    }
-
-    .production-order-page .form-label {
-        display: block;
-        margin-bottom: 8px;
-        color: #475467;
-        font-size: .875rem;
-        font-weight: 600;
-    }
-
-    .production-order-page .form-control {
-        min-height: 42px;
-        border-color: #d8dee8;
-        border-radius: 8px;
-        box-shadow: none;
-    }
-
-    .production-order-page .form-control:focus {
-        border-color: #7b8bb8;
-        box-shadow: 0 0 0 3px rgba(67, 80, 122, .10);
-    }
-
-    .production-order-page .form-control[readonly],
-    .production-order-page textarea[readonly] {
-        background: #f8fafc;
-        color: #344054;
-    }
-
-    .production-order-page .table {
-        margin-bottom: 0;
-    }
-
-    .production-order-page .table thead th {
-        padding: 13px 14px;
-        color: #667085;
-        background: #f8fafc;
-        border-bottom-color: var(--po-border);
-        font-size: .82rem;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .production-order-page .table tbody td {
-        padding: 13px 14px;
-        border-color: #edf0f4;
-        vertical-align: middle;
-    }
-
-    .production-order-page .material-request-table {
-        min-width: 790px;
-    }
-
-    .production-order-page .material-request-table .form-control {
-        min-height: 44px;
-    }
-
-    .production-order-page .section-hint {
-        color: var(--po-muted);
-        line-height: 1.6;
-        margin-bottom: 20px;
-    }
-
-    @@media (max-width: 767.98px) {
-        .production-order-page .card-body {
-            padding: 16px;
-        }
-
-        .production-order-page .card-header {
-            padding: 13px 16px;
-        }
-    }
-</style>
 
 <div class="page-container production-order-page">
 
@@ -505,8 +410,8 @@
 
                 </div>
 
-                <div class="progress mt-4"
-                     style="height: 10px;">
+                <div class="progress mt-4 erp-height-10"
+                     >
 
                     <div class="progress-bar"
                          role="progressbar"
@@ -555,7 +460,7 @@
 
                             <thead>
                                 <tr>
-                                    <th style="width: 80px;">
+                                    <th class="erp-width-80" >
                                         @LocalizationService["Sequence"]
                                     </th>
 
@@ -579,7 +484,7 @@
                                         @LocalizationService["Status"]
                                     </th>
 
-                                    <th style="width: 180px;">
+                                    <th class="erp-width-180" >
                                         @LocalizationService["Action"]
                                     </th>
                                 </tr>
@@ -811,11 +716,11 @@
                     <table class="table table-hover align-middle">
                         <thead>
                             <tr>
-                                <th style="min-width:280px">Material</th>
-                                <th style="min-width:130px">Requested quantity</th>
-                                <th style="width:120px">Unit</th>
-                                <th style="min-width:180px">Note</th>
-                                <th style="width:70px"></th>
+                                <th class="erp-min-width-280" >Material</th>
+                                <th class="erp-min-width-130" >Requested quantity</th>
+                                <th class="erp-width-120">Unit</th>
+                                <th class="erp-min-width-180" >Note</th>
+                                <th class="erp-width-70" ></th>
                             </tr>
                         </thead>
                         <tbody>

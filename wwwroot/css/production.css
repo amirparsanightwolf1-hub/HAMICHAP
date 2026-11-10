@@ -1,0 +1,1093 @@
+/* Source: Components/Pages/Production/Orders/ProductionPlanning.razor.css */
+/* Production Planning — clean Hami navy theme */
+
+.production-planning {
+    --planning-navy: #0d1741;
+    --planning-navy-soft: #eef1f8;
+    --planning-border: #dfe4ee;
+    --planning-muted: #6b7280;
+    --planning-surface: #ffffff;
+    --planning-page: #f6f8fc;
+}
+
+    /* Main panels */
+    .production-planning .planning-layout {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+        width: 100%;
+        direction: ltr;
+    }
+
+    .production-planning .planning-order-panel,
+    .production-planning .planning-calendar-panel {
+        min-width: 0;
+        width: 100%;
+        direction: rtl;
+    }
+
+    .production-planning .planning-order-panel {
+        grid-column: 1;
+        grid-row: 1;
+        position: sticky;
+        top: 14px;
+    }
+
+    .production-planning .planning-calendar-panel {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+        .production-planning .planning-order-panel .card,
+        .production-planning .planning-calendar-panel .card {
+            min-width: 0;
+            overflow: hidden;
+            border: 1px solid var(--planning-border);
+            border-radius: 13px;
+            background: var(--planning-surface);
+            box-shadow: 0 4px 16px rgba(13, 23, 65, .055);
+        }
+
+    .production-planning .card-header {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--planning-border);
+        background: linear-gradient(135deg, #f8f9fc, #eef1f8);
+        color: var(--planning-navy);
+        font-weight: 700;
+    }
+
+    .production-planning .card-body {
+        padding: 15px;
+    }
+
+    .production-planning .order-queue {
+        max-height: 60vh;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #c5ccda transparent;
+    }
+
+    /* Order cards */
+    .production-planning .queue-order {
+        position: relative;
+        margin: 0 0 10px;
+        padding: 12px 12px 11px;
+        border: 1px solid #e1e6ef;
+        border-right: 3px solid #9aa6c2;
+        border-radius: 9px;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(13, 23, 65, .035);
+        cursor: grab;
+        transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease, background .16s ease;
+    }
+
+        .production-planning .queue-order:last-child {
+            margin-bottom: 0;
+        }
+
+        .production-planning .queue-order:hover {
+            border-color: #aab5ce;
+            border-right-color: var(--planning-navy);
+            box-shadow: 0 5px 13px rgba(13, 23, 65, .09);
+            transform: translateY(-1px);
+        }
+
+        .production-planning .queue-order:active {
+            cursor: grabbing;
+            transform: scale(.99);
+        }
+
+        .production-planning .queue-order strong {
+            color: var(--planning-navy);
+            font-size: .88rem;
+            letter-spacing: .01em;
+        }
+
+        .production-planning .queue-order small {
+            color: var(--planning-muted);
+            font-size: .7rem;
+            white-space: nowrap;
+        }
+
+        .production-planning .queue-order .small {
+            line-height: 1.65;
+        }
+
+    .production-planning .queue-order-selected {
+        border: 1px solid #6476a7;
+        border-right: 4px solid var(--planning-navy);
+        background: #f1f4fb;
+        box-shadow: 0 0 0 2px rgba(13, 23, 65, .08), 0 5px 14px rgba(13, 23, 65, .08);
+    }
+
+        .production-planning .queue-order-selected strong {
+            color: var(--planning-navy);
+        }
+
+    /* Settings card controls */
+    .production-planning .form-control {
+        border-color: #d8deea;
+        border-radius: 7px;
+        min-height: 38px;
+    }
+
+        .production-planning .form-control:focus {
+            border-color: #66769e;
+            box-shadow: 0 0 0 3px rgba(13, 23, 65, .10);
+        }
+
+    .production-planning .form-check-input {
+        cursor: pointer;
+    }
+
+        .production-planning .form-check-input:checked {
+            background-color: var(--planning-navy);
+            border-color: var(--planning-navy);
+        }
+
+    .production-planning .btn-outline-primary {
+        --bs-btn-color: var(--planning-navy);
+        --bs-btn-border-color: #9ca8c2;
+        --bs-btn-hover-bg: var(--planning-navy);
+        --bs-btn-hover-border-color: var(--planning-navy);
+        --bs-btn-hover-color: #fff;
+    }
+
+    .production-planning .btn-primary {
+        background: var(--planning-navy);
+        border-color: var(--planning-navy);
+    }
+
+    /* Shift legend */
+    .production-planning .shift-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px 15px;
+        align-items: center;
+        padding: 10px 12px;
+        border: 1px solid #e7eaf1;
+        border-radius: 8px;
+        background: #fafbfe;
+        font-size: .78rem;
+        color: #4b5563;
+    }
+
+        .production-planning .shift-legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+    .production-planning .shift-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        display: inline-block;
+    }
+
+    /* Month calendar */
+    .production-planning .month-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 5px;
+        border: 0;
+    }
+
+    .production-planning .month-weekday {
+        padding: 10px 4px;
+        text-align: center;
+        font-weight: 700;
+        font-size: .78rem;
+        color: var(--planning-navy);
+        background: #f0f2f8;
+        border: 1px solid #e3e7f0;
+        border-radius: 6px;
+    }
+
+    .production-planning .month-day {
+        min-height: 112px;
+        padding: 7px;
+        border: 1px solid #e2e6ee;
+        border-radius: 7px;
+        background: #fff;
+        cursor: pointer;
+        overflow: hidden;
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+        .production-planning .month-day:hover,
+        .production-planning .timeline-slot:hover {
+            outline: none;
+            border-color: #7d8bad;
+            box-shadow: inset 0 0 0 1px rgba(13, 23, 65, .12);
+        }
+
+        .production-planning .month-day.outside-month {
+            background: #f8f9fb;
+            color: #aab1bf;
+        }
+
+        .production-planning .month-day.today {
+            background: #f1f4fb;
+            border-color: #8290b0;
+        }
+
+    .production-planning .month-day-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 25px;
+        height: 25px;
+        margin-bottom: 5px;
+        border-radius: 50%;
+        font-size: .8rem;
+        font-weight: 700;
+        color: #3d4659;
+    }
+
+    .production-planning .month-day.today .month-day-number {
+        color: #fff;
+        background: var(--planning-navy);
+    }
+
+    .production-planning .month-order-chip {
+        display: block;
+        width: 100%;
+        border: 0;
+        border-radius: 5px;
+        text-align: right;
+        font-size: .68rem;
+        font-weight: 600;
+        padding: 5px 7px;
+        margin: 4px 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #fff;
+        cursor: grab;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+    }
+
+    .production-planning .order-work {
+        background: #21845d;
+    }
+
+    .production-planning .order-break {
+        background: #343a40;
+    }
+
+    .production-planning .order-overtime {
+        background: #c94b59;
+    }
+
+    .production-planning .order-night {
+        background: #315caa;
+    }
+
+    /* Week / day timeline */
+    .production-planning .timeline-scroll {
+        overflow: auto;
+        max-height: 720px;
+        border: 1px solid #e1e5ed;
+        border-radius: 8px;
+    }
+
+    .production-planning .timeline {
+        display: grid;
+        grid-template-columns: 64px repeat(var(--day-count), minmax(110px, 1fr));
+        min-width: 650px;
+    }
+
+    .production-planning .timeline-time-head,
+    .production-planning .timeline-day-head {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: #f0f2f8;
+        border: 1px solid #e0e5ef;
+        padding: 9px 7px;
+        text-align: center;
+        color: var(--planning-navy);
+    }
+
+    .production-planning .timeline-time-head {
+        left: 0;
+        z-index: 4;
+    }
+
+    .production-planning .timeline-day-head {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+        .production-planning .timeline-day-head strong {
+            font-size: .86rem;
+        }
+
+        .production-planning .timeline-day-head small {
+            color: var(--planning-muted);
+        }
+
+    .production-planning .timeline-hour {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: #f7f8fb;
+        border: 1px solid #e5e8ef;
+        padding: 7px 4px;
+        font-size: .75rem;
+        font-weight: 600;
+        color: #596276;
+        text-align: center;
+        min-height: 54px;
+    }
+
+    .production-planning .timeline-slot {
+        border: 1px solid #e5e8ef;
+        min-height: 54px;
+        padding: 3px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        cursor: pointer;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+        .production-planning .timeline-slot.work {
+            background: #edf6f1;
+        }
+
+        .production-planning .timeline-slot.break {
+            background: #e3e5e8;
+        }
+
+        .production-planning .timeline-slot.overtime {
+            background: #fbf0f1;
+        }
+
+        .production-planning .timeline-slot.night {
+            background: #edf2fb;
+        }
+
+    .production-planning .timeline-order {
+        font-size: .67rem;
+        line-height: 1.35;
+        padding: 5px 6px;
+        border: 0;
+        border-radius: 5px;
+        color: #fff;
+        font-weight: 600;
+        text-align: right;
+        overflow: hidden;
+        cursor: grab;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .13);
+    }
+
+/* Responsive */
+@media (max-width: 767.98px) {
+    .production-planning .planning-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .production-planning .planning-order-panel {
+        grid-column: 1;
+        grid-row: 1;
+        position: static;
+    }
+
+    .production-planning .planning-calendar-panel {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .production-planning .order-queue {
+        max-height: 42vh;
+    }
+}
+
+@media (max-width: 700px) {
+    .production-planning .month-day {
+        min-height: 76px;
+        padding: 3px;
+    }
+
+    .production-planning .month-order-chip {
+        font-size: .58rem;
+        padding: 3px 4px;
+    }
+
+    .production-planning .month-weekday {
+        font-size: .7rem;
+        padding: 7px 2px;
+    }
+
+    .production-planning .month-day-number {
+        font-size: .75rem;
+        min-width: 21px;
+        height: 21px;
+    }
+}
+
+
+/* Extracted from Components/Pages/Production/ImpositionAlternativeCard.razor */
+
+.imposition-preview{width:100%;min-height:110px;max-height:380px;display:flex;align-items:center;justify-content:center;overflow:auto;padding:10px;border:1px solid #adb5bd;background:#f8f9fa;border-radius:5px}
+.imposition-preview svg{display:block;width:100%;height:auto;max-height:360px;min-width:0}
+.stock-outline{fill:#fff;stroke:#6c757d;stroke-width:1;vector-effect:non-scaling-stroke}
+.piece-1{fill:#dbe2f1;stroke:#43507a;stroke-width:1;vector-effect:non-scaling-stroke}
+.piece-2{fill:#f8dfbd;stroke:#9a5b16;stroke-width:1;vector-effect:non-scaling-stroke}
+.piece-3{fill:#d8eee5;stroke:#28745c;stroke-width:1;vector-effect:non-scaling-stroke}
+.piece-4{fill:#eadcf5;stroke:#71459a;stroke-width:1;vector-effect:non-scaling-stroke}
+
+
+
+/* Extracted from Components/Pages/Production/ImpositionOptimizer.razor */
+
+    .imp-shell {
+        padding: 12px 16px 24px;
+        background: #f4f5f8;
+        min-height: calc(100vh - 70px);
+        color: #172033
+    }
+
+    .imp-topline {
+        display: flex;
+        gap: 18px;
+        align-items: stretch;
+        margin-bottom: 12px
+    }
+
+    .imp-tabs {
+        display: flex;
+        flex: 0 0 292px;
+        background: #fff;
+        border: 1px solid #e1e4eb;
+        border-radius: 13px;
+        padding: 5px;
+        box-shadow: 0 1px 3px #17203312
+    }
+
+    .imp-tab {
+        border: 0;
+        background: transparent;
+        color: #68738a;
+        border-radius: 9px;
+        flex: 1;
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px
+    }
+
+        .imp-tab span {
+            font-size: 18px
+        }
+
+        .imp-tab.active {
+            background: #5145f5;
+            color: #fff
+        }
+
+    .imp-stats {
+        display: grid;
+        grid-template-columns: repeat(7,minmax(100px,1fr));
+        gap: 7px;
+        flex: 1
+    }
+
+    .imp-stat {
+        background: #fff;
+        border: 1px solid #e1e4eb;
+        border-radius: 12px;
+        padding: 9px 11px;
+        min-width: 0;
+        box-shadow: 0 1px 3px #1720330b
+    }
+
+        .imp-stat b {
+            display: block;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .imp-stat small {
+            display: block;
+            color: #788398;
+            font-size: 11px;
+            margin-top: 3px
+        }
+
+    .imp-workspace {
+        display: grid;
+        grid-template-columns: 292px minmax(0,1fr);
+        gap: 18px;
+        min-height: calc(100vh - 250px)
+    }
+
+    .imp-sidebar {
+        background: #fff;
+        border: 1px solid #e1e4eb;
+        border-radius: 14px;
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        min-height: 600px;
+        box-shadow: 0 1px 3px #1720330b
+    }
+
+    .imp-section {
+        padding: 17px 2px;
+        border-bottom: 1px solid #e7e9ef
+    }
+
+        .imp-section h3 {
+            font-size: 13px;
+            font-weight: 700;
+            margin: 0
+        }
+
+        .imp-section label {
+            font-size: 11px;
+            color: #45516a;
+            margin: 12px 0 5px;
+            display: block
+        }
+
+        .imp-section .form-control, .imp-section .form-select {
+            font-size: 12px;
+            min-height: 31px;
+            border-color: #dce1ea;
+            padding: 5px 8px
+        }
+
+    .imp-section-head, .imp-setting-line, .imp-section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center
+    }
+
+    .imp-help {
+        color: #a3aabd
+    }
+
+    .imp-hint {
+        font-size: 10px;
+        color: #8b94a7;
+        margin: 7px 0 12px
+    }
+
+    .imp-segment {
+        display: flex;
+        border: 1px solid #dce1ea;
+        border-radius: 8px;
+        overflow: hidden
+    }
+
+        .imp-segment button {
+            border: 0;
+            background: #fff;
+            padding: 5px 18px;
+            font-size: 11px;
+            color: #58647b
+        }
+
+            .imp-segment button.selected {
+                background: #5145f5;
+                color: white
+            }
+
+    .imp-grid2 {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 5px;
+        width: 100%;
+    }
+
+        .imp-grid2 > div {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .imp-grid2 .form-control {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            padding: 3px 4px;
+            font-size: 10px;
+            box-sizing: border-box;
+        }
+
+    .imp-grid3 {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 8px
+    }
+
+    .imp-unit-input {
+        position: relative
+    }
+
+        .imp-unit-input small {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            color: #8791a4;
+            font-size: 10px
+        }
+
+        .imp-unit-input .form-control {
+            padding-right: 27px
+        }
+
+    .imp-toggle {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        margin: 12px 0 !important
+    }
+
+        .imp-toggle input {
+            width: 34px;
+            height: 18px;
+            accent-color: #5145f5
+        }
+
+    .imp-min-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 7px 0
+    }
+
+        .imp-min-row span {
+            font-size: 11px
+        }
+
+        .imp-min-row .form-control {
+            max-width: 76px
+        }
+
+    .imp-check {
+        display: flex !important;
+        align-items: center;
+        gap: 7px
+    }
+
+        .imp-check input {
+            accent-color: #5145f5
+        }
+
+    .imp-part-row {
+        padding: 12px 0;
+        border-bottom: 1px solid #edf0f4
+    }
+
+    .imp-part-title {
+        display: flex;
+        align-items: center;
+        gap: 7px
+    }
+
+        .imp-part-title .form-control {
+            flex: 1
+        }
+
+    .imp-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%
+    }
+
+    .imp-remove {
+        border: 0;
+        background: none;
+        color: #d44b55;
+        font-size: 18px
+    }
+
+    .imp-add {
+        border: 0;
+        background: #f0efff;
+        color: #5145f5;
+        border-radius: 7px;
+        padding: 5px 9px;
+        font-size: 11px
+    }
+
+    .imp-primary, .imp-secondary {
+        border: 1px solid #5145f5;
+        background: #5145f5;
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 13px;
+        font-size: 11px
+    }
+
+    .imp-secondary {
+        background: #fff;
+        color: #59647a;
+        border-color: #dce1ea
+    }
+
+    .imp-primary.small {
+        padding: 6px 12px
+    }
+
+    .imp-sidebar-bottom {
+        margin-top: auto;
+        padding: 13px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #8791a4;
+        font-size: 11px
+    }
+
+        .imp-sidebar-bottom div {
+            display: flex;
+            gap: 7px
+        }
+
+    .imp-preview-card {
+        background: #fff;
+        border: 1px solid #e1e4eb;
+        border-radius: 14px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        box-shadow: 0 1px 3px #1720330b
+    }
+
+    .imp-preview-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px
+    }
+
+    .imp-layout-label, .imp-zoom {
+        border: 1px solid #e5e8ef;
+        border-radius: 20px;
+        padding: 8px 12px;
+        font-size: 11px;
+        color: #657087
+    }
+
+        .imp-layout-label span {
+            padding: 0 12px;
+            color: #aab1bf
+        }
+
+        .imp-layout-label b {
+            color: #202b40
+        }
+
+    .imp-actions {
+        display: flex;
+        gap: 7px
+    }
+
+        .imp-actions button {
+            border: 1px solid #dce1ea;
+            background: #fff;
+            border-radius: 22px;
+            padding: 8px 13px;
+            font-size: 11px;
+            color: #344056
+        }
+
+            .imp-actions button.imp-primary {
+                background: #5145f5;
+                color: white;
+                border-color: #5145f5
+            }
+
+    .imp-canvas {
+        background: #f2f3f6;
+        border-radius: 8px;
+        flex: 1;
+        min-height: 550px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+        padding: 25px
+    }
+
+        .imp-canvas svg {
+            width: 100%;
+            height: auto;
+            max-height: calc(100vh - 320px);
+            min-height: 430px;
+            overflow: visible
+        }
+
+    .imp-preview-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 3px 0;
+        color: #818ba0;
+        font-size: 10px
+    }
+
+    .imp-results {
+        margin-top: 18px
+    }
+
+        .imp-results h3 {
+            font-size: 17px
+        }
+
+    .imp-error {
+        margin-top: 12px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #fff0f0;
+        color: #a92e38;
+        font-size: 11px
+    }
+
+    .imp-material-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 13px;
+        padding: 10px;
+        background: #f7f8fc;
+        border: 1px solid #e8ebf2;
+        border-radius: 9px
+    }
+
+        .imp-material-summary div {
+            display: flex;
+            flex-direction: column;
+            gap: 3px
+        }
+
+        .imp-material-summary span {
+            font-size: 10px;
+            color: #818ba0
+        }
+
+        .imp-material-summary b {
+            font-size: 13px;
+            color: #263248
+        }
+
+    .imp-quantity-field {
+        margin-top: 7px
+    }
+
+        .imp-quantity-field label {
+            margin-top: 8px !important
+        }
+
+        .imp-quantity-field small {
+            display: block;
+            color: #8791a4;
+            font-size: 10px;
+            margin-top: 4px
+        }
+
+    .imp-part-demand {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        padding: 6px 8px;
+        background: #f7f8fc;
+        border-radius: 6px;
+        font-size: 10px;
+        color: #788398
+    }
+
+        .imp-part-demand b {
+            font-size: 12px;
+            color: #263248
+        }
+
+    .imp-demand-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 10px;
+        background: #f0efff;
+        border: 1px solid #e2e0ff;
+        border-radius: 9px
+    }
+
+        .imp-demand-summary div {
+            display: flex;
+            flex-direction: column;
+            gap: 3px
+        }
+
+        .imp-demand-summary span {
+            font-size: 10px;
+            color: #777b91
+        }
+
+        .imp-demand-summary b {
+            font-size: 14px;
+            color: #263248
+        }
+
+    @@media(max-width:1250px) {
+        .imp-topline {
+            flex-wrap: wrap
+        }
+
+        .imp-stats {
+            grid-template-columns: repeat(4,1fr)
+        }
+
+        .imp-workspace {
+            grid-template-columns: 270px minmax(0,1fr)
+        }
+    }
+
+    @@media(max-width:800px) {
+        .imp-workspace {
+            grid-template-columns: 1fr
+        }
+
+        .imp-sidebar {
+            min-height: 0
+        }
+
+        .imp-canvas {
+            min-height: 380px
+        }
+
+            .imp-canvas svg {
+                min-height: 300px
+            }
+
+        .imp-zoom {
+            display: none
+        }
+
+        .imp-tabs {
+            flex-basis: 100%;
+            height: 64px
+        }
+
+        .imp-stats {
+            grid-template-columns: repeat(2,1fr)
+        }
+    }
+
+
+
+/* Extracted from Components/Pages/Production/Orders/ProductionOrderEdit.razor */
+
+    .production-order-page {
+        --po-border: #e5e9f0;
+        --po-muted: #667085;
+    }
+
+    .production-order-page .card {
+        border: 1px solid var(--po-border);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(16, 24, 40, .035);
+        overflow: hidden;
+    }
+
+    .production-order-page .card-header {
+        min-height: 54px;
+        display: flex;
+        align-items: center;
+        padding: 14px 20px;
+        background: #fbfcfe;
+        border-bottom: 1px solid var(--po-border);
+    }
+
+    .production-order-page .card-body {
+        padding: 22px;
+    }
+
+    .production-order-page .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #475467;
+        font-size: .875rem;
+        font-weight: 600;
+    }
+
+    .production-order-page .form-control {
+        min-height: 42px;
+        border-color: #d8dee8;
+        border-radius: 8px;
+        box-shadow: none;
+    }
+
+    .production-order-page .form-control:focus {
+        border-color: #7b8bb8;
+        box-shadow: 0 0 0 3px rgba(67, 80, 122, .10);
+    }
+
+    .production-order-page .form-control[readonly],
+    .production-order-page textarea[readonly] {
+        background: #f8fafc;
+        color: #344054;
+    }
+
+    .production-order-page .table {
+        margin-bottom: 0;
+    }
+
+    .production-order-page .table thead th {
+        padding: 13px 14px;
+        color: #667085;
+        background: #f8fafc;
+        border-bottom-color: var(--po-border);
+        font-size: .82rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .production-order-page .table tbody td {
+        padding: 13px 14px;
+        border-color: #edf0f4;
+        vertical-align: middle;
+    }
+
+    .production-order-page .material-request-table {
+        min-width: 790px;
+    }
+
+    .production-order-page .material-request-table .form-control {
+        min-height: 44px;
+    }
+
+    .production-order-page .section-hint {
+        color: var(--po-muted);
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    @@media (max-width: 767.98px) {
+        .production-order-page .card-body {
+            padding: 16px;
+        }
+
+        .production-order-page .card-header {
+            padding: 13px 16px;
+        }
+    }
+
