@@ -61,7 +61,7 @@
         if (authState.User.Identity?.IsAuthenticated == true)
         {
             canViewProductionDeadlines = authState.User.IsInRole("CEO") || authState.User.IsInRole("Ceo") || authState.User.IsInRole("Administrator");
-            canViewMachineSchedule = authState.User.IsInRole("ProductionManager") || authState.User.IsInRole("Production Manager") || authState.User.IsInRole("FloorManager") || authState.User.IsInRole("Floor Manager") || authState.User.IsInRole("Administrator");
+            canViewMachineSchedule = authState.User.IsInRole("ProductionManager") || authState.User.IsInRole("Production Manager") || authState.User.IsInRole("Manager") || authState.User.IsInRole("Production") || authState.User.IsInRole("FloorManager") || authState.User.IsInRole("Floor Manager") || authState.User.IsInRole("Administrator");
             canCreateSalesRequest =
                 await PermissionService.HasPermissionAsync(
                     authState.User,
