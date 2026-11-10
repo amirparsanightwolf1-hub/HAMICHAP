@@ -4,10 +4,10 @@
 
 :root {
     /* Brand / semantic colors */
-    --erp-primary: #0d1741;
-    --erp-primary-dark: #202e5b;
-    --erp-primary-light: #eef1f8;
-    --erp-accent: #2563eb;
+    --erp-primary: #0c568d;
+    --erp-primary-dark: #08446f;
+    --erp-primary-light: #eaf3fa;
+    --erp-accent: #0c568d;
     --erp-success: #198754;
     --erp-success-light: #e6f4ea;
     --erp-warning: #d97706;
@@ -15,7 +15,7 @@
     --erp-danger: #dc3545;
     --erp-danger-light: #fbe9eb;
     --erp-text: #1f2937;
-    --erp-heading: #0d1741;
+    --erp-heading: #0c568d;
     --erp-muted: #64748b;
     --erp-border: #dfe4ee;
     --erp-background: #f6f8fc;
@@ -30,7 +30,7 @@
     --erp-transition-fast: 0.15s ease;
     --erp-transition: 0.2s ease;
     /* Focus ring */
-    --erp-focus-ring: 0 0 0 0.2rem rgba(13, 23, 65, 0.16);
+    --erp-focus-ring: 0 0 0 0.2rem rgba(12, 86, 141, 0.16);
 }
 
 
