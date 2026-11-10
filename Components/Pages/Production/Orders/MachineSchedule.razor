@@ -70,14 +70,14 @@
                             <td>
                                 @if (canEdit)
                                 {
-                                    <select class="form-select" value="@MachineChoice(operation.Id)" @onchange="e => machineChoices[operation.Id] = int.TryParse(e.Value?.ToString(), out var id) ? id : 0">
+                                    <select class="form-select" value="@MachineChoice(operation.Id)" @onchange="e => SetMachineChoice(operation.Id, e.Value?.ToString())">
                                         <option value="0">@L["SelectMachine"]</option>
                                         @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name</option> }
                                     </select>
                                 }
                             </td>
                             <td>
-                                @if (canEdit) { <input type="datetime-local" class="form-control" value="@StartChoice(operation.Id)" @onchange="e => startChoices[operation.Id] = e.Value?.ToString() ?? "" /> }
+                                @if (canEdit) { <input type="datetime-local" class="form-control" value="@StartChoice(operation.Id)" @onchange="e => SetStartChoice(operation.Id, e.Value?.ToString())" /> }
                             </td>
                             <td>
                                 @if (canEdit) { <button class="btn btn-primary btn-sm" @onclick="() => Schedule(operation.Id)">@L["ScheduleOperation"]</button> }
@@ -159,6 +159,12 @@
             ? $"{Persian.GetYear(v)}/{Persian.GetMonth(v):00}/{Persian.GetDayOfMonth(v):00} {v:HH:mm}"
             : v.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
     }
+
+    private void SetMachineChoice(long operationId, string? value) =>
+        machineChoices[operationId] = int.TryParse(value, out var machineId) ? machineId : 0;
+
+    private void SetStartChoice(long operationId, string? value) =>
+        startChoices[operationId] = value ?? string.Empty;
 
     private int MachineChoice(long id) => machineChoices.GetValueOrDefault(id);
     private string StartChoice(long id) => startChoices.GetValueOrDefault(id, "");
