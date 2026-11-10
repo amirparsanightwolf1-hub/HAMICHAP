@@ -23,6 +23,8 @@
     {
         @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
         <div class="card mb-3"><div class="card-body">
+            <label class="form-label" for="schedule-day">@L["ScheduleDay"]</label>
+            <input id="schedule-day" type="date" class="form-control mb-2" @bind="selectedDate" @bind:format="yyyy-MM-dd" />
             <label class="form-label" for="machine-filter">@L["Machine"]</label>
             <select id="machine-filter" class="form-select" @bind="machineFilter">
                 <option value="0">@L["AllMachines"]</option>
@@ -37,7 +39,7 @@
                     <table class="table table-hover">
                         <thead><tr><th>@L["OrderNumber"]</th><th>@L["Operation"]</th><th>@L["PlannedStart"]</th><th>@L["PlannedEnd"]</th><th>@L["DueDate"]</th><th>@L["Status"]</th></tr></thead>
                         <tbody>
-                        @foreach (var schedule in schedules.Where(x => x.MachineId == machine.Id).OrderBy(x => x.PlannedStart))
+                        @foreach (var schedule in schedules.Where(x => x.MachineId == machine.Id && x.PlannedStart.Date <= selectedDate.Date && x.PlannedEnd.Date >= selectedDate.Date).OrderBy(x => x.PlannedStart))
                         {
                             <tr>
                                 <td>@schedule.ProductionOperation.ProductionOrder.OrderNumber</td>
@@ -111,6 +113,7 @@
     private bool canEdit;
     private string? message;
     private int machineFilter;
+    private DateTime selectedDate = DateTime.Today;
     private long newOrderId;
     private string newOperationName = "";
     private decimal newHours = 1m;
@@ -129,7 +132,11 @@
             user.IsInRole("ProductionManager") || user.IsInRole("Production Manager"));
         canView = canEdit || (user.Identity?.IsAuthenticated == true &&
             (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager")));
-        if (canView) await Reload();
+        if (canView)
+        {
+            await Reload();
+            if (canEdit) await GenerateMissingOperations();
+        }
     }
 
     private async Task Reload()
@@ -238,8 +245,8 @@
         { message = L["MachineConflict"]; return; }
         var previous = await db.ProductionOperations.Where(x => x.ProductionOrderId == operation.ProductionOrderId
             && x.Sequence < operation.Sequence).Select(x => x.Id).ToListAsync();
-        if (previous.Count > 0 && await db.ProductionSchedules.AnyAsync(x => previous.Contains(x.ProductionOperationId)
-            && x.Status != ScheduleStatus.Cancelled && x.PlannedEnd > start))
+        if (previous.Count > 0 && (await db.ProductionSchedules.CountAsync(x => previous.Contains(x.ProductionOperationId)
+            && x.Status != ScheduleStatus.Cancelled && x.PlannedEnd <= start)) < previous.Count)
         { message = L["OperationSequenceConflict"]; return; }
         if (operation.ProductionOrder.PlannedEndDate.HasValue && end > operation.ProductionOrder.PlannedEndDate.Value.Date.AddDays(1))
         { message = L["DeadlineWarning"]; return; }
