@@ -2497,4 +2497,12 @@
   <data name="RegularShift" xml:space="preserve"><value>Regular shift (08:00–17:00)</value></data>
   <data name="OvertimeShift" xml:space="preserve"><value>Overtime (17:00–22:00)</value></data>
   <data name="NightShift" xml:space="preserve"><value>Night shift (22:00–08:00)</value></data>
+  <data name="DragOperationHelp" xml:space="preserve"><value>Select an operation in the left panel, then click a machine calendar slot or drag the operation onto a date or time.</value></data>
+  <data name="Sat" xml:space="preserve"><value>Sat</value></data>
+  <data name="Sun" xml:space="preserve"><value>Sun</value></data>
+  <data name="Mon" xml:space="preserve"><value>Mon</value></data>
+  <data name="Tue" xml:space="preserve"><value>Tue</value></data>
+  <data name="Wed" xml:space="preserve"><value>Wed</value></data>
+  <data name="Thu" xml:space="preserve"><value>Thu</value></data>
+  <data name="Fri" xml:space="preserve"><value>Fri</value></data>
 </root>
