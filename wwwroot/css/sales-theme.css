@@ -72,11 +72,7 @@
 }
 
 /* App chrome takes the same navy palette as the preferred Sales UI. */
-.sidebar {
-    background: linear-gradient(180deg, var(--erp-sales-navy) 0%, var(--erp-sales-navy-hover) 100%);
-}
 .sidebar .sidebar-header h3 { color: #fff; }
-.mobile-menu-btn { background: var(--erp-sales-navy); }
 .side-menu .menu-button {
     border-radius: 9px;
     font-weight: 600;
@@ -123,9 +119,9 @@
 .erp-page-header > :first-child { min-width: 0; }
 
 /* Consistent appearance for legacy pages with direct h3 headings. */
-.main-content > h3,
-.main-content > .page-container > h3,
-.main-content > .container-fluid > h3 {
+.main-content > :is(h1, h2, h3),
+.main-content > .page-container > :is(h1, h2, h3),
+.main-content > .container-fluid > :is(h1, h2, h3) {
     padding: 1.15rem 1.4rem;
     margin: 0 0 1.25rem;
     color: var(--erp-sales-navy);
@@ -306,9 +302,9 @@ a.btn-primary:hover {
         gap: .85rem;
     }
     .erp-page-header .btn { max-width: 100%; }
-    .main-content > h3,
-    .main-content > .page-container > h3,
-    .main-content > .container-fluid > h3 {
+    .main-content > :is(h1, h2, h3),
+    .main-content > .page-container > :is(h1, h2, h3),
+    .main-content > .container-fluid > :is(h1, h2, h3) {
         padding: 1rem;
         font-size: 1.3rem;
     }
