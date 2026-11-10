@@ -7,6 +7,7 @@ using HamiChap_MES_ERP.Models.Shared.Services;
 using HamiChap_MES_ERP.Services;
 using HamiChap_MES_ERP.Services.Imposition;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,22 @@ builder.Services.AddScoped<ImpositionOptimizerService>();
 builder.Services.AddScoped<StockBalanceService>();
 builder.Services.AddScoped<SessionInactivityService>();
 builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<IAuthorizationHandler, InventoryPermissionHandler>();
+builder.Services.AddAuthorization(options =>
+{
+    foreach (var permission in new[]
+    {
+        "Inventory.Documents.View",
+        "Inventory.Documents.Create",
+        "Inventory.Documents.Edit",
+        "Inventory.Documents.Post"
+    })
+    {
+        options.AddPolicy(permission, policy =>
+            policy.RequireAuthenticatedUser()
+                  .AddRequirements(new InventoryPermissionRequirement(permission)));
+    }
+});
 builder.Services.AddScoped<LocalizationService>();
 builder.Services.AddScoped<InventoryAlertService>();
 builder.Services.AddScoped<SalesRequestService>();
@@ -166,7 +183,7 @@ using (var scope = app.Services.CreateScope())
 
     await IdentitySeeder.SeedRolesAsync(roleManager);
 
-    await IdentitySeeder.SeedAdminAsync(userManager);
+    await IdentitySeeder.SeedAdminAsync(userManager, app.Configuration);
 
     await PermissionSeeder.SeedPermissionsAsync(context);
 
