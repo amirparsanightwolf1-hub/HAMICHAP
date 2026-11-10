@@ -26,11 +26,11 @@
 
             @if (canViewProductionDeadlines)
             {
-                <a class="login-button" href="/production/planning">@LocalizationService["CeoDeadlineCalendar"]</a>
+                <a class="login-button planning-home-button" href="/production/planning">📅 @LocalizationService["CeoDeadlineCalendar"]</a>
             }
             @if (canViewMachineSchedule)
             {
-                <a class="login-button" href="/production/machine-schedule">@LocalizationService["MachineSchedule"]</a>
+                <a class="login-button planning-home-button" href="/production/machine-schedule">🏭 @LocalizationService["MachineSchedule"]</a>
             }
 
             @if (canCreateSalesRequest)
