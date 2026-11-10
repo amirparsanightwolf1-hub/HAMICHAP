@@ -78,7 +78,7 @@
                         <tr>
                             <td><div class="fw-semibold">@order.OrderNumber</div><div class="small text-muted">@order.Lines.Count @T("Workflow_Lines", "line(s)")</div></td>
                             <td><span class="badge @StatusBadgeClass(order.Status)">@StatusLabel(order.Status)</span></td>
-                        <td style="min-width: 150px;"><div class="d-flex justify-content-between small mb-1"><span>@produced.ToString("0.###") / @planned.ToString("0.###")</span><span>@progress%</span></div><div class="progress" role="progressbar" aria-label="@T("Workflow_ProductionProgress", "Production progress")" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="height: 6px;"><div class="progress-bar" style="@($"width: {progress}%")"></div></div></td>
+                        <td class="erp-min-width-150" ><div class="d-flex justify-content-between small mb-1"><span>@produced.ToString("0.###") / @planned.ToString("0.###")</span><span>@progress%</span></div><div class="progress erp-height-6" role="progressbar" aria-label="@T("Workflow_ProductionProgress", "Production progress")" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" ><div class="progress-bar" style="@($"width: {progress}%")"></div></div></td>
                             <td>@(order.PlannedEndDate?.ToString("yyyy-MM-dd") ?? "—")</td>
                             <td class="text-end"><a class="btn btn-sm btn-primary" href="@($"/production/orders/edit/{order.Id}")">@T("Workflow_OpenOrder", "Open order")</a></td>
                         </tr>
