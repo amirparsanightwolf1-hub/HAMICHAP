@@ -1,5 +1,8 @@
 ﻿@page "/inventory/documents/edit/{Id:long}"
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "Inventory.Documents.View")]
+
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -15,6 +18,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
 @inject LocalizationService LocalizationService
+@inject IAuthorizationService AuthorizationService
 
 <PageTitle>
     @LocalizationService["EditInventoryDocument"]
@@ -555,6 +559,13 @@ else
 
     private async Task Save()
     {
+        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (!(await AuthorizationService.AuthorizeAsync(auth.User, "Inventory.Documents.Edit")).Succeeded)
+        {
+            errorMessage = "You are not authorized to edit inventory documents.";
+            return;
+        }
+
         if (document == null || IsPosted)
             return;
 
@@ -590,6 +601,13 @@ else
 
     private async Task Post()
     {
+        var postingAuth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (!(await AuthorizationService.AuthorizeAsync(postingAuth.User, "Inventory.Documents.Post")).Succeeded)
+        {
+            errorMessage = "You are not authorized to post inventory documents.";
+            return;
+        }
+
         if (document == null || IsPosted)
             return;
 
