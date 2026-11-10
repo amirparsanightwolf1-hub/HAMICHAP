@@ -2492,4 +2492,5 @@
   <data name="OperationScheduled" xml:space="preserve">
     <value>عملیات با موفقیت زمان‌بندی شد.</value>
   </data>
+  <data name="ScheduleDay" xml:space="preserve"><value>روز برنامه‌ریزی</value></data>
 </root>
