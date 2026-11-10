@@ -6,6 +6,7 @@
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject HamiChap_MES_ERP.Services.PermissionService PermissionService
 @inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
 
 <SessionActivityTracker />
@@ -23,7 +24,269 @@
 
     <aside class="sidebar @(menuOpen ? "show" : "")">
 
-        <NavMenu />
+        @if (loading)
+        {
+            <div class="nav-menu">
+        
+                <div class="sidebar-header">
+                    <h3>@LocalizationService["AppTitle"]</h3>
+                </div>
+        
+                <div class="text-light p-2">
+                    @LocalizationService["Loading"]
+                </div>
+        
+            </div>
+        }
+        else
+        {
+            <div class="nav-menu">
+        
+                <div class="sidebar-header">
+                    <h3>@LocalizationService["AppTitle"]</h3>
+                </div>
+        
+                <nav class="side-menu">
+        
+                    <!-- Dashboard -->
+                    <button class="menu-button"
+                            @onclick='() => GoTo("/")'>
+                        🏠 @LocalizationService["Dashboard"]
+                    </button>
+        
+        
+                    <!-- =====================================================
+                         Inventory
+                         ===================================================== -->
+                    @if (canViewInventory)
+                    {
+                        <h6 class="menu-section">
+                            @LocalizationService["Inventory"]
+                        </h6>
+        
+                        @if (canViewDocuments)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/documents")'>
+                                📄 @LocalizationService["Documents"]
+                            </button>
+                        }
+        
+                        @if (canViewItems)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/items")'>
+                                📦 @LocalizationService["Items"]
+                            </button>
+                        }
+        
+                        @if (canViewUnits)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/units")'>
+                                📏 @LocalizationService["Units"]
+                            </button>
+                        }
+        
+                        @if (canViewCategories)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/itemcategories")'>
+                                🗂 @LocalizationService["ItemCategories"]
+                            </button>
+                        }
+        
+                        @if (canViewLots)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/lots")'>
+                                🏷 @LocalizationService["Lots"]
+                            </button>
+                        }
+        
+                        @if (canViewStock)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/stock")'>
+                                📊 @LocalizationService["InventoryStock"]
+                            </button>
+        
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/stock/warehouse")'>
+                                📊 @LocalizationService["WarehouseStock"]
+                            </button>
+        
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/stock/lots")'>
+                                🏷️ @LocalizationService["StockByLot"]
+                            </button>
+                        }
+        
+                        @if (canViewLocations)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/locations")'>
+                                🏢 @LocalizationService["Locations"]
+                            </button>
+                        }
+        
+                        @if (canViewTransactions)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/inventory/transactions")'>
+                                🔄 @LocalizationService["Transactions"]
+                            </button>
+                        }
+                    }
+        
+        
+                    <!-- =====================================================
+                         Sales
+                         ===================================================== -->
+                    @if (canViewSales)
+                    {
+                        <h6 class="menu-section">
+                            @LocalizationService["Sales"]
+                        </h6>
+        
+                        
+                        @if (canViewSalesRequests)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/sales/requests")'>
+                                📋 @LocalizationService["SalesRequests"]
+                            </button>
+                        }
+        
+                        @if (canViewSalesRequests)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/sales/quotations")'>
+                                🧾 @LocalizationService["SalesQuotations"]
+                            </button>
+                        }
+        
+                        @if (canViewSalesDeliveries)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/sales/deliveries/create")'>
+                                🚚 @LocalizationService["SalesDeliveries"]
+                            </button>
+                        }
+        
+                        @if (canViewSalesInvoices)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/sales/invoices")'>
+                                🧾 @LocalizationService["SalesInvoices"]
+                            </button>
+                        }
+        
+                    }
+        
+                    @if (canViewSalesOrders)
+                    {
+                        <button class="menu-button"
+                                @onclick='() => GoTo("/sales/orders")'>
+                            📦 @LocalizationService["SalesOrders"]
+                        </button>
+                    }
+        
+        
+                    
+                    <!-- =====================================================
+                        Production
+                        ===================================================== -->
+                    @if (canViewProduction)
+                    {
+                        <h6 class="menu-section">
+                            @LocalizationService["Production"]
+                        </h6>
+        
+                        <button class="menu-button"
+                                @onclick='() => GoTo("/production/workflow")'>
+                            🔄 @LocalizationService["ProductionWorkflow"]
+                        </button>
+        
+                        <button class="menu-button"
+                                @onclick='() => GoTo("/production/orders")'>
+                            🏭 @LocalizationService["ProductionOrders"]
+                        </button>
+        
+                        <button class="menu-button"
+                                @onclick='() => GoTo("/production/imposition-optimizer")'>
+                            📐 PDF Imposition Optimizer
+                        </button>
+        
+                        <button class="menu-button"
+                                @onclick='() => GoTo("/production/quality-inspections")'>
+                            🔍 @LocalizationService["QualityInspectionManagement"]
+                        </button>
+                    }
+        
+        
+        
+                    <!-- =====================================================
+                         Customers
+                         ===================================================== -->
+                    @if (canViewCustomers)
+                    {
+                        <h6 class="menu-section">
+                            @LocalizationService["Customers"]
+                        </h6>
+        
+                        <button class="menu-button"
+                                @onclick='() => GoTo("/customers")'>
+                            👥 @LocalizationService["Customers"]
+                        </button>
+        
+                        <button class="menu-button"
+                                @onclick='() => GoTo("/customers/inventory")'>
+                            📦 @LocalizationService["CustomerInventory"]
+                        </button>
+                    }
+        
+        
+                    <!-- =====================================================
+                         Administration
+                         ===================================================== -->
+                    @if (canViewUsers ||
+                                     canViewRoles ||
+                                     canManagePermissions)
+                    {
+                        <h6 class="menu-section">
+                            @LocalizationService["Administration"]
+                        </h6>
+        
+                        @if (canViewUsers)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/administration/users")'>
+                                👤 @LocalizationService["Users"]
+                            </button>
+                        }
+        
+                        @if (canViewRoles)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/administration/roles")'>
+                                👥 @LocalizationService["Roles"]
+                            </button>
+                        }
+        
+                        @if (canManagePermissions)
+                        {
+                            <button class="menu-button"
+                                    @onclick='() => GoTo("/administration/permission-management")'>
+                                🔐 @LocalizationService["Permissions"]
+                            </button>
+                        }
+                    }
+        
+                </nav>
+        
+            </div>
+        }
 
     </aside>
 
@@ -57,12 +320,13 @@
 
     private bool menuOpen = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AuthenticationStateProvider.AuthenticationStateChanged
             += OnAuthenticationStateChanged;
 
         Navigation.LocationChanged += OnLocationChanged;
+        await LoadMenuPermissionsAsync();
     }
 
     private void ToggleMenu()
@@ -121,5 +385,213 @@
             -= OnAuthenticationStateChanged;
 
         Navigation.LocationChanged -= OnLocationChanged;
+    }
+
+    // Consolidated navigation state and permission checks.
+    private bool loading = true;
+
+
+    // =========================================================
+    // Inventory
+    // =========================================================
+
+    private bool canViewInventory;
+    private bool canViewSalesRequests;
+    private bool canViewDocuments;
+    private bool canViewItems;
+    private bool canViewUnits;
+    private bool canViewCategories;
+    private bool canViewLots;
+    private bool canViewStock;
+    private bool canViewLocations;
+    private bool canViewTransactions;
+
+
+    // =========================================================
+    // Sales
+    // =========================================================
+
+    private bool canViewSales;
+
+    private bool canViewSalesDeliveries;
+
+    private bool canViewSalesOrders;
+
+    private bool canViewSalesInvoices;
+
+    // =========================================================
+    // Production
+    // =========================================================
+
+    private bool canViewProduction;
+
+
+    // =========================================================
+    // Customers
+    // =========================================================
+
+    private bool canViewCustomers;
+
+
+    // =========================================================
+    // Administration
+    // =========================================================
+
+    private bool canViewUsers;
+    private bool canViewRoles;
+    private bool canManagePermissions;
+
+
+    private async Task LoadMenuPermissionsAsync()
+    {
+        try
+        {
+            var authState =
+                await AuthenticationStateProvider
+                    .GetAuthenticationStateAsync();
+
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated != true)
+            {
+                return;
+            }
+
+
+            // =====================================================
+            // Inventory
+            // =====================================================
+
+            canViewDocuments =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Inventory.Documents.View");
+
+            canViewItems =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Inventory.Items.View");
+
+            canViewUnits =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Inventory.Units.View");
+
+            canViewCategories =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Inventory.Categories.View");
+
+            canViewLots =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Inventory.Lots.View");
+
+            canViewStock =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Inventory.Stock.View");
+
+            canViewLocations =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Inventory.Locations.View");
+
+            canViewTransactions =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Inventory.Transactions.View");
+
+            canViewInventory =
+                canViewDocuments ||
+                canViewItems ||
+                canViewUnits ||
+                canViewCategories ||
+                canViewLots ||
+                canViewStock ||
+                canViewLocations ||
+                canViewTransactions;
+
+
+            // =====================================================
+            // Sales
+            // =====================================================
+
+            canViewSalesRequests =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Sales.Requests.View");
+
+            canViewSalesDeliveries =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Sales.Deliveries.View");
+
+            canViewSalesInvoices =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Sales.Invoices.View");
+
+            canViewSalesOrders =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Sales.Orders.View");
+
+            canViewSales =
+                canViewSalesRequests ||
+                canViewSalesOrders ||
+                canViewSalesDeliveries ||
+                canViewSalesInvoices;
+
+
+            // =====================================================
+            // Production
+            // =====================================================
+
+            canViewProduction =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Production.Orders.View");
+
+
+            // =====================================================
+            // Customers
+            // =====================================================
+
+            canViewCustomers =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Customers.View");
+
+
+            // =====================================================
+            // Administration
+            // =====================================================
+
+            canViewUsers =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Users.View");
+
+            canViewRoles =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Roles.View");
+
+            canManagePermissions =
+                await PermissionService.HasPermissionAsync(
+                    user,
+                    "Roles.ManagePermissions");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+
+    private void GoTo(string url)
+    {
+        Navigation.NavigateTo(url);
     }
 }
