@@ -51,3 +51,15 @@ Reuse `form-label`, `form-control`, `form-select`, `table`, and `btn` classes; d
 - [ ] Audit app-wide selector collisions caused by removing CSS isolation.
 
 **Build and browser tests have not been run.** Keep the PR in draft until validated. This PR targets `refactor/unified-layout-styles`; merge/rebase that dependency before `main`.
+
+
+## Razor-embedded CSS extraction (follow-up)
+- Removed all **eight** discovered `<style>...</style>` blocks from Razor components, migrating their complete CSS into the existing `production.css` and `sales.css` modules.
+- Replaced **static inline `style="..."` attributes** across Account, Administration, Inventory, Production, Sales and Tools pages with reusable classes in `components.css`.
+- Retained **eight runtime-computed inline declarations** that depend on component data and cannot be moved to a fixed CSS rule without changing behavior: imposition part swatch color, production progress width, planning timeline day count, workflow progress width, two customer-proof CMYK swatch colors and two Sales Order progress widths.
+- The dynamic values are intentional exceptions, not static styling. The permanent visual rules for those components live in the unified stylesheets.
+
+### Additional checks before merge
+- [ ] Verify dynamic progress bars, CMYK swatches, imposition color keys and variable-width planning timeline still render correctly.
+- [ ] Verify PDF/print previews, Roll/Sheet job editing and quotation/invoice print styles after moving their embedded `@media print` rules.
+- [ ] Check reusable utility classes in `components.css` do not conflict with the Sales theme loaded last.
