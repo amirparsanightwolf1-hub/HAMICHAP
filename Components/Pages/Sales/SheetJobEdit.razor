@@ -354,7 +354,7 @@
                 @foreach (var group in ServiceGroups)
                 {
                     <details class="border rounded p-3 mb-2" @key="group.Key">
-                        <summary class="fw-semibold" style="cursor:pointer">
+                        <summary class="fw-semibold erp-clickable" >
                             @LocalizationService[group.Key]
                             <span class="text-muted small">(@group.Value.Count(x => spec.SelectedServices.Contains(x)) @LocalizationService["Selected"])</span>
                         </summary>
