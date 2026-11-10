@@ -1,0 +1,108 @@
+/* =========================================
+   HamiChap MES / ERP - Global Styles
+   ========================================= */
+
+:root {
+    /* Brand / semantic colors */
+    --erp-primary: #0b568d;
+    --erp-primary-dark: #073b61;
+    --erp-primary-light: #e8f2f9;
+    --erp-accent: #2563eb;
+    --erp-success: #198754;
+    --erp-success-light: #e6f4ea;
+    --erp-warning: #d97706;
+    --erp-warning-light: #fdf3e3;
+    --erp-danger: #dc3545;
+    --erp-danger-light: #fbe9eb;
+    --erp-text: #1f2937;
+    --erp-heading: #073b61;
+    --erp-muted: #64748b;
+    --erp-border: #e2e8f0;
+    --erp-background: #f4f7fa;
+    --erp-surface: #ffffff;
+    /* Shape / elevation */
+    --erp-radius-sm: 6px;
+    --erp-radius: 8px;
+    --erp-radius-lg: 12px;
+    --erp-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --erp-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.10);
+    /* Motion */
+    --erp-transition-fast: 0.15s ease;
+    --erp-transition: 0.2s ease;
+    /* Focus ring */
+    --erp-focus-ring: 0 0 0 0.2rem rgba(11, 86, 141, 0.25);
+}
+
+
+/* =========================================
+   Base
+   ========================================= */
+
+@font-face {
+    font-family: 'Yekan Bakh';
+    src: url('/fonts/YekanBakh-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: 'Yekan Bakh', sans-serif;
+    background: var(--erp-background);
+    color: var(--erp-text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+::selection {
+    background: var(--erp-primary-light);
+    color: var(--erp-primary-dark);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--erp-heading);
+    font-weight: 600;
+}
+
+    /* Programmatic focus (e.g. after route change) shouldn't show a ring,
+   but keyboard-driven focus elsewhere on the page still should. */
+    h1:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+
+/* =========================================
+   Links
+   ========================================= */
+
+a {
+    color: var(--erp-primary);
+    transition: color var(--erp-transition-fast);
+}
+
+    a:hover {
+        color: var(--erp-primary-dark);
+    }
+
+    a:focus-visible {
+        outline: 2px solid var(--erp-primary);
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+
+
