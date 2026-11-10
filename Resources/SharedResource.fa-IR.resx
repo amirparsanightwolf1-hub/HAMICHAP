@@ -2505,4 +2505,5 @@
   <data name="Wed" xml:space="preserve"><value>چهارشنبه</value></data>
   <data name="Thu" xml:space="preserve"><value>پنجشنبه</value></data>
   <data name="Fri" xml:space="preserve"><value>جمعه</value></data>
+  <data name="NoActiveMachines" xml:space="preserve"><value>هیچ دستگاه فعالی یافت نشد. برای زمان‌بندی عملیات تولید، دستگاه‌ها را اضافه یا فعال کنید.</value></data>
 </root>
