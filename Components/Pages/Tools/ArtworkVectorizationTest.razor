@@ -188,8 +188,8 @@
                                 @if (_decomposition.PreviewSvgPath is not null && !string.IsNullOrWhiteSpace(_rectanglesUrl))
                                 {
                                     <a class="btn btn-sm btn-outline-primary mb-3" href="@_rectanglesUrl" target="_blank" rel="noopener">Open rectangle decomposition SVG</a>
-                                    <div class="border rounded bg-light p-2" style="overflow:auto; max-height:600px">
-                                        <img src="@_rectanglesUrl" alt="Conservative rectangle decomposition preview" style="display:block;max-width:100%;height:auto;margin:0 auto;background:white" />
+                                    <div class="border rounded bg-light p-2 erp-artwork-scroll" >
+                                        <img class="erp-artwork-image" src="@_rectanglesUrl" alt="Conservative rectangle decomposition preview"  />
                                     </div>
                                 }
                                 @if (_decomposition.Warnings.Count > 0)
@@ -211,8 +211,8 @@
                     <a class="btn btn-sm btn-outline-primary" href="@_svgUrl" target="_blank" rel="noopener">Open SVG in new tab</a>
                 </div>
                 <div class="card-body">
-                    <div class="border rounded bg-light p-2" style="min-height: 320px; overflow: auto;">
-                        <img src="@_svgUrl" alt="Generated vector contour preview" style="display:block; max-width:100%; max-height:75vh; width:auto; height:auto; margin:0 auto; background:white;" />
+                    <div class="border rounded bg-light p-2 erp-artwork-viewport" >
+                        <img class="erp-artwork-full-image" src="@_svgUrl" alt="Generated vector contour preview"  />
                     </div>
                     <p class="text-muted small mt-2 mb-0">The preview shows all extracted or traced closed contours, not an automatically classified cut path.</p>
                 </div>
