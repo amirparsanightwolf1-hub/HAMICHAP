@@ -2497,4 +2497,12 @@
   <data name="RegularShift" xml:space="preserve"><value>شیفت عادی (۰۸:۰۰ تا ۱۷:۰۰)</value></data>
   <data name="OvertimeShift" xml:space="preserve"><value>اضافه‌کاری (۱۷:۰۰ تا ۲۲:۰۰)</value></data>
   <data name="NightShift" xml:space="preserve"><value>شیفت شب (۲۲:۰۰ تا ۰۸:۰۰)</value></data>
+  <data name="DragOperationHelp" xml:space="preserve"><value>یک عملیات را از پنل سمت راست انتخاب کنید، سپس روی بازه زمانی دستگاه کلیک کنید یا عملیات را به روز یا ساعت موردنظر بکشید.</value></data>
+  <data name="Sat" xml:space="preserve"><value>شنبه</value></data>
+  <data name="Sun" xml:space="preserve"><value>یکشنبه</value></data>
+  <data name="Mon" xml:space="preserve"><value>دوشنبه</value></data>
+  <data name="Tue" xml:space="preserve"><value>سه‌شنبه</value></data>
+  <data name="Wed" xml:space="preserve"><value>چهارشنبه</value></data>
+  <data name="Thu" xml:space="preserve"><value>پنجشنبه</value></data>
+  <data name="Fri" xml:space="preserve"><value>جمعه</value></data>
 </root>
