@@ -13,8 +13,8 @@
 @inject LocalizationService L
 
 <PageTitle>@L["MachineSchedule"]</PageTitle>
-<div class="page-container machine-schedule">
-    <div class="erp-page-header">
+<div class="page-container production-planning machine-schedule">
+    <div class="erp-page-header mb-4">
         <div><h2 class="erp-page-title">@L["MachineSchedule"]</h2><p class="erp-page-subtitle">@L["MachineScheduleHelp"]</p></div>
         @if (canEdit) { <button class="btn btn-outline-primary" @onclick="GenerateMissingOperations">@L["GenerateOperations"]</button> }
     </div>
@@ -22,88 +22,105 @@
     else
     {
         @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
-        <div class="card mb-3"><div class="card-body">
-            <label class="form-label" for="schedule-day">@L["ScheduleDay"]</label>
-            <input id="schedule-day" type="date" class="form-control mb-2" @bind="selectedDate" @bind:format="yyyy-MM-dd" />
-            <label class="form-label" for="machine-filter">@L["Machine"]</label>
-            <select id="machine-filter" class="form-select" @bind="machineFilter">
-                <option value="0">@L["AllMachines"]</option>
-                @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name (@machine.Code)</option> }
-            </select>
-        </div></div>
-        @foreach (var machine in machines.Where(x => machineFilter == 0 || machineFilter == x.Id))
-        {
-            <div class="card mb-3">
-                <div class="card-header">@machine.Name (@machine.Code)</div>
-                <div class="card-body table-responsive">
-                    <table class="table table-hover">
-                        <thead><tr><th>@L["OrderNumber"]</th><th>@L["Operation"]</th><th>@L["PlannedStart"]</th><th>@L["PlannedEnd"]</th><th>@L["DueDate"]</th><th>@L["Status"]</th></tr></thead>
-                        <tbody>
-                        @foreach (var schedule in schedules.Where(x => x.MachineId == machine.Id && x.PlannedStart.Date <= selectedDate.Date && x.PlannedEnd.Date >= selectedDate.Date).OrderBy(x => x.PlannedStart))
+        <div class="planning-layout">
+            <aside class="planning-order-panel">
+                <div class="card mb-3">
+                    <div class="card-header"><strong>@L["UnscheduledOperations"]</strong><span class="badge bg-secondary">@operations.Count(x => !schedules.Any(s => s.ProductionOperationId == x.Id))</span></div>
+                    <div class="card-body order-queue">
+                        @foreach (var operation in operations.Where(x => !schedules.Any(s => s.ProductionOperationId == x.Id)).OrderBy(x => x.ProductionOrder.PlannedEndDate).ThenBy(x => x.Sequence))
                         {
-                            <tr>
-                                <td>@schedule.ProductionOperation.ProductionOrder.OrderNumber</td>
-                                <td>@schedule.ProductionOperation.Name</td>
-                                <td>@FormatDate(schedule.PlannedStart)</td>
-                                <td>@FormatDate(schedule.PlannedEnd)</td>
-                                <td>@FormatDate(schedule.ProductionOperation.ProductionOrder.PlannedEndDate)</td>
-                                <td>@L[schedule.Status.ToString()]</td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        }
-        <div class="card">
-            <div class="card-header">@L["UnscheduledOperations"]</div>
-            <div class="card-body table-responsive">
-                <table class="table table-hover">
-                    <thead><tr><th>@L["OrderNumber"]</th><th>@L["Operation"]</th><th>@L["DueDate"]</th><th>@L["Machine"]</th><th>@L["PlannedStart"]</th><th>@L["Action"]</th></tr></thead>
-                    <tbody>
-                    @foreach (var operation in operations.Where(x => !schedules.Any(s => s.ProductionOperationId == x.Id)).OrderBy(x => x.ProductionOrder.PlannedEndDate).ThenBy(x => x.Sequence))
-                    {
-                        <tr>
-                            <td>@operation.ProductionOrder.OrderNumber</td>
-                            <td>@operation.Sequence. @operation.Name</td>
-                            <td>@FormatDate(operation.ProductionOrder.PlannedEndDate)</td>
-                            <td>
+                            <div class="queue-order">
+                                <div class="d-flex justify-content-between gap-2"><strong>@operation.ProductionOrder.OrderNumber</strong><span class="badge bg-secondary">#@operation.Sequence</span></div>
+                                <div class="small fw-semibold mt-1">@operation.Name</div>
+                                <div class="small text-muted">@L["DueDate"]: @FormatDate(operation.ProductionOrder.PlannedEndDate)</div>
+                                <div class="small text-muted">@L["EstimatedHours"]: @operation.PlannedHours</div>
                                 @if (canEdit)
                                 {
-                                    <select class="form-select" value="@MachineChoice(operation.Id)" @onchange="e => SetMachineChoice(operation.Id, e.Value?.ToString())">
+                                    <label class="form-label mt-2">@L["Machine"]</label>
+                                    <select class="form-select form-select-sm" value="@MachineChoice(operation.Id)" @onchange="e => SetMachineChoice(operation.Id, e.Value?.ToString())">
                                         <option value="0">@L["SelectMachine"]</option>
                                         @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name</option> }
                                     </select>
+                                    <label class="form-label mt-2">@L["PlannedStart"]</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" value="@StartChoice(operation.Id)" @onchange="e => SetStartChoice(operation.Id, e.Value?.ToString())" />
+                                    <button class="btn btn-primary btn-sm mt-2 w-100" @onclick="() => Schedule(operation.Id)">@L["ScheduleOperation"]</button>
                                 }
-                            </td>
-                            <td>
-                                @if (canEdit) { <input type="datetime-local" class="form-control" value="@StartChoice(operation.Id)" @onchange="e => SetStartChoice(operation.Id, e.Value?.ToString())" /> }
-                            </td>
-                            <td>
-                                @if (canEdit) { <button class="btn btn-primary btn-sm" @onclick="() => Schedule(operation.Id)">@L["ScheduleOperation"]</button> }
-                            </td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
                 @if (canEdit)
                 {
-                    <div class="border-top pt-3 mt-3">
-                        <h5>@L["AddOperation"]</h5>
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <select class="form-select" @bind="newOrderId">
-                                    <option value="0">@L["SelectOrder"]</option>
-                                    @foreach (var order in orders) { <option value="@order.Id">@order.OrderNumber</option> }
-                                </select>
-                            </div>
-                            <div class="col-md-4"><input class="form-control" placeholder="@L["Operation"]" @bind="newOperationName" /></div>
-                            <div class="col-md-2"><input type="number" min="0.25" step="0.25" class="form-control" @bind="newHours" /></div>
-                            <div class="col-md-2"><button class="btn btn-primary" @onclick="AddOperation">@L["AddOperation"]</button></div>
+                    <div class="card">
+                        <div class="card-header">@L["AddOperation"]</div>
+                        <div class="card-body">
+                            <select class="form-select mb-2" @bind="newOrderId">
+                                <option value="0">@L["SelectOrder"]</option>
+                                @foreach (var order in orders) { <option value="@order.Id">@order.OrderNumber</option> }
+                            </select>
+                            <input class="form-control mb-2" placeholder="@L["Operation"]" @bind="newOperationName" />
+                            <label class="form-label">@L["EstimatedHours"]</label>
+                            <input type="number" min="0.25" step="0.25" class="form-control mb-2" @bind="newHours" />
+                            <button class="btn btn-primary w-100" @onclick="AddOperation">@L["AddOperation"]</button>
                         </div>
                     </div>
                 }
-            </div>
+            </aside>
+            <section class="planning-calendar-panel">
+                <div class="card mb-3"><div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => ShiftPeriod(-1)">‹</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => selectedDate = DateTime.Today">@L["Today"]</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => ShiftPeriod(1)">›</button>
+                            <strong>@FormatDate(selectedDate)</strong>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button class="btn @(viewMode == CalendarView.Month ? "btn-primary" : "btn-outline-primary")" @onclick="() => viewMode = CalendarView.Month">@L["Month"]</button>
+                            <button class="btn @(viewMode == CalendarView.Week ? "btn-primary" : "btn-outline-primary")" @onclick="() => viewMode = CalendarView.Week">@L["Week"]</button>
+                            <button class="btn @(viewMode == CalendarView.Day ? "btn-primary" : "btn-outline-primary")" @onclick="() => viewMode = CalendarView.Day">@L["Day"]</button>
+                        </div>
+                    </div>
+                    <div class="shift-legend mb-3">
+                        <span><i class="shift-dot work"></i> @L["RegularShift"]</span>
+                        <span><i class="shift-dot overtime"></i> @L["OvertimeShift"]</span>
+                        <span><i class="shift-dot night"></i> @L["NightShift"]</span>
+                    </div>
+                    <label class="form-label" for="machine-filter">@L["Machine"]</label>
+                    <select id="machine-filter" class="form-select mb-3" @bind="machineFilter">
+                        <option value="0">@L["AllMachines"]</option>
+                        @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name (@machine.Code)</option> }
+                    </select>
+                    <div class="machine-calendar-scroll">
+                        <div class="machine-calendar-grid" style="--machine-days:@CalendarDays.Count()">
+                            <div class="machine-calendar-corner">@L["Machine"]</div>
+                            @foreach (var day in CalendarDays)
+                            {
+                                <button type="button" class="machine-calendar-date" @onclick="() => ChooseDay(day)">@FormatDate(day.Date)</button>
+                            }
+                            @foreach (var machine in machines.Where(x => machineFilter == 0 || x.Id == machineFilter))
+                            {
+                                <div class="machine-calendar-machine"><strong>@machine.Name</strong><small>@machine.Code</small></div>
+                                @foreach (var day in CalendarDays)
+                                {
+                                    <div class="machine-calendar-cell">
+                                        @foreach (var slot in DaySchedules(day, machine.Id))
+                                        {
+                                            <div class="month-order-chip @ShiftColor(slot.PlannedStart)" title="@slot.ProductionOperation.Name">
+                                                <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
+                                                <span>@slot.ProductionOperation.Name</span>
+                                                <small>@slot.PlannedStart.ToString("HH:mm") – @slot.PlannedEnd.ToString("HH:mm")</small>
+                                                <small>@L["DueDate"]: @FormatDate(slot.ProductionOperation.ProductionOrder.PlannedEndDate)</small>
+                                                <small>@L[slot.Status.ToString()]</small>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div></div>
+            </section>
         </div>
     }
 </div>
@@ -113,6 +130,20 @@
     private bool canEdit;
     private string? message;
     private int machineFilter;
+    private CalendarView viewMode = CalendarView.Week;
+    private enum CalendarView { Month, Week, Day }
+    private DateTime Anchor => viewMode == CalendarView.Week ? selectedDate.Date.AddDays(-((int)selectedDate.DayOfWeek + 1) % 7) : selectedDate.Date;
+    private IEnumerable<DateTime> CalendarDays => viewMode switch
+    {
+        CalendarView.Day => new[] { selectedDate.Date },
+        CalendarView.Week => Enumerable.Range(0, 7).Select(i => Anchor.AddDays(i)),
+        _ => Enumerable.Range(0, DateTime.DaysInMonth(selectedDate.Year, selectedDate.Month)).Select(i => new DateTime(selectedDate.Year, selectedDate.Month, i + 1))
+    };
+    private void ShiftPeriod(int direction) => selectedDate = selectedDate.AddDays(direction * (viewMode == CalendarView.Month ? 30 : viewMode == CalendarView.Week ? 7 : 1));
+    private void ChooseDay(DateTime day) { selectedDate = day; viewMode = CalendarView.Day; }
+    private string ShiftColor(DateTime date) => date.Hour >= 8 && date.Hour < 17 ? "order-work" : date.Hour >= 17 && date.Hour < 22 ? "order-overtime" : "order-night";
+    private IEnumerable<ProductionSchedule> DaySchedules(DateTime day, int machineId) => schedules.Where(s => s.MachineId == machineId && s.PlannedStart.Date <= day.Date && s.PlannedEnd.Date >= day.Date).OrderBy(s => s.PlannedStart);
+
     private DateTime selectedDate = DateTime.Today;
     private long newOrderId;
     private string newOperationName = "";
