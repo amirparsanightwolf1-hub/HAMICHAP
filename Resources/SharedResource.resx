@@ -2505,4 +2505,5 @@
   <data name="Wed" xml:space="preserve"><value>Wed</value></data>
   <data name="Thu" xml:space="preserve"><value>Thu</value></data>
   <data name="Fri" xml:space="preserve"><value>Fri</value></data>
+  <data name="NoActiveMachines" xml:space="preserve"><value>No active machines were found. Add or activate machines to schedule production operations.</value></data>
 </root>
