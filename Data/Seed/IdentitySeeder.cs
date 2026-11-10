@@ -11,6 +11,9 @@ public static class IdentitySeeder
         [
             "Administrator",
             "Manager",
+            "CEO",
+            "ProductionManager",
+            "FloorManager",
             "Production",
             "Warehouse",
             "Sales",
