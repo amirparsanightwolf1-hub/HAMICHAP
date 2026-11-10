@@ -319,3 +319,24 @@ a.btn-primary:hover {
     .btn { transition: none; }
     .btn:hover:not(:disabled):not(.disabled) { transform: none; }
 }
+
+/* Search and table surfaces used by legacy Inventory and Admin pages. */
+.erp-search-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .65rem;
+}
+.erp-search-bar .erp-search-input {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+.erp-table-card { min-width: 0; }
+.erp-table-card > .card-body { overflow-x: auto; }
+.erp-table-card .table { margin-bottom: 0; }
+.erp-table-card .table-responsive-cards { width: 100%; }
+
+@media (max-width: 576px) {
+    .erp-search-bar .erp-search-input { flex-basis: 100%; }
+    .erp-search-bar .btn { flex: 1 1 auto; }
+}
