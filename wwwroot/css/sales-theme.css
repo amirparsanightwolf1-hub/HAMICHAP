@@ -1,0 +1,51 @@
+/* Sales-first visual language. Loaded after Bootstrap and shared components. */
+:root {
+    --bs-primary: var(--erp-primary);
+    --bs-primary-rgb: 13, 23, 65;
+    --bs-link-color: var(--erp-primary);
+    --bs-link-hover-color: var(--erp-primary-dark);
+    --bs-border-color: var(--erp-border);
+    --bs-body-color: var(--erp-text);
+    --bs-body-bg: var(--erp-surface);
+    --bs-secondary-color: var(--erp-muted);
+    --bs-tertiary-bg: #f8f9fc;
+}
+.btn-primary {
+    --bs-btn-bg: var(--erp-primary);
+    --bs-btn-border-color: var(--erp-primary);
+    --bs-btn-hover-bg: var(--erp-primary-dark);
+    --bs-btn-hover-border-color: var(--erp-primary-dark);
+    --bs-btn-active-bg: var(--erp-primary-dark);
+    --bs-btn-active-border-color: var(--erp-primary-dark);
+    --bs-btn-disabled-bg: var(--erp-primary);
+    --bs-btn-disabled-border-color: var(--erp-primary);
+}
+.btn-outline-primary {
+    --bs-btn-color: var(--erp-primary);
+    --bs-btn-border-color: var(--erp-primary);
+    --bs-btn-hover-bg: var(--erp-primary);
+    --bs-btn-hover-border-color: var(--erp-primary);
+    --bs-btn-active-bg: var(--erp-primary-dark);
+    --bs-btn-active-border-color: var(--erp-primary-dark);
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: #69769e;
+    box-shadow: 0 0 0 3px rgba(13, 23, 65, .08);
+}
+.card {
+    border: 1px solid var(--erp-border);
+    border-radius: var(--erp-radius-lg);
+    box-shadow: 0 3px 14px rgba(13, 23, 65, .045);
+}
+.card-header {
+    background: #f8f9fc;
+    border-bottom: 1px solid #e9ebf1;
+    color: var(--erp-heading);
+}
+.table thead th {
+    background: #f8f9fc;
+    color: #596078;
+    border-bottom-color: #e5e8ef;
+    font-weight: 700;
+}
