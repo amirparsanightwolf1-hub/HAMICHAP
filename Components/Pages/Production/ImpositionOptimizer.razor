@@ -141,7 +141,7 @@
                     @foreach (var p in ActiveResult!.Placements)
                     {
                         <rect x="@S(p.X)" y="@S(p.Y)" width="@S(p.Width)" height="@S(p.Height)" fill="@PartFill(p.ArtworkIndex)" stroke="@PartStroke(p.ArtworkIndex)" stroke-width="1.4" />
-                        <foreignObject x="@S(p.X)" y="@S(p.Y + p.Height / 2 - 10)" width="@S(p.Width)" height="20"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:20px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:7px;color:#26364d;overflow:hidden;white-space:nowrap;">@p.ArtworkName</div></foreignObject>
+                        <foreignObject x="@S(p.X)" y="@S(p.Y + p.Height / 2 - 10)" width="@S(p.Width)" height="20"><div class="erp-imposition-piece-label" xmlns="http://www.w3.org/1999/xhtml" >@p.ArtworkName</div></foreignObject>
                     }
                 </g>
             }
