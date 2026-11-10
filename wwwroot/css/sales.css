@@ -97,7 +97,7 @@
 
 .quotation-edit-page .form-control:focus,
 .quotation-edit-page .form-select:focus {
-    border-color: var(--erp-primary, #0d1741);
+    border-color: var(--erp-primary, #0c568d);
     box-shadow: 0 0 0 .18rem rgba(13, 23, 65, .12);
 }
 
@@ -384,7 +384,7 @@
     }
 
     .quotation-status-filter:focus-visible {
-        outline: 2px solid var(--erp-primary, #0d1741);
+        outline: 2px solid var(--erp-primary, #0c568d);
         outline-offset: 2px;
     }
 
@@ -476,7 +476,7 @@
 }
 
     .quotation-row:focus-visible {
-        outline: 2px solid var(--erp-primary, #0d1741);
+        outline: 2px solid var(--erp-primary, #0c568d);
         outline-offset: -2px;
     }
 
@@ -857,7 +857,7 @@
 }
 
     .sales-request-header .erp-page-title {
-        color: #0d1741;
+        color: #0c568d;
         font-size: 24px;
         font-weight: 700;
         margin-bottom: 7px;
@@ -898,14 +898,14 @@
     /* Primary buttons */
 
     .request-actions .btn-primary {
-        background-color: #0d1741;
-        border-color: #0d1741;
+        background-color: #0c568d;
+        border-color: #0c568d;
         color: #ffffff;
     }
 
         .request-actions .btn-primary:hover {
-            background-color: #202e5b;
-            border-color: #202e5b;
+            background-color: #08446f;
+            border-color: #08446f;
             transform: translateY(-2px);
             box-shadow: 0 5px 12px rgba(13, 23, 65, 0.18);
         }
@@ -928,14 +928,14 @@
     /* Secondary buttons */
 
     .request-actions .btn-outline-primary {
-        color: #0d1741;
+        color: #0c568d;
         border: 1px solid #d6dbea;
         background: #f8f9fc;
     }
 
         .request-actions .btn-outline-primary:hover {
-            background: #0d1741;
-            border-color: #0d1741;
+            background: #0c568d;
+            border-color: #0c568d;
             color: #ffffff;
             transform: translateY(-2px);
         }
@@ -950,7 +950,7 @@
 
         .request-actions .btn-outline-secondary:hover {
             background: #f0f2f7;
-            color: #0d1741;
+            color: #0c568d;
             border-color: #cbd0df;
         }
 
@@ -984,7 +984,7 @@
         background: #f8f9fc;
         border-bottom: 1px solid #e9ebf1;
         padding: 17px 22px;
-        color: #0d1741;
+        color: #0c568d;
     }
 
     .sales-request-page > .card > .card-body {
@@ -1053,8 +1053,8 @@
 /* Add line button */
 
 .sales-request-page .card-header .btn-primary {
-    background: #0d1741;
-    border-color: #0d1741;
+    background: #0c568d;
+    border-color: #0c568d;
     border-radius: 8px;
     padding: 8px 15px;
     font-size: 13px;
@@ -1063,7 +1063,7 @@
 }
 
     .sales-request-page .card-header .btn-primary:hover {
-        background: #202e5b;
+        background: #08446f;
         transform: translateY(-2px);
     }
 
@@ -1166,7 +1166,7 @@
     }
 
         .request-info-row .form-control:focus {
-            border-color: #0d1741;
+            border-color: #0c568d;
             box-shadow: 0 0 0 3px rgba(13, 23, 65, 0.08);
         }
 
@@ -1307,7 +1307,7 @@
     }
 
     .sales-request-row:focus-visible {
-        outline: 2px solid var(--erp-primary, #0d1741);
+        outline: 2px solid var(--erp-primary, #0c568d);
         outline-offset: -2px;
     }
 
@@ -1609,7 +1609,7 @@
     }
 
     .sales-status-filter:focus-visible {
-        outline: 2px solid var(--erp-primary, #0d1741);
+        outline: 2px solid var(--erp-primary, #0c568d);
         outline-offset: 2px;
     }
 
