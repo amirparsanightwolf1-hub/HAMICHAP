@@ -32,7 +32,7 @@
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
-    background: #0b568d;
+    background: var(--erp-primary);
     color: white;
     font-size: 16px;
     font-weight: 600;
@@ -43,7 +43,7 @@
 }
 
     .login-button:hover {
-        background: #073b61;
+        background: var(--erp-primary-dark);
         color: white;
         transform: translateY(-2px);
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
