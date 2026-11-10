@@ -151,7 +151,7 @@
                             <span class="fw-semibold">@line.Item?.Name</span>
                             <span>@line.ProducedQuantity.ToString("N2") / @line.Quantity.ToString("N2")</span>
                         </div>
-                        <div class="progress mb-2" style="height:20px">
+                        <div class="progress mb-2 erp-height-20" >
                             <div class="progress-bar" role="progressbar" style="width:@($"{productionPercent:0.##}%")">
                                 @LocalizationService["Produced"]
                             </div>
@@ -160,7 +160,7 @@
                             <span>@LocalizationService["Delivered"]</span>
                             <span>@line.DeliveredQuantity.ToString("N2") / @line.Quantity.ToString("N2")</span>
                         </div>
-                        <div class="progress" style="height:20px">
+                        <div class="progress erp-height-20" >
                             <div class="progress-bar" role="progressbar" style="width:@($"{deliveryPercent:0.##}%")">
                                 @LocalizationService["Delivered"]
                             </div>
