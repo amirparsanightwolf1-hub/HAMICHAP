@@ -13,41 +13,29 @@
     @LocalizationService["InventoryDocuments"]
 </PageTitle>
 
-<h3 class="mb-4">
-    @LocalizationService["InventoryDocuments"]
-</h3>
-
-<div class="d-flex justify-content-between mb-3">
-
-    <div class="d-flex gap-2 w-50">
-
-        <input class="form-control"
-               placeholder="@LocalizationService["SearchDocument"]"
-               @bind="searchText" />
-
-        <button class="btn btn-primary"
-                @onclick="Search">
-
-            @LocalizationService["Search"]
-
-        </button>
-
-        <button class="btn btn-outline-secondary"
-                @onclick="ClearSearch">
-
-            @LocalizationService["Clear"]
-
-        </button>
-
+<div class="erp-page-header">
+    <div>
+        <h3 class="erp-page-title">@LocalizationService["InventoryDocuments"]</h3>
     </div>
-
-    <button class="btn btn-primary"
-            @onclick="CreateDocument">
-
+    <button class="btn btn-primary" @onclick="CreateDocument">
         + @LocalizationService["NewDocument"]
-
     </button>
+</div>
 
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="erp-search-bar">
+            <input class="form-control erp-search-input"
+                   placeholder="@LocalizationService["SearchDocument"]"
+                   @bind="searchText" />
+            <button class="btn btn-primary" @onclick="Search">
+                @LocalizationService["Search"]
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                @LocalizationService["Clear"]
+            </button>
+        </div>
+    </div>
 </div>
 
 @if (documents == null)
@@ -56,7 +44,9 @@
 }
 else
 {
-    <table class="table table-hover table-bordered table-responsive-cards">
+    <div class="card erp-table-card mb-3">
+        <div class="card-body p-0">
+            <table class="table table-hover table-bordered table-responsive-cards">
 
         <thead class="table-light">
 
@@ -138,6 +128,8 @@ else
         </tbody>
 
     </table>
+        </div>
+    </div>
 
 
     @if (totalPages > 0)
