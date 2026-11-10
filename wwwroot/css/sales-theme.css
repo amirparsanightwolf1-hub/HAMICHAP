@@ -1,4 +1,4 @@
-/* Sales-first visual language. Loaded after Bootstrap and shared components. */
+/* Sales-first visual language. Loaded last after shared component styles. */
 :root {
     --bs-primary: var(--erp-primary);
     --bs-primary-rgb: 13, 23, 65;
@@ -48,4 +48,274 @@
     color: #596078;
     border-bottom-color: #e5e8ef;
     font-weight: 700;
+}
+
+
+/* =============================================================
+   Shared Sales design system across the ERP application
+   Source of truth: Sales Request edit/list and quotation pages.
+   Only presentation is unified; workflow-specific layouts and
+   semantic success/warning/danger colors remain untouched.
+   ============================================================= */
+
+:root {
+    --erp-sales-navy: #0d1741;
+    --erp-sales-navy-hover: #202e5b;
+    --erp-sales-ink: #343a56;
+    --erp-sales-muted: #596078;
+    --erp-sales-subtle: #858ba0;
+    --erp-sales-canvas: #f6f8fc;
+    --erp-sales-header: #f8f9fc;
+    --erp-sales-border: #e8eaf0;
+    --erp-sales-shadow: 0 3px 14px rgba(13, 23, 65, .045);
+    --erp-sales-shadow-hover: 0 6px 18px rgba(13, 23, 65, .085);
+}
+
+/* App chrome takes the same navy palette as the preferred Sales UI. */
+.sidebar {
+    background: linear-gradient(180deg, var(--erp-sales-navy) 0%, var(--erp-sales-navy-hover) 100%);
+}
+.sidebar .sidebar-header h3 { color: #fff; }
+.mobile-menu-btn { background: var(--erp-sales-navy); }
+.side-menu .menu-button {
+    border-radius: 9px;
+    font-weight: 600;
+}
+.side-menu .menu-button.active {
+    background: rgba(255, 255, 255, .18);
+    border-color: rgba(255, 255, 255, .20);
+}
+.side-menu .menu-button:focus-visible,
+.mobile-menu-btn:focus-visible,
+.language-button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Shared page header used already by Sales, Customers and Production. */
+.erp-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--erp-surface);
+    border: 1px solid var(--erp-sales-border);
+    border-radius: var(--erp-radius-lg);
+    box-shadow: var(--erp-sales-shadow);
+}
+.erp-page-header .erp-page-title,
+.erp-page-title {
+    color: var(--erp-sales-navy);
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: -.015em;
+}
+.erp-page-header .erp-page-subtitle {
+    margin-top: .35rem;
+    color: var(--erp-sales-subtle);
+    font-size: .875rem;
+    font-weight: 500;
+}
+.erp-page-header > :first-child { min-width: 0; }
+
+/* Consistent appearance for legacy pages with direct h3 headings. */
+.main-content > h3,
+.main-content > .page-container > h3,
+.main-content > .container-fluid > h3 {
+    padding: 1.15rem 1.4rem;
+    margin: 0 0 1.25rem;
+    color: var(--erp-sales-navy);
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--erp-surface);
+    border: 1px solid var(--erp-sales-border);
+    border-radius: var(--erp-radius-lg);
+    box-shadow: var(--erp-sales-shadow);
+}
+.main-content .section-title {
+    color: var(--erp-sales-navy);
+    font-weight: 700;
+}
+
+/* Shared cards: Sales-style borders, headings and subtle elevation. */
+.card,
+.dashboard-card {
+    border: 1px solid var(--erp-sales-border);
+    border-radius: var(--erp-radius-lg);
+    background-color: var(--erp-surface);
+    box-shadow: var(--erp-sales-shadow);
+}
+.card.shadow-sm {
+    box-shadow: var(--erp-sales-shadow) !important;
+}
+.card-header {
+    padding: .95rem 1.3rem;
+    background: var(--erp-sales-header);
+    border-bottom: 1px solid var(--erp-sales-border);
+    color: var(--erp-sales-navy);
+    font-weight: 700;
+}
+.card-header strong,
+.card-header h5,
+.card-header h6 { color: var(--erp-sales-navy); }
+.card-body { padding: 1.25rem; }
+
+/* Forms: use the typography, neutral borders and focus of Sales edit. */
+.form-label {
+    display: inline-block;
+    margin-bottom: .4rem;
+    color: var(--erp-sales-muted);
+    font-size: .825rem;
+    font-weight: 700;
+}
+.form-control,
+.form-select {
+    min-height: 40px;
+    border: 1px solid #e0e3eb;
+    border-radius: 8px;
+    color: var(--erp-sales-ink);
+    background-color: var(--erp-surface);
+    font-size: .9rem;
+    box-shadow: none;
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: #69769e;
+    box-shadow: 0 0 0 3px rgba(13, 23, 65, .08);
+}
+.form-control[readonly],
+.form-select:disabled,
+.form-control:disabled {
+    background-color: #f8f9fc;
+    color: var(--erp-sales-muted);
+}
+textarea.form-control { min-height: auto; }
+.form-check-input:checked {
+    background-color: var(--erp-sales-navy);
+    border-color: var(--erp-sales-navy);
+}
+.form-check-input:focus-visible {
+    border-color: #69769e;
+    box-shadow: 0 0 0 3px rgba(13, 23, 65, .12);
+}
+
+/* Buttons: favor Sales proportions and motion, keep semantic variants. */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    min-height: 40px;
+    padding: .55rem 1rem;
+    border-radius: 9px;
+    font-size: .875rem;
+    font-weight: 650;
+    line-height: 1.25;
+    white-space: normal;
+    transition: background-color .18s ease, border-color .18s ease,
+                box-shadow .18s ease, transform .18s ease, color .18s ease;
+}
+.btn.btn-sm {
+    min-height: 32px;
+    padding: .35rem .7rem;
+    font-size: .8rem;
+}
+.btn.btn-lg {
+    min-height: 48px;
+    padding: .75rem 1.4rem;
+}
+.btn:hover:not(:disabled):not(.disabled) {
+    transform: translateY(-1px);
+}
+.btn:focus-visible {
+    outline: 2px solid var(--erp-sales-navy);
+    outline-offset: 2px;
+}
+.btn-primary,
+a.btn-primary {
+    background-color: var(--erp-sales-navy);
+    border-color: var(--erp-sales-navy);
+    color: white;
+}
+.btn-primary:hover:not(:disabled),
+.btn-primary:focus-visible,
+a.btn-primary:hover {
+    background-color: var(--erp-sales-navy-hover);
+    border-color: var(--erp-sales-navy-hover);
+    color: white;
+}
+.btn-outline-primary {
+    border-color: var(--erp-sales-navy);
+    color: var(--erp-sales-navy);
+}
+.btn-outline-primary:hover:not(:disabled),
+.btn-outline-primary:focus-visible {
+    background-color: var(--erp-sales-navy);
+    border-color: var(--erp-sales-navy);
+    color: white;
+}
+/* Bootstrap utilities can be marked !important, so map only the brand ones. */
+.bg-primary { background-color: var(--erp-sales-navy) !important; }
+.text-primary { color: var(--erp-sales-navy) !important; }
+.border-primary { border-color: var(--erp-sales-navy) !important; }
+
+/* Dense operational tables stay readable and scroll when necessary. */
+.table {
+    --bs-table-border-color: var(--erp-sales-border);
+    --bs-table-hover-bg: #f1f4fb;
+    color: var(--erp-sales-ink);
+    border-color: var(--erp-sales-border);
+}
+.table thead th,
+.table > :not(caption) > * > th {
+    padding: .85rem .9rem;
+    color: var(--erp-sales-muted);
+    background: var(--erp-sales-header);
+    border-bottom-color: #e5e8ef;
+    font-size: .8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.table tbody td,
+.table > :not(caption) > * > td {
+    padding: .8rem .9rem;
+    border-color: #edf0f5;
+    vertical-align: middle;
+    font-size: .875rem;
+}
+.table-hover > tbody > tr:hover > * {
+    background-color: #f1f4fb;
+}
+.table-responsive { border-radius: 9px; }
+.badge {
+    padding: .4em .65em;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 650;
+}
+.text-muted { color: var(--erp-sales-muted) !important; }
+
+@media (max-width: 768px) {
+    .erp-page-header {
+        align-items: stretch;
+        padding: 1rem;
+        gap: .85rem;
+    }
+    .erp-page-header .btn { max-width: 100%; }
+    .main-content > h3,
+    .main-content > .page-container > h3,
+    .main-content > .container-fluid > h3 {
+        padding: 1rem;
+        font-size: 1.3rem;
+    }
+    .card-body { padding: 1rem; }
+    .table-responsive { overflow-x: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+    .btn:hover:not(:disabled):not(.disabled) { transform: none; }
 }
