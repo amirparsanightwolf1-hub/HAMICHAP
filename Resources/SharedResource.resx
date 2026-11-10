@@ -2426,4 +2426,70 @@
 	<data name="ViewUploadedArtwork" xml:space="preserve">
     <value>View uploaded artwork</value>
   </data>
+  <data name="CeoDeadlineCalendar" xml:space="preserve">
+    <value>CEO deadline calendar</value>
+  </data>
+  <data name="CeoDeadlineHelp" xml:space="preserve">
+    <value>Set the required completion date for each production order. Machine assignments are managed separately.</value>
+  </data>
+  <data name="MachineSchedule" xml:space="preserve">
+    <value>Machine production schedule</value>
+  </data>
+  <data name="MachineScheduleHelp" xml:space="preserve">
+    <value>Review manufacturing operations and schedule them by machine.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>You do not have access to this page.</value>
+  </data>
+  <data name="SaveDeadline" xml:space="preserve">
+    <value>Save deadline</value>
+  </data>
+  <data name="SelectDueDate" xml:space="preserve">
+    <value>Choose a valid due date.</value>
+  </data>
+  <data name="DeadlineSaved" xml:space="preserve">
+    <value>Production deadline saved.</value>
+  </data>
+  <data name="AllMachines" xml:space="preserve">
+    <value>All machines</value>
+  </data>
+  <data name="UnscheduledOperations" xml:space="preserve">
+    <value>Unscheduled operations</value>
+  </data>
+  <data name="SelectMachine" xml:space="preserve">
+    <value>Select machine</value>
+  </data>
+  <data name="ScheduleOperation" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="GenerateOperations" xml:space="preserve">
+    <value>Generate missing operations</value>
+  </data>
+  <data name="OperationsGenerated" xml:space="preserve">
+    <value>Manufacturing operations generated. Review the sequence and durations before scheduling.</value>
+  </data>
+  <data name="NoRoutingFound" xml:space="preserve">
+    <value>No new operations were generated. Review job specifications and add missing steps manually.</value>
+  </data>
+  <data name="AddOperation" xml:space="preserve">
+    <value>Add operation</value>
+  </data>
+  <data name="SelectOrder" xml:space="preserve">
+    <value>Select order</value>
+  </data>
+  <data name="SelectMachineAndTime" xml:space="preserve">
+    <value>Choose a machine and start time.</value>
+  </data>
+  <data name="MachineConflict" xml:space="preserve">
+    <value>The machine already has another job at this time.</value>
+  </data>
+  <data name="OperationSequenceConflict" xml:space="preserve">
+    <value>A previous operation overlaps this start time.</value>
+  </data>
+  <data name="DeadlineWarning" xml:space="preserve">
+    <value>The operation would finish after the CEO's deadline. Choose an earlier slot.</value>
+  </data>
+  <data name="OperationScheduled" xml:space="preserve">
+    <value>Operation scheduled successfully.</value>
+  </data>
 </root>
