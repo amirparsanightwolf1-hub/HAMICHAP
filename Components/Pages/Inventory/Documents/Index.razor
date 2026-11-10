@@ -1,5 +1,8 @@
 ﻿@page "/inventory/documents"
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "Inventory.Documents.View")]
+
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Inventory
