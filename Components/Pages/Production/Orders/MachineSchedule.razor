@@ -91,6 +91,25 @@
                         <option value="0">@L["AllMachines"]</option>
                         @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name (@machine.Code)</option> }
                     </select>
+                    @if (machines.Count == 0)
+                    {
+                        <div class="alert alert-warning">@L["NoActiveMachines"]</div>
+                        <div class="machine-calendar-section mb-4">
+                            <h5 class="machine-calendar-section-title">@L["MachineSchedule"]</h5>
+                            <div class="month-grid">
+                                @foreach (var dayName in new[] { "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" })
+                                {
+                                    <div class="month-weekday">@L[dayName]</div>
+                                }
+                                @foreach (var day in MonthDays)
+                                {
+                                    <div class="month-day @(day.Date == DateTime.Today ? "today" : "")">
+                                        <div class="month-day-number">@Persian.GetDayOfMonth(day)</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
                     @if (viewMode == CalendarView.Month)
                     {
                         @foreach (var machine in machines.Where(m => IsSelectedMachine(m.Id)))
@@ -191,13 +210,13 @@
     }
     private string ShiftClass(int hour) => hour >= 8 && hour < 13 || hour >= 14 && hour < 17 ? "work" : hour == 13 ? "break" : hour >= 17 && hour < 22 ? "overtime" : "night";
     private string FormatDay(DateTime date) => L.IsPersian ? $"{Persian.GetYear(date)}/{Persian.GetMonth(date):00}/{Persian.GetDayOfMonth(date):00}" : date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-    private IEnumerable<ProductionSchedule> HourSchedules(DateTime day, int hour, int machineId) => schedules.Where(s => s.MachineId == machineId && s.PlannedStart < day.Date.AddHours(hour + 1) && s.PlannedEnd > day.Date.AddHours(hour) && s.PlannedStart.Date == day.Date).OrderBy(s => s.PlannedStart);
+    private IEnumerable<ProductionSchedule> HourSchedules(DateTime day, int hour, int machineId) => schedules.Where(s => s.MachineId == machineId && s.PlannedStart < day.Date.AddHours(hour + 1) && s.PlannedEnd > day.Date.AddHours(hour)).OrderBy(s => s.PlannedStart);
     private bool IsSelectedMachine(int id) => machineFilter == 0 || machineFilter == id;
     private bool canView;
     private bool canEdit;
     private string? message;
     private int machineFilter;
-    private CalendarView viewMode = CalendarView.Week;
+    private CalendarView viewMode = CalendarView.Month;
     private enum CalendarView { Month, Week, Day }
     private DateTime Anchor => viewMode == CalendarView.Week ? selectedDate.Date.AddDays(-(((int)selectedDate.DayOfWeek + 1) % 7)) : selectedDate.Date;
     private IEnumerable<DateTime> CalendarDays => viewMode switch
@@ -236,14 +255,10 @@
     {
         var user = (await Auth.GetAuthenticationStateAsync()).User;
         canEdit = user.Identity?.IsAuthenticated == true && (user.IsInRole("Administrator") ||
-            user.IsInRole("ProductionManager") || user.IsInRole("Production Manager"));
+            user.IsInRole("ProductionManager") || user.IsInRole("Production Manager") || user.IsInRole("Manager"));
         canView = canEdit || (user.Identity?.IsAuthenticated == true &&
-            (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager")));
-        if (canView)
-        {
-            await Reload();
-            if (canEdit) await GenerateMissingOperations();
-        }
+            (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") || user.IsInRole("Production")));
+        if (canView) await Reload();
     }
 
     private async Task Reload()
