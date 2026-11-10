@@ -29,7 +29,7 @@
                     <div class="card-body order-queue">
                         @foreach (var operation in operations.Where(x => !schedules.Any(s => s.ProductionOperationId == x.Id)).OrderBy(x => x.ProductionOrder.PlannedEndDate).ThenBy(x => x.Sequence))
                         {
-                            <div class="queue-order">
+                            <div class="queue-order @(selectedOperationId == operation.Id ? "queue-order-selected" : "")" draggable="@canEdit" @ondragstart="() => SelectDraggedOperation(operation.Id)" @onclick="() => SelectOperation(operation.Id)">
                                 <div class="d-flex justify-content-between gap-2"><strong>@operation.ProductionOrder.OrderNumber</strong><span class="badge bg-secondary">#@operation.Sequence</span></div>
                                 <div class="small fw-semibold mt-1">@operation.Name</div>
                                 <div class="small text-muted">@L["DueDate"]: @FormatDate(operation.ProductionOrder.PlannedEndDate)</div>
@@ -91,34 +91,83 @@
                         <option value="0">@L["AllMachines"]</option>
                         @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name (@machine.Code)</option> }
                     </select>
-                    <div class="machine-calendar-scroll">
-                        <div class="machine-calendar-grid" style="--machine-days:@CalendarDays.Count()">
-                            <div class="machine-calendar-corner">@L["Machine"]</div>
-                            @foreach (var day in CalendarDays)
-                            {
-                                <button type="button" class="machine-calendar-date" @onclick="() => ChooseDay(day)">@FormatDate(day.Date)</button>
-                            }
-                            @foreach (var machine in machines.Where(x => machineFilter == 0 || x.Id == machineFilter))
-                            {
-                                <div class="machine-calendar-machine"><strong>@machine.Name</strong><small>@machine.Code</small></div>
-                                @foreach (var day in CalendarDays)
-                                {
-                                    <div class="machine-calendar-cell">
-                                        @foreach (var slot in DaySchedules(day, machine.Id))
+                    @if (viewMode == CalendarView.Month)
+                    {
+                        @foreach (var machine in machines.Where(m => IsSelectedMachine(m.Id)))
+                        {
+                            <div class="machine-calendar-section mb-4">
+                                <h5 class="machine-calendar-section-title">@machine.Name <small>(@machine.Code)</small></h5>
+                                <div class="month-grid">
+                                    @foreach (var dayName in new[] { "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" })
+                                    {
+                                        <div class="month-weekday">@L[dayName]</div>
+                                    }
+                                    @foreach (var day in CalendarDays)
+                                    {
+                                        <div class="month-day @(day.Date == DateTime.Today ? "today" : "")"
+                                             @onclick="() => DropOperation(machine.Id, day.Date.AddHours(8))"
+                                             @ondragover:preventDefault="true"
+                                             @ondrop:preventDefault="true"
+                                             @ondrop="() => DropOperation(machine.Id, day.Date.AddHours(8))">
+                                            <div class="month-day-number">@Persian.GetDayOfMonth(day)</div>
+                                            @foreach (var slot in DaySchedules(day, machine.Id))
+                                            {
+                                                <div class="month-order-chip @ShiftColor(slot.PlannedStart)"
+                                                     title="@slot.ProductionOperation.Name"
+                                                     @onclick:stopPropagation="true">
+                                                    <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
+                                                    <span>@slot.ProductionOperation.Name</span>
+                                                    <small>@slot.PlannedStart.ToString("HH:mm")–@slot.PlannedEnd.ToString("HH:mm")</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        @foreach (var machine in machines.Where(m => IsSelectedMachine(m.Id)))
+                        {
+                            <div class="machine-calendar-section mb-4">
+                                <h5 class="machine-calendar-section-title">@machine.Name <small>(@machine.Code)</small></h5>
+                                <div class="timeline-scroll">
+                                    <div class="timeline" style="--day-count:@CalendarDays.Count()">
+                                        <div class="timeline-time-head"></div>
+                                        @foreach (var day in CalendarDays)
                                         {
-                                            <div class="month-order-chip @ShiftColor(slot.PlannedStart)" title="@slot.ProductionOperation.Name">
-                                                <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
-                                                <span>@slot.ProductionOperation.Name</span>
-                                                <small>@slot.PlannedStart.ToString("HH:mm") – @slot.PlannedEnd.ToString("HH:mm")</small>
-                                                <small>@L["DueDate"]: @FormatDate(slot.ProductionOperation.ProductionOrder.PlannedEndDate)</small>
-                                                <small>@L[slot.Status.ToString()]</small>
-                                            </div>
+                                            <div class="timeline-day-head"><strong>@Persian.GetDayOfMonth(day)</strong><small>@FormatDay(day)</small></div>
+                                        }
+                                        @for (var hour = 0; hour < 24; hour++)
+                                        {
+                                            var slotHour = hour;
+                                            <div class="timeline-hour">@hour.ToString("00"):00</div>
+                                            @foreach (var day in CalendarDays)
+                                            {
+                                                <div class="timeline-slot @ShiftClass(hour)"
+                                                     @onclick="() => DropOperation(machine.Id, day.Date.AddHours(slotHour))"
+                                                     @ondragover:preventDefault="true"
+                                                     @ondrop:preventDefault="true"
+                                                     @ondrop="() => DropOperation(machine.Id, day.Date.AddHours(slotHour))">
+                                                    @foreach (var slot in HourSchedules(day, hour, machine.Id))
+                                                    {
+                                                        <div class="timeline-order @ShiftColor(slot.PlannedStart)" @onclick:stopPropagation="true"
+                                                             title="@slot.ProductionOperation.Name">
+                                                            <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
+                                                            <span>@slot.ProductionOperation.Name</span>
+                                                            <small>@slot.PlannedStart.ToString("HH:mm")–@slot.PlannedEnd.ToString("HH:mm")</small>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
                                         }
                                     </div>
-                                }
-                            }
-                        </div>
-                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    <p class="small text-muted">@L["DragOperationHelp"]</p>
                 </div></div>
             </section>
         </div>
@@ -126,20 +175,47 @@
 </div>
 
 @code {
+    private long? selectedOperationId;
+    private long? draggedOperationId;
+    private void SelectOperation(long id) => selectedOperationId = id;
+    private void SelectDraggedOperation(long id) { selectedOperationId = id; draggedOperationId = id; }
+    private async Task DropOperation(int machineId, DateTime start)
+    {
+        if (!canEdit) return;
+        var id = draggedOperationId ?? selectedOperationId;
+        draggedOperationId = null;
+        if (!id.HasValue) return;
+        machineChoices[id.Value] = machineId;
+        startChoices[id.Value] = start.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+        await Schedule(id.Value);
+    }
+    private string ShiftClass(int hour) => hour >= 8 && hour < 13 || hour >= 14 && hour < 17 ? "work" : hour == 13 ? "break" : hour >= 17 && hour < 22 ? "overtime" : "night";
+    private string FormatDay(DateTime date) => L.IsPersian ? $"{Persian.GetYear(date)}/{Persian.GetMonth(date):00}/{Persian.GetDayOfMonth(date):00}" : date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    private IEnumerable<ProductionSchedule> HourSchedules(DateTime day, int hour, int machineId) => schedules.Where(s => s.MachineId == machineId && s.PlannedStart < day.Date.AddHours(hour + 1) && s.PlannedEnd > day.Date.AddHours(hour) && s.PlannedStart.Date == day.Date).OrderBy(s => s.PlannedStart);
+    private bool IsSelectedMachine(int id) => machineFilter == 0 || machineFilter == id;
     private bool canView;
     private bool canEdit;
     private string? message;
     private int machineFilter;
     private CalendarView viewMode = CalendarView.Week;
     private enum CalendarView { Month, Week, Day }
-    private DateTime Anchor => viewMode == CalendarView.Week ? selectedDate.Date.AddDays(-((int)selectedDate.DayOfWeek + 1) % 7) : selectedDate.Date;
+    private DateTime Anchor => viewMode == CalendarView.Week ? selectedDate.Date.AddDays(-(((int)selectedDate.DayOfWeek + 1) % 7)) : selectedDate.Date;
     private IEnumerable<DateTime> CalendarDays => viewMode switch
     {
         CalendarView.Day => new[] { selectedDate.Date },
         CalendarView.Week => Enumerable.Range(0, 7).Select(i => Anchor.AddDays(i)),
-        _ => Enumerable.Range(0, DateTime.DaysInMonth(selectedDate.Year, selectedDate.Month)).Select(i => new DateTime(selectedDate.Year, selectedDate.Month, i + 1))
+        _ => MonthDays
     };
-    private void ShiftPeriod(int direction) => selectedDate = selectedDate.AddDays(direction * (viewMode == CalendarView.Month ? 30 : viewMode == CalendarView.Week ? 7 : 1));
+    private IEnumerable<DateTime> MonthDays
+    {
+        get
+        {
+            var first = new DateTime(Persian.GetYear(selectedDate), Persian.GetMonth(selectedDate), 1, Persian);
+            var offset = ((int)first.DayOfWeek + 1) % 7;
+            return Enumerable.Range(0, 42).Select(i => first.AddDays(i - offset));
+        }
+    }
+    private void ShiftPeriod(int direction) => selectedDate = viewMode == CalendarView.Month ? Persian.AddMonths(selectedDate, direction) : selectedDate.AddDays(direction * (viewMode == CalendarView.Week ? 7 : 1));
     private void ChooseDay(DateTime day) { selectedDate = day; viewMode = CalendarView.Day; }
     private string ShiftColor(DateTime date) => date.Hour >= 8 && date.Hour < 17 ? "order-work" : date.Hour >= 17 && date.Hour < 22 ? "order-overtime" : "order-night";
     private IEnumerable<ProductionSchedule> DaySchedules(DateTime day, int machineId) => schedules.Where(s => s.MachineId == machineId && s.PlannedStart.Date <= day.Date && s.PlannedEnd.Date >= day.Date).OrderBy(s => s.PlannedStart);
