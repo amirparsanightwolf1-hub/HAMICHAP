@@ -1,0 +1,252 @@
+@page "/production/machine-schedule"
+@using System.Globalization
+@using System.Text.Json
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider Auth
+@inject LocalizationService L
+
+<PageTitle>@L["MachineSchedule"]</PageTitle>
+<div class="page-container machine-schedule">
+    <div class="erp-page-header">
+        <div><h2 class="erp-page-title">@L["MachineSchedule"]</h2><p class="erp-page-subtitle">@L["MachineScheduleHelp"]</p></div>
+        @if (canEdit) { <button class="btn btn-outline-primary" @onclick="GenerateMissingOperations">@L["GenerateOperations"]</button> }
+    </div>
+    @if (!canView) { <div class="alert alert-warning">@L["AccessDenied"]</div> }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
+        <div class="card mb-3"><div class="card-body">
+            <label class="form-label" for="machine-filter">@L["Machine"]</label>
+            <select id="machine-filter" class="form-select" @bind="machineFilter">
+                <option value="0">@L["AllMachines"]</option>
+                @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name (@machine.Code)</option> }
+            </select>
+        </div></div>
+        @foreach (var machine in machines.Where(x => machineFilter == 0 || machineFilter == x.Id))
+        {
+            <div class="card mb-3">
+                <div class="card-header">@machine.Name (@machine.Code)</div>
+                <div class="card-body table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>@L["OrderNumber"]</th><th>@L["Operation"]</th><th>@L["PlannedStart"]</th><th>@L["PlannedEnd"]</th><th>@L["DueDate"]</th><th>@L["Status"]</th></tr></thead>
+                        <tbody>
+                        @foreach (var schedule in schedules.Where(x => x.MachineId == machine.Id).OrderBy(x => x.PlannedStart))
+                        {
+                            <tr>
+                                <td>@schedule.ProductionOperation.ProductionOrder.OrderNumber</td>
+                                <td>@schedule.ProductionOperation.Name</td>
+                                <td>@FormatDate(schedule.PlannedStart)</td>
+                                <td>@FormatDate(schedule.PlannedEnd)</td>
+                                <td>@FormatDate(schedule.ProductionOperation.ProductionOrder.PlannedEndDate)</td>
+                                <td>@L[schedule.Status.ToString()]</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        <div class="card">
+            <div class="card-header">@L["UnscheduledOperations"]</div>
+            <div class="card-body table-responsive">
+                <table class="table table-hover">
+                    <thead><tr><th>@L["OrderNumber"]</th><th>@L["Operation"]</th><th>@L["DueDate"]</th><th>@L["Machine"]</th><th>@L["PlannedStart"]</th><th>@L["Action"]</th></tr></thead>
+                    <tbody>
+                    @foreach (var operation in operations.Where(x => !schedules.Any(s => s.ProductionOperationId == x.Id)).OrderBy(x => x.ProductionOrder.PlannedEndDate).ThenBy(x => x.Sequence))
+                    {
+                        <tr>
+                            <td>@operation.ProductionOrder.OrderNumber</td>
+                            <td>@operation.Sequence. @operation.Name</td>
+                            <td>@FormatDate(operation.ProductionOrder.PlannedEndDate)</td>
+                            <td>
+                                @if (canEdit)
+                                {
+                                    <select class="form-select" value="@MachineChoice(operation.Id)" @onchange="e => machineChoices[operation.Id] = int.TryParse(e.Value?.ToString(), out var id) ? id : 0">
+                                        <option value="0">@L["SelectMachine"]</option>
+                                        @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name</option> }
+                                    </select>
+                                }
+                            </td>
+                            <td>
+                                @if (canEdit) { <input type="datetime-local" class="form-control" value="@StartChoice(operation.Id)" @onchange="e => startChoices[operation.Id] = e.Value?.ToString() ?? "" /> }
+                            </td>
+                            <td>
+                                @if (canEdit) { <button class="btn btn-primary btn-sm" @onclick="() => Schedule(operation.Id)">@L["ScheduleOperation"]</button> }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                @if (canEdit)
+                {
+                    <div class="border-top pt-3 mt-3">
+                        <h5>@L["AddOperation"]</h5>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <select class="form-select" @bind="newOrderId">
+                                    <option value="0">@L["SelectOrder"]</option>
+                                    @foreach (var order in orders) { <option value="@order.Id">@order.OrderNumber</option> }
+                                </select>
+                            </div>
+                            <div class="col-md-4"><input class="form-control" placeholder="@L["Operation"]" @bind="newOperationName" /></div>
+                            <div class="col-md-2"><input type="number" min="0.25" step="0.25" class="form-control" @bind="newHours" /></div>
+                            <div class="col-md-2"><button class="btn btn-primary" @onclick="AddOperation">@L["AddOperation"]</button></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool canView;
+    private bool canEdit;
+    private string? message;
+    private int machineFilter;
+    private long newOrderId;
+    private string newOperationName = "";
+    private decimal newHours = 1m;
+    private List<Machine> machines = new();
+    private List<ProductionOrder> orders = new();
+    private List<ProductionOperation> operations = new();
+    private List<ProductionSchedule> schedules = new();
+    private Dictionary<long, int> machineChoices = new();
+    private Dictionary<long, string> startChoices = new();
+    private static readonly PersianCalendar Persian = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        canEdit = user.Identity?.IsAuthenticated == true && (user.IsInRole("Administrator") ||
+            user.IsInRole("ProductionManager") || user.IsInRole("Production Manager"));
+        canView = canEdit || (user.Identity?.IsAuthenticated == true &&
+            (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager")));
+        if (canView) await Reload();
+    }
+
+    private async Task Reload()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        machines = await db.Machines.Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        orders = await db.ProductionOrders.Include(x => x.SalesOrder).ThenInclude(x => x.Quotation)
+            .ThenInclude(x => x.SalesRequest).OrderBy(x => x.PlannedEndDate).ToListAsync();
+        operations = await db.ProductionOperations.Include(x => x.ProductionOrder)
+            .OrderBy(x => x.ProductionOrderId).ThenBy(x => x.Sequence).ToListAsync();
+        schedules = await db.ProductionSchedules.Include(x => x.ProductionOperation)
+            .ThenInclude(x => x.ProductionOrder).Where(x => x.Status != ScheduleStatus.Cancelled).ToListAsync();
+    }
+
+    private string FormatDate(DateTime? value)
+    {
+        if (!value.HasValue) return "—";
+        var v = value.Value;
+        return L.IsPersian
+            ? $"{Persian.GetYear(v)}/{Persian.GetMonth(v):00}/{Persian.GetDayOfMonth(v):00} {v:HH:mm}"
+            : v.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private int MachineChoice(long id) => machineChoices.GetValueOrDefault(id);
+    private string StartChoice(long id) => startChoices.GetValueOrDefault(id, "");
+
+    private async Task GenerateMissingOperations()
+    {
+        if (!canEdit) return;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var workCenters = await db.ProductionWorkCenters.Where(x => x.IsActive).ToListAsync();
+        var existing = await db.ProductionOperations.Select(x => x.ProductionOrderId).Distinct().ToListAsync();
+        var added = 0;
+        foreach (var order in orders.Where(x => !existing.Contains(x.Id)))
+        {
+            var request = order.SalesOrder?.Quotation?.SalesRequest;
+            if (request == null) continue;
+            var steps = new List<string>();
+            try
+            {
+                if (request.JobType == SalesJobType.Sheet)
+                {
+                    var spec = JsonSerializer.Deserialize<SheetJobSpecification>(request.JobSpecificationJson);
+                    if (spec != null)
+                    {
+                        if (!string.IsNullOrWhiteSpace(spec.PrintingNotes) || !string.IsNullOrWhiteSpace(spec.Zinc)) steps.Add("Printing");
+                        steps.AddRange(spec.SelectedServices ?? new());
+                        if (!string.IsNullOrWhiteSpace(spec.Die)) steps.Add("Die Cutting");
+                    }
+                }
+                else
+                {
+                    var spec = JsonSerializer.Deserialize<RollJobSpecification>(request.JobSpecificationJson);
+                    if (spec != null)
+                    {
+                        if (spec.ColorCount.GetValueOrDefault() > 0 || !string.IsNullOrWhiteSpace(spec.PrintingNotes)) steps.Add("Printing");
+                        steps.AddRange(spec.SelectedServices ?? new());
+                        if (spec.HandGluing || spec.MachineGluing) steps.Add("Gluing");
+                    }
+                }
+            }
+            catch (JsonException) { continue; }
+            var sequence = 0;
+            foreach (var step in steps.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                var center = workCenters.FirstOrDefault(x => string.Equals(x.Name, step, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(x.Code, step, StringComparison.OrdinalIgnoreCase));
+                db.ProductionOperations.Add(new ProductionOperation {
+                    ProductionOrderId = order.Id, Sequence = ++sequence, Name = step,
+                    WorkCenterId = center?.Id, PlannedHours = 1m, Status = ProductionOperationStatus.Pending
+                });
+                added++;
+            }
+        }
+        await db.SaveChangesAsync();
+        message = added > 0 ? L["OperationsGenerated"] : L["NoRoutingFound"];
+        await Reload();
+    }
+
+    private async Task AddOperation()
+    {
+        if (!canEdit || newOrderId == 0 || string.IsNullOrWhiteSpace(newOperationName) || newHours <= 0) return;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var sequence = await db.ProductionOperations.Where(x => x.ProductionOrderId == newOrderId)
+            .Select(x => (int?)x.Sequence).MaxAsync() ?? 0;
+        db.ProductionOperations.Add(new ProductionOperation { ProductionOrderId = newOrderId,
+            Sequence = sequence + 1, Name = newOperationName.Trim(), PlannedHours = newHours });
+        await db.SaveChangesAsync();
+        newOperationName = "";
+        await Reload();
+    }
+
+    private async Task Schedule(long operationId)
+    {
+        if (!canEdit || !machineChoices.TryGetValue(operationId, out var machineId) || machineId == 0 ||
+            !startChoices.TryGetValue(operationId, out var startText) ||
+            !DateTime.TryParse(startText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start))
+        { message = L["SelectMachineAndTime"]; return; }
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var operation = await db.ProductionOperations.Include(x => x.ProductionOrder)
+            .FirstOrDefaultAsync(x => x.Id == operationId);
+        if (operation == null || !await db.Machines.AnyAsync(x => x.Id == machineId && x.IsActive)) return;
+        var end = start.AddHours((double)Math.Max(0.25m, operation.PlannedHours));
+        if (await db.ProductionSchedules.AnyAsync(x => x.MachineId == machineId &&
+            x.Status != ScheduleStatus.Cancelled && x.PlannedStart < end && x.PlannedEnd > start))
+        { message = L["MachineConflict"]; return; }
+        var previous = await db.ProductionOperations.Where(x => x.ProductionOrderId == operation.ProductionOrderId
+            && x.Sequence < operation.Sequence).Select(x => x.Id).ToListAsync();
+        if (previous.Count > 0 && await db.ProductionSchedules.AnyAsync(x => previous.Contains(x.ProductionOperationId)
+            && x.Status != ScheduleStatus.Cancelled && x.PlannedEnd > start))
+        { message = L["OperationSequenceConflict"]; return; }
+        if (operation.ProductionOrder.PlannedEndDate.HasValue && end > operation.ProductionOrder.PlannedEndDate.Value.Date.AddDays(1))
+        { message = L["DeadlineWarning"]; return; }
+        db.ProductionSchedules.Add(new ProductionSchedule { ProductionOperationId = operationId,
+            MachineId = machineId, PlannedStart = start, PlannedEnd = end, Status = ScheduleStatus.Planned });
+        await db.SaveChangesAsync();
+        message = L["OperationScheduled"];
+        await Reload();
+    }
+}
