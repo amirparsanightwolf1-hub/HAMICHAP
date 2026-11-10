@@ -2426,4 +2426,70 @@
 	<data name="ViewUploadedArtwork" xml:space="preserve">
     <value>مشاهده فایل طرح بارگذاری‌شده</value>
   </data>
+  <data name="CeoDeadlineCalendar" xml:space="preserve">
+    <value>تقویم مهلت سفارش‌ها برای مدیرعامل</value>
+  </data>
+  <data name="CeoDeadlineHelp" xml:space="preserve">
+    <value>تاریخ تکمیل موردنیاز هر سفارش تولید را تعیین کنید. تخصیص دستگاه‌ها جداگانه انجام می‌شود.</value>
+  </data>
+  <data name="MachineSchedule" xml:space="preserve">
+    <value>برنامه تولید دستگاه‌ها</value>
+  </data>
+  <data name="MachineScheduleHelp" xml:space="preserve">
+    <value>عملیات تولید را بررسی کرده و برای هر دستگاه زمان‌بندی کنید.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>شما به این صفحه دسترسی ندارید.</value>
+  </data>
+  <data name="SaveDeadline" xml:space="preserve">
+    <value>ذخیره مهلت</value>
+  </data>
+  <data name="SelectDueDate" xml:space="preserve">
+    <value>تاریخ سررسید معتبر انتخاب کنید.</value>
+  </data>
+  <data name="DeadlineSaved" xml:space="preserve">
+    <value>مهلت تولید ذخیره شد.</value>
+  </data>
+  <data name="AllMachines" xml:space="preserve">
+    <value>همه دستگاه‌ها</value>
+  </data>
+  <data name="UnscheduledOperations" xml:space="preserve">
+    <value>عملیات زمان‌بندی‌نشده</value>
+  </data>
+  <data name="SelectMachine" xml:space="preserve">
+    <value>انتخاب دستگاه</value>
+  </data>
+  <data name="ScheduleOperation" xml:space="preserve">
+    <value>زمان‌بندی</value>
+  </data>
+  <data name="GenerateOperations" xml:space="preserve">
+    <value>ایجاد عملیات باقی‌مانده</value>
+  </data>
+  <data name="OperationsGenerated" xml:space="preserve">
+    <value>عملیات تولید ایجاد شد. پیش از زمان‌بندی ترتیب و مدت آن‌ها را بررسی کنید.</value>
+  </data>
+  <data name="NoRoutingFound" xml:space="preserve">
+    <value>عملیات جدیدی ایجاد نشد. مشخصات سفارش را بررسی کرده و مراحل لازم را دستی اضافه کنید.</value>
+  </data>
+  <data name="AddOperation" xml:space="preserve">
+    <value>افزودن عملیات</value>
+  </data>
+  <data name="SelectOrder" xml:space="preserve">
+    <value>انتخاب سفارش</value>
+  </data>
+  <data name="SelectMachineAndTime" xml:space="preserve">
+    <value>دستگاه و زمان شروع را انتخاب کنید.</value>
+  </data>
+  <data name="MachineConflict" xml:space="preserve">
+    <value>دستگاه در این زمان کار دیگری دارد.</value>
+  </data>
+  <data name="OperationSequenceConflict" xml:space="preserve">
+    <value>یکی از مراحل قبلی با این زمان شروع تداخل دارد.</value>
+  </data>
+  <data name="DeadlineWarning" xml:space="preserve">
+    <value>این عملیات پس از مهلت مدیرعامل تمام می‌شود. زمان زودتری انتخاب کنید.</value>
+  </data>
+  <data name="OperationScheduled" xml:space="preserve">
+    <value>عملیات با موفقیت زمان‌بندی شد.</value>
+  </data>
 </root>
