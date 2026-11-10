@@ -2492,4 +2492,5 @@
   <data name="OperationScheduled" xml:space="preserve">
     <value>Operation scheduled successfully.</value>
   </data>
+  <data name="ScheduleDay" xml:space="preserve"><value>Schedule day</value></data>
 </root>
