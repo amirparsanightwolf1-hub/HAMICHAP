@@ -1,0 +1,185 @@
+/* =========================================
+   Forms
+   ========================================= */
+
+.form-control,
+.form-select {
+    border: 1px solid var(--erp-border);
+    border-radius: var(--erp-radius);
+    transition: border-color var(--erp-transition-fast), box-shadow var(--erp-transition-fast);
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--erp-primary);
+        box-shadow: var(--erp-focus-ring);
+    }
+
+    .form-control:disabled,
+    .form-select:disabled {
+        background-color: #f1f5f9;
+        color: var(--erp-muted);
+        opacity: 1;
+    }
+
+    .form-control::placeholder {
+        color: #9aa5b1;
+    }
+
+
+/* =========================================
+   Buttons
+   ========================================= */
+
+.btn {
+    border-radius: var(--erp-radius);
+    transition: background-color var(--erp-transition-fast), border-color var(--erp-transition-fast), box-shadow var(--erp-transition-fast), transform 0.1s ease;
+}
+
+    .btn:active {
+        transform: translateY(1px);
+    }
+
+    .btn:focus-visible {
+        outline: none;
+        box-shadow: var(--erp-focus-ring);
+    }
+
+.btn-primary,
+a.btn-primary {
+    background-color: var(--erp-primary);
+    border-color: var(--erp-primary);
+    color: #fff;
+    text-decoration: none;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus,
+    a.btn-primary:hover,
+    a.btn-primary:focus {
+        background-color: var(--erp-primary-dark);
+        border-color: var(--erp-primary-dark);
+        color: #fff;
+    }
+
+    .btn-primary:active,
+    a.btn-primary:active {
+        background-color: var(--erp-primary-dark);
+        border-color: var(--erp-primary-dark);
+        color: #fff;
+    }
+
+/* Any Bootstrap button variant used on an <a> (btn-secondary, btn-outline-*, etc.)
+   should never fall back to the plain anchor link color/underline. */
+a.btn {
+    text-decoration: none;
+}
+
+
+/* =========================================
+   Cards
+   ========================================= */
+
+.card {
+    border-color: var(--erp-border);
+    border-radius: var(--erp-radius);
+    background: var(--erp-surface);
+}
+
+.card-header {
+    background: #f8fafc;
+    border-bottom-color: var(--erp-border);
+    font-weight: 600;
+}
+
+
+/* =========================================
+   Tables
+   ========================================= */
+
+.table {
+    color: var(--erp-text);
+    margin-bottom: 0;
+    border-color: var(--erp-border);
+}
+
+    /* Header */
+    .table thead th {
+        font-weight: 600;
+        white-space: nowrap;
+        color: var(--erp-heading);
+        background-color: #f8fafc;
+        border-bottom: 1px solid var(--erp-border);
+        padding: 12px 14px;
+    }
+
+    /* Body cells */
+    .table tbody td {
+        vertical-align: middle;
+        padding: 12px 14px;
+        color: var(--erp-text);
+    }
+
+/* Soft alternating rows */
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #f8fafc;
+}
+
+.table-striped > tbody > tr:nth-of-type(even) > * {
+    background-color: #ffffff;
+}
+
+/* Gentle hover */
+.table tbody tr {
+    transition: background-color var(--erp-transition-fast);
+}
+
+.table-striped > tbody > tr:hover > * {
+    background-color: var(--erp-primary-light);
+}
+
+/* Table links */
+.table a {
+    color: var(--erp-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    .table a:hover {
+        color: var(--erp-primary-dark);
+        text-decoration: underline;
+    }
+
+
+/* =========================================
+   Sticky Table Header
+   ========================================= */
+
+.table-sticky-header thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8fafc;
+    z-index: 1;
+}
+
+
+/* =========================================
+   Badges / status pills
+   ========================================= */
+
+.badge-success {
+    background: var(--erp-success-light);
+    color: var(--erp-success);
+}
+
+.badge-warning {
+    background: var(--erp-warning-light);
+    color: var(--erp-warning);
+}
+
+.badge-danger {
+    background: var(--erp-danger-light);
+    color: var(--erp-danger);
+}
+
+
