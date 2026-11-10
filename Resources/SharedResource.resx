@@ -2493,4 +2493,8 @@
     <value>Operation scheduled successfully.</value>
   </data>
   <data name="ScheduleDay" xml:space="preserve"><value>Schedule day</value></data>
+  <data name="EstimatedHours" xml:space="preserve"><value>Estimated hours</value></data>
+  <data name="RegularShift" xml:space="preserve"><value>Regular shift (08:00–17:00)</value></data>
+  <data name="OvertimeShift" xml:space="preserve"><value>Overtime (17:00–22:00)</value></data>
+  <data name="NightShift" xml:space="preserve"><value>Night shift (22:00–08:00)</value></data>
 </root>
