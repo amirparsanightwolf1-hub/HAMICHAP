@@ -1,4 +1,5 @@
 @page "/production/planning"
+@inject LocalizationService L
 
 @using System.Globalization
 @using HamiChap_MES_ERP.Data
@@ -8,7 +9,7 @@
 
 @inject ApplicationDbContext Db
 
-<PageTitle>Production Planning</PageTitle>
+<PageTitle>@L["Production Planning"]</PageTitle>
 
 <div class="page-container production-planning">
     @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -28,13 +29,13 @@
     {
         <div class="erp-page-header mb-4">
             <div>
-                <div class="erp-page-title">Production Planning</div>
+                <div class="erp-page-title">@L["Production Planning"]</div>
                 <div class="erp-page-subtitle">
-                    Select an order from the queue, then click a calendar slot or drag it onto the calendar.
+                    @L["Select an order from the queue, then click a calendar slot or drag it onto the calendar."]
                 </div>
             </div>
             <div class="d-flex gap-2 flex-wrap">
-                <button class="btn btn-outline-secondary" @onclick="GoToToday">Today</button>
+                <button class="btn btn-outline-secondary" @onclick="GoToToday">@L["Today"]</button>
             </div>
         </div>
 
@@ -42,14 +43,14 @@
             <aside class="planning-order-panel">
                 <div class="card mb-3">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <strong>Production orders</strong>
+                        <strong>@L["Production orders"]</strong>
                         <span class="badge bg-secondary">@orderQueue.Count</span>
                     </div>
                     <div class="card-body order-queue">
-                        <p class="small text-muted">Select an order, then click a calendar slot, or drag it onto the calendar. Scheduled orders can also be dragged to a new start.</p>
+                        <p class="small text-muted">@L["Select an order, then click a calendar slot, or drag it onto the calendar. Scheduled orders can also be dragged to a new start."]</p>
                         @if (orderQueue.Count == 0)
                         {
-                            <div class="text-muted small">There are no active production orders.</div>
+                            <div class="text-muted small">@L["There are no active production orders."]</div>
                         }
                         @foreach (var order in orderQueue)
                         {
@@ -74,29 +75,29 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-header"><strong>Order settings</strong></div>
+                    <div class="card-header"><strong>@L["Order settings"]</strong></div>
                     <div class="card-body">
                         @if (selectedOrder == null)
                         {
-                            <div class="text-muted small">Select an order first.</div>
+                            <div class="text-muted small">@L["Select an order first."]</div>
                         }
                         else
                         {
                             <div class="mb-3">
                                 <strong>@selectedOrder.OrderNumber</strong>
-                                <label class="form-label mt-2">Estimated duration (hours)</label>
+                                <label class="form-label mt-2">@L["Estimated duration (hours)"]</label>
                                 <input type="number" class="form-control" min="0.25" step="0.25" @bind="estimatedDurationHours" />
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" id="avoidOvertime" @bind="avoidOvertime" />
-                                <label class="form-check-label" for="avoidOvertime">Avoid overtime (17:00–22:00)</label>
+                                <label class="form-check-label" for="avoidOvertime">@L["Avoid overtime (17:00–22:00)"]</label>
                             </div>
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="avoidNight" @bind="avoidNightShift" />
-                                <label class="form-check-label" for="avoidNight">Avoid night shift (22:00–08:00)</label>
+                                <label class="form-check-label" for="avoidNight">@L["Avoid night shift (22:00–08:00)"]</label>
                             </div>
-                            <button class="btn btn-outline-primary btn-sm w-100" @onclick="SaveOrderSettings">Save settings</button>
-                            <div class="small text-muted mt-2">The lunch break is always excluded. Prohibited shifts are skipped and are not shown as active production time.</div>
+                            <button class="btn btn-outline-primary btn-sm w-100" @onclick="SaveOrderSettings">@L["Save settings"]</button>
+                            <div class="small text-muted mt-2">@L["The lunch break is always excluded. Prohibited shifts are skipped and are not shown as active production time."]</div>
                         }
                     </div>
                 </div>
@@ -112,17 +113,17 @@
                         <button class="btn btn-sm btn-outline-secondary" @onclick="NextPeriod">›</button>
                     </div>
                     <div class="btn-group" role="group">
-                        <button class="btn @(viewMode == CalendarView.Month ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Month)">Month</button>
-                        <button class="btn @(viewMode == CalendarView.Week ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Week)">Week</button>
-                        <button class="btn @(viewMode == CalendarView.Day ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Day)">Day</button>
+                        <button class="btn @(viewMode == CalendarView.Month ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Month)">@L["Month"]</button>
+                        <button class="btn @(viewMode == CalendarView.Week ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Week)">@L["Week"]</button>
+                        <button class="btn @(viewMode == CalendarView.Day ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Day)">@L["Day"]</button>
                     </div>
                 </div>
 
                 <div class="shift-legend mb-3">
-                    <span><i class="shift-dot work"></i> Regular work 08:00–13:00 / 14:00–17:00</span>
-                    <span><i class="shift-dot break"></i> Break 13:00–14:00</span>
-                    <span><i class="shift-dot overtime"></i> Overtime 17:00–22:00</span>
-                    <span><i class="shift-dot night"></i> Night 22:00–08:00</span>
+                    <span><i class="shift-dot work"></i> @L["Regular work 08:00–13:00 / 14:00–17:00"]</span>
+                    <span><i class="shift-dot break"></i> @L["Break 13:00–14:00"]</span>
+                    <span><i class="shift-dot overtime"></i> @L["Overtime 17:00–22:00"]</span>
+                    <span><i class="shift-dot night"></i> @L["Night 22:00–08:00"]</span>
                 </div>
 
                 @if (viewMode == CalendarView.Month)
@@ -156,7 +157,7 @@
                             </div>
                         }
                     </div>
-                    <div class="small text-muted mt-2">In Month view, click or drop an order on a date to schedule it from 08:00. Use Week or Day view to choose a specific start time.</div>
+                    <div class="small text-muted mt-2">@L["In Month view, click or drop an order on a date to schedule it from 08:00. Use Week or Day view to choose a specific start time."]</div>
                 }
                 else
                 {
@@ -199,7 +200,7 @@
                             }
                         </div>
                     </div>
-                    <div class="small text-muted mt-2">Click a time slot or drop an order onto it to set the start time. Multiple orders may occupy the same time slot.</div>
+                    <div class="small text-muted mt-2">@L["Click a time slot or drop an order onto it to set the start time. Multiple orders may occupy the same time slot."]</div>
                 }
             </div>
         </div>
