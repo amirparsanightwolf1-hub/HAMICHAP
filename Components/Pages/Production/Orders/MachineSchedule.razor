@@ -321,6 +321,7 @@
                                             <th scope="row" class="machine-workload-name">
                                                 <strong>@machine.Name</strong>
                                                 <small>@machine.Code</small>
+                                                <small>@MachineBookingCount(machine.Id) @L["BookedTasks"]</small>
                                             </th>
                                             @foreach (var slot in WorkloadSlots)
                                             {
@@ -421,6 +422,16 @@
     private List<ProductionSchedule> WorkloadBookings(int machineId, DateTime start, DateTime end) =>
         schedules.Where(s => s.MachineId == machineId && s.PlannedStart < end && s.PlannedEnd > start)
             .OrderBy(s => s.PlannedStart).ToList();
+
+    private int MachineBookingCount(int machineId)
+    {
+        var slots = WorkloadSlots;
+        if (slots.Count == 0) return 0;
+        var from = slots[0].Start;
+        var to = slots[^1].End;
+        return schedules.Count(s => s.MachineId == machineId &&
+            s.PlannedStart < to && s.PlannedEnd > from);
+    }
 
     private static bool HasMachineOverlap(IReadOnlyList<ProductionSchedule> bookings)
     {
