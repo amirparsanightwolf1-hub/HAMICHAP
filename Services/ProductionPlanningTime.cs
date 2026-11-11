@@ -87,6 +87,45 @@ public static class ProductionPlanningTime
     }
 
 
+    /// <summary>Actual machine occupation, excluding breaks and order-disallowed shifts.</summary>
+    public static IEnumerable<(DateTime Start, DateTime End)> ProductiveSegments(
+        DateTime start, DateTime end, bool avoidOvertime, bool avoidNight)
+    {
+        if (end <= start) yield break;
+        for (var day = start.Date.AddDays(-1); day <= end.Date; day = day.AddDays(1))
+        {
+            foreach (var window in AllowedWindows(day, avoidOvertime, avoidNight))
+            {
+                var segmentStart = window.Start > start ? window.Start : start;
+                var segmentEnd = window.End < end ? window.End : end;
+                if (segmentStart < segmentEnd)
+                    yield return (segmentStart, segmentEnd);
+            }
+        }
+    }
+
+    public static bool HasProductiveTime(DateTime start, DateTime end,
+        bool avoidOvertime, bool avoidNight, DateTime windowStart, DateTime windowEnd) =>
+        ProductiveSegments(start, end, avoidOvertime, avoidNight)
+            .Any(x => x.Start < windowEnd && x.End > windowStart);
+
+    public static bool ProductiveConflict(DateTime aStart, DateTime aEnd, bool aAvoidOvertime,
+        bool aAvoidNight, DateTime bStart, DateTime bEnd, bool bAvoidOvertime, bool bAvoidNight)
+    {
+        var left = ProductiveSegments(aStart, aEnd, aAvoidOvertime, aAvoidNight).ToList();
+        var right = ProductiveSegments(bStart, bEnd, bAvoidOvertime, bAvoidNight).ToList();
+        return left.Any(a => right.Any(b => a.Start < b.End && a.End > b.Start));
+    }
+
+    private static IEnumerable<(DateTime Start, DateTime End)> AllowedWindows(
+        DateTime day, bool avoidOvertime, bool avoidNight)
+    {
+        yield return (day.AddHours(8), day.AddHours(13));
+        yield return (day.AddHours(14), day.AddHours(17));
+        if (!avoidOvertime) yield return (day.AddHours(17), day.AddHours(22));
+        if (!avoidNight) yield return (day.AddHours(22), day.AddDays(1).AddHours(8));
+    }
+
     public static int OperationMinutes(decimal plannedHours) =>
         Math.Max(1, (int)Math.Round(plannedHours * 60m, MidpointRounding.AwayFromZero));
 
