@@ -173,6 +173,8 @@ using (var scope = app.Services.CreateScope())
     await InventoryLocationSeeder.SeedAsync(context);
 
     await ProductionLocationSeeder.SeedAsync(context);
+
+    await ProductionMachineSeeder.SeedAsync(context);
 }
 
 app.Run();
