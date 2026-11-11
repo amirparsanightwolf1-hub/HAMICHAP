@@ -2879,4 +2879,6 @@
   <data name="Part name" xml:space="preserve"><value>Part name</value></data>
   <data name="Remove part" xml:space="preserve"><value>Remove part</value></data>
   <data name="Sheet imposition preview" xml:space="preserve"><value>Sheet imposition preview</value></data>
+  <data name="RollWorkflowInfo" xml:space="preserve"><value>Workflow and production information</value></data>
+  <data name="LoadingJob" xml:space="preserve"><value>Loading job…</value></data>
 </root>
