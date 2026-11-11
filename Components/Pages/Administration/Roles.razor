@@ -270,7 +270,7 @@ else
             loading = false;
 
             ShowError(
-                $"Unable to load roles: {ex.Message}");
+                L["Unable to load roles:"] + " " + ex.Message);
         }
     }
 
@@ -333,7 +333,7 @@ else
                 "Roles.Create"))
         {
             ShowError(
-                "You are not authorized to create roles.");
+                L["You are not authorized to create roles."]);
 
             return;
         }
@@ -346,7 +346,7 @@ else
         if (string.IsNullOrWhiteSpace(roleName))
         {
             ShowError(
-                "Please enter a role name.");
+                L["Please enter a role name."]);
 
             return;
         }
@@ -360,7 +360,7 @@ else
         if (exists)
         {
             ShowError(
-                "That role already exists.");
+                L["That role already exists."]);
 
             return;
         }
@@ -374,7 +374,7 @@ else
         if (result.Succeeded)
         {
             ShowSuccess(
-                $"Role '{roleName}' created successfully.");
+                String.Format(L["Role '{0}' created successfully."], roleName));
 
             newRoleName = "";
 
@@ -410,7 +410,7 @@ else
                 "Roles.Delete"))
         {
             ShowError(
-                "You are not authorized to delete roles.");
+                L["You are not authorized to delete roles."]);
 
             return;
         }
@@ -419,7 +419,7 @@ else
         if (role.Name == "Administrator")
         {
             ShowError(
-                "The Administrator role cannot be deleted.");
+                L["The Administrator role cannot be deleted."]);
 
             return;
         }
@@ -428,7 +428,7 @@ else
         if (role.Name == null)
         {
             ShowError(
-                "Invalid role.");
+                L["Invalid role."]);
 
             return;
         }
@@ -442,7 +442,7 @@ else
         if (users.Count > 0)
         {
             ShowError(
-                $"Role '{role.Name}' is assigned to {users.Count} user(s) and cannot be deleted.");
+                String.Format(L["Role '{0}' is assigned to {1} user(s) and cannot be deleted."], role.Name, users.Count));
 
             return;
         }
@@ -456,7 +456,7 @@ else
         if (result.Succeeded)
         {
             ShowSuccess(
-                $"Role '{role.Name}' deleted successfully.");
+                String.Format(L["Role '{0}' deleted successfully."], role.Name));
 
             await LoadRoles();
         }
