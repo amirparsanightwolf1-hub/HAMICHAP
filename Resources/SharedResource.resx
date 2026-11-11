@@ -2436,7 +2436,7 @@
     <value>Machine production schedule</value>
   </data>
   <data name="MachineScheduleHelp" xml:space="preserve">
-    <value>Review manufacturing operations and schedule them by machine.</value>
+    <value>Place order operations on machine calendar dates inside the CEO-approved window. Drag between machines or back to the queue.</value>
   </data>
   <data name="AccessDenied" xml:space="preserve">
     <value>You do not have access to this page.</value>
@@ -2497,7 +2497,7 @@
   <data name="RegularShift" xml:space="preserve"><value>Regular shift (08:00–17:00)</value></data>
   <data name="OvertimeShift" xml:space="preserve"><value>Overtime (17:00–22:00)</value></data>
   <data name="NightShift" xml:space="preserve"><value>Night shift (22:00–08:00)</value></data>
-  <data name="DragOperationHelp" xml:space="preserve"><value>Select an operation in the left panel, then click a machine calendar slot or drag the operation onto a date or time.</value></data>
+  <data name="DragOperationHelp" xml:space="preserve"><value>Drag a CEO order or unscheduled step onto a compatible machine date. Drag a booked step back to the left panel to remove its assignment. You can also click Place here.</value></data>
   <data name="Sat" xml:space="preserve"><value>Sat</value></data>
   <data name="Sun" xml:space="preserve"><value>Sun</value></data>
   <data name="Mon" xml:space="preserve"><value>Mon</value></data>
@@ -2521,7 +2521,7 @@
   <data name="OperationsRebalanced" xml:space="preserve"><value>Machine-step durations redistributed to match the CEO production duration.</value></data>
   <data name="CeoPlanRequired" xml:space="preserve"><value>Set an order start and end in the CEO Production Planning calendar before scheduling machine operations.</value></data>
   <data name="MachineDurationMismatch" xml:space="preserve"><value>Machine-step durations do not add up to the CEO total. Use Generate Operations to synchronize unscheduled steps.</value></data>
-  <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>This operation falls outside the CEO production window. Choose a permitted time within the CEO plan.</value></data>
+  <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>The selected date is outside the CEO-approved start/end dates. Choose a date within that window.</value></data>
   <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>Released, running and completed machine schedules cannot be moved.</value></data>
   <data name="AdjustStepHours" xml:space="preserve"><value>Step duration (hours)</value></data>
   <data name="ApplyStepDuration" xml:space="preserve"><value>Apply and rebalance remaining steps</value></data>
