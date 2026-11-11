@@ -47,14 +47,14 @@
                 <div><span>@L["Material area"]</span><b>@RequiredMaterialAreaM2.ToString("0.##") m²</b></div>
                 <div><span>@L["Estimated paper weight"]</span><b>@(EstimatedPaperKg.HasValue ? EstimatedPaperKg.Value.ToString("N2") + " kg" : "—")</b></div>
             </div>
-            <p class="imp-hint mb-0">Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage.</p>
+            <p class="imp-hint mb-0">@L["Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage."]</p>
         </section>
     }
             else if (tab == 1)
     {
         <section class="imp-section">
             <div class="imp-section-head"><h3>@L["Parts / Required quantities"]</h3><button class="imp-add" @onclick="AddPart">@L["＋ Add part"]</button></div>
-            <p class="imp-hint">Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed.</p>
+            <p class="imp-hint">@L["Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed."]</p>
             @foreach (var part in parts)
             {
                 <div class="imp-part-row" @key="part.Id">
@@ -110,7 +110,7 @@
     }
     else
     {
-        <section class="imp-section"><h3>@L["Optimization"]</h3><p class="imp-hint">Generate layouts using the selected sheet, parts, and setup.</p><button class="imp-primary" @onclick="Calculate">@L["Find best layout"]</button><button class="imp-secondary" @onclick="ResetResults">@L["Clear results"]</button>@if(!string.IsNullOrWhiteSpace(error)){
+        <section class="imp-section"><h3>@L["Optimization"]</h3><p class="imp-hint">@L["Generate layouts using the selected sheet, parts, and setup."]</p><button class="imp-primary" @onclick="Calculate">@L["Find best layout"]</button><button class="imp-secondary" @onclick="ResetResults">@L["Clear results"]</button>@if(!string.IsNullOrWhiteSpace(error)){
             <div class="imp-error">@error</div>
         }
     </section>
@@ -261,7 +261,7 @@
                     .ToList();
             }
             if (results.Count == 0 || results.All(x => x.ProducedQuantity < TotalQty))
-                error = "No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation.";
+                error = L["No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation."];
         }
         catch (Exception ex) { error = ex.Message; results.Clear(); }
     }
