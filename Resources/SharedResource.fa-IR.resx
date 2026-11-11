@@ -2939,4 +2939,7 @@
   <data name="Failed to save permissions." xml:space="preserve"><value>ذخیره مجوزها انجام نشد.</value></data>
   <data name="Unexpected error while loading roles." xml:space="preserve"><value>هنگام بارگذاری نقش‌ها خطایی غیرمنتظره رخ داد.</value></data>
   <data name="Unable to load permission management." xml:space="preserve"><value>بارگذاری مدیریت مجوزها انجام نشد.</value></data>
+  <data name="Location" xml:space="preserve"><value>مکان</value></data>
+  <data name="ViewAllCustomerInventory" xml:space="preserve"><value>نمایش موجودی تمام مشتریان</value></data>
+  <data name="NoCustomerInventory" xml:space="preserve"><value>موجودی ثبت‌شده‌ای برای مشتریان یافت نشد.</value></data>
 </root>
