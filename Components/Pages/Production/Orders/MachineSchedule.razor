@@ -46,6 +46,12 @@
                                 <div class="small text-muted">@L["CeoDuration"]: @DurationLabel(operation.ProductionOrder.EstimatedDurationMinutes)</div>
                                 @if (canEdit)
                                 {
+                                    <label class="form-label mt-2">@L["AdjustStepHours"]</label>
+                                    <input type="number" min="0.016667" step="any" class="form-control form-control-sm"
+                                           value="@DurationInput(operation)"
+                                           @onchange="e => SetDurationInput(operation.Id, e.Value?.ToString())" />
+                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2 w-100"
+                                            @onclick="() => SaveOperationDuration(operation.Id)">@L["ApplyStepDuration"]</button>
                                     <label class="form-label mt-2">@L["Machine"]</label>
                                     <select class="form-select form-select-sm" value="@MachineChoice(operation.Id)" @onchange="e => SetMachineChoice(operation.Id, e.Value?.ToString())">
                                         <option value="0">@L["SelectMachine"]</option>
@@ -422,6 +428,7 @@
     private List<ProductionSchedule> schedules = new();
     private Dictionary<long, int> machineChoices = new();
     private Dictionary<long, string> startChoices = new();
+    private Dictionary<long, string> durationChoices = new();
     private static readonly PersianCalendar Persian = new();
 
     protected override async Task OnInitializedAsync()
@@ -460,6 +467,70 @@
 
     private void SetStartChoice(long operationId, string? value) =>
         startChoices[operationId] = value ?? string.Empty;
+
+    private string DurationInput(ProductionOperation operation) =>
+        durationChoices.GetValueOrDefault(operation.Id,
+            operation.PlannedHours.ToString("0.######", CultureInfo.InvariantCulture));
+
+    private void SetDurationInput(long operationId, string? value) =>
+        durationChoices[operationId] = value ?? string.Empty;
+
+    private async Task SaveOperationDuration(long operationId)
+    {
+        if (!canEdit || !durationChoices.TryGetValue(operationId, out var input) ||
+            !decimal.TryParse(input, NumberStyles.Number, CultureInfo.InvariantCulture, out var hours) ||
+            hours <= 0)
+        {
+            message = L["InvalidStepDuration"];
+            return;
+        }
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var operation = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == operationId);
+        if (operation == null || operation.Status is ProductionOperationStatus.Running
+            or ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled)
+        {
+            message = L["CannotChangeActiveSchedule"];
+            return;
+        }
+
+        var order = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == operation.ProductionOrderId);
+        if (order == null) return;
+        var steps = await db.ProductionOperations.Where(x => x.ProductionOrderId == order.Id)
+            .OrderBy(x => x.Sequence).ToListAsync();
+        var ids = steps.Select(x => x.Id).ToList();
+        if (await db.ProductionSchedules.AnyAsync(x => ids.Contains(x.ProductionOperationId)
+            && x.Status != ScheduleStatus.Cancelled))
+        {
+            message = L["UnscheduleBeforeAdjusting"];
+            return;
+        }
+
+        var minutes = (int)Math.Round(hours * 60m, MidpointRounding.AwayFromZero);
+        if (minutes < 1 || minutes > order.EstimatedDurationMinutes - (steps.Count - 1))
+        {
+            message = L["StepDurationBudget"];
+            return;
+        }
+
+        var others = steps.Where(x => x.Id != operationId).ToList();
+        var remaining = order.EstimatedDurationMinutes - minutes;
+        if (others.Count == 0 && remaining != 0)
+        {
+            message = L["StepDurationBudget"];
+            return;
+        }
+        var rest = ProductionPlanningTime.AllocateOperationMinutes(
+            remaining, others.Select(x => x.PlannedHours).ToArray());
+        operation.PlannedHours = Math.Round(minutes / 60m, 6);
+        for (var i = 0; i < others.Count; i++)
+            others[i].PlannedHours = Math.Round(rest[i] / 60m, 6);
+
+        await db.SaveChangesAsync();
+        durationChoices.Remove(operationId);
+        message = L["OperationsRebalanced"];
+        await Reload();
+    }
 
     private int MachineChoice(long id) => machineChoices.GetValueOrDefault(id);
     private string StartChoice(long id) => startChoices.GetValueOrDefault(id, "");
