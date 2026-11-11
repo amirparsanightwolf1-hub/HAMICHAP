@@ -1097,6 +1097,17 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<int>("EstimatedDurationMinutes")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("OperationsSequenceConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OperationsSequenceConfirmedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("OperationsSequenceSignature")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
