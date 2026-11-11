@@ -2619,4 +2619,59 @@
   <data name="CannotRestoreEditedRoute" xml:space="preserve"><value>برای بارگذاری مجدد پیشنهادهای فروش باید ابتدا مراحل موجود حذف شوند.</value></data>
   <data name="SalesSuggestionsRestored" xml:space="preserve"><value>مشخصات سفارش فروش دوباره خوانده شد و مراحل پیشنهادی در صورت موجود بودن بازیابی شدند.</value></data>
   <data name="SaveStageEditsBeforeConfirmation" xml:space="preserve"><value>پیش از تأیید و ایجاد زمان‌بندی خودکار، تغییرات نام، دستگاه یا مدت هر مرحله را ذخیره کنید.</value></data>
+  <data name="Access denied" xml:space="preserve"><value>دسترسی غیرمجاز</value></data>
+  <data name="You do not have access to this resource." xml:space="preserve"><value>شما به این بخش دسترسی ندارید.</value></data>
+  <data name="Confirm email" xml:space="preserve"><value>تأیید ایمیل</value></data>
+  <data name="Confirm email change" xml:space="preserve"><value>تأیید تغییر ایمیل</value></data>
+  <data name="Register" xml:space="preserve"><value>ثبت‌نام</value></data>
+  <data name="Please enter your email." xml:space="preserve"><value>لطفاً ایمیل خود را وارد کنید.</value></data>
+  <data name="Forgot your password?" xml:space="preserve"><value>رمز عبور خود را فراموش کرده‌اید؟</value></data>
+  <data name="Enter your email." xml:space="preserve"><value>ایمیل خود را وارد کنید.</value></data>
+  <data name="Reset password" xml:space="preserve"><value>بازنشانی رمز عبور</value></data>
+  <data name="Forgot password confirmation" xml:space="preserve"><value>تأیید درخواست فراموشی رمز عبور</value></data>
+  <data name="Please check your email to reset your password." xml:space="preserve"><value>برای بازنشانی رمز عبور، ایمیل خود را بررسی کنید.</value></data>
+  <data name="Invalid password reset" xml:space="preserve"><value>لینک بازنشانی رمز عبور نامعتبر است</value></data>
+  <data name="The password reset link is invalid." xml:space="preserve"><value>لینک بازنشانی رمز عبور معتبر نیست.</value></data>
+  <data name="Invalid user" xml:space="preserve"><value>کاربر نامعتبر</value></data>
+  <data name="Locked out" xml:space="preserve"><value>حساب قفل شده است</value></data>
+  <data name="This account has been locked out, please try again later." xml:space="preserve"><value>این حساب قفل شده است. لطفاً بعداً دوباره تلاش کنید.</value></data>
+  <data name="Two-factor authentication" xml:space="preserve"><value>احراز هویت دومرحله‌ای</value></data>
+  <data name="Your login is protected with an authenticator app. Enter your authenticator code below." xml:space="preserve"><value>ورود شما با برنامه احراز هویت محافظت می‌شود. کد برنامه را در زیر وارد کنید.</value></data>
+  <data name="Authenticator code" xml:space="preserve"><value>کد برنامه احراز هویت</value></data>
+  <data name="Remember this machine" xml:space="preserve"><value>این دستگاه را به خاطر بسپار</value></data>
+  <data name="Log in" xml:space="preserve"><value>ورود</value></data>
+  <data name="log in with a recovery code" xml:space="preserve"><value>با کد بازیابی وارد شوید</value></data>
+  <data name="Recovery code verification" xml:space="preserve"><value>تأیید کد بازیابی</value></data>
+  <data name="You have requested to log in with a recovery code. This login will not be remembered until you provide an authenticator app code at log in or disable 2FA and log in again." xml:space="preserve"><value>درخواست ورود با کد بازیابی داده‌اید. تا زمانی که با کد برنامه احراز هویت وارد نشوید یا احراز هویت دومرحله‌ای را غیرفعال نکنید، این ورود ذخیره نمی‌شود.</value></data>
+  <data name="Recovery Code" xml:space="preserve"><value>کد بازیابی</value></data>
+  <data name="Change password" xml:space="preserve"><value>تغییر رمز عبور</value></data>
+  <data name="Old password" xml:space="preserve"><value>رمز عبور فعلی</value></data>
+  <data name="New password" xml:space="preserve"><value>رمز عبور جدید</value></data>
+  <data name="Confirm password" xml:space="preserve"><value>تکرار رمز عبور</value></data>
+  <data name="Confirm Password" xml:space="preserve"><value>تکرار رمز عبور</value></data>
+  <data name="Update password" xml:space="preserve"><value>به‌روزرسانی رمز عبور</value></data>
+  <data name="Enter the old password" xml:space="preserve"><value>رمز عبور فعلی را وارد کنید</value></data>
+  <data name="Enter the new password" xml:space="preserve"><value>رمز عبور جدید را وارد کنید</value></data>
+  <data name="Delete Personal Data" xml:space="preserve"><value>حذف اطلاعات شخصی</value></data>
+  <data name="Deleting this data will permanently remove your account, and this cannot be recovered." xml:space="preserve"><value>با حذف این اطلاعات، حساب شما برای همیشه حذف می‌شود و قابل بازیابی نیست.</value></data>
+  <data name="Delete data and close my account" xml:space="preserve"><value>حذف اطلاعات و بستن حساب من</value></data>
+  <data name="Please enter your password." xml:space="preserve"><value>لطفاً رمز عبور را وارد کنید.</value></data>
+  <data name="Disable two-factor authentication (2FA)" xml:space="preserve"><value>غیرفعال‌سازی احراز هویت دومرحله‌ای</value></data>
+  <data name="This action only disables 2FA." xml:space="preserve"><value>این کار فقط احراز هویت دومرحله‌ای را غیرفعال می‌کند.</value></data>
+  <data name="Disable 2FA" xml:space="preserve"><value>غیرفعال کردن احراز هویت دومرحله‌ای</value></data>
+  <data name="reset your authenticator keys." xml:space="preserve"><value>کلیدهای احراز هویت خود را بازنشانی کنید.</value></data>
+  <data name="Manage email" xml:space="preserve"><value>مدیریت ایمیل</value></data>
+  <data name="Send verification email" xml:space="preserve"><value>ارسال ایمیل تأیید</value></data>
+  <data name="New email" xml:space="preserve"><value>ایمیل جدید</value></data>
+  <data name="Change email" xml:space="preserve"><value>تغییر ایمیل</value></data>
+  <data name="Enter your email" xml:space="preserve"><value>ایمیل خود را وارد کنید</value></data>
+  <data name="Enter a new email" xml:space="preserve"><value>ایمیل جدید را وارد کنید</value></data>
+  <data name="Configure authenticator app" xml:space="preserve"><value>پیکربندی برنامه احراز هویت</value></data>
+  <data name="To use an authenticator app go through the following steps:" xml:space="preserve"><value>برای استفاده از برنامه احراز هویت، مراحل زیر را انجام دهید:</value></data>
+  <data name="Android" xml:space="preserve"><value>اندروید</value></data>
+  <data name="iOS" xml:space="preserve"><value>آی‌او‌اس</value></data>
+  <data name="and" xml:space="preserve"><value>و</value></data>
+  <data name="Verification Code" xml:space="preserve"><value>کد تأیید</value></data>
+  <data name="Verify" xml:space="preserve"><value>تأیید</value></data>
+  <data name="Enter the code" xml:space="preserve"><value>کد را وارد کنید</value></data>
 </root>
