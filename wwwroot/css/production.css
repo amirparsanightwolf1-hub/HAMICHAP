@@ -1393,3 +1393,103 @@
 .machine-schedule .manager-operation-queue .queue-order { cursor: grab; }
 .machine-schedule .machine-return-hint { line-height: 1.6; }
 .machine-schedule .timeline-scroll { max-height: 720px; }
+
+
+/* Production Manager machine allocation: one shared CEO calendar plus machine occupancy. */
+.machine-schedule .manager-selection-hint {
+    padding: 10px 12px;
+    border: 1px solid #c7ddeb;
+    border-inline-start: 4px solid #0c568d;
+    border-radius: 7px;
+    background: #f1f7fc;
+    font-size: .85rem;
+    line-height: 1.6;
+}
+.machine-schedule .manager-operation-queue .queue-order,
+.machine-schedule .month-order-chip.manager-stage-chip,
+.machine-schedule .timeline-order.manager-stage-chip {
+    cursor: pointer;
+}
+.machine-schedule .machine-workload-panel {
+    overflow: hidden;
+}
+.machine-schedule .machine-workload-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+    border: 1px solid #dce8f1;
+    border-radius: 9px;
+}
+.machine-schedule .machine-workload-table {
+    width: max-content;
+    min-width: 100%;
+    table-layout: fixed;
+    border-spacing: 3px;
+    border-collapse: separate;
+    font-size: .78rem;
+}
+.machine-schedule .machine-workload-table th,
+.machine-schedule .machine-workload-table td {
+    padding: 7px;
+    min-width: 125px;
+    max-width: 180px;
+    vertical-align: top;
+    border: 1px solid #dfe8f0;
+    border-radius: 5px;
+}
+.machine-schedule .machine-workload-table thead th {
+    background: #eaf3fa;
+    color: #0c568d;
+    font-weight: 700;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+.machine-schedule .machine-workload-table .machine-workload-name {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 2;
+    background: #f6f9fc;
+    min-width: 155px;
+    width: 155px;
+    max-width: 155px;
+    text-align: start;
+    border-inline-start: 3px solid #0c568d;
+}
+.machine-schedule .machine-workload-name strong,
+.machine-schedule .machine-workload-name small {
+    display: block;
+    overflow-wrap: anywhere;
+}
+.machine-schedule .machine-workload-name small { color: #697e91; font-weight: 400; }
+.machine-schedule .machine-workload-table td { min-height: 70px; }
+.machine-schedule .machine-workload-table .machine-workload-free { background: #fbfcfe; }
+.machine-schedule .machine-workload-table .machine-workload-busy { background: #e6f1f9; }
+.machine-schedule .machine-workload-table .machine-workload-conflict {
+    background: #fff1f0;
+    border-color: #cd5b52;
+}
+.machine-schedule .machine-workload-chip {
+    display: block;
+    width: 100%;
+    margin: 2px 0 5px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: #0c568d;
+    color: white;
+    cursor: pointer;
+    text-align: start;
+    font-size: .72rem;
+    overflow-wrap: anywhere;
+}
+.machine-schedule .machine-workload-chip:hover,
+.machine-schedule .machine-workload-chip:focus-visible { background: #08446f; }
+.machine-schedule .machine-workload-chip strong,
+.machine-schedule .machine-workload-chip span,
+.machine-schedule .machine-workload-chip small { display: block; color: inherit; }
+.machine-schedule .machine-workload-warning {
+    display: block;
+    font-weight: 700;
+    color: #a12e26;
+}
