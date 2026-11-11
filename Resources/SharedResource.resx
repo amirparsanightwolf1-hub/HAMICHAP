@@ -2523,4 +2523,9 @@
   <data name="MachineDurationMismatch" xml:space="preserve"><value>Machine-step durations do not add up to the CEO total. Use Generate Operations to synchronize unscheduled steps.</value></data>
   <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>This operation falls outside the CEO production window. Choose a permitted time within the CEO plan.</value></data>
   <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>Released, running and completed machine schedules cannot be moved.</value></data>
+  <data name="AdjustStepHours" xml:space="preserve"><value>Step duration (hours)</value></data>
+  <data name="ApplyStepDuration" xml:space="preserve"><value>Apply and rebalance remaining steps</value></data>
+  <data name="InvalidStepDuration" xml:space="preserve"><value>Enter a valid positive number of hours.</value></data>
+  <data name="UnscheduleBeforeAdjusting" xml:space="preserve"><value>Return all scheduled steps of this order to the list before adjusting stage durations.</value></data>
+  <data name="StepDurationBudget" xml:space="preserve"><value>The step duration exceeds the CEO's time budget or leaves insufficient time for the other steps.</value></data>
 </root>
