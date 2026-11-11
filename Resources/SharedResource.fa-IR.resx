@@ -2879,4 +2879,6 @@
   <data name="Part name" xml:space="preserve"><value>نام قطعه</value></data>
   <data name="Remove part" xml:space="preserve"><value>حذف قطعه</value></data>
   <data name="Sheet imposition preview" xml:space="preserve"><value>پیش‌نمایش چیدمان ورق</value></data>
+  <data name="RollWorkflowInfo" xml:space="preserve"><value>اطلاعات گردش کار و تولید</value></data>
+  <data name="LoadingJob" xml:space="preserve"><value>در حال بارگذاری مشخصات سفارش…</value></data>
 </root>
