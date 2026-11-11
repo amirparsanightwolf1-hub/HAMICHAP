@@ -2506,4 +2506,5 @@
   <data name="Thu" xml:space="preserve"><value>پنجشنبه</value></data>
   <data name="Fri" xml:space="preserve"><value>جمعه</value></data>
   <data name="NoActiveMachines" xml:space="preserve"><value>هیچ دستگاه فعالی یافت نشد. برای زمان‌بندی عملیات تولید، دستگاه‌ها را اضافه یا فعال کنید.</value></data>
+  <data name="MachineMismatch" xml:space="preserve"><value>این عملیات با دستگاه انتخاب‌شده سازگار نیست. یک دستگاه پیشنهادی انتخاب کنید یا مسیر تولید را بررسی کنید.</value></data>
 </root>
