@@ -379,7 +379,6 @@
     private DateTime displayDate = DateTime.Today;
     private long? selectedOrderId;
     private long? selectedOperationId;
-    private long? draggedOperationId;
 
     private string newOperationName = "";
     private int newMachineId;
@@ -398,6 +397,40 @@
         .Where(x => x.ProductionOrderId == selectedOrderId).OrderBy(x => x.Sequence).ToList();
     private int AllocatedMinutes => SelectedOperations.Sum(OperationMinutes);
     private int RemainingMinutes => (SelectedOrder?.EstimatedDurationMinutes ?? 0) - AllocatedMinutes;
+    private ProductionOperation? SelectedOperation =>
+        operations.FirstOrDefault(x => x.Id == selectedOperationId);
+
+    private sealed record WorkloadSlot(DateTime Start, DateTime End, string Label);
+
+    // The machine matrix shares the exact month/week/day range displayed by the CEO calendar.
+    private List<WorkloadSlot> WorkloadSlots => viewMode switch
+    {
+        CalendarView.Day => Enumerable.Range(0, 24)
+            .Select(hour => new WorkloadSlot(displayDate.Date.AddHours(hour),
+                displayDate.Date.AddHours(hour + 1),
+                hour.ToString("00", CultureInfo.InvariantCulture) + ":00")).ToList(),
+        CalendarView.Week => VisibleDates
+            .Select(date => new WorkloadSlot(date.Date, date.Date.AddDays(1),
+                FormatJalali(date))).ToList(),
+        _ => MonthDates
+            .Select(date => new WorkloadSlot(date.Date, date.Date.AddDays(1),
+                FormatJalali(date))).ToList()
+    };
+
+    private List<ProductionSchedule> WorkloadBookings(int machineId, DateTime start, DateTime end) =>
+        schedules.Where(s => s.MachineId == machineId && s.PlannedStart < end && s.PlannedEnd > start)
+            .OrderBy(s => s.PlannedStart).ToList();
+
+    private static bool HasMachineOverlap(IReadOnlyList<ProductionSchedule> bookings)
+    {
+        for (var i = 0; i < bookings.Count; i++)
+            for (var j = i + 1; j < bookings.Count; j++)
+                if (bookings[i].PlannedStart < bookings[j].PlannedEnd &&
+                    bookings[j].PlannedStart < bookings[i].PlannedEnd)
+                    return true;
+        return false;
+    }
+
 
     private string PeriodTitle => viewMode switch
     {
@@ -486,33 +519,13 @@
         var step = operations.FirstOrDefault(x => x.Id == id);
         if (step is null) return;
         selectedOrderId = step.ProductionOrderId;
-    }
-
-    private void BeginDrag(long id)
-    {
-        if (!canEdit) return;
-        selectedOperationId = id;
-        draggedOperationId = id;
-    }
-
-    private async Task DropOperation(DateTime date, TimeSpan time)
-    {
-        var id = draggedOperationId ?? selectedOperationId;
-        draggedOperationId = null;
-        if (id.HasValue) await PlaceOperationAsync(id.Value, date.Date.Add(time));
+        ClearMessage();
     }
 
     private async Task PlaceSelectedOperation(DateTime date, TimeSpan time)
     {
         if (selectedOperationId.HasValue)
             await PlaceOperationAsync(selectedOperationId.Value, date.Date.Add(time));
-    }
-
-    private async Task ReturnDraggedOperation()
-    {
-        var id = draggedOperationId;
-        draggedOperationId = null;
-        if (id.HasValue) await UnscheduleOperation(id.Value);
     }
 
     private void ClearMessage() { message = null; isError = false; }
