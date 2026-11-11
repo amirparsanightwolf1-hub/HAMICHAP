@@ -2939,4 +2939,7 @@
   <data name="Failed to save permissions." xml:space="preserve"><value>Failed to save permissions.</value></data>
   <data name="Unexpected error while loading roles." xml:space="preserve"><value>Unexpected error while loading roles.</value></data>
   <data name="Unable to load permission management." xml:space="preserve"><value>Unable to load permission management.</value></data>
+  <data name="Location" xml:space="preserve"><value>Location</value></data>
+  <data name="ViewAllCustomerInventory" xml:space="preserve"><value>View all customer inventory</value></data>
+  <data name="NoCustomerInventory" xml:space="preserve"><value>No customer inventory records found.</value></data>
 </root>
