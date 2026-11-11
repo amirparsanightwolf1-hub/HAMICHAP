@@ -2,6 +2,7 @@
 
 @using System.Globalization
 @using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Services
 @using HamiChap_MES_ERP.Models.Production
 @using Microsoft.EntityFrameworkCore
 
@@ -294,15 +295,56 @@
     private async Task SaveOrderSettings()
     {
         if (selectedOrderId == null || estimatedDurationHours < 0.25m) return;
+
+        errorMessage = null;
+        successMessage = null;
         var entity = await Db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == selectedOrderId.Value);
         if (entity == null) return;
-        entity.EstimatedDurationMinutes = (int)Math.Round(estimatedDurationHours * 60m, MidpointRounding.AwayFromZero);
+
+        var minutes = (int)Math.Round(estimatedDurationHours * 60m, MidpointRounding.AwayFromZero);
+        var changed = entity.EstimatedDurationMinutes != minutes ||
+                      entity.AvoidOvertime != avoidOvertime ||
+                      entity.AvoidNightShift != avoidNightShift;
+        var steps = await Db.ProductionOperations.Where(x => x.ProductionOrderId == entity.Id)
+            .OrderBy(x => x.Sequence).ToListAsync();
+        var stepIds = steps.Select(x => x.Id).ToList();
+        var hasScheduledSteps = stepIds.Count > 0 && await Db.ProductionSchedules.AnyAsync(
+            x => stepIds.Contains(x.ProductionOperationId) && x.Status != ScheduleStatus.Cancelled);
+
+        if (changed && hasScheduledSteps)
+        {
+            errorMessage = "This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions.";
+            return;
+        }
+        if (steps.Count > minutes)
+        {
+            errorMessage = "The CEO duration must allow at least one minute for each machine operation.";
+            return;
+        }
+
+        entity.EstimatedDurationMinutes = minutes;
         entity.AvoidOvertime = avoidOvertime;
         entity.AvoidNightShift = avoidNightShift;
+
+        if (steps.Count > 0 && changed)
+        {
+            var allocation = ProductionPlanningTime.AllocateOperationMinutes(minutes, steps.Select(x => x.PlannedHours).ToArray());
+            for (var i = 0; i < steps.Count; i++)
+                steps[i].PlannedHours = Math.Round(allocation[i] / 60m, 6);
+        }
+
+        if (entity.PlannedStartDate.HasValue && changed)
+        {
+            entity.PlannedStartDate = ProductionPlanningTime.NextAllowedProductionMinute(
+                entity.PlannedStartDate.Value, avoidOvertime, avoidNightShift);
+            entity.PlannedEndDate = ProductionPlanningTime.CalculateEndDateTime(
+                entity.PlannedStartDate.Value, minutes, avoidOvertime, avoidNightShift);
+        }
+
         await Db.SaveChangesAsync();
         await ReloadQueueAsync();
         SelectOrder(entity.Id);
-        successMessage = "Order scheduling settings saved.";
+        successMessage = "CEO duration, machine-step allocations and permitted shifts are consistent.";
     }
 
     private void StartDrag(long orderId)
@@ -341,8 +383,19 @@
             if (entity == null) return;
 
             var duration = Math.Max(1, entity.EstimatedDurationMinutes);
-            var actualStart = NextAllowedProductionMinute(requestedStart, entity.AvoidOvertime, entity.AvoidNightShift);
-            var end = CalculateEndDateTime(actualStart, duration, entity.AvoidOvertime, entity.AvoidNightShift);
+            var actualStart = ProductionPlanningTime.NextAllowedProductionMinute(requestedStart, entity.AvoidOvertime, entity.AvoidNightShift);
+            var end = ProductionPlanningTime.CalculateEndDateTime(actualStart, duration, entity.AvoidOvertime, entity.AvoidNightShift);
+
+            var operationIds = await Db.ProductionOperations.Where(x => x.ProductionOrderId == orderId)
+                .Select(x => x.Id).ToListAsync();
+            if (operationIds.Count > 0 &&
+                (entity.PlannedStartDate != actualStart || entity.PlannedEndDate != end) &&
+                await Db.ProductionSchedules.AnyAsync(x => operationIds.Contains(x.ProductionOperationId)
+                    && x.Status != ScheduleStatus.Cancelled))
+            {
+                errorMessage = "This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar.";
+                return;
+            }
 
             entity.PlannedStartDate = actualStart;
             entity.PlannedEndDate = end;
@@ -356,86 +409,6 @@
         {
             errorMessage = ex.InnerException?.Message ?? ex.Message;
         }
-    }
-
-    // Counts only production minutes. The lunch break and any shifts prohibited for this order are skipped.
-    private static DateTime CalculateEndDateTime(DateTime start, int durationMinutes, bool avoidOvertime, bool avoidNight)
-    {
-        var cursor = start;
-        var remaining = durationMinutes;
-        var guard = 0;
-
-        while (remaining > 0 && guard++ < 20000)
-        {
-            var next = NextAllowedProductionMinute(cursor, avoidOvertime, avoidNight);
-            var availableUntil = EndOfCurrentAllowedWindow(next, avoidOvertime, avoidNight);
-            var availableMinutes = (int)Math.Floor((availableUntil - next).TotalMinutes);
-
-            if (availableMinutes <= 0)
-            {
-                cursor = next.AddMinutes(1);
-                continue;
-            }
-
-            var used = Math.Min(remaining, availableMinutes);
-            cursor = next.AddMinutes(used);
-            remaining -= used;
-        }
-
-        if (remaining > 0)
-            throw new InvalidOperationException("Unable to calculate an end time within the scheduling horizon.");
-
-        return cursor;
-    }
-
-    private static DateTime NextAllowedProductionMinute(DateTime value, bool avoidOvertime, bool avoidNight)
-    {
-        var cursor = value;
-        for (var i = 0; i < 20000; i++)
-        {
-            var t = cursor.TimeOfDay;
-
-            if (t >= TimeSpan.FromHours(8) && t < TimeSpan.FromHours(13))
-                return cursor;
-
-            if (t >= TimeSpan.FromHours(14) && t < TimeSpan.FromHours(17))
-                return cursor;
-
-            if (!avoidOvertime && t >= TimeSpan.FromHours(17) && t < TimeSpan.FromHours(22))
-                return cursor;
-
-            if (!avoidNight && (t >= TimeSpan.FromHours(22) || t < TimeSpan.FromHours(8)))
-                return cursor;
-
-            if (t >= TimeSpan.FromHours(13) && t < TimeSpan.FromHours(14))
-                cursor = cursor.Date.AddHours(14);
-            else if (avoidOvertime && t >= TimeSpan.FromHours(17) && t < TimeSpan.FromHours(22))
-                cursor = avoidNight ? cursor.Date.AddDays(1).AddHours(8) : cursor.Date.AddHours(22);
-            else if (avoidNight && (t >= TimeSpan.FromHours(22) || t < TimeSpan.FromHours(8)))
-                cursor = t >= TimeSpan.FromHours(22)
-                    ? cursor.Date.AddDays(1).AddHours(8)
-                    : cursor.Date.AddHours(8);
-            else
-                cursor = cursor.AddMinutes(1);
-        }
-
-        throw new InvalidOperationException("No permitted production time was found.");
-    }
-
-    private static DateTime EndOfCurrentAllowedWindow(DateTime value, bool avoidOvertime, bool avoidNight)
-    {
-        var t = value.TimeOfDay;
-        if (t >= TimeSpan.FromHours(8) && t < TimeSpan.FromHours(13))
-            return value.Date.AddHours(13);
-        if (t >= TimeSpan.FromHours(14) && t < TimeSpan.FromHours(17))
-            return value.Date.AddHours(17);
-        if (!avoidOvertime && t >= TimeSpan.FromHours(17) && t < TimeSpan.FromHours(22))
-            return value.Date.AddHours(22);
-        if (!avoidNight && t >= TimeSpan.FromHours(22))
-            return value.Date.AddDays(1).AddHours(8);
-        if (!avoidNight && t < TimeSpan.FromHours(8))
-            return value.Date.AddHours(8);
-        return value.AddMinutes(1);
     }
 
     private List<ProductionOrder> OrdersForDate(DateTime date)
