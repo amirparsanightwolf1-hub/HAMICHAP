@@ -1351,3 +1351,62 @@
 .machine-schedule .machine-ceo-order[draggable="true"] { cursor: grab; }
 .machine-schedule .machine-scheduled-chip.machine-outside-ceo { background: #9c3434; }
 .machine-schedule .machine-window-warning { font-weight: 700; }
+
+
+/* Production Manager: exact CEO calendar grid and palette, enhanced with operation cards. */
+.machine-schedule .planning-calendar-panel .month-grid,
+.machine-schedule .planning-calendar-panel .timeline {
+    direction: ltr;
+}
+.machine-schedule .manager-stage-chip {
+    position: relative;
+    white-space: normal;
+    text-align: start;
+    overflow-wrap: anywhere;
+    outline: 1px solid rgba(255,255,255,.72);
+    border-inline-start: 3px solid #0c568d;
+    box-shadow: 0 2px 5px rgba(12,86,141,.16);
+    cursor: grab;
+}
+.machine-schedule .timeline-order.manager-stage-chip small {
+    display: block;
+    color: inherit;
+    font-weight: 500;
+    margin-top: 2px;
+}
+.machine-schedule .month-day .manager-stage-chip {
+    font-size: .7rem;
+    line-height: 1.45;
+    padding: 7px 6px;
+}
+.machine-schedule .manager-duration-budget {
+    border: 1px solid #d2e4f1;
+    background: #f4f9fd;
+    color: #264962;
+    border-radius: 8px;
+    padding: 11px;
+    font-size: .83rem;
+    line-height: 1.8;
+}
+.machine-schedule .manager-new-operation {
+    border-top: 1px solid #dfe4ee;
+    padding-top: 13px;
+}
+.machine-schedule .manager-operation-queue {
+    max-height: 58vh;
+}
+.machine-schedule .manager-operation-editor summary {
+    color: #0c568d;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .8rem;
+}
+.machine-schedule .manager-operation-editor[open] {
+    background: #f6fafe;
+    border-radius: 7px;
+    padding: 8px;
+}
+.machine-schedule .planning-order-panel > .card:first-child .queue-order { cursor: pointer; }
+.machine-schedule .manager-operation-queue .queue-order { cursor: grab; }
+.machine-schedule .machine-return-hint { line-height: 1.6; }
+.machine-schedule .timeline-scroll { max-height: 720px; }
