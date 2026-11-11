@@ -854,6 +854,26 @@
         }
     }
 
+    private static bool CompatibleWithStage(ProductionOperation operation, Machine machine)
+    {
+        // A manager-saved choice is authoritative. Otherwise auto-select from the
+        // compatible equipment recorded in the Sales-derived operation name.
+        if (operation.WorkCenter?.Code is string centerCode &&
+            centerCode.StartsWith("MC-", StringComparison.OrdinalIgnoreCase))
+            return String.Equals(centerCode[3..], machine.Code, StringComparison.OrdinalIgnoreCase);
+        return ProductionJobRouting.Candidates(operation.Name).Any(code =>
+            String.Equals(code, machine.Code, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string SuggestedMachineNames(ProductionOperation operation)
+    {
+        var possible = machines.Where(m => CompatibleWithStage(operation, m))
+            .Select(m => m.Name).ToList();
+        return possible.Count > 0 ? String.Join(" / ", possible) : L["ChooseMachineForUnmappedStep"];
+    }
+
+    // Manager confirmation is the scheduling action: calculate ALL stage placements
+    // at once, respecting both machine availability and order-stage sequence.
     private async Task ConfirmOperationSequence()
     {
         if (!canEdit || !selectedOrderId.HasValue) return;
@@ -868,10 +888,10 @@
             }
 
             await using var db = await DbFactory.CreateDbContextAsync();
-            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            await using var transaction = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
             var order = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == selectedOrderId.Value);
             if (order == null) return;
-
             var steps = await db.ProductionOperations
                 .Include(x => x.WorkCenter)
                 .Where(x => x.ProductionOrderId == order.Id)
@@ -881,7 +901,7 @@
                 ShowError(L["NoOperationsGenerated"]);
                 return;
             }
-            if (steps.Where((x, i) => x.Sequence != i + 1).Any() ||
+            if (steps.Where((step, index) => step.Sequence != index + 1).Any() ||
                 steps.Any(x => x.PlannedHours <= 0 || String.IsNullOrWhiteSpace(x.Name) ||
                     x.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled))
             {
@@ -893,52 +913,61 @@
                 ShowError(L["StageDurationTotalMismatch"]);
                 return;
             }
+            if (!order.PlannedStartDate.HasValue || !order.PlannedEndDate.HasValue)
+            {
+                ShowError(L["CeoPlanRequired"]);
+                return;
+            }
 
-            var machineCodes = await db.Machines.Where(x => x.IsActive)
-                .Select(x => x.Code).ToListAsync();
-            if (steps.Any(x => x.WorkCenter == null ||
-                               !x.WorkCenter.Code.StartsWith("MC-", StringComparison.OrdinalIgnoreCase) ||
-                               !machineCodes.Any(machineCode => String.Equals(machineCode,
-                                   x.WorkCenter.Code[3..], StringComparison.OrdinalIgnoreCase))))
+            var ids = steps.Select(x => x.Id).ToList();
+            var current = await db.ProductionSchedules
+                .Where(x => ids.Contains(x.ProductionOperationId) && x.Status != ScheduleStatus.Cancelled)
+                .ToListAsync();
+            if (current.Any(x => x.Status != ScheduleStatus.Planned) ||
+                steps.Any(x => x.Status is ProductionOperationStatus.Running or ProductionOperationStatus.Completed))
+            {
+                ShowError(L["CannotChangeActiveSchedule"]);
+                return;
+            }
+
+            var availableMachines = await db.Machines.Where(x => x.IsActive).ToListAsync();
+            if (steps.Any(x => !availableMachines.Any(m => CompatibleWithStage(x, m))))
             {
                 ShowError(L["MachineAssignmentsRequired"]);
                 return;
             }
+            var busy = await db.ProductionSchedules
+                .Where(x => !ids.Contains(x.ProductionOperationId) &&
+                    x.Status != ScheduleStatus.Cancelled &&
+                    x.PlannedStart < order.PlannedEndDate.Value &&
+                    x.PlannedEnd > order.PlannedStartDate.Value)
+                .Select(x => new ProductionAutomaticScheduler.BusyInterval(
+                    x.MachineId, x.PlannedStart, x.PlannedEnd))
+                .ToListAsync();
 
-            // Existing legacy bookings must already match the proposed execution order.
-            // Confirmation is not a way to approve an invalid overlapping schedule.
-            var ids = steps.Select(x => x.Id).ToList();
-            var active = await db.ProductionSchedules
-                .Where(x => ids.Contains(x.ProductionOperationId) &&
-                    x.Status != ScheduleStatus.Cancelled).ToListAsync();
-            var scheduleById = active.GroupBy(x => x.ProductionOperationId)
-                .ToDictionary(x => x.Key, x => x.ToList());
-            if (scheduleById.Values.Any(x => x.Count != 1))
+            if (!ProductionAutomaticScheduler.TryBuild(order, steps,
+                availableMachines, busy, CompatibleWithStage, out var plan, out var error))
             {
-                ShowError(L["ExistingOrderSequenceConflict"]);
+                ShowError(L["AutoScheduleCannotFit"] + " " + error);
                 return;
             }
-            for (var i = 0; i < steps.Count; i++)
+
+            // A failed plan makes zero database changes. Replace the previously
+            // PLANNED schedule only once the entire route is feasible.
+            foreach (var booking in current) booking.Status = ScheduleStatus.Cancelled;
+            foreach (var placement in plan)
             {
-                if (!scheduleById.TryGetValue(steps[i].Id, out var current)) continue;
-                for (var previous = 0; previous < i; previous++)
+                var machine = availableMachines.First(x => x.Id == placement.MachineId);
+                var step = steps.First(x => x.Id == placement.OperationId);
+                step.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
+                db.ProductionSchedules.Add(new ProductionSchedule
                 {
-                    if (!scheduleById.TryGetValue(steps[previous].Id, out var earlier) ||
-                        earlier[0].PlannedEnd > current[0].PlannedStart)
-                    {
-                        ShowError(L["ExistingOrderSequenceConflict"]);
-                        return;
-                    }
-                }
-                for (var next = i + 1; next < steps.Count; next++)
-                {
-                    if (scheduleById.TryGetValue(steps[next].Id, out var later) &&
-                        current[0].PlannedEnd > later[0].PlannedStart)
-                    {
-                        ShowError(L["ExistingOrderSequenceConflict"]);
-                        return;
-                    }
-                }
+                    ProductionOperationId = step.Id,
+                    MachineId = placement.MachineId,
+                    PlannedStart = placement.Start,
+                    PlannedEnd = placement.End,
+                    Status = ScheduleStatus.Planned
+                });
             }
 
             order.OperationsSequenceSignature =
@@ -947,13 +976,14 @@
             order.OperationsSequenceConfirmedBy = approver;
             await db.SaveChangesAsync();
             await transaction.CommitAsync();
-            ShowSuccess(L["SequenceConfirmationSaved"]);
+            selectedOperationId = plan.FirstOrDefault()?.OperationId;
+            ShowSuccess(L["SequenceAndAutomaticScheduleSaved"]);
             await ReloadAsync();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Could not confirm operation sequence for order {OrderId}", selectedOrderId);
-            ShowError(L["SequenceConfirmationFailed"]);
+            Logger.LogError(ex, "Could not automatically schedule production order {OrderId}", selectedOrderId);
+            ShowError(L["AutoScheduleFailed"]);
         }
     }
 
