@@ -2618,4 +2618,5 @@
   <data name="RestoreSalesSuggestions" xml:space="preserve"><value>بازیابی مراحل پیشنهادی از اطلاعات فروش</value></data>
   <data name="CannotRestoreEditedRoute" xml:space="preserve"><value>برای بارگذاری مجدد پیشنهادهای فروش باید ابتدا مراحل موجود حذف شوند.</value></data>
   <data name="SalesSuggestionsRestored" xml:space="preserve"><value>مشخصات سفارش فروش دوباره خوانده شد و مراحل پیشنهادی در صورت موجود بودن بازیابی شدند.</value></data>
+  <data name="SaveStageEditsBeforeConfirmation" xml:space="preserve"><value>پیش از تأیید و ایجاد زمان‌بندی خودکار، تغییرات نام، دستگاه یا مدت هر مرحله را ذخیره کنید.</value></data>
 </root>
