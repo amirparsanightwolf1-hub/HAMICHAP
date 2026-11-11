@@ -1,913 +1,809 @@
 @page "/production/machine-schedule"
 @rendermode InteractiveServer
 @using System.Globalization
-@using System.Text.Json
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Production
-@using HamiChap_MES_ERP.Models.Sales
-@using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
+
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthenticationStateProvider Auth
 @inject LocalizationService L
 
 <PageTitle>@L["MachineSchedule"]</PageTitle>
+
 <div class="page-container production-planning machine-schedule">
-    <div class="erp-page-header mb-4">
-        <div><h2 class="erp-page-title">@L["MachineSchedule"]</h2><p class="erp-page-subtitle">@L["MachineScheduleHelp"]</p></div>
-        @if (canEdit) { <button class="btn btn-outline-primary" @onclick="GenerateMissingOperations">@L["GenerateOperations"]</button> }
-    </div>
-    @if (!canView) { <div class="alert alert-warning">@L["AccessDenied"]</div> }
+    @if (!canView)
+    {
+        <div class="alert alert-warning">@L["AccessDenied"]</div>
+    }
     else
     {
-        @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert @(isError ? "alert-danger" : "alert-info")" role="status">@message</div>
+        }
+
+        <div class="erp-page-header mb-4">
+            <div>
+                <div class="erp-page-title">@L["MachineSchedule"]</div>
+                <div class="erp-page-subtitle">@L["ManagerCalendarInstructions"]</div>
+            </div>
+            <button type="button" class="btn btn-outline-secondary" @onclick="GoToToday">@L["Today"]</button>
+        </div>
+
         <div class="planning-layout">
             <aside class="planning-order-panel"
                    @ondragover:preventDefault="true"
                    @ondrop:preventDefault="true"
-                   @ondrop="DropBackToQueue">
+                   @ondrop="ReturnDraggedOperation">
                 <div class="card mb-3">
-                    <div class="card-header d-flex justify-content-between">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <strong>@L["CeoProductionOrders"]</strong>
-                        <span class="badge bg-secondary">@orders.Count(x => x.Status != ProductionOrderStatus.Cancelled)</span>
+                        <span class="badge bg-secondary">@orders.Count</span>
                     </div>
-                    <div class="card-body machine-ceo-order-list">
-                        @foreach (var order in orders.Where(x => x.Status != ProductionOrderStatus.Cancelled).OrderBy(x => x.PlannedStartDate ?? DateTime.MaxValue))
-                        {
-                            <div class="machine-ceo-order mb-2" draggable="@canEdit" @ondragstart="() => StartOrderDrag(order.Id)">
-                                <div class="d-flex justify-content-between gap-2">
-                                    <strong>@order.OrderNumber</strong>
-                                    <span class="small text-muted">@OrderScheduledCount(order.Id)/@OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
-                                </div>
-                                <div class="small machine-ceo-dates">@L["CeoWindow"]: @FormatDateOnly(order.PlannedStartDate) – @FormatDateOnly(order.PlannedEndDate)</div>
-                                <div class="small text-muted">@L["DragOrderToCompatibleMachine"]</div>
-                                @if (OrderOperationCount(order.Id) == 0)
-                                {
-                                    <div class="small text-muted">@L["NoOperationsGenerated"]</div>
-                                }
-                                <button type="button" class="btn btn-outline-primary btn-sm mt-2"
-                                        @onclick="() => FocusOrder(order.Id)">@L["ShowCeoWindow"]</button>
-                            </div>
-                        }
+                    <div class="card-body order-queue">
+                        <p class="small text-muted">@L["SelectOrderToSplit"]</p>
                         @if (orders.Count == 0)
                         {
-                            <p class="small text-muted">@L["NoProductionOrders"]</p>
+                            <div class="small text-muted">@L["NoProductionOrders"]</div>
                         }
-                    </div>
-                </div>
-                <div class="card mb-3">
-                    <div class="card-header"><strong>@L["UnscheduledOperations"]</strong><span class="badge bg-secondary">@operations.Count(x => !schedules.Any(s => s.ProductionOperationId == x.Id))</span></div>
-                    <div class="card-body order-queue machine-return-zone"
-                         @ondragover:preventDefault="true"
-                         @ondrop:preventDefault="true"
-                         @ondrop="DropBackToQueue"
-                         @ondrop:stopPropagation="true">
-                        <div class="machine-return-hint" role="status">@L["DropScheduledStepHere"]</div>
-                        @if (operations.Count > 0 && operations.All(x => schedules.Any(s => s.ProductionOperationId == x.Id)))
+                        @foreach (var order in orders)
                         {
-                            <p class="small text-muted mt-2">@L["NoUnscheduledSteps"]</p>
-                        }
-                        @foreach (var operation in operations.Where(x => !schedules.Any(s => s.ProductionOperationId == x.Id)).OrderBy(x => x.ProductionOrder.PlannedEndDate).ThenBy(x => x.Sequence))
-                        {
-                            <div class="queue-order @(selectedOperationId == operation.Id ? "queue-order-selected" : "")" draggable="@canEdit" @ondragstart="() => SelectDraggedOperation(operation.Id)" @onclick="() => SelectOperation(operation.Id)">
-                                <div class="d-flex justify-content-between gap-2"><strong>@operation.ProductionOrder.OrderNumber</strong><span class="badge bg-secondary">#@operation.Sequence</span></div>
-                                <div class="small fw-semibold mt-1">@operation.Name</div>
-                                <div class="small text-muted">@L["DueDate"]: @FormatDate(operation.ProductionOrder.PlannedEndDate)</div>
-                                <div class="small text-muted">@L["EstimatedHours"]: @DurationLabel(ProductionPlanningTime.OperationMinutes(operation.PlannedHours))</div>
-                                <div class="small fw-semibold machine-ceo-dates">@L["CeoWindow"]: @FormatDateOnly(operation.ProductionOrder.PlannedStartDate) – @FormatDateOnly(operation.ProductionOrder.PlannedEndDate)</div>
-                                <div class="small text-muted">@L["MachineStepCount"]: @operation.Sequence / @OrderOperationCount(operation.ProductionOrderId)</div>
-                                <div class="small text-muted">@L["CeoDuration"]: @DurationLabel(operation.ProductionOrder.EstimatedDurationMinutes)</div>
-                                @if (canEdit)
-                                {
-                                    <details class="machine-duration-settings mt-2">
-                                        <summary>@L["AdvancedDurationSettings"]</summary>
-                                        <label class="form-label mt-2">@L["AdjustStepHours"]</label>
-                                        <input type="number" min="0.016667" step="any" class="form-control form-control-sm"
-                                               value="@DurationInput(operation)"
-                                               @onchange="e => SetDurationInput(operation.Id, e.Value?.ToString())" />
-                                        <button type="button" class="btn btn-outline-primary btn-sm mt-2 w-100"
-                                                @onclick="() => SaveOperationDuration(operation.Id)">@L["ApplyStepDuration"]</button>
-                                    </details>
-                                    <label class="form-label mt-2">@L["Machine"]</label>
-                                    <select class="form-select form-select-sm" value="@MachineChoice(operation.Id)" @onchange="e => SetMachineChoice(operation.Id, e.Value?.ToString())">
-                                        <option value="0">@L["SelectMachine"]</option>
-                                        @foreach (var machine in SuggestedMachines(operation)) { <option value="@machine.Id">@machine.Name</option> }
-                                    </select>
-                                    <label class="form-label mt-2">@L["PlannedDate"]</label>
-                                    <input type="date" class="form-control form-control-sm" value="@StartChoice(operation.Id)" @onchange="e => SetStartChoice(operation.Id, e.Value?.ToString())" />
-                                    <button class="btn btn-primary btn-sm mt-2 w-100" @onclick="() => Schedule(operation.Id)">@L["ScheduleOperation"]</button>
-                                }
+                            <div class="queue-order @(selectedOrderId == order.Id ? "queue-order-selected" : "")"
+                                 @onclick="() => SelectOrder(order.Id)">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <strong>@order.OrderNumber</strong>
+                                    <small>@(order.PlannedStartDate.HasValue ? L["Scheduled"] : L["CeoPlanRequired"])</small>
+                                </div>
+                                <div class="small text-muted">@order.SalesOrder?.Customer?.Name</div>
+                                <div class="small">@L["CeoDuration"]: @DurationLabel(order.EstimatedDurationMinutes)</div>
+                                <div class="small text-muted">@FormatDateTime(order.PlannedStartDate) – @FormatDateTime(order.PlannedEndDate)</div>
                             </div>
                         }
                     </div>
                 </div>
-                @if (canEdit)
+
+                @if (SelectedOrder is ProductionOrder orderForEdit)
                 {
-                    <div class="card">
-                        <div class="card-header">@L["AddOperation"]</div>
+                    <div class="card mb-3">
+                        <div class="card-header"><strong>@L["SplitOrderIntoOperations"]</strong></div>
                         <div class="card-body">
-                            <select class="form-select mb-2" @bind="newOrderId">
-                                <option value="0">@L["SelectOrder"]</option>
-                                @foreach (var order in orders) { <option value="@order.Id">@order.OrderNumber</option> }
-                            </select>
-                            <input class="form-control mb-2" placeholder="@L["Operation"]" @bind="newOperationName" />
-                            <label class="form-label">@L["NewStepRelativeHours"]</label>
-                            <input type="number" min="0.25" step="0.25" class="form-control mb-2" @bind="newHours" />
-                            <p class="small text-muted">@L["NewStepWeightHelp"]</p>
-                            <button class="btn btn-primary w-100" @onclick="AddOperation">@L["AddOperation"]</button>
-                        </div>
-                    </div>
-                }
-            </aside>
-            <section class="planning-calendar-panel">
-                <div class="card mb-3"><div class="card-body">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => ShiftPeriod(-1)">‹</button>
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => selectedDate = DateTime.Today">@L["Today"]</button>
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => ShiftPeriod(1)">›</button>
-                            <strong>@FormatDate(selectedDate)</strong>
-                        </div>
-                        <div class="btn-group" role="group">
-                            <button class="btn @(viewMode == CalendarView.Month ? "btn-primary" : "btn-outline-primary")" @onclick="() => viewMode = CalendarView.Month">@L["Month"]</button>
-                            <button class="btn @(viewMode == CalendarView.Week ? "btn-primary" : "btn-outline-primary")" @onclick="() => viewMode = CalendarView.Week">@L["Week"]</button>
-                            <button class="btn @(viewMode == CalendarView.Day ? "btn-primary" : "btn-outline-primary")" @onclick="() => viewMode = CalendarView.Day">@L["Day"]</button>
-                        </div>
-                    </div>
-                    <p class="small text-muted mb-3">@L["DateBasedSchedulingHelp"]</p>
-                    @if (operations.Count > 0)
-                    {
-                        <div class="machine-order-overview mb-3">
-                            @foreach (var order in orders.Where(x => operations.Any(op => op.ProductionOrderId == x.Id)))
+                            <strong>@orderForEdit.OrderNumber</strong>
+                            <div class="small text-muted mt-2">@L["CeoWindow"]: @FormatDateTime(orderForEdit.PlannedStartDate) – @FormatDateTime(orderForEdit.PlannedEndDate)</div>
+                            <div class="manager-duration-budget mt-2">
+                                <div>@L["CeoDuration"]: <strong>@DurationLabel(orderForEdit.EstimatedDurationMinutes)</strong></div>
+                                <div>@L["MachineDuration"]: <strong>@DurationLabel(AllocatedMinutes)</strong></div>
+                                <div class="@(RemainingMinutes < 0 ? "text-danger" : "text-success")">@L["RemainingDuration"]: <strong>@DurationLabel(RemainingMinutes)</strong></div>
+                            </div>
+                            @if (RemainingMinutes == 0 && SelectedOperations.Count > 0)
                             {
-                                <div class="machine-order-totals" draggable="@canEdit" @ondragstart="() => StartScheduledOrderDrag(order.Id)">
-                                    <div class="d-flex justify-content-between align-items-center gap-2">
-                                        <strong>@order.OrderNumber</strong>
-                                        <span class="badge bg-secondary">@OrderScheduledCount(order.Id)/@OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
+                                <div class="small text-success mt-2">@L["OperationTotalMatchesCeo"]</div>
+                            }
+
+                            @if (canEdit)
+                            {
+                                <div class="manager-new-operation mt-3">
+                                    <label class="form-label">@L["Operation"]</label>
+                                    <input class="form-control mb-2" @bind="newOperationName" placeholder="@L["OperationNamePlaceholder"]" />
+                                    <label class="form-label">@L["Machine"]</label>
+                                    <select class="form-select mb-2" @bind="newMachineId">
+                                        <option value="0">@L["SelectMachine"]</option>
+                                        @foreach (var machine in machines)
+                                        {
+                                            <option value="@machine.Id">@machine.Name</option>
+                                        }
+                                    </select>
+                                    <label class="form-label">@L["EstimatedHours"]</label>
+                                    <input class="form-control mb-2" type="number" min="0.25" step="0.25" @bind="newOperationHours" />
+                                    <button type="button" class="btn btn-primary w-100" @onclick="AddOperation">@L["AddOperation"]</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong>@L["OrderOperations"]</strong>
+                            <span class="badge bg-secondary">@SelectedOperations.Count</span>
+                        </div>
+                        <div class="card-body order-queue manager-operation-queue"
+                             @ondragover:preventDefault="true"
+                             @ondrop:preventDefault="true"
+                             @ondrop:stopPropagation="true"
+                             @ondrop="ReturnDraggedOperation">
+                            <div class="machine-return-hint">@L["DropScheduledStepHere"]</div>
+                            @if (SelectedOperations.Count == 0)
+                            {
+                                <p class="small text-muted">@L["NoOperationsGenerated"]</p>
+                            }
+                            @foreach (var step in SelectedOperations)
+                            {
+                                var booking = CurrentSchedule(step.Id);
+                                <div class="queue-order @(selectedOperationId == step.Id ? "queue-order-selected" : "")"
+                                     draggable="@canEdit"
+                                     @ondragstart="() => BeginDrag(step.Id)"
+                                     @onclick="() => SelectOperation(step.Id)">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <strong>#@step.Sequence @step.Name</strong>
+                                        <small>@(booking == null ? L["UnscheduledOperations"] : L["Scheduled"])</small>
                                     </div>
-                                    <div class="small machine-ceo-dates">@L["CeoWindow"]: @FormatDateOnly(order.PlannedStartDate) – @FormatDateOnly(order.PlannedEndDate)</div>
-                                    <details class="machine-duration-settings">
-                                        <summary>@L["AdvancedDurationSettings"]</summary>
-                                        <div class="small @(OrderStepMinutes(order.Id) == order.EstimatedDurationMinutes ? "text-success" : "text-warning")">
-                                            @L["CeoDuration"]: @DurationLabel(order.EstimatedDurationMinutes)
-                                            · @L["MachineDuration"]: @DurationLabel(OrderStepMinutes(order.Id))
-                                        </div>
-                                    </details>
-                                    @if (canEdit && OrderScheduledCount(order.Id) > 0)
+                                    <div class="small text-muted">@L["Machine"]: @MachineName(step)</div>
+                                    <div class="small text-muted">@L["EstimatedHours"]: @DurationLabel(OperationMinutes(step))</div>
+                                    @if (booking != null)
                                     {
-                                        <button type="button" class="btn btn-outline-primary btn-sm mt-2"
-                                                @onclick="() => UnscheduleOrder(order.Id)">@L["ReturnWholeOrder"]</button>
+                                        <div class="small text-muted">@FormatDateTime(booking.PlannedStart) – @FormatDateTime(booking.PlannedEnd)</div>
+                                    }
+                                    @if (canEdit)
+                                    {
+                                        <details class="manager-operation-editor mt-2">
+                                            <summary>@L["EditOperation"]</summary>
+                                            <label class="form-label mt-2">@L["Operation"]</label>
+                                            <input class="form-control form-control-sm mb-2"
+                                                   value="@OperationNameChoice(step)"
+                                                   @onchange="e => SetOperationName(step.Id, e.Value?.ToString())" />
+                                            <label class="form-label">@L["Machine"]</label>
+                                            <select class="form-select form-select-sm mb-2"
+                                                    value="@MachineChoice(step)"
+                                                    @onchange="e => SetMachineChoice(step.Id, e.Value?.ToString())">
+                                                <option value="0">@L["SelectMachine"]</option>
+                                                @foreach (var machine in machines)
+                                                {
+                                                    <option value="@machine.Id">@machine.Name</option>
+                                                }
+                                            </select>
+                                            <label class="form-label">@L["EstimatedHours"]</label>
+                                            <input class="form-control form-control-sm mb-2" type="number"
+                                                   min="0.25" step="0.25"
+                                                   value="@OperationHoursChoice(step)"
+                                                   @onchange="e => SetOperationHours(step.Id, e.Value?.ToString())" />
+                                            <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                                    @onclick="() => SaveOperation(step.Id)">@L["SaveOperation"]</button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm w-100 mt-2"
+                                                    @onclick="() => DeleteOperation(step.Id)">@L["DeleteOperation"]</button>
+                                        </details>
+                                        @if (booking != null && booking.Status == ScheduleStatus.Planned)
+                                        {
+                                            <button type="button" class="btn btn-outline-secondary btn-sm mt-2 w-100"
+                                                    @onclick="() => UnscheduleOperation(step.Id)">@L["ReturnToQueue"]</button>
+                                        }
                                     }
                                 </div>
                             }
                         </div>
-                    }
-                    <label class="form-label" for="machine-filter">@L["Machine"]</label>
-                    <select id="machine-filter" class="form-select mb-3" @bind="machineFilter">
-                        <option value="0">@L["AllMachines"]</option>
-                        @foreach (var machine in machines)
-                        {
-                            <option value="@machine.Id">@machine.Name (@machine.Code)</option>
-                        }
-                    </select>
-                    @if (machines.Count == 0)
-                    {
-                        <div class="alert alert-warning">@L["NoActiveMachines"]</div>
-                        <section class="machine-calendar-section mb-4">
-                            <h5 class="machine-calendar-section-title">@L["MachineSchedule"]</h5>
-                            <div class="machine-day-grid" style="--machine-day-columns:@(viewMode == CalendarView.Day ? 1 : 7)">
-                                @if (viewMode != CalendarView.Day)
-                                {
-                                    @foreach (var name in WeekDayNames)
-                                    {
-                                        <div class="month-weekday">@L[name]</div>
-                                    }
-                                }
-                                @foreach (var day in CalendarDays)
-                                {
-                                    <div class="machine-day-cell @(day.Date == DateTime.Today ? "today" : "")">
-                                        <button type="button" class="machine-day-date"
-                                                @onclick="() => ChooseDay(day)">@FormatDateOnly(day)</button>
-                                    </div>
-                                }
+                    </div>
+                }
+                @if (machines.Count == 0)
+                {
+                    <div class="alert alert-warning">@L["NoActiveMachines"]</div>
+                }
+            </aside>
+
+            <section class="planning-calendar-panel">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="PreviousPeriod">‹</button>
+                                <h5 class="mb-0">@PeriodTitle</h5>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="NextPeriod">›</button>
                             </div>
-                        </section>
-                    }
-                    @foreach (var machine in machines.Where(m => IsSelectedMachine(m.Id)))
-                    {
-                        <section class="machine-calendar-section mb-4">
-                            <h5 class="machine-calendar-section-title">@machine.Name <small>(@machine.Code)</small></h5>
-                            <div class="machine-day-grid" style="--machine-day-columns:@(viewMode == CalendarView.Day ? 1 : 7)">
-                                @if (viewMode != CalendarView.Day)
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn @(viewMode == CalendarView.Month ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Month)">@L["Month"]</button>
+                                <button type="button" class="btn @(viewMode == CalendarView.Week ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Week)">@L["Week"]</button>
+                                <button type="button" class="btn @(viewMode == CalendarView.Day ? "btn-primary" : "btn-outline-primary")" @onclick="() => SetView(CalendarView.Day)">@L["Day"]</button>
+                            </div>
+                        </div>
+
+                        <div class="shift-legend mb-3">
+                            <span><i class="shift-dot work"></i> @L["RegularShift"]</span>
+                            <span><i class="shift-dot break"></i> @L["Break"] 13:00–14:00</span>
+                            <span><i class="shift-dot overtime"></i> @L["OvertimeShift"]</span>
+                            <span><i class="shift-dot night"></i> @L["NightShift"]</span>
+                        </div>
+
+                        @if (viewMode == CalendarView.Month)
+                        {
+                            <div class="month-grid">
+                                @foreach (var dayName in PersianWeekDays)
                                 {
-                                    @foreach (var dayName in WeekDayNames)
-                                    {
-                                        <div class="month-weekday">@L[dayName]</div>
-                                    }
+                                    <div class="month-weekday">@L[dayName]</div>
                                 }
-                                @foreach (var day in CalendarDays)
+                                @foreach (var date in MonthDates)
                                 {
-                                    var withinCeoWindow = SelectedOperationAllowedOn(day);
-                                    var isOutsideMonth = viewMode == CalendarView.Month &&
-                                        (Persian.GetMonth(day) != Persian.GetMonth(selectedDate) ||
-                                         Persian.GetYear(day) != Persian.GetYear(selectedDate));
-                                    <div class="machine-day-cell @(day.Date == DateTime.Today ? "today" : "") @(isOutsideMonth ? "outside-month" : "") @(withinCeoWindow ? "machine-available-day" : "")"
+                                    var isCurrentMonth = Persian.GetMonth(date) == Persian.GetMonth(displayMonth) &&
+                                                         Persian.GetYear(date) == Persian.GetYear(displayMonth);
+                                    <div class="month-day @(isCurrentMonth ? "" : "outside-month") @(date.Date == DateTime.Today ? "today" : "")"
+                                         @onclick="() => PlaceSelectedOperation(date.Date, new TimeSpan(8, 0, 0))"
                                          @ondragover:preventDefault="true"
                                          @ondrop:preventDefault="true"
-                                         @ondrop:stopPropagation="true"
-                                         @ondrop="() => DropOperation(machine.Id, day.Date)">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <button type="button" class="machine-day-date"
-                                                    @onclick="() => ChooseDay(day)">@FormatDateOnly(day)</button>
-                                            @if (canEdit && withinCeoWindow)
-                                            {
-                                                <button type="button" class="machine-place-button"
-                                                        @onclick="() => DropOperation(machine.Id, day.Date)">@L["PlaceOnDate"]</button>
-                                            }
-                                        </div>
-                                        @foreach (var slot in DaySchedules(day, machine.Id))
+                                         @ondrop="() => DropOperation(date.Date, new TimeSpan(8, 0, 0))">
+                                        <div class="month-day-number">@Persian.GetDayOfMonth(date)</div>
+                                        @foreach (var order in OrdersForDate(date))
                                         {
-                                            <div class="machine-scheduled-chip @(IsWithinCeoWindow(slot.ProductionOperation.ProductionOrder, slot.PlannedStart) ? "" : "machine-outside-ceo")"
+                                            <div class="month-order-chip @OrderColor(order)"
+                                                 title="@OrderTooltip(order)"
+                                                 @onclick:stopPropagation="true"
+                                                 @onclick="() => SelectOrder(order.Id)">
+                                                @order.OrderNumber
+                                            </div>
+                                        }
+                                        @foreach (var schedule in SchedulesForDate(date))
+                                        {
+                                            <div class="month-order-chip manager-stage-chip @ScheduleColor(schedule)"
+                                                 title="@OperationTooltip(schedule)"
                                                  draggable="@canEdit"
-                                                 @ondragstart="() => StartScheduledDrag(slot.ProductionOperationId)"
-                                                 @onclick="() => SelectOperation(slot.ProductionOperationId)"
-                                                 title="@slot.ProductionOperation.Name">
-                                                <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
-                                                <span>@slot.ProductionOperation.Name</span>
-                                                <small>@L["MachineStepCount"] #@slot.ProductionOperation.Sequence</small>
-                                                <small>@L[slot.Status.ToString()]</small>
-                                                @if (!IsWithinCeoWindow(slot.ProductionOperation.ProductionOrder, slot.PlannedStart))
-                                                {
-                                                    <small class="machine-window-warning">@L["ExistingBookingOutsideCeo"]</small>
-                                                }
-                                                @if (canEdit && slot.Status == ScheduleStatus.Planned)
-                                                {
-                                                    <button type="button" class="machine-unschedule-button"
-                                                            @onclick:stopPropagation="true"
-                                                            @onclick="() => UnscheduleOperation(slot.ProductionOperationId)">@L["ReturnToQueue"]</button>
-                                                }
+                                                 @ondragstart="() => BeginDrag(schedule.ProductionOperationId)"
+                                                 @onclick:stopPropagation="true"
+                                                 @onclick="() => SelectOperation(schedule.ProductionOperationId)">
+                                                @schedule.ProductionOperation.ProductionOrder.OrderNumber
+                                                · @schedule.Machine.Name
+                                                · @schedule.ProductionOperation.Name
                                             </div>
                                         }
                                     </div>
                                 }
                             </div>
-                        </section>
-                    }
-                    <p class="small text-muted">@L["DragOperationHelp"]</p>
-                </div></div>
+                            <div class="small text-muted mt-2">@L["ManagerMonthHelp"]</div>
+                        }
+                        else
+                        {
+                            <div class="timeline-scroll">
+                                <div class="timeline" style="--day-count:@VisibleDates.Count">
+                                    <div class="timeline-time-head"></div>
+                                    @foreach (var date in VisibleDates)
+                                    {
+                                        <div class="timeline-day-head">
+                                            <strong>@Persian.GetDayOfMonth(date)</strong>
+                                            <small>@PersianMonthNames[Persian.GetMonth(date) - 1]</small>
+                                        </div>
+                                    }
+                                    @for (var hour = 0; hour < 24; hour++)
+                                    {
+                                        var slotHour = hour;
+                                        <div class="timeline-hour">@hour.ToString("00"):00</div>
+                                        @foreach (var date in VisibleDates)
+                                        {
+                                            <div class="timeline-slot @ShiftClass(hour)"
+                                                 @onclick="() => PlaceSelectedOperation(date.Date, TimeSpan.FromHours(slotHour))"
+                                                 @ondragover:preventDefault="true"
+                                                 @ondrop:preventDefault="true"
+                                                 @ondrop="() => DropOperation(date.Date, TimeSpan.FromHours(slotHour))">
+                                                @foreach (var order in OrdersForHour(date, hour))
+                                                {
+                                                    <div class="timeline-order @OrderColor(order)"
+                                                         @onclick:stopPropagation="true"
+                                                         @onclick="() => SelectOrder(order.Id)"
+                                                         title="@OrderTooltip(order)">
+                                                        @order.OrderNumber
+                                                    </div>
+                                                }
+                                                @foreach (var schedule in SchedulesForHour(date, hour))
+                                                {
+                                                    <div class="timeline-order manager-stage-chip @ScheduleColor(schedule)"
+                                                         draggable="@canEdit"
+                                                         @ondragstart="() => BeginDrag(schedule.ProductionOperationId)"
+                                                         @onclick:stopPropagation="true"
+                                                         @onclick="() => SelectOperation(schedule.ProductionOperationId)"
+                                                         title="@OperationTooltip(schedule)">
+                                                        @schedule.ProductionOperation.ProductionOrder.OrderNumber · @schedule.Machine.Name
+                                                        <small>@schedule.ProductionOperation.Name</small>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="small text-muted mt-2">@L["ManagerTimelineHelp"]</div>
+                        }
+                    </div>
+                </div>
             </section>
         </div>
     }
 </div>
 
 @code {
+    private static readonly PersianCalendar Persian = new();
+    private static readonly string[] PersianWeekDays = { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+    private static readonly string[] PersianMonthNames =
+        { "Farvardin", "Ordibehesht", "Khordad", "Tir", "Mordad", "Shahrivar", "Mehr", "Aban", "Azar", "Dey", "Bahman", "Esfand" };
+
+    private enum CalendarView { Month, Week, Day }
+
+    private bool canView;
+    private bool canEdit;
+    private bool isError;
+    private string? message;
+    private CalendarView viewMode = CalendarView.Month;
+    private DateTime displayMonth = DateTime.Today;
+    private DateTime displayDate = DateTime.Today;
+    private long? selectedOrderId;
     private long? selectedOperationId;
     private long? draggedOperationId;
-    private long? draggedScheduledOperationId;
-    private long? draggedScheduledOrderId;
-    private long? draggedNewOrderId;
+
+    private string newOperationName = "";
+    private int newMachineId;
+    private decimal newOperationHours = 1m;
+
+    private List<ProductionOrder> orders = new();
+    private List<ProductionOperation> operations = new();
+    private List<ProductionSchedule> schedules = new();
+    private List<Machine> machines = new();
+    private Dictionary<long, string> editedNames = new();
+    private Dictionary<long, string> editedHours = new();
+    private Dictionary<long, int> editedMachines = new();
+
+    private ProductionOrder? SelectedOrder => orders.FirstOrDefault(x => x.Id == selectedOrderId);
+    private List<ProductionOperation> SelectedOperations => operations
+        .Where(x => x.ProductionOrderId == selectedOrderId).OrderBy(x => x.Sequence).ToList();
+    private int AllocatedMinutes => SelectedOperations.Sum(OperationMinutes);
+    private int RemainingMinutes => (SelectedOrder?.EstimatedDurationMinutes ?? 0) - AllocatedMinutes;
+
+    private string PeriodTitle => viewMode switch
+    {
+        CalendarView.Month => String.Format(CultureInfo.InvariantCulture, "{0}/{1:00}", Persian.GetYear(displayMonth), Persian.GetMonth(displayMonth)),
+        CalendarView.Week => FormatJalali(VisibleDates.First()) + " – " + FormatJalali(VisibleDates.Last()),
+        _ => FormatJalali(displayDate)
+    };
+
+    private List<DateTime> MonthDates
+    {
+        get
+        {
+            var first = new DateTime(Persian.GetYear(displayMonth), Persian.GetMonth(displayMonth), 1, Persian);
+            var offset = ((int)first.DayOfWeek + 1) % 7;
+            return Enumerable.Range(0, 42).Select(i => first.AddDays(-offset + i)).ToList();
+        }
+    }
+
+    private List<DateTime> VisibleDates
+    {
+        get
+        {
+            if (viewMode == CalendarView.Day) return new() { displayDate.Date };
+            var offset = ((int)displayDate.DayOfWeek + 1) % 7;
+            var saturday = displayDate.Date.AddDays(-offset);
+            return Enumerable.Range(0, 7).Select(i => saturday.AddDays(i)).ToList();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        canEdit = user.Identity?.IsAuthenticated == true &&
+            (user.IsInRole("Administrator") || user.IsInRole("ProductionManager") ||
+             user.IsInRole("Production Manager") || user.IsInRole("Manager"));
+        canView = canEdit || user.Identity?.IsAuthenticated == true &&
+            (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
+             user.IsInRole("Production") || user.IsInRole("CEO") || user.IsInRole("Ceo"));
+        if (canView) await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        orders = await db.ProductionOrders.AsNoTracking()
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Customer)
+            .Where(x => x.Status != ProductionOrderStatus.Cancelled)
+            .OrderBy(x => x.PlannedStartDate).ToListAsync();
+        machines = await db.Machines.AsNoTracking()
+            .Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        operations = await db.ProductionOperations.AsNoTracking()
+            .Include(x => x.ProductionOrder).Include(x => x.WorkCenter)
+            .OrderBy(x => x.ProductionOrderId).ThenBy(x => x.Sequence).ToListAsync();
+        schedules = await db.ProductionSchedules.AsNoTracking()
+            .Include(x => x.Machine)
+            .Include(x => x.ProductionOperation).ThenInclude(x => x.ProductionOrder)
+            .Where(x => x.Status != ScheduleStatus.Cancelled)
+            .OrderBy(x => x.PlannedStart).ToListAsync();
+
+        if (!selectedOrderId.HasValue || orders.All(x => x.Id != selectedOrderId.Value))
+            selectedOrderId = orders.FirstOrDefault()?.Id;
+        if (selectedOrderId.HasValue && SelectedOrder?.PlannedStartDate is DateTime start &&
+            displayDate.Date == DateTime.Today && displayMonth.Date == DateTime.Today)
+        {
+            displayDate = start;
+            displayMonth = start;
+        }
+    }
+
+    private void SelectOrder(long id)
+    {
+        selectedOrderId = id;
+        selectedOperationId = null;
+        var start = SelectedOrder?.PlannedStartDate;
+        if (start.HasValue)
+        {
+            displayDate = start.Value;
+            displayMonth = start.Value;
+        }
+        ClearMessage();
+    }
 
     private void SelectOperation(long id)
     {
         selectedOperationId = id;
         var step = operations.FirstOrDefault(x => x.Id == id);
-        if (step?.ProductionOrder.PlannedStartDate is DateTime from &&
-            !SelectedOperationAllowedOn(selectedDate))
-            selectedDate = from.Date;
+        if (step is null) return;
+        selectedOrderId = step.ProductionOrderId;
     }
 
-    private static readonly string[] WeekDayNames =
-        { "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" };
-
-    private void FocusOrder(long orderId)
-    {
-        var order = orders.FirstOrDefault(x => x.Id == orderId);
-        if (order?.PlannedStartDate is DateTime from)
-            selectedDate = from.Date;
-        else if (order?.PlannedEndDate is DateTime until)
-            selectedDate = until.Date;
-
-        selectedOperationId = operations
-            .FirstOrDefault(x => x.ProductionOrderId == orderId &&
-                !schedules.Any(s => s.ProductionOperationId == x.Id))?.Id;
-    }
-
-    private bool SelectedOperationAllowedOn(DateTime day)
-    {
-        if (!selectedOperationId.HasValue) return false;
-        var step = operations.FirstOrDefault(x => x.Id == selectedOperationId.Value);
-        return step != null && IsWithinCeoWindow(step.ProductionOrder, day);
-    }
-
-    private static bool IsWithinCeoWindow(ProductionOrder order, DateTime day) =>
-        order.PlannedStartDate.HasValue && order.PlannedEndDate.HasValue &&
-        order.PlannedStartDate.Value.Date <= day.Date &&
-        day.Date <= order.PlannedEndDate.Value.Date;
-
-    private string FormatDateOnly(DateTime? value) =>
-        value.HasValue ? FormatDay(value.Value) : "—";
-
-    private void ClearDrag()
-    {
-        draggedOperationId = null;
-        draggedScheduledOperationId = null;
-        draggedScheduledOrderId = null;
-        draggedNewOrderId = null;
-    }
-
-    private void SelectDraggedOperation(long id)
+    private void BeginDrag(long id)
     {
         if (!canEdit) return;
         selectedOperationId = id;
         draggedOperationId = id;
-        draggedScheduledOperationId = null;
-        draggedScheduledOrderId = null;
-        draggedNewOrderId = null;
     }
 
-    private void StartOrderDrag(long orderId)
+    private async Task DropOperation(DateTime date, TimeSpan time)
     {
-        if (!canEdit) return;
-        draggedNewOrderId = orderId;
+        var id = draggedOperationId ?? selectedOperationId;
         draggedOperationId = null;
-        draggedScheduledOperationId = null;
-        draggedScheduledOrderId = null;
+        if (id.HasValue) await PlaceOperationAsync(id.Value, date.Date.Add(time));
     }
 
-    private void StartScheduledDrag(long id)
+    private async Task PlaceSelectedOperation(DateTime date, TimeSpan time)
     {
-        if (!canEdit) return;
-        selectedOperationId = id;
-        draggedOperationId = id;
-        draggedScheduledOperationId = id;
-        draggedScheduledOrderId = null;
-        draggedNewOrderId = null;
+        if (selectedOperationId.HasValue)
+            await PlaceOperationAsync(selectedOperationId.Value, date.Date.Add(time));
     }
 
-    private void StartScheduledOrderDrag(long orderId)
+    private async Task ReturnDraggedOperation()
     {
-        if (!canEdit) return;
-        draggedScheduledOrderId = orderId;
-        draggedScheduledOperationId = null;
+        var id = draggedOperationId;
         draggedOperationId = null;
-        draggedNewOrderId = null;
+        if (id.HasValue) await UnscheduleOperation(id.Value);
     }
 
-    private async Task DropOperation(int machineId, DateTime start)
-    {
-        if (!canEdit) return;
-        if (draggedScheduledOrderId.HasValue) { ClearDrag(); return; }
+    private void ClearMessage() { message = null; isError = false; }
+    private void ShowError(string text) { message = text; isError = true; }
+    private void ShowSuccess(string text) { message = text; isError = false; }
 
-        long? id = draggedOperationId ?? selectedOperationId;
-        if (draggedNewOrderId is long orderId)
-        {
-            var machine = machines.FirstOrDefault(x => x.Id == machineId);
-            id = machine == null ? null : operations
-                .Where(x => x.ProductionOrderId == orderId &&
-                    !schedules.Any(s => s.ProductionOperationId == x.Id) &&
-                    CompatibleMachine(x.Name, machine))
-                .OrderBy(x => x.Sequence).Select(x => (long?)x.Id).FirstOrDefault();
-        }
-        ClearDrag();
-
-        if (!id.HasValue)
-        {
-            message = L["SelectCompatibleOperation"];
-            return;
-        }
-
-        selectedOperationId = id;
-        machineChoices[id.Value] = machineId;
-        startChoices[id.Value] = start.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        await Schedule(id.Value);
-    }
-
-    private async Task DropBackToQueue()
-    {
-        if (!canEdit) return;
-        var orderId = draggedScheduledOrderId;
-        var operationId = draggedScheduledOperationId;
-        ClearDrag();
-
-        if (orderId.HasValue) await UnscheduleOrder(orderId.Value);
-        else if (operationId.HasValue) await UnscheduleOperation(operationId.Value);
-    }
-
-    private async Task UnscheduleOperation(long operationId)
-    {
-        if (!canEdit) return;
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var step = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == operationId);
-        if (step == null) return;
-
-        // Downstream planned steps depend on this step. Return them too, never silently
-        // invalidate released, running or completed machine assignments.
-        var downstreamIds = await db.ProductionOperations
-            .Where(x => x.ProductionOrderId == step.ProductionOrderId && x.Sequence >= step.Sequence)
-            .Select(x => x.Id).ToListAsync();
-        var active = await db.ProductionSchedules
-            .Where(x => downstreamIds.Contains(x.ProductionOperationId) && x.Status != ScheduleStatus.Cancelled)
-            .ToListAsync();
-        if (active.Any(x => x.Status != ScheduleStatus.Planned))
-        {
-            message = L["CannotUnscheduleActive"];
-            return;
-        }
-
-        foreach (var item in active) item.Status = ScheduleStatus.Cancelled;
-        await db.SaveChangesAsync();
-        selectedOperationId = operationId;
-        message = L["OperationsReturnedToQueue"];
-        await Reload();
-    }
-
-    private async Task UnscheduleOrder(long orderId)
-    {
-        if (!canEdit) return;
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var stepIds = await db.ProductionOperations.Where(x => x.ProductionOrderId == orderId)
-            .Select(x => x.Id).ToListAsync();
-        var active = await db.ProductionSchedules.Where(x => stepIds.Contains(x.ProductionOperationId)
-            && x.Status != ScheduleStatus.Cancelled).ToListAsync();
-        if (active.Any(x => x.Status != ScheduleStatus.Planned))
-        {
-            message = L["CannotUnscheduleActive"];
-            return;
-        }
-        foreach (var item in active) item.Status = ScheduleStatus.Cancelled;
-        await db.SaveChangesAsync();
-        selectedOperationId = null;
-        draggedScheduledOperationId = null;
-        draggedScheduledOrderId = null;
-        draggedOperationId = null;
-        message = L["OperationsReturnedToQueue"];
-        await Reload();
-    }
-
-    private int OrderStepMinutes(long orderId) => operations
-        .Where(x => x.ProductionOrderId == orderId)
-        .Sum(x => ProductionPlanningTime.OperationMinutes(x.PlannedHours));
-    private int OrderScheduledCount(long orderId) => schedules
-        .Count(s => s.ProductionOperation.ProductionOrderId == orderId);
-    private int OrderOperationCount(long orderId) => operations
-        .Count(x => x.ProductionOrderId == orderId);
+    private static int OperationMinutes(ProductionOperation step) =>
+        ProductionPlanningTime.OperationMinutes(step.PlannedHours);
     private static string DurationLabel(int minutes) =>
-        $"{minutes / 60m:0.##}h ({minutes} min)";
-    private string ShiftClass(int hour) => hour >= 8 && hour < 13 || hour >= 14 && hour < 17 ? "work" : hour == 13 ? "break" : hour >= 17 && hour < 22 ? "overtime" : "night";
-    private string FormatDay(DateTime date) => L.IsPersian ? $"{Persian.GetYear(date)}/{Persian.GetMonth(date):00}/{Persian.GetDayOfMonth(date):00}" : date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-    private IEnumerable<ProductionSchedule> HourSchedules(DateTime day, int hour, int machineId) =>
-        schedules.Where(s => s.MachineId == machineId &&
-            ScheduleVisibleDuring(s, day.Date.AddHours(hour), day.Date.AddHours(hour + 1)))
-            .OrderBy(s => s.PlannedStart);
+        String.Format(CultureInfo.InvariantCulture, "{0:0.##} h ({1} min)", minutes / 60m, minutes);
+    private string FormatJalali(DateTime value) =>
+        String.Format(CultureInfo.InvariantCulture, "{0:0000}/{1:00}/{2:00}",
+            Persian.GetYear(value), Persian.GetMonth(value), Persian.GetDayOfMonth(value));
+    private string FormatDateTime(DateTime? value) =>
+        value.HasValue ? FormatJalali(value.Value) + " " + value.Value.ToString("HH:mm", CultureInfo.InvariantCulture) : "—";
 
-    private static bool ScheduleVisibleDuring(ProductionSchedule schedule, DateTime start, DateTime end)
+    private string ShiftClass(int hour) =>
+        hour >= 8 && hour < 13 || hour >= 14 && hour < 17 ? "work" :
+        hour == 13 ? "break" : hour >= 17 && hour < 22 ? "overtime" : "night";
+    private string OrderColor(ProductionOrder order) =>
+        "order-" + ShiftClass(order.PlannedStartDate?.Hour ?? 8);
+    private string ScheduleColor(ProductionSchedule schedule) =>
+        "order-" + ShiftClass(schedule.PlannedStart.Hour);
+
+    private string OrderTooltip(ProductionOrder order) =>
+        order.OrderNumber + " | " + order.SalesOrder?.Customer?.Name +
+        " | " + FormatDateTime(order.PlannedStartDate) + " – " + FormatDateTime(order.PlannedEndDate);
+    private string OperationTooltip(ProductionSchedule schedule) =>
+        schedule.ProductionOperation.Name + " | " + schedule.Machine.Name + " | " +
+        FormatDateTime(schedule.PlannedStart) + " – " + FormatDateTime(schedule.PlannedEnd);
+
+    private IEnumerable<ProductionOrder> OrdersForDate(DateTime date) =>
+        orders.Where(x => x.PlannedStartDate.HasValue && x.PlannedEndDate.HasValue &&
+            ProductionPlanningTime.HasProductiveTime(x.PlannedStartDate.Value, x.PlannedEndDate.Value,
+                x.AvoidOvertime, x.AvoidNightShift, date.Date, date.Date.AddDays(1)));
+    private IEnumerable<ProductionOrder> OrdersForHour(DateTime date, int hour) =>
+        orders.Where(x => x.PlannedStartDate.HasValue && x.PlannedEndDate.HasValue &&
+            ShiftAllowed(x, hour) &&
+            x.PlannedStartDate.Value < date.Date.AddHours(hour + 1) &&
+            x.PlannedEndDate.Value > date.Date.AddHours(hour));
+    private bool ShiftAllowed(ProductionOrder order, int hour) =>
+        ShiftClass(hour) switch
+        {
+            "break" => false,
+            "overtime" => !order.AvoidOvertime,
+            "night" => !order.AvoidNightShift,
+            _ => true
+        };
+    private IEnumerable<ProductionSchedule> SchedulesForDate(DateTime date) =>
+        schedules.Where(x => ProductionPlanningTime.HasProductiveTime(
+            x.PlannedStart, x.PlannedEnd, x.ProductionOperation.ProductionOrder.AvoidOvertime,
+            x.ProductionOperation.ProductionOrder.AvoidNightShift,
+            date.Date, date.Date.AddDays(1)));
+    private IEnumerable<ProductionSchedule> SchedulesForHour(DateTime date, int hour) =>
+        schedules.Where(x => ProductionPlanningTime.HasProductiveTime(
+            x.PlannedStart, x.PlannedEnd, x.ProductionOperation.ProductionOrder.AvoidOvertime,
+            x.ProductionOperation.ProductionOrder.AvoidNightShift,
+            date.Date.AddHours(hour), date.Date.AddHours(hour + 1)));
+
+    private ProductionSchedule? CurrentSchedule(long operationId) =>
+        schedules.FirstOrDefault(x => x.ProductionOperationId == operationId);
+    private int MachineChoice(ProductionOperation step)
     {
-        var order = schedule.ProductionOperation.ProductionOrder;
-        return ProductionPlanningTime.HasProductiveTime(schedule.PlannedStart, schedule.PlannedEnd,
-            order.AvoidOvertime, order.AvoidNightShift, start, end);
+        if (editedMachines.TryGetValue(step.Id, out var id)) return id;
+        var scheduled = CurrentSchedule(step.Id);
+        if (scheduled != null) return scheduled.MachineId;
+        if (step.WorkCenter?.Code is string code && code.StartsWith("MC-", StringComparison.OrdinalIgnoreCase))
+            return machines.FirstOrDefault(x => string.Equals("MC-" + x.Code, code, StringComparison.OrdinalIgnoreCase))?.Id ?? 0;
+        return 0;
     }
-    private bool IsSelectedMachine(int id) => machineFilter == 0 || machineFilter == id;
-    private bool canView;
-    private bool canEdit;
-    private string? message;
-    private int machineFilter;
-    private CalendarView viewMode = CalendarView.Month;
-    private enum CalendarView { Month, Week, Day }
-    private DateTime Anchor => viewMode == CalendarView.Week ? selectedDate.Date.AddDays(-(((int)selectedDate.DayOfWeek + 1) % 7)) : selectedDate.Date;
-    private IEnumerable<DateTime> CalendarDays => viewMode switch
+    private string MachineName(ProductionOperation step) =>
+        machines.FirstOrDefault(x => x.Id == MachineChoice(step))?.Name ??
+        CurrentSchedule(step.Id)?.Machine.Name ?? L["SelectMachine"];
+    private string OperationNameChoice(ProductionOperation step) =>
+        editedNames.GetValueOrDefault(step.Id, step.Name);
+    private string OperationHoursChoice(ProductionOperation step) =>
+        editedHours.GetValueOrDefault(step.Id, step.PlannedHours.ToString("0.##", CultureInfo.InvariantCulture));
+    private void SetOperationName(long id, string? value) => editedNames[id] = value ?? "";
+    private void SetOperationHours(long id, string? value) => editedHours[id] = value ?? "";
+    private void SetMachineChoice(long id, string? value) =>
+        editedMachines[id] = int.TryParse(value, out var result) ? result : 0;
+
+    private static bool IsAllowed(ProductionOrder order, DateTime start, DateTime end) =>
+        order.PlannedStartDate.HasValue && order.PlannedEndDate.HasValue &&
+        start >= order.PlannedStartDate.Value && end <= order.PlannedEndDate.Value;
+
+    private async Task<int> EnsureMachineWorkCenterAsync(ApplicationDbContext db, Machine machine)
     {
-        CalendarView.Day => new[] { selectedDate.Date },
-        CalendarView.Week => Enumerable.Range(0, 7).Select(i => Anchor.AddDays(i)),
-        _ => MonthDays
-    };
-    private IEnumerable<DateTime> MonthDays
-    {
-        get
-        {
-            var first = new DateTime(Persian.GetYear(selectedDate), Persian.GetMonth(selectedDate), 1, Persian);
-            var offset = ((int)first.DayOfWeek + 1) % 7;
-            return Enumerable.Range(0, 42).Select(i => first.AddDays(i - offset));
-        }
-    }
-    private void ShiftPeriod(int direction) => selectedDate =
-        viewMode == CalendarView.Month ? Persian.AddMonths(selectedDate, direction) :
-        selectedDate.AddDays(direction * (viewMode == CalendarView.Week ? 7 : 1));
-    private void ChooseDay(DateTime day) { selectedDate = day; viewMode = CalendarView.Day; }
-    private string ShiftColor(DateTime date) => date.Hour >= 8 && date.Hour < 17 ? "order-work" : date.Hour >= 17 && date.Hour < 22 ? "order-overtime" : "order-night";
-    private IEnumerable<ProductionSchedule> DaySchedules(DateTime day, int machineId) =>
-        schedules.Where(s => s.MachineId == machineId &&
-            s.PlannedStart.Date == day.Date).OrderBy(s => s.ProductionOperation.Sequence);
-
-    private DateTime selectedDate = DateTime.Today;
-    private long newOrderId;
-    private string newOperationName = "";
-    private decimal newHours = 1m;
-    private List<Machine> machines = new();
-    private List<ProductionOrder> orders = new();
-    private List<ProductionOperation> operations = new();
-    private List<ProductionSchedule> schedules = new();
-    private Dictionary<long, int> machineChoices = new();
-    private Dictionary<long, string> startChoices = new();
-    private Dictionary<long, string> durationChoices = new();
-    private static readonly PersianCalendar Persian = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        var user = (await Auth.GetAuthenticationStateAsync()).User;
-        canEdit = user.Identity?.IsAuthenticated == true && (user.IsInRole("Administrator") ||
-            user.IsInRole("ProductionManager") || user.IsInRole("Production Manager") || user.IsInRole("Manager"));
-        canView = canEdit || (user.Identity?.IsAuthenticated == true &&
-            (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
-             user.IsInRole("Production") || user.IsInRole("CEO") || user.IsInRole("Ceo")));
-
-        if (!canView) return;
-        await Reload();
-        if (canEdit)
-        {
-            try { await GenerateMissingOperationsCore(true); }
-            catch (Exception) { message = L["RoutingGenerationFailed"]; }
-        }
-
-        var upcoming = orders.Where(x => x.Status != ProductionOrderStatus.Cancelled &&
-            x.PlannedStartDate.HasValue)
-            .OrderBy(x => Math.Abs((x.PlannedStartDate!.Value.Date - DateTime.Today).TotalDays))
-            .FirstOrDefault();
-        if (upcoming?.PlannedStartDate is DateTime start)
-            selectedDate = start.Date;
-    }
-
-    private async Task Reload()
-    {
-        await using var db = await DbFactory.CreateDbContextAsync();
-        machines = await db.Machines.Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
-        orders = await db.ProductionOrders.Include(x => x.SalesOrder).ThenInclude(x => x.Quotation)
-            .ThenInclude(x => x.SalesRequest).OrderBy(x => x.PlannedEndDate).ToListAsync();
-        operations = await db.ProductionOperations.Include(x => x.ProductionOrder)
-            .OrderBy(x => x.ProductionOrderId).ThenBy(x => x.Sequence).ToListAsync();
-        schedules = await db.ProductionSchedules.Include(x => x.ProductionOperation)
-            .ThenInclude(x => x.ProductionOrder).Where(x => x.Status != ScheduleStatus.Cancelled).ToListAsync();
-    }
-
-    private string FormatDate(DateTime? value)
-    {
-        if (!value.HasValue) return "—";
-        var v = value.Value;
-        return L.IsPersian
-            ? $"{Persian.GetYear(v)}/{Persian.GetMonth(v):00}/{Persian.GetDayOfMonth(v):00} {v:HH:mm}"
-            : v.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
-    }
-
-    private void SetMachineChoice(long operationId, string? value) =>
-        machineChoices[operationId] = int.TryParse(value, out var machineId) ? machineId : 0;
-
-    private void SetStartChoice(long operationId, string? value) =>
-        startChoices[operationId] = value ?? string.Empty;
-
-    private string DurationInput(ProductionOperation operation) =>
-        durationChoices.GetValueOrDefault(operation.Id,
-            operation.PlannedHours.ToString("0.######", CultureInfo.InvariantCulture));
-
-    private void SetDurationInput(long operationId, string? value) =>
-        durationChoices[operationId] = value ?? string.Empty;
-
-    private async Task SaveOperationDuration(long operationId)
-    {
-        if (!canEdit || !durationChoices.TryGetValue(operationId, out var input) ||
-            !decimal.TryParse(input, NumberStyles.Number, CultureInfo.InvariantCulture, out var hours) ||
-            hours <= 0)
-        {
-            message = L["InvalidStepDuration"];
-            return;
-        }
-
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var operation = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == operationId);
-        if (operation == null || operation.Status is ProductionOperationStatus.Running
-            or ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled)
-        {
-            message = L["CannotChangeActiveSchedule"];
-            return;
-        }
-
-        var order = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == operation.ProductionOrderId);
-        if (order == null) return;
-        var steps = await db.ProductionOperations.Where(x => x.ProductionOrderId == order.Id)
-            .OrderBy(x => x.Sequence).ToListAsync();
-        var ids = steps.Select(x => x.Id).ToList();
-        if (await db.ProductionSchedules.AnyAsync(x => ids.Contains(x.ProductionOperationId)
-            && x.Status != ScheduleStatus.Cancelled))
-        {
-            message = L["UnscheduleBeforeAdjusting"];
-            return;
-        }
-
-        var minutes = (int)Math.Round(hours * 60m, MidpointRounding.AwayFromZero);
-        if (minutes < 1 || minutes > order.EstimatedDurationMinutes - (steps.Count - 1))
-        {
-            message = L["StepDurationBudget"];
-            return;
-        }
-
-        var others = steps.Where(x => x.Id != operationId).ToList();
-        var remaining = order.EstimatedDurationMinutes - minutes;
-        if (others.Count == 0 && remaining != 0)
-        {
-            message = L["StepDurationBudget"];
-            return;
-        }
-        var rest = ProductionPlanningTime.AllocateOperationMinutes(
-            remaining, others.Select(x => x.PlannedHours).ToArray());
-        operation.PlannedHours = Math.Round(minutes / 60m, 6);
-        for (var i = 0; i < others.Count; i++)
-            others[i].PlannedHours = Math.Round(rest[i] / 60m, 6);
-
+        var code = "MC-" + machine.Code;
+        var center = await db.ProductionWorkCenters.FirstOrDefaultAsync(x => x.Code == code);
+        if (center != null) return center.Id;
+        center = new ProductionWorkCenter { Code = code, Name = machine.Name, IsActive = true };
+        db.ProductionWorkCenters.Add(center);
         await db.SaveChangesAsync();
-        durationChoices.Remove(operationId);
-        message = L["OperationsRebalanced"];
-        await Reload();
-    }
-
-    private int MachineChoice(long id) => machineChoices.GetValueOrDefault(id);
-    private string StartChoice(long id)
-    {
-        if (startChoices.TryGetValue(id, out var choice)) return choice;
-        var from = operations.FirstOrDefault(x => x.Id == id)?.ProductionOrder.PlannedStartDate;
-        return from?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
-    }
-
-    // SheetJobEdit and RollJobEdit store colors outside the specification CLR model
-    // in JobSpecificationJson. Recognize those fields so printing is not missed.
-    private static bool HasConfiguredPrintColors(string json)
-    {
-        using var document = JsonDocument.Parse(json);
-        foreach (var property in new[] {
-            "FrontCmykColors", "BackCmykColors", "FrontPantoneColors", "BackPantoneColors"
-        })
-        {
-            if (!document.RootElement.TryGetProperty(property, out var value)) continue;
-            if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() > 0) return true;
-            if (value.ValueKind == JsonValueKind.String &&
-                !string.IsNullOrWhiteSpace(value.GetString())) return true;
-        }
-        return false;
-    }
-
-    // Machine names are routing recommendations. Actual machine choice remains editable.
-    private static IEnumerable<string> RouteService(string service, bool sheet)
-    {
-        if (string.IsNullOrWhiteSpace(service)) yield break;
-        if (service.Contains("سلفون") || service.Contains("لمینیت") || service.Contains("laminat", StringComparison.OrdinalIgnoreCase))
-            yield return "Wenchun | Lamination / film";
-        else if (service.Contains("یووی") || service.Contains("UV", StringComparison.OrdinalIgnoreCase))
-            yield return "Tops 102 / Heidelberg | Spot UV";
-        else if (service.Contains("جعبه‌چسبانی") || service.Contains("چسبانی"))
-            yield return "Folder-gluer | Folding and assembly";
-        else if (service.Contains("برش و بسته‌بندی"))
-            yield return "Polar | Cutting and packing";
-        else if (service.Contains("قالب") || service.Contains("دیلن"))
-            yield return sheet ? "SBL | Die cutting" : "Nilpeter | Rotary / flat die";
-        else
-            yield return "Review | " + service;
-    }
-
-    private static bool CompatibleMachine(string operationName, Machine machine)
-    {
-        var name = (machine.Name + " " + machine.Code).ToLowerInvariant();
-        var operation = operationName.ToLowerInvariant();
-        if (operation.StartsWith("polar")) return name.Contains("polar") || name.Contains("guillotine");
-        if (operation.StartsWith("heidelberg")) return name.Contains("heidelberg");
-        if (operation.StartsWith("nilpeter")) return name.Contains("nilpeter");
-        if (operation.StartsWith("wenchun")) return name.Contains("wenchun");
-        if (operation.StartsWith("tops 102 / heidelberg")) return name.Contains("tops") || name.Contains("heidelberg");
-        if (operation.StartsWith("sbl")) return name.Contains("sbl");
-        if (operation.StartsWith("folder-gluer")) return name.Contains("folder") || name.Contains("gluer");
-        if (operation.StartsWith("sakurai")) return name.Contains("sakurai");
-        return true; // Unclassified work requires manual review.
-    }
-    private IEnumerable<Machine> SuggestedMachines(ProductionOperation operation) =>
-        machines.Where(m => CompatibleMachine(operation.Name, m));
-
-    private Task GenerateMissingOperations() => GenerateMissingOperationsCore(false);
-
-    private async Task GenerateMissingOperationsCore(bool silent)
-    {
-        if (!canEdit) return;
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var workCenters = await db.ProductionWorkCenters.Where(x => x.IsActive).ToListAsync();
-        var existing = await db.ProductionOperations.OrderBy(x => x.Sequence).ToListAsync();
-        var scheduledIds = await db.ProductionSchedules.Where(x => x.Status != ScheduleStatus.Cancelled)
-            .Select(x => x.ProductionOperationId).Distinct().ToListAsync();
-        var added = 0;
-        var synchronized = 0;
-        var blocked = 0;
-        foreach (var order in orders.Where(x => x.Status != ProductionOrderStatus.Cancelled &&
-                                                 x.Status != ProductionOrderStatus.Completed))
-        {
-            var current = existing.Where(x => x.ProductionOrderId == order.Id)
-                .OrderBy(x => x.Sequence).ToList();
-            if (current.Count > 0)
-            {
-                if (current.Any(x => scheduledIds.Contains(x.Id))) continue;
-                if (order.EstimatedDurationMinutes < current.Count) { blocked++; continue; }
-                if (current.Sum(x => ProductionPlanningTime.OperationMinutes(x.PlannedHours))
-                    == order.EstimatedDurationMinutes) continue;
-                var allocation = ProductionPlanningTime.AllocateOperationMinutes(
-                    order.EstimatedDurationMinutes, current.Select(x => x.PlannedHours).ToArray());
-                for (var i = 0; i < current.Count; i++)
-                    current[i].PlannedHours = Math.Round(allocation[i] / 60m, 6);
-                synchronized++;
-                continue;
-            }
-
-            var request = order.SalesOrder?.Quotation?.SalesRequest;
-            if (request == null || string.IsNullOrWhiteSpace(request.JobSpecificationJson)) continue;
-            var steps = new List<string>();
-            try
-            {
-                if (request.JobType == SalesJobType.Sheet)
-                {
-                    var spec = JsonSerializer.Deserialize<SheetJobSpecification>(request.JobSpecificationJson);
-                    if (spec != null)
-                    {
-                        if (spec.BeforeCutLengthCm.HasValue || spec.BeforeCutWidthCm.HasValue || spec.CutLengthCm.HasValue || spec.CutWidthCm.HasValue)
-                            steps.Add("Polar | Cutting");
-                        if (!string.IsNullOrWhiteSpace(spec.PrintingNotes) || !string.IsNullOrWhiteSpace(spec.Zinc) ||
-                            HasConfiguredPrintColors(request.JobSpecificationJson))
-                            steps.Add("Heidelberg | Sheet offset printing");
-                        foreach (var service in spec.SelectedServices ?? new())
-                            steps.AddRange(RouteService(service, true));
-                        using (var details = JsonDocument.Parse(request.JobSpecificationJson))
-                        {
-                            if (details.RootElement.TryGetProperty("FinishType", out var finish) && finish.ValueKind == JsonValueKind.String)
-                            {
-                                var finishText = finish.GetString() ?? "";
-                                if (finishText.Contains("screen", StringComparison.OrdinalIgnoreCase) || finishText.Contains("سیلک")) steps.Add("Sakurai | Screen printing");
-                                if (finishText.Contains("cylinder", StringComparison.OrdinalIgnoreCase) || finishText.Contains("سیلندر")) steps.Add("Heidelberg | Cylinder coating");
-                            }
-                        }
-                        if (!string.IsNullOrWhiteSpace(spec.Die))
-                            steps.Add("SBL | Die cutting");
-                    }
-                }
-                else if (request.JobType == SalesJobType.Roll)
-                {
-                    var spec = JsonSerializer.Deserialize<RollJobSpecification>(request.JobSpecificationJson);
-                    if (spec != null)
-                    {
-                        if (spec.ColorCount.GetValueOrDefault() > 0 || !string.IsNullOrWhiteSpace(spec.PrintingNotes) ||
-                            HasConfiguredPrintColors(request.JobSpecificationJson))
-                            steps.Add("Nilpeter | Roll offset/flexo printing");
-                        foreach (var service in spec.SelectedServices ?? new())
-                            steps.AddRange(RouteService(service, false));
-                        if (spec.MachineGluing)
-                            steps.Add("Folder-gluer | Machine gluing");
-                        else if (spec.HandGluing)
-                            steps.Add("Manual | Hand gluing");
-                    }
-                }
-            }
-            catch (JsonException) { continue; }
-            var uniqueSteps = steps.Where(x => !string.IsNullOrWhiteSpace(x))
-                .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-            if (uniqueSteps.Count == 0) continue;
-            if (order.EstimatedDurationMinutes < uniqueSteps.Count) { blocked++; continue; }
-
-            var durations = ProductionPlanningTime.AllocateOperationMinutes(
-                order.EstimatedDurationMinutes, uniqueSteps.Select(_ => 1m).ToArray());
-            for (var i = 0; i < uniqueSteps.Count; i++)
-            {
-                var step = uniqueSteps[i];
-                var center = workCenters.FirstOrDefault(x => string.Equals(x.Name, step, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(x.Code, step, StringComparison.OrdinalIgnoreCase));
-                db.ProductionOperations.Add(new ProductionOperation
-                {
-                    ProductionOrderId = order.Id, Sequence = i + 1, Name = step,
-                    WorkCenterId = center?.Id, PlannedHours = Math.Round(durations[i] / 60m, 6),
-                    Status = ProductionOperationStatus.Pending
-                });
-                added++;
-            }
-        }
-
-        await db.SaveChangesAsync();
-        if (!silent)
-            message = blocked > 0 ? L["DurationTooShortForSteps"]
-                : added + synchronized > 0 ? L["OperationsGenerated"] : L["NoRoutingFound"];
-        await Reload();
+        return center.Id;
     }
 
     private async Task AddOperation()
     {
-        if (!canEdit || newOrderId == 0 || string.IsNullOrWhiteSpace(newOperationName) || newHours <= 0)
-            return;
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var order = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == newOrderId);
-        if (order == null) return;
-        var existing = await db.ProductionOperations.Where(x => x.ProductionOrderId == newOrderId)
-            .OrderBy(x => x.Sequence).ToListAsync();
-        var ids = existing.Select(x => x.Id).ToList();
-        if (await db.ProductionSchedules.AnyAsync(x => ids.Contains(x.ProductionOperationId)
-            && x.Status != ScheduleStatus.Cancelled))
+        if (!canEdit || SelectedOrder is not ProductionOrder order) return;
+        if (string.IsNullOrWhiteSpace(newOperationName) || newMachineId == 0 || newOperationHours <= 0)
         {
-            message = L["UnscheduleBeforeAdding"];
+            ShowError(L["EnterOperationDetails"]);
             return;
         }
-        if (order.EstimatedDurationMinutes < existing.Count + 1)
+        var minutes = ProductionPlanningTime.OperationMinutes(newOperationHours);
+        if (AllocatedMinutes + minutes > order.EstimatedDurationMinutes)
         {
-            message = L["DurationTooShortForSteps"];
+            ShowError(L["StepDurationBudget"]);
             return;
         }
-
-        var weights = existing.Select(x => x.PlannedHours).Append(newHours).ToArray();
-        var duration = ProductionPlanningTime.AllocateOperationMinutes(order.EstimatedDurationMinutes, weights);
-        for (var i = 0; i < existing.Count; i++)
-            existing[i].PlannedHours = Math.Round(duration[i] / 60m, 6);
-        db.ProductionOperations.Add(new ProductionOperation
+        try
         {
-            ProductionOrderId = newOrderId, Sequence = (existing.LastOrDefault()?.Sequence ?? 0) + 1,
-            Name = newOperationName.Trim(), PlannedHours = Math.Round(duration[^1] / 60m, 6),
-            Status = ProductionOperationStatus.Pending
-        });
-
-        await db.SaveChangesAsync();
-        newOperationName = "";
-        message = L["OperationsRebalanced"];
-        await Reload();
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == newMachineId && x.IsActive);
+            if (machine == null) { ShowError(L["SelectMachine"]); return; }
+            var centerId = await EnsureMachineWorkCenterAsync(db, machine);
+            var existing = await db.ProductionOperations
+                .Where(x => x.ProductionOrderId == order.Id).OrderBy(x => x.Sequence).ToListAsync();
+            db.ProductionOperations.Add(new ProductionOperation
+            {
+                ProductionOrderId = order.Id,
+                Sequence = (existing.LastOrDefault()?.Sequence ?? 0) + 1,
+                Name = newOperationName.Trim(),
+                PlannedHours = newOperationHours,
+                WorkCenterId = centerId,
+                Status = ProductionOperationStatus.Pending
+            });
+            await db.SaveChangesAsync();
+            newOperationName = "";
+            newOperationHours = 1m;
+            ShowSuccess(L["OperationAdded"]);
+            await ReloadAsync();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
     }
 
-    private async Task Schedule(long operationId)
+    private async Task SaveOperation(long id)
     {
-        var dateText = StartChoice(operationId);
-        if (!canEdit || !machineChoices.TryGetValue(operationId, out var machineId) || machineId == 0 ||
-            !DateTime.TryParseExact(dateText, "yyyy-MM-dd", CultureInfo.InvariantCulture,
-                DateTimeStyles.None, out var requestedDate))
+        if (!canEdit) return;
+        var step = operations.FirstOrDefault(x => x.Id == id);
+        if (step == null) return;
+        if (CurrentSchedule(id) != null)
         {
-            message = L["SelectMachineAndDate"];
+            ShowError(L["UnscheduleBeforeAdjusting"]);
             return;
         }
-
-        await using var db = await DbFactory.CreateDbContextAsync();
-        var operation = await db.ProductionOperations.Include(x => x.ProductionOrder)
-            .FirstOrDefaultAsync(x => x.Id == operationId);
-        if (operation == null) return;
-
-        var assignedMachine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
-        if (assignedMachine == null || !CompatibleMachine(operation.Name, assignedMachine))
+        var name = OperationNameChoice(step).Trim();
+        if (!decimal.TryParse(OperationHoursChoice(step), NumberStyles.Number,
+            CultureInfo.InvariantCulture, out var hours) ||
+            hours <= 0 || string.IsNullOrWhiteSpace(name))
         {
-            message = L["MachineMismatch"];
+            ShowError(L["InvalidStepDuration"]);
             return;
         }
-
-        // This calendar assigns a machine and calendar DATE, not a precise working hour.
-        // Only the CEO-defined inclusive date range is a hard placement boundary.
-        if (!IsWithinCeoWindow(operation.ProductionOrder, requestedDate))
+        var newTotal = AllocatedMinutes - OperationMinutes(step) +
+            ProductionPlanningTime.OperationMinutes(hours);
+        if (newTotal > (SelectedOrder?.EstimatedDurationMinutes ?? 0))
         {
-            message = operation.ProductionOrder.PlannedStartDate.HasValue &&
-                      operation.ProductionOrder.PlannedEndDate.HasValue
-                ? L["MachineOutsideCeoWindow"] : L["CeoPlanRequired"];
+            ShowError(L["StepDurationBudget"]);
             return;
         }
-
-        var active = await db.ProductionSchedules.Where(x => x.ProductionOperationId == operationId &&
-            x.Status != ScheduleStatus.Cancelled).OrderBy(x => x.Id).ToListAsync();
-        if (active.Any(x => x.Status != ScheduleStatus.Planned))
+        var machineId = MachineChoice(step);
+        if (machineId == 0) { ShowError(L["SelectMachine"]); return; }
+        try
         {
-            message = L["CannotChangeActiveSchedule"];
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var entity = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == id);
+            var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
+            if (entity == null || machine == null) return;
+            entity.Name = name;
+            entity.PlannedHours = hours;
+            entity.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
+            await db.SaveChangesAsync();
+            editedNames.Remove(id);
+            editedHours.Remove(id);
+            editedMachines.Remove(id);
+            ShowSuccess(L["OperationSaved"]);
+            await ReloadAsync();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    private async Task DeleteOperation(long id)
+    {
+        if (!canEdit) return;
+        var step = operations.FirstOrDefault(x => x.Id == id);
+        if (step == null) return;
+        if (CurrentSchedule(id) != null)
+        {
+            ShowError(L["UnscheduleBeforeAdjusting"]);
             return;
         }
-
-        // The existing DateTime columns are retained for backwards compatibility.
-        // Midnight to midnight represents a DATE booking, not a timed reservation.
-        // Several steps may be planned for the same machine/day; hour-level capacity
-        // is outside the scope of this calendar.
-        var start = requestedDate.Date;
-        var end = start.AddDays(1);
-        var entry = active.FirstOrDefault();
-        if (entry == null)
+        try
         {
-            db.ProductionSchedules.Add(new ProductionSchedule
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var entity = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == id);
+            if (entity == null) return;
+            if (entity.Status is ProductionOperationStatus.Running or ProductionOperationStatus.Completed)
             {
-                ProductionOperationId = operationId,
-                MachineId = machineId,
-                PlannedStart = start,
-                PlannedEnd = end,
-                Status = ScheduleStatus.Planned
-            });
+                ShowError(L["CannotChangeActiveSchedule"]);
+                return;
+            }
+            db.ProductionOperations.Remove(entity);
+            var remaining = await db.ProductionOperations
+                .Where(x => x.ProductionOrderId == step.ProductionOrderId && x.Id != id)
+                .OrderBy(x => x.Sequence).ToListAsync();
+            for (var i = 0; i < remaining.Count; i++)
+                remaining[i].Sequence = i + 1;
+            await db.SaveChangesAsync();
+            selectedOperationId = null;
+            ShowSuccess(L["OperationRemoved"]);
+            await ReloadAsync();
         }
-        else
-        {
-            entry.MachineId = machineId;
-            entry.PlannedStart = start;
-            entry.PlannedEnd = end;
-            foreach (var duplicate in active.Skip(1))
-                duplicate.Status = ScheduleStatus.Cancelled;
-        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
 
-        await db.SaveChangesAsync();
-        selectedOperationId = operationId;
-        message = L["OperationScheduled"];
-        await Reload();
+    private async Task PlaceOperationAsync(long operationId, DateTime requestedStart)
+    {
+        if (!canEdit) return;
+        var step = operations.FirstOrDefault(x => x.Id == operationId);
+        var order = step?.ProductionOrder;
+        if (step == null || order == null) return;
+        if (!order.PlannedStartDate.HasValue || !order.PlannedEndDate.HasValue)
+        {
+            ShowError(L["CeoPlanRequired"]);
+            return;
+        }
+        var machineId = MachineChoice(step);
+        if (machineId == 0)
+        {
+            ShowError(L["SelectMachineBeforeScheduling"]);
+            return;
+        }
+        try
+        {
+            var start = ProductionPlanningTime.NextAllowedProductionMinute(
+                requestedStart < order.PlannedStartDate.Value ? order.PlannedStartDate.Value : requestedStart,
+                order.AvoidOvertime, order.AvoidNightShift);
+            var end = ProductionPlanningTime.CalculateEndDateTime(
+                start, OperationMinutes(step), order.AvoidOvertime, order.AvoidNightShift);
+            if (!IsAllowed(order, start, end))
+            {
+                ShowError(L["MachineOutsideCeoWindow"]);
+                return;
+            }
+
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
+            if (machine == null) { ShowError(L["SelectMachine"]); return; }
+
+            var active = await db.ProductionSchedules
+                .Where(x => x.ProductionOperationId == operationId && x.Status != ScheduleStatus.Cancelled)
+                .OrderBy(x => x.Id).ToListAsync();
+            if (active.Any(x => x.Status != ScheduleStatus.Planned))
+            {
+                ShowError(L["CannotChangeActiveSchedule"]);
+                return;
+            }
+            var overlapping = await db.ProductionSchedules
+                .Include(x => x.ProductionOperation).ThenInclude(x => x.ProductionOrder)
+                .Where(x => x.MachineId == machineId && x.ProductionOperationId != operationId &&
+                    x.Status != ScheduleStatus.Cancelled && x.PlannedStart < end && x.PlannedEnd > start)
+                .ToListAsync();
+            if (overlapping.Any(x => ProductionPlanningTime.ProductiveConflict(start, end,
+                order.AvoidOvertime, order.AvoidNightShift,
+                x.PlannedStart, x.PlannedEnd,
+                x.ProductionOperation.ProductionOrder.AvoidOvertime,
+                x.ProductionOperation.ProductionOrder.AvoidNightShift)))
+            {
+                ShowError(L["MachineConflict"]);
+                return;
+            }
+
+            var entity = active.FirstOrDefault();
+            if (entity == null)
+            {
+                db.ProductionSchedules.Add(new ProductionSchedule
+                {
+                    ProductionOperationId = operationId,
+                    MachineId = machineId,
+                    PlannedStart = start,
+                    PlannedEnd = end,
+                    Status = ScheduleStatus.Planned
+                });
+            }
+            else
+            {
+                entity.MachineId = machineId;
+                entity.PlannedStart = start;
+                entity.PlannedEnd = end;
+                foreach (var duplicate in active.Skip(1))
+                    duplicate.Status = ScheduleStatus.Cancelled;
+            }
+            await db.SaveChangesAsync();
+            selectedOperationId = operationId;
+            ShowSuccess(L["OperationScheduled"]);
+            await ReloadAsync();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    private async Task UnscheduleOperation(long id)
+    {
+        if (!canEdit) return;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var step = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == id);
+            if (step == null) return;
+            var dependentIds = await db.ProductionOperations
+                .Where(x => x.ProductionOrderId == step.ProductionOrderId && x.Sequence >= step.Sequence)
+                .Select(x => x.Id).ToListAsync();
+            var active = await db.ProductionSchedules
+                .Where(x => dependentIds.Contains(x.ProductionOperationId) &&
+                    x.Status != ScheduleStatus.Cancelled).ToListAsync();
+            if (active.Any(x => x.Status != ScheduleStatus.Planned))
+            {
+                ShowError(L["CannotUnscheduleActive"]);
+                return;
+            }
+            foreach (var entry in active)
+                entry.Status = ScheduleStatus.Cancelled;
+            await db.SaveChangesAsync();
+            ShowSuccess(L["OperationsReturnedToQueue"]);
+            await ReloadAsync();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    private void SetView(CalendarView view)
+    {
+        viewMode = view;
+        if (view == CalendarView.Month) displayMonth = displayDate;
+    }
+    private void PreviousPeriod()
+    {
+        if (viewMode == CalendarView.Month) { displayMonth = Persian.AddMonths(displayMonth, -1); displayDate = displayMonth; }
+        else displayDate = displayDate.AddDays(viewMode == CalendarView.Week ? -7 : -1);
+    }
+    private void NextPeriod()
+    {
+        if (viewMode == CalendarView.Month) { displayMonth = Persian.AddMonths(displayMonth, 1); displayDate = displayMonth; }
+        else displayDate = displayDate.AddDays(viewMode == CalendarView.Week ? 7 : 1);
+    }
+    private void GoToToday()
+    {
+        displayDate = DateTime.Today;
+        displayMonth = DateTime.Today;
     }
 }
