@@ -2507,4 +2507,20 @@
   <data name="Fri" xml:space="preserve"><value>Fri</value></data>
   <data name="NoActiveMachines" xml:space="preserve"><value>No active machines were found. Add or activate machines to schedule production operations.</value></data>
   <data name="MachineMismatch" xml:space="preserve"><value>This operation is not compatible with the selected machine. Choose a suggested machine or review its routing.</value></data>
+  <data name="DropScheduledStepHere" xml:space="preserve"><value>Drop a scheduled step here to return it (and any dependent planned steps) to the unscheduled list.</value></data>
+  <data name="NoUnscheduledSteps" xml:space="preserve"><value>No unscheduled steps. Drag a machine operation from the calendar here to return it.</value></data>
+  <data name="CeoDuration" xml:space="preserve"><value>CEO plan total</value></data>
+  <data name="MachineDuration" xml:space="preserve"><value>Machine steps total</value></data>
+  <data name="MachineStepCount" xml:space="preserve"><value>steps</value></data>
+  <data name="ReturnWholeOrder" xml:space="preserve"><value>Return all order steps to list</value></data>
+  <data name="ReturnToQueue" xml:space="preserve"><value>Return to list</value></data>
+  <data name="CannotUnscheduleActive" xml:space="preserve"><value>Cannot remove released, running or completed operations from the calendar.</value></data>
+  <data name="OperationsReturnedToQueue" xml:space="preserve"><value>Scheduled operations returned to the unscheduled list.</value></data>
+  <data name="DurationTooShortForSteps" xml:space="preserve"><value>The CEO production duration is too short for the number of operation steps.</value></data>
+  <data name="UnscheduleBeforeAdding" xml:space="preserve"><value>Return all scheduled steps of this order to the list before adding an operation and redistributing durations.</value></data>
+  <data name="OperationsRebalanced" xml:space="preserve"><value>Machine-step durations redistributed to match the CEO production duration.</value></data>
+  <data name="CeoPlanRequired" xml:space="preserve"><value>Set an order start and end in the CEO Production Planning calendar before scheduling machine operations.</value></data>
+  <data name="MachineDurationMismatch" xml:space="preserve"><value>Machine-step durations do not add up to the CEO total. Use Generate Operations to synchronize unscheduled steps.</value></data>
+  <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>This operation falls outside the CEO production window. Choose a permitted time within the CEO plan.</value></data>
+  <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>Released, running and completed machine schedules cannot be moved.</value></data>
 </root>
