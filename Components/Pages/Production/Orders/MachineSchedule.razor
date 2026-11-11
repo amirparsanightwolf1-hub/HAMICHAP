@@ -709,11 +709,6 @@
             var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
             if (machine == null) { ShowError(L["SelectMachine"]); return; }
 
-            // Persist the chosen machine for the stage even after its calendar slot is cleared.
-            var storedStep = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == operationId);
-            if (storedStep == null) return;
-            storedStep.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
-
             var active = await db.ProductionSchedules
                 .Where(x => x.ProductionOperationId == operationId && x.Status != ScheduleStatus.Cancelled)
                 .OrderBy(x => x.Id).ToListAsync();
@@ -736,6 +731,11 @@
                 ShowError(L["MachineConflict"]);
                 return;
             }
+
+            // Persist the chosen machine only after calendar validation succeeds.
+            var storedStep = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == operationId);
+            if (storedStep == null) return;
+            storedStep.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
 
             var entity = active.FirstOrDefault();
             if (entity == null)
