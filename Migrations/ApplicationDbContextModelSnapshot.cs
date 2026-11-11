@@ -1097,6 +1097,9 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<int>("EstimatedDurationMinutes")
                         .HasColumnType("int");
 
+                    b.Property<bool>("OperationsRouteInitialized")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("OperationsSequenceConfirmedAt")
                         .HasColumnType("datetime2");
 
