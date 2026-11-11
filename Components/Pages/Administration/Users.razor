@@ -1,4 +1,6 @@
 ﻿@page "/administration/users"
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -10,18 +12,18 @@
 @inject NavigationManager Nav
 
 
-<PageTitle>Users</PageTitle>
+<PageTitle>@L["Users"]</PageTitle>
 
 <div class="erp-page-header">
-    <h3 class="erp-page-title">Users Management</h3>
+    <h3 class="erp-page-title">@L["Users Management"]</h3>
     <button class="btn btn-primary" @onclick="@(() => Nav.NavigateTo("/administration/users/create"))">
-        Add Employee
+        @L["Add Employee"]
     </button>
 </div>
 
 @if (users == null)
 {
-    <p>Loading...</p>
+    <p>@L["Loading"]</p>
 }
 else
 {
@@ -29,11 +31,11 @@ else
 
         <thead>
             <tr>
-                <th>Email</th>
-                <th>Name</th>
-                <th>Department</th>
-                <th>Status</th>
-                <th>Roles</th>
+                <th>@L["Email"]</th>
+                <th>@L["Name"]</th>
+                <th>@L["Department"]</th>
+                <th>@L["Status"]</th>
+                <th>@L["Roles"]</th>
                 <th></th>
             </tr>
         </thead>
