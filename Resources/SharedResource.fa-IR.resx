@@ -2909,4 +2909,13 @@
   <data name="Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below." xml:space="preserve"><value>پس از اسکن کد QR یا وارد کردن کلید بالا، برنامه احراز هویت کدی ایجاد می‌کند. آن را در کادر تأیید وارد کنید.</value></data>
   <data name="You’ve successfully authenticated with" xml:space="preserve"><value>با موفقیت از طریق حساب خارجی وارد شده‌اید:</value></data>
   <data name="You’ve successfully authenticated with your external provider." xml:space="preserve"><value>با موفقیت از طریق حساب خارجی وارد شده‌اید.</value></data>
+  <data name="Don't have access to your authenticator device? You can" xml:space="preserve"><value>به دستگاه احراز هویت خود دسترسی ندارید؟ می‌توانید</value></data>
+  <data name="You've successfully authenticated with" xml:space="preserve"><value>با موفقیت از طریق حساب خارجی وارد شده‌اید:</value></data>
+  <data name="Associate your {0} account." xml:space="preserve"><value>اتصال حساب {0} شما</value></data>
+  <data name="Please enter an email address for this site below and click the Register button to finish logging in." xml:space="preserve"><value>برای تکمیل ورود، ایمیل خود را وارد کرده و روی دکمه ثبت‌نام کلیک کنید.</value></data>
+  <data name="No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation." xml:space="preserve"><value>برای اندازه‌های پیش‌فرض ورق، چیدمان معتبری یافت نشد. ابعاد قطعات، تعداد، حاشیه‌ها، فاصله و چرخش را بررسی کنید.</value></data>
+  <data name="Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage." xml:space="preserve"><value>وزن از مساحت کل ورق یا تکرار، گرماژ کاغذ و تعداد موردنیاز محاسبه می‌شود. این مقدار تخمینی است و اضافه مصرف آماده‌سازی یا ضایعات را در بر نمی‌گیرد.</value></data>
+  <data name="Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed." xml:space="preserve"><value>تعداد موردنیاز تولید برای هر قطعه را وارد کنید. بهینه‌ساز بر اساس این مقادیر، تعداد ورق یا تکرار رول را محاسبه می‌کند.</value></data>
+  <data name="Generate layouts using the selected sheet, parts, and setup." xml:space="preserve"><value>با استفاده از ورق، قطعات و تنظیمات انتخاب‌شده چیدمان ایجاد کنید.</value></data>
+  <data name="No valid layout was found." xml:space="preserve"><value>چیدمان معتبری یافت نشد.</value></data>
 </root>
