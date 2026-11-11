@@ -1,4 +1,5 @@
 ﻿@page "/administration/roles"
+@inject LocalizationService L
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -13,22 +14,22 @@
 @inject PermissionService PermissionService
 @inject NavigationManager Nav
 
-<PageTitle>Roles</PageTitle>
+<PageTitle>@L["Roles"]</PageTitle>
 
 @if (loading)
 {
-    <p>Loading...</p>
+    <p>@L["Loading"]</p>
 }
 else if (!canViewRoles)
 {
     <div class="alert alert-danger">
-        You are not authorized to view roles.
+        @L["You are not authorized to view roles."]
     </div>
 }
 else
 {
     <div class="erp-page-header">
-        <h3 class="erp-page-title">Roles</h3>
+        <h3 class="erp-page-title">@L["Roles"]</h3>
     </div>
 
     @if (canCreateRoles)
@@ -37,19 +38,19 @@ else
 
             <div class="card-body">
 
-                <h5>Create Role</h5>
+                <h5>@L["CreateRole"]</h5>
 
                 <div class="row align-items-end">
 
                     <div class="col-md-6">
 
                         <label class="form-label">
-                            Role Name
+                            @L["RoleName"]
                         </label>
 
                         <input class="form-control"
                                @bind="newRoleName"
-                               placeholder="e.g. Warehouse Manager" />
+                               placeholder="@L["e.g. Warehouse Manager"]" />
 
                     </div>
 
@@ -58,7 +59,7 @@ else
                         <button class="btn btn-primary"
                                 @onclick="CreateRole">
 
-                            Create Role
+                            @L["CreateRole"]
 
                         </button>
 
@@ -82,12 +83,12 @@ else
 
     @if (roles == null)
     {
-        <p>Loading roles...</p>
+        <p>@L["Loading roles..."]</p>
     }
     else if (!roles.Any())
     {
         <div class="alert alert-warning">
-            No roles have been created yet.
+            @L["No roles have been created yet."]
         </div>
     }
     else
@@ -101,15 +102,15 @@ else
                     <tr>
 
                         <th>
-                            Role
+                            @L["Role"]
                         </th>
 
                         <th>
-                            Users
+                            @L["Users"]
                         </th>
 
                         <th>
-                            Actions
+                            @L["Actions"]
                         </th>
 
                     </tr>
@@ -139,7 +140,7 @@ else
                                     <button class="btn btn-sm btn-primary me-2"
                                             @onclick="@(() => Nav.NavigateTo("/administration/permission-management"))">
 
-                                        Manage Permissions
+                                        @L["ManagePermissions"]
 
                                     </button>
                                 }
@@ -150,7 +151,7 @@ else
                                     <button class="btn btn-sm btn-secondary"
                                             disabled>
 
-                                        Protected
+                                        @L["Protected"]
 
                                     </button>
                                 }
@@ -158,9 +159,9 @@ else
                                 {
                                     <button class="btn btn-sm btn-secondary"
                                             disabled
-                                            title="Remove all users from this role before deleting it.">
+                                            title="@L["Remove all users from this role before deleting it."]">
 
-                                        In Use
+                                        @L["InUse"]
 
                                     </button>
                                 }
@@ -169,7 +170,7 @@ else
                                     <button class="btn btn-sm btn-danger"
                                             @onclick="() => DeleteRole(role)">
 
-                                        Delete
+                                        @L["Delete"]
 
                                     </button>
                                 }
