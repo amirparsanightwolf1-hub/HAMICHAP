@@ -225,7 +225,7 @@ private bool loading = true;
             if (principal.Identity?.IsAuthenticated != true)
             {
                 errorMessage =
-                    "You are not authenticated.";
+                    L["You are not authenticated."];
 
                 return;
             }
@@ -238,7 +238,7 @@ private bool loading = true;
             if (currentUser == null)
             {
                 errorMessage =
-                    "Current user could not be found.";
+                    L["Current user could not be found."];
 
                 return;
             }
@@ -344,7 +344,7 @@ private bool loading = true;
                 x.Id == selectedTargetRoleId))
         {
             errorMessage =
-                "You are not authorized to manage this role.";
+                L["You are not authorized to manage this role."];
 
             return;
         }
@@ -470,7 +470,7 @@ private bool loading = true;
             selectedTargetRoleId))
         {
             ShowError(
-                "Please select a role.");
+                L["Please select a role."]);
 
             return;
         }
@@ -495,7 +495,7 @@ private bool loading = true;
                 selectedTargetRoleId))
         {
             ShowError(
-                "You are not authorized to manage this role.");
+                L["You are not authorized to manage this role."]);
 
             return;
         }
@@ -568,7 +568,7 @@ private bool loading = true;
 
 
         ShowSuccess(
-            $"Permissions for '{GetTargetRoleName()}' saved successfully.");
+            String.Format(L["Permissions for '{0}' saved successfully."], GetTargetRoleName()));
     }
 
 
