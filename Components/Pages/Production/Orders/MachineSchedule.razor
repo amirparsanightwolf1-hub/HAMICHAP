@@ -143,6 +143,11 @@
                             @if (SelectedOperations.Count == 0)
                             {
                                 <p class="small text-muted">@L["NoOperationsGenerated"]</p>
+                                @if (canEdit)
+                                {
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2"
+                                            @onclick="ReimportSalesSuggestions">@L["RestoreSalesSuggestions"]</button>
+                                }
                             }
                             @foreach (var step in SelectedOperations)
                             {
@@ -654,6 +659,35 @@
             populated.Add(order.Id);
         }
         await db.SaveChangesAsync();
+    }
+
+    private async Task ReimportSalesSuggestions()
+    {
+        if (!canEdit || !selectedOrderId.HasValue || SelectedOperations.Count > 0) return;
+        try
+        {
+            await using (var db = await DbFactory.CreateDbContextAsync())
+            {
+                var order = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == selectedOrderId.Value);
+                if (order == null) return;
+                if (await db.ProductionOperations.AnyAsync(x => x.ProductionOrderId == order.Id))
+                {
+                    ShowError(L["CannotRestoreEditedRoute"]);
+                    return;
+                }
+                order.OperationsRouteInitialized = false;
+                InvalidateSequenceConfirmation(order);
+                await db.SaveChangesAsync();
+            }
+            await ImportSalesRoutesAsync();
+            ShowSuccess(L["SalesSuggestionsRestored"]);
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not import Sales suggestions for order {OrderId}", selectedOrderId);
+            ShowError(L["SalesRoutingImportFailed"]);
+        }
     }
 
     private async Task ReloadAsync()
