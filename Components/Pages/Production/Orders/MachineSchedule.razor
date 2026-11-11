@@ -33,12 +33,13 @@
                     <div class="card-body machine-ceo-order-list">
                         @foreach (var order in orders.Where(x => x.Status != ProductionOrderStatus.Cancelled).OrderBy(x => x.PlannedStartDate ?? DateTime.MaxValue))
                         {
-                            <div class="machine-ceo-order mb-2">
+                            <div class="machine-ceo-order mb-2" draggable="@canEdit" @ondragstart="() => StartOrderDrag(order.Id)">
                                 <div class="d-flex justify-content-between gap-2">
                                     <strong>@order.OrderNumber</strong>
                                     <span class="small text-muted">@OrderScheduledCount(order.Id)/@OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
                                 </div>
                                 <div class="small machine-ceo-dates">@L["CeoWindow"]: @FormatDateOnly(order.PlannedStartDate) – @FormatDateOnly(order.PlannedEndDate)</div>
+                                <div class="small text-muted">@L["DragOrderToCompatibleMachine"]</div>
                                 @if (OrderOperationCount(order.Id) == 0)
                                 {
                                     <div class="small text-muted">@L["NoOperationsGenerated"]</div>
@@ -234,6 +235,7 @@
     private long? draggedOperationId;
     private long? draggedScheduledOperationId;
     private long? draggedScheduledOrderId;
+    private long? draggedNewOrderId;
 
     private void SelectOperation(long id)
     {
@@ -280,6 +282,7 @@
         draggedOperationId = null;
         draggedScheduledOperationId = null;
         draggedScheduledOrderId = null;
+        draggedNewOrderId = null;
     }
 
     private void SelectDraggedOperation(long id)
@@ -287,6 +290,16 @@
         if (!canEdit) return;
         selectedOperationId = id;
         draggedOperationId = id;
+        draggedScheduledOperationId = null;
+        draggedScheduledOrderId = null;
+        draggedNewOrderId = null;
+    }
+
+    private void StartOrderDrag(long orderId)
+    {
+        if (!canEdit) return;
+        draggedNewOrderId = orderId;
+        draggedOperationId = null;
         draggedScheduledOperationId = null;
         draggedScheduledOrderId = null;
     }
@@ -298,6 +311,7 @@
         draggedOperationId = id;
         draggedScheduledOperationId = id;
         draggedScheduledOrderId = null;
+        draggedNewOrderId = null;
     }
 
     private void StartScheduledOrderDrag(long orderId)
@@ -306,22 +320,33 @@
         draggedScheduledOrderId = orderId;
         draggedScheduledOperationId = null;
         draggedOperationId = null;
+        draggedNewOrderId = null;
     }
 
     private async Task DropOperation(int machineId, DateTime start)
     {
         if (!canEdit) return;
         if (draggedScheduledOrderId.HasValue) { ClearDrag(); return; }
-        var id = draggedOperationId ?? selectedOperationId;
-        draggedOperationId = null;
-        draggedScheduledOperationId = null;
-        draggedScheduledOrderId = null;
+
+        long? id = draggedOperationId ?? selectedOperationId;
+        if (draggedNewOrderId is long orderId)
+        {
+            var machine = machines.FirstOrDefault(x => x.Id == machineId);
+            id = machine == null ? null : operations
+                .Where(x => x.ProductionOrderId == orderId &&
+                    !schedules.Any(s => s.ProductionOperationId == x.Id) &&
+                    CompatibleMachine(x.Name, machine))
+                .OrderBy(x => x.Sequence).Select(x => (long?)x.Id).FirstOrDefault();
+        }
+        ClearDrag();
+
         if (!id.HasValue)
         {
-            message = L["SelectOperationBeforeDrop"];
+            message = L["SelectCompatibleOperation"];
             return;
         }
 
+        selectedOperationId = id;
         machineChoices[id.Value] = machineId;
         startChoices[id.Value] = start.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         await Schedule(id.Value);
