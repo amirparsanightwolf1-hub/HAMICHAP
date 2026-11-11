@@ -227,7 +227,7 @@ else
 
             if (user.Identity?.IsAuthenticated != true)
             {
-                SetError("You must be logged in.");
+                SetError(L["You must be logged in."]);
                 return;
             }
 
@@ -241,7 +241,7 @@ else
         catch (Exception ex)
         {
             SetError(
-                $"Unable to load permission management: {ex.Message}");
+                L["Unable to load permission management:"] + " " + ex.Message);
         }
     }
 
@@ -273,7 +273,7 @@ else
             if (!canManage)
             {
                 statusMessage =
-                    "You are not authorized to manage this role.";
+                    L["You are not authorized to manage this role."];
 
                 statusMessageClass =
                     "alert-danger";
@@ -300,7 +300,7 @@ else
         catch (Exception ex)
         {
             statusMessage =
-                $"Unable to load permissions: {ex.Message}";
+                L["Unable to load permissions:"] + " " + ex.Message;
 
             statusMessageClass =
                 "alert-danger";
@@ -363,7 +363,7 @@ else
             if (!success)
             {
                 statusMessage =
-                    "You are not authorized to modify this role.";
+                    L["You are not authorized to modify this role."];
 
                 statusMessageClass =
                     "alert-danger";
@@ -373,7 +373,7 @@ else
 
 
             statusMessage =
-                $"Permissions for '{selectedRole.Name}' saved successfully.";
+                String.Format(L["Permissions for '{0}' saved successfully."], selectedRole.Name);
 
             statusMessageClass =
                 "alert-success";
@@ -381,7 +381,7 @@ else
         catch (Exception ex)
         {
             statusMessage =
-                $"Unable to save permissions: {ex.Message}";
+                L["Unable to save permissions:"] + " " + ex.Message;
 
             statusMessageClass =
                 "alert-danger";
