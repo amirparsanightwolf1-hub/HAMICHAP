@@ -2618,4 +2618,5 @@
   <data name="RestoreSalesSuggestions" xml:space="preserve"><value>Restore suggested stages from Sales</value></data>
   <data name="CannotRestoreEditedRoute" xml:space="preserve"><value>Existing stages must be removed before reimporting Sales suggestions.</value></data>
   <data name="SalesSuggestionsRestored" xml:space="preserve"><value>Sales job specifications were re-read and suggested operations restored where available.</value></data>
+  <data name="SaveStageEditsBeforeConfirmation" xml:space="preserve"><value>Save changes to operation durations, names or machines before confirming and automatically generating the schedule.</value></data>
 </root>
