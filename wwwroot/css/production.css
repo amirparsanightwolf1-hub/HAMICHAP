@@ -1161,3 +1161,69 @@
 .machine-schedule .queue-order-selected { border-color: #0c568d; background: #eaf3fa; }
 .home-page .planning-home-button { background: #0c568d; border-color: #0c568d; color: #fff; }
 .home-page .planning-home-button:hover { background: #08446f; border-color: #08446f; }
+
+
+/* Multi-stage machine schedule: visible drop target and synchronized CEO/step totals. */
+.machine-schedule .machine-return-zone {
+    min-height: 160px;
+    border: 2px dashed #accfe7;
+    border-radius: 8px;
+    background: #f8fcff;
+}
+.machine-schedule .machine-return-hint {
+    padding: 11px;
+    border-radius: 7px;
+    background: #eaf3fa;
+    border: 1px dashed #0c568d;
+    color: #0c568d;
+    font-size: .82rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+.machine-schedule .machine-order-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 9px;
+    max-height: 210px;
+    overflow-y: auto;
+}
+.machine-schedule .machine-order-totals {
+    min-width: 0;
+    border: 1px solid #d2e4f1;
+    border-inline-start: 4px solid #0c568d;
+    border-radius: 8px;
+    padding: 9px 11px;
+    background: #f8fcff;
+}
+.machine-schedule .machine-order-totals .badge {
+    white-space: normal;
+    text-align: center;
+}
+.machine-schedule .month-order-chip,
+.machine-schedule .timeline-order {
+    overflow: visible;
+    white-space: normal;
+    cursor: grab;
+}
+.machine-schedule .machine-unschedule-button {
+    display: block;
+    margin-top: 5px;
+    border: 1px solid rgba(255,255,255,.65);
+    border-radius: 4px;
+    background: rgba(255,255,255,.18);
+    color: #fff;
+    font-weight: 700;
+    font-size: .72rem;
+    width: 100%;
+    padding: 3px 5px;
+    cursor: pointer;
+}
+.machine-schedule .machine-unschedule-button:hover,
+.machine-schedule .machine-unschedule-button:focus-visible {
+    background: #fff;
+    color: #0c568d;
+}
+.machine-schedule .machine-calendar-section-title {
+    border-inline-start: 4px solid #0c568d;
+}
