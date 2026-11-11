@@ -1,3 +1,5 @@
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
 ﻿@page "/Account/Manage/EnableAuthenticator"
 
 @using System.ComponentModel.DataAnnotations
@@ -12,7 +14,7 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<EnableAuthenticator> Logger
 
-<PageTitle>Configure authenticator app</PageTitle>
+<PageTitle>@L["Configure authenticator app"]</PageTitle>
 
 @if (recoveryCodes is not null)
 {
@@ -21,18 +23,18 @@
 else
 {
     <StatusMessage Message="@message" />
-    <h3>Configure authenticator app</h3>
+    <h3>@L["Configure authenticator app"]</h3>
     <div>
-        <p>To use an authenticator app go through the following steps:</p>
+        <p>@L["To use an authenticator app go through the following steps:"]</p>
         <ol class="list">
             <li>
                 <p>
                     Download a two-factor authenticator app like Microsoft Authenticator for
-                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
-                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072">@L["Android"]</a> @L["and"]
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073">@L["iOS"]</a> or
                     Google Authenticator for
-                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
-                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
+                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">@L["Android"]</a> @L["and"]
+                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">@L["iOS"]</a>.
                 </p>
             </li>
             <li>
@@ -51,11 +53,11 @@ else
                         <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
                             <DataAnnotationsValidator />
                             <div class="form-floating mb-3">
-                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" autocomplete="off" placeholder="Enter the code" />
-                                <label for="Input.Code" class="control-label form-label">Verification Code</label>
+                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" autocomplete="off" placeholder="@L["Enter the code"]" />
+                                <label for="Input.Code" class="control-label form-label">@L["Verification Code"]</label>
                                 <ValidationMessage For="() => Input.Code" class="text-danger" />
                             </div>
-                            <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>
+                            <button type="submit" class="w-100 btn btn-lg btn-primary">@L["Verify"]</button>
                             <ValidationSummary class="text-danger" role="alert" />
                         </EditForm>
                     </div>
