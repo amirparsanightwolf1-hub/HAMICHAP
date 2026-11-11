@@ -288,6 +288,7 @@
                                                  @onclick:stopPropagation="true"
                                                  @onclick="() => SelectOperation(schedule.ProductionOperationId)">
                                                 @schedule.ProductionOperation.ProductionOrder.OrderNumber
+                                                · #@schedule.ProductionOperation.Sequence
                                                 · @schedule.Machine.Name
                                                 · @schedule.ProductionOperation.Name
                                             </div>
@@ -333,8 +334,8 @@
                                                          @onclick:stopPropagation="true"
                                                          @onclick="() => SelectOperation(schedule.ProductionOperationId)"
                                                          title="@OperationTooltip(schedule)">
-                                                        @schedule.ProductionOperation.ProductionOrder.OrderNumber · @schedule.Machine.Name
-                                                        <small>@schedule.ProductionOperation.Name</small>
+                                                        @schedule.ProductionOperation.ProductionOrder.OrderNumber · #@schedule.ProductionOperation.Sequence · @schedule.Machine.Name
+                                                        <small>@schedule.ProductionOperation.Name · @DurationLabel(OperationMinutes(schedule.ProductionOperation))</small>
                                                     </div>
                                                 }
                                             </div>
@@ -944,6 +945,13 @@
             if (steps.Count == 0)
             {
                 ShowError(L["NoOperationsGenerated"]);
+                return;
+            }
+            if (steps.Any(x => editedHours.ContainsKey(x.Id) ||
+                               editedMachines.ContainsKey(x.Id) ||
+                               editedNames.ContainsKey(x.Id)))
+            {
+                ShowError(L["SaveStageEditsBeforeConfirmation"]);
                 return;
             }
             if (steps.Where((step, index) => step.Sequence != index + 1).Any() ||
