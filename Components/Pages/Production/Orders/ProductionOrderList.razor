@@ -9,7 +9,7 @@
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
 
-<PageTitle>Production Orders</PageTitle>
+<PageTitle>@L["ProductionOrders"]</PageTitle>
 
 <div class="page-container">
 
@@ -17,11 +17,11 @@
 
         <div>
             <h3 class="erp-page-title">
-                Production Orders
+                @L["ProductionOrders"]
             </h3>
 
             <p class="erp-page-subtitle">
-                Manage production orders and their manufacturing progress.
+                @L["Workflow_Description"]
             </p>
         </div>
 
@@ -37,14 +37,14 @@
     @if (productionOrders == null)
     {
         <div class="alert alert-info">
-            Loading production orders...
+            @L["Workflow_LoadingOrders"]
         </div>
     }
     else if (productionOrders.Count == 0)
     {
         <div class="card">
             <div class="card-body">
-                No production orders found.
+                @L["NoProductionOrdersFound"]
             </div>
         </div>
     }
@@ -61,12 +61,12 @@
                         <thead>
                             <tr>
                                 <th>Order Number</th>
-                                <th>Sales Order</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Planned Start</th>
-                                <th>Planned End</th>
-                                <th>Lines</th>
+                                <th>@L["SalesOrder"]</th>
+                                <th>@L["Status"]</th>
+                                <th>@L["Created"]</th>
+                                <th>@L["PlannedStart"]</th>
+                                <th>@L["PlannedEnd"]</th>
+                                <th>@L["Lines"]</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -113,7 +113,7 @@
 
                                         <button class="btn btn-sm btn-outline-primary"
                                                 @onclick="() => OpenOrder(order.Id)">
-                                            Open
+                                            @L["Open"]
                                         </button>
 
                                     </td>
