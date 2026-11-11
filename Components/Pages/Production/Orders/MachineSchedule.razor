@@ -607,6 +607,23 @@
         return from?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
     }
 
+    // SheetJobEdit and RollJobEdit store colors outside the specification CLR model
+    // in JobSpecificationJson. Recognize those fields so printing is not missed.
+    private static bool HasConfiguredPrintColors(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        foreach (var property in new[] {
+            "FrontCmykColors", "BackCmykColors", "FrontPantoneColors", "BackPantoneColors"
+        })
+        {
+            if (!document.RootElement.TryGetProperty(property, out var value)) continue;
+            if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() > 0) return true;
+            if (value.ValueKind == JsonValueKind.String &&
+                !string.IsNullOrWhiteSpace(value.GetString())) return true;
+        }
+        return false;
+    }
+
     // Machine names are routing recommendations. Actual machine choice remains editable.
     private static IEnumerable<string> RouteService(string service, bool sheet)
     {
@@ -686,7 +703,8 @@
                     {
                         if (spec.BeforeCutLengthCm.HasValue || spec.BeforeCutWidthCm.HasValue || spec.CutLengthCm.HasValue || spec.CutWidthCm.HasValue)
                             steps.Add("Polar | Cutting");
-                        if (!string.IsNullOrWhiteSpace(spec.PrintingNotes) || !string.IsNullOrWhiteSpace(spec.Zinc))
+                        if (!string.IsNullOrWhiteSpace(spec.PrintingNotes) || !string.IsNullOrWhiteSpace(spec.Zinc) ||
+                            HasConfiguredPrintColors(request.JobSpecificationJson))
                             steps.Add("Heidelberg | Sheet offset printing");
                         foreach (var service in spec.SelectedServices ?? new())
                             steps.AddRange(RouteService(service, true));
@@ -708,7 +726,8 @@
                     var spec = JsonSerializer.Deserialize<RollJobSpecification>(request.JobSpecificationJson);
                     if (spec != null)
                     {
-                        if (spec.ColorCount.GetValueOrDefault() > 0 || !string.IsNullOrWhiteSpace(spec.PrintingNotes))
+                        if (spec.ColorCount.GetValueOrDefault() > 0 || !string.IsNullOrWhiteSpace(spec.PrintingNotes) ||
+                            HasConfiguredPrintColors(request.JobSpecificationJson))
                             steps.Add("Nilpeter | Roll offset/flexo printing");
                         foreach (var service in spec.SelectedServices ?? new())
                             steps.AddRange(RouteService(service, false));
