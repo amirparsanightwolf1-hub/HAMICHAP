@@ -196,18 +196,106 @@
 @code {
     private long? selectedOperationId;
     private long? draggedOperationId;
+    private long? draggedScheduledOperationId;
+
     private void SelectOperation(long id) => selectedOperationId = id;
-    private void SelectDraggedOperation(long id) { selectedOperationId = id; draggedOperationId = id; }
+
+    private void SelectDraggedOperation(long id)
+    {
+        if (!canEdit) return;
+        selectedOperationId = id;
+        draggedOperationId = id;
+        draggedScheduledOperationId = null;
+    }
+
+    private void StartScheduledDrag(long id)
+    {
+        if (!canEdit) return;
+        selectedOperationId = id;
+        draggedOperationId = id;
+        draggedScheduledOperationId = id;
+    }
+
     private async Task DropOperation(int machineId, DateTime start)
     {
         if (!canEdit) return;
         var id = draggedOperationId ?? selectedOperationId;
         draggedOperationId = null;
+        draggedScheduledOperationId = null;
         if (!id.HasValue) return;
+
         machineChoices[id.Value] = machineId;
         startChoices[id.Value] = start.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
         await Schedule(id.Value);
     }
+
+    private async Task DropBackToQueue()
+    {
+        if (!canEdit || draggedScheduledOperationId is not long id) return;
+        draggedOperationId = null;
+        draggedScheduledOperationId = null;
+        await UnscheduleOperation(id);
+    }
+
+    private async Task UnscheduleOperation(long operationId)
+    {
+        if (!canEdit) return;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var step = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == operationId);
+        if (step == null) return;
+
+        // Downstream planned steps depend on this step. Return them too, never silently
+        // invalidate released, running or completed machine assignments.
+        var downstreamIds = await db.ProductionOperations
+            .Where(x => x.ProductionOrderId == step.ProductionOrderId && x.Sequence >= step.Sequence)
+            .Select(x => x.Id).ToListAsync();
+        var active = await db.ProductionSchedules
+            .Where(x => downstreamIds.Contains(x.ProductionOperationId) && x.Status != ScheduleStatus.Cancelled)
+            .ToListAsync();
+        if (active.Any(x => x.Status != ScheduleStatus.Planned))
+        {
+            message = L["CannotUnscheduleActive"];
+            return;
+        }
+
+        foreach (var item in active) item.Status = ScheduleStatus.Cancelled;
+        await db.SaveChangesAsync();
+        selectedOperationId = operationId;
+        message = L["OperationsReturnedToQueue"];
+        await Reload();
+    }
+
+    private async Task UnscheduleOrder(long orderId)
+    {
+        if (!canEdit) return;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var stepIds = await db.ProductionOperations.Where(x => x.ProductionOrderId == orderId)
+            .Select(x => x.Id).ToListAsync();
+        var active = await db.ProductionSchedules.Where(x => stepIds.Contains(x.ProductionOperationId)
+            && x.Status != ScheduleStatus.Cancelled).ToListAsync();
+        if (active.Any(x => x.Status != ScheduleStatus.Planned))
+        {
+            message = L["CannotUnscheduleActive"];
+            return;
+        }
+        foreach (var item in active) item.Status = ScheduleStatus.Cancelled;
+        await db.SaveChangesAsync();
+        selectedOperationId = null;
+        draggedScheduledOperationId = null;
+        draggedOperationId = null;
+        message = L["OperationsReturnedToQueue"];
+        await Reload();
+    }
+
+    private int OrderStepMinutes(long orderId) => operations
+        .Where(x => x.ProductionOrderId == orderId)
+        .Sum(x => ProductionPlanningTime.OperationMinutes(x.PlannedHours));
+    private int OrderScheduledCount(long orderId) => schedules
+        .Count(s => s.ProductionOperation.ProductionOrderId == orderId);
+    private int OrderOperationCount(long orderId) => operations
+        .Count(x => x.ProductionOrderId == orderId);
+    private static string DurationLabel(int minutes) =>
+        $"{minutes / 60m:0.##}h ({minutes} min)";
     private string ShiftClass(int hour) => hour >= 8 && hour < 13 || hour >= 14 && hour < 17 ? "work" : hour == 13 ? "break" : hour >= 17 && hour < 22 ? "overtime" : "night";
     private string FormatDay(DateTime date) => L.IsPersian ? $"{Persian.GetYear(date)}/{Persian.GetMonth(date):00}/{Persian.GetDayOfMonth(date):00}" : date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     private IEnumerable<ProductionSchedule> HourSchedules(DateTime day, int hour, int machineId) => schedules.Where(s => s.MachineId == machineId && s.PlannedStart < day.Date.AddHours(hour + 1) && s.PlannedEnd > day.Date.AddHours(hour)).OrderBy(s => s.PlannedStart);
@@ -331,12 +419,32 @@
         if (!canEdit) return;
         await using var db = await DbFactory.CreateDbContextAsync();
         var workCenters = await db.ProductionWorkCenters.Where(x => x.IsActive).ToListAsync();
-        var existing = await db.ProductionOperations.Select(x => x.ProductionOrderId).Distinct().ToListAsync();
+        var existing = await db.ProductionOperations.OrderBy(x => x.Sequence).ToListAsync();
+        var scheduledIds = await db.ProductionSchedules.Where(x => x.Status != ScheduleStatus.Cancelled)
+            .Select(x => x.ProductionOperationId).Distinct().ToListAsync();
         var added = 0;
-        foreach (var order in orders.Where(x => !existing.Contains(x.Id)))
+        var synchronized = 0;
+        var blocked = 0;
+        foreach (var order in orders)
         {
+            var current = existing.Where(x => x.ProductionOrderId == order.Id)
+                .OrderBy(x => x.Sequence).ToList();
+            if (current.Count > 0)
+            {
+                if (current.Any(x => scheduledIds.Contains(x.Id))) continue;
+                if (order.EstimatedDurationMinutes < current.Count) { blocked++; continue; }
+                if (current.Sum(x => ProductionPlanningTime.OperationMinutes(x.PlannedHours))
+                    == order.EstimatedDurationMinutes) continue;
+                var allocation = ProductionPlanningTime.AllocateOperationMinutes(
+                    order.EstimatedDurationMinutes, current.Select(x => x.PlannedHours).ToArray());
+                for (var i = 0; i < current.Count; i++)
+                    current[i].PlannedHours = Math.Round(allocation[i] / 60m, 6);
+                synchronized++;
+                continue;
+            }
+
             var request = order.SalesOrder?.Quotation?.SalesRequest;
-            if (request == null) continue;
+            if (request == null || string.IsNullOrWhiteSpace(request.JobSpecificationJson)) continue;
             var steps = new List<string>();
             try
             {
@@ -381,33 +489,70 @@
                 }
             }
             catch (JsonException) { continue; }
-            var sequence = 0;
-            foreach (var step in steps.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase))
+            var uniqueSteps = steps.Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            if (uniqueSteps.Count == 0) continue;
+            if (order.EstimatedDurationMinutes < uniqueSteps.Count) { blocked++; continue; }
+
+            var durations = ProductionPlanningTime.AllocateOperationMinutes(
+                order.EstimatedDurationMinutes, uniqueSteps.Select(_ => 1m).ToArray());
+            for (var i = 0; i < uniqueSteps.Count; i++)
             {
+                var step = uniqueSteps[i];
                 var center = workCenters.FirstOrDefault(x => string.Equals(x.Name, step, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(x.Code, step, StringComparison.OrdinalIgnoreCase));
-                db.ProductionOperations.Add(new ProductionOperation {
-                    ProductionOrderId = order.Id, Sequence = ++sequence, Name = step,
-                    WorkCenterId = center?.Id, PlannedHours = 1m, Status = ProductionOperationStatus.Pending
+                db.ProductionOperations.Add(new ProductionOperation
+                {
+                    ProductionOrderId = order.Id, Sequence = i + 1, Name = step,
+                    WorkCenterId = center?.Id, PlannedHours = Math.Round(durations[i] / 60m, 6),
+                    Status = ProductionOperationStatus.Pending
                 });
                 added++;
             }
         }
+
         await db.SaveChangesAsync();
-        message = added > 0 ? L["OperationsGenerated"] : L["NoRoutingFound"];
+        message = blocked > 0 ? L["DurationTooShortForSteps"]
+            : added + synchronized > 0 ? L["OperationsGenerated"] : L["NoRoutingFound"];
         await Reload();
     }
 
     private async Task AddOperation()
     {
-        if (!canEdit || newOrderId == 0 || string.IsNullOrWhiteSpace(newOperationName) || newHours <= 0) return;
+        if (!canEdit || newOrderId == 0 || string.IsNullOrWhiteSpace(newOperationName) || newHours <= 0)
+            return;
         await using var db = await DbFactory.CreateDbContextAsync();
-        var sequence = await db.ProductionOperations.Where(x => x.ProductionOrderId == newOrderId)
-            .Select(x => (int?)x.Sequence).MaxAsync() ?? 0;
-        db.ProductionOperations.Add(new ProductionOperation { ProductionOrderId = newOrderId,
-            Sequence = sequence + 1, Name = newOperationName.Trim(), PlannedHours = newHours });
+        var order = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == newOrderId);
+        if (order == null) return;
+        var existing = await db.ProductionOperations.Where(x => x.ProductionOrderId == newOrderId)
+            .OrderBy(x => x.Sequence).ToListAsync();
+        var ids = existing.Select(x => x.Id).ToList();
+        if (await db.ProductionSchedules.AnyAsync(x => ids.Contains(x.ProductionOperationId)
+            && x.Status != ScheduleStatus.Cancelled))
+        {
+            message = L["UnscheduleBeforeAdding"];
+            return;
+        }
+        if (order.EstimatedDurationMinutes < existing.Count + 1)
+        {
+            message = L["DurationTooShortForSteps"];
+            return;
+        }
+
+        var weights = existing.Select(x => x.PlannedHours).Append(newHours).ToArray();
+        var duration = ProductionPlanningTime.AllocateOperationMinutes(order.EstimatedDurationMinutes, weights);
+        for (var i = 0; i < existing.Count; i++)
+            existing[i].PlannedHours = Math.Round(duration[i] / 60m, 6);
+        db.ProductionOperations.Add(new ProductionOperation
+        {
+            ProductionOrderId = newOrderId, Sequence = (existing.LastOrDefault()?.Sequence ?? 0) + 1,
+            Name = newOperationName.Trim(), PlannedHours = Math.Round(duration[^1] / 60m, 6),
+            Status = ProductionOperationStatus.Pending
+        });
+
         await db.SaveChangesAsync();
         newOperationName = "";
+        message = L["OperationsRebalanced"];
         await Reload();
     }
 
@@ -415,29 +560,101 @@
     {
         if (!canEdit || !machineChoices.TryGetValue(operationId, out var machineId) || machineId == 0 ||
             !startChoices.TryGetValue(operationId, out var startText) ||
-            !DateTime.TryParse(startText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start))
-        { message = L["SelectMachineAndTime"]; return; }
+            !DateTime.TryParse(startText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var requestedStart))
+        {
+            message = L["SelectMachineAndTime"];
+            return;
+        }
+
         await using var db = await DbFactory.CreateDbContextAsync();
         var operation = await db.ProductionOperations.Include(x => x.ProductionOrder)
             .FirstOrDefaultAsync(x => x.Id == operationId);
-        if (operation == null || !await db.Machines.AnyAsync(x => x.Id == machineId && x.IsActive)) return;
+        if (operation == null || !await db.Machines.AnyAsync(x => x.Id == machineId && x.IsActive))
+            return;
         var assignedMachine = machines.FirstOrDefault(x => x.Id == machineId);
         if (assignedMachine == null || !CompatibleMachine(operation.Name, assignedMachine))
-        { message = L["MachineMismatch"]; return; }
-        var end = start.AddHours((double)Math.Max(0.25m, operation.PlannedHours));
+        {
+            message = L["MachineMismatch"];
+            return;
+        }
+
+        var order = operation.ProductionOrder;
+        if (!order.PlannedStartDate.HasValue || !order.PlannedEndDate.HasValue)
+        {
+            message = L["CeoPlanRequired"];
+            return;
+        }
+
+        var steps = await db.ProductionOperations.Where(x => x.ProductionOrderId == order.Id)
+            .OrderBy(x => x.Sequence).ToListAsync();
+        if (steps.Sum(x => ProductionPlanningTime.OperationMinutes(x.PlannedHours))
+            != order.EstimatedDurationMinutes)
+        {
+            message = L["MachineDurationMismatch"];
+            return;
+        }
+
+        var start = ProductionPlanningTime.NextAllowedProductionMinute(
+            requestedStart, order.AvoidOvertime, order.AvoidNightShift);
+        var end = ProductionPlanningTime.CalculateEndDateTime(start,
+            ProductionPlanningTime.OperationMinutes(operation.PlannedHours),
+            order.AvoidOvertime, order.AvoidNightShift);
+        if (start < order.PlannedStartDate.Value || end > order.PlannedEndDate.Value)
+        {
+            message = L["MachineOutsideCeoWindow"];
+            return;
+        }
+
+        var current = await db.ProductionSchedules.Where(x => x.ProductionOperationId == operationId
+            && x.Status != ScheduleStatus.Cancelled).ToListAsync();
+        if (current.Any(x => x.Status != ScheduleStatus.Planned))
+        {
+            message = L["CannotChangeActiveSchedule"];
+            return;
+        }
+        var currentId = current.FirstOrDefault()?.Id ?? 0L;
         if (await db.ProductionSchedules.AnyAsync(x => x.MachineId == machineId &&
-            x.Status != ScheduleStatus.Cancelled && x.PlannedStart < end && x.PlannedEnd > start))
-        { message = L["MachineConflict"]; return; }
-        var previous = await db.ProductionOperations.Where(x => x.ProductionOrderId == operation.ProductionOrderId
-            && x.Sequence < operation.Sequence).Select(x => x.Id).ToListAsync();
-        if (previous.Count > 0 && (await db.ProductionSchedules.CountAsync(x => previous.Contains(x.ProductionOperationId)
-            && x.Status != ScheduleStatus.Cancelled && x.PlannedEnd <= start)) < previous.Count)
-        { message = L["OperationSequenceConflict"]; return; }
-        if (operation.ProductionOrder.PlannedEndDate.HasValue && end > operation.ProductionOrder.PlannedEndDate.Value.Date.AddDays(1))
-        { message = L["DeadlineWarning"]; return; }
-        db.ProductionSchedules.Add(new ProductionSchedule { ProductionOperationId = operationId,
-            MachineId = machineId, PlannedStart = start, PlannedEnd = end, Status = ScheduleStatus.Planned });
+            x.Id != currentId && x.Status != ScheduleStatus.Cancelled &&
+            x.PlannedStart < end && x.PlannedEnd > start))
+        {
+            message = L["MachineConflict"];
+            return;
+        }
+
+        var beforeIds = steps.Where(x => x.Sequence < operation.Sequence).Select(x => x.Id).ToList();
+        var afterIds = steps.Where(x => x.Sequence > operation.Sequence).Select(x => x.Id).ToList();
+        var dependencySchedules = await db.ProductionSchedules.Where(x =>
+            (beforeIds.Contains(x.ProductionOperationId) || afterIds.Contains(x.ProductionOperationId)) &&
+            x.Status != ScheduleStatus.Cancelled).ToListAsync();
+        if (beforeIds.Any(id => !dependencySchedules.Any(x => x.ProductionOperationId == id
+            && x.PlannedEnd <= start)) ||
+            dependencySchedules.Any(x => afterIds.Contains(x.ProductionOperationId) && x.PlannedStart < end))
+        {
+            message = L["OperationSequenceConflict"];
+            return;
+        }
+
+        if (current.Count > 0)
+        {
+            current[0].MachineId = machineId;
+            current[0].PlannedStart = start;
+            current[0].PlannedEnd = end;
+            foreach (var duplicate in current.Skip(1))
+                duplicate.Status = ScheduleStatus.Cancelled;
+        }
+        else
+        {
+            db.ProductionSchedules.Add(new ProductionSchedule
+            {
+                ProductionOperationId = operationId,
+                MachineId = machineId,
+                PlannedStart = start,
+                PlannedEnd = end,
+                Status = ScheduleStatus.Planned
+            });
+        }
         await db.SaveChangesAsync();
+        selectedOperationId = operationId;
         message = L["OperationScheduled"];
         await Reload();
     }
