@@ -2778,4 +2778,105 @@
   <data name="Unable to load permissions:" xml:space="preserve"><value>بارگذاری مجوزها انجام نشد:</value></data>
   <data name="Unable to save permissions:" xml:space="preserve"><value>ذخیره مجوزها انجام نشد:</value></data>
   <data name="Permission changes saved successfully." xml:space="preserve"><value>تغییرات مجوزها با موفقیت ذخیره شد.</value></data>
+  <data name="Production Planning" xml:space="preserve"><value>برنامه‌ریزی تولید</value></data>
+  <data name="Select an order from the queue, then click a calendar slot or drag it onto the calendar." xml:space="preserve"><value>یک سفارش را از صف انتخاب و سپس روی بازه تقویم کلیک کنید یا سفارش را به تقویم بکشید.</value></data>
+  <data name="Production orders" xml:space="preserve"><value>سفارش‌های تولید</value></data>
+  <data name="Select an order, then click a calendar slot, or drag it onto the calendar. Scheduled orders can also be dragged to a new start." xml:space="preserve"><value>یک سفارش را انتخاب کنید و روی بازه تقویم کلیک کنید یا آن را به تقویم بکشید. سفارش‌های زمان‌بندی‌شده را نیز می‌توان جابه‌جا کرد.</value></data>
+  <data name="There are no active production orders." xml:space="preserve"><value>سفارش تولید فعالی وجود ندارد.</value></data>
+  <data name="Order settings" xml:space="preserve"><value>تنظیمات سفارش</value></data>
+  <data name="Select an order first." xml:space="preserve"><value>ابتدا یک سفارش انتخاب کنید.</value></data>
+  <data name="Estimated duration (hours)" xml:space="preserve"><value>مدت زمان تخمینی (ساعت)</value></data>
+  <data name="Avoid overtime (17:00–22:00)" xml:space="preserve"><value>عدم استفاده از اضافه‌کاری (۱۷ تا ۲۲)</value></data>
+  <data name="Avoid night shift (22:00–08:00)" xml:space="preserve"><value>عدم استفاده از شیفت شب (۲۲ تا ۸)</value></data>
+  <data name="Save settings" xml:space="preserve"><value>ذخیره تنظیمات</value></data>
+  <data name="The lunch break is always excluded. Prohibited shifts are skipped and are not shown as active production time." xml:space="preserve"><value>زمان استراحت ناهار همیشه مستثناست. شیفت‌های ممنوع محاسبه نمی‌شوند و به‌عنوان زمان تولید فعال نمایش داده نمی‌شوند.</value></data>
+  <data name="Regular work 08:00–13:00 / 14:00–17:00" xml:space="preserve"><value>شیفت عادی ۸ تا ۱۳ / ۱۴ تا ۱۷</value></data>
+  <data name="Break 13:00–14:00" xml:space="preserve"><value>استراحت ۱۳ تا ۱۴</value></data>
+  <data name="Overtime 17:00–22:00" xml:space="preserve"><value>اضافه‌کاری ۱۷ تا ۲۲</value></data>
+  <data name="Night 22:00–08:00" xml:space="preserve"><value>شیفت شب ۲۲ تا ۸</value></data>
+  <data name="In Month view, click or drop an order on a date to schedule it from 08:00. Use Week or Day view to choose a specific start time." xml:space="preserve"><value>در نمای ماهانه، روی یک روز کلیک کنید یا سفارش را روی آن رها کنید تا از ساعت ۸ زمان‌بندی شود. در نمای هفتگی یا روزانه می‌توانید زمان دقیق را انتخاب کنید.</value></data>
+  <data name="Click a time slot or drop an order onto it to set the start time. Multiple orders may occupy the same time slot." xml:space="preserve"><value>برای تعیین زمان شروع، روی یک بازه کلیک کنید یا سفارش را روی آن رها کنید. ممکن است چند سفارش در یک بازه قرار داشته باشند.</value></data>
+  <data name="This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions." xml:space="preserve"><value>برای این سفارش عملیات دستگاه زمان‌بندی شده است. پیش از تغییر مدت زمان یا محدودیت شیفت مدیرعامل، آن‌ها را در برنامه دستگاه‌ها لغو زمان‌بندی کنید.</value></data>
+  <data name="The CEO duration must allow at least one minute for each machine operation." xml:space="preserve"><value>مدت تعیین‌شده توسط مدیرعامل باید برای هر مرحله دستگاه دست‌کم یک دقیقه باشد.</value></data>
+  <data name="CEO duration, machine-step allocations and permitted shifts are consistent." xml:space="preserve"><value>مدت سفارش مدیرعامل، زمان مراحل دستگاه‌ها و شیفت‌های مجاز هماهنگ هستند.</value></data>
+  <data name="This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar." xml:space="preserve"><value>این سفارش دارای عملیات دستگاه زمان‌بندی‌شده است. پیش از جابه‌جایی آن در تقویم مدیرعامل، زمان‌بندی مراحل دستگاه را لغو کنید.</value></data>
+  <data name="No production operations have been defined for this production order yet." xml:space="preserve"><value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value></data>
+  <data name="No production schedule has been created for this production order yet." xml:space="preserve"><value>هنوز برنامه زمان‌بندی تولید برای این سفارش ایجاد نشده است.</value></data>
+  <data name="Material Request" xml:space="preserve"><value>درخواست مواد</value></data>
+  <data name="Operator entered" xml:space="preserve"><value>واردشده توسط اپراتور</value></data>
+  <data name="Select the materials needed for this production order and enter the requested quantities. Submitting this request does not reserve or issue inventory." xml:space="preserve"><value>مواد موردنیاز این سفارش تولید را انتخاب و مقدار درخواست‌شده را وارد کنید. ثبت این درخواست به‌منزله رزرو یا خروج کالا از موجودی نیست.</value></data>
+  <data name="Requested quantity" xml:space="preserve"><value>مقدار درخواستی</value></data>
+  <data name="Choose an item from the suggestions." xml:space="preserve"><value>یک کالا را از پیشنهادها انتخاب کنید.</value></data>
+  <data name="+ Add material line" xml:space="preserve"><value>+ افزودن ردیف مواد</value></data>
+  <data name="Submitted Material Requests" xml:space="preserve"><value>درخواست‌های مواد ثبت‌شده</value></data>
+  <data name="No material requests have been submitted for this production order." xml:space="preserve"><value>هنوز درخواست مواد برای این سفارش تولید ثبت نشده است.</value></data>
+  <data name="No material reservations have been created for this production order." xml:space="preserve"><value>هنوز رزرو مواد برای این سفارش تولید ایجاد نشده است.</value></data>
+  <data name="Search by item name or code" xml:space="preserve"><value>جست‌وجو با نام یا کد کالا</value></data>
+  <data name="Optional" xml:space="preserve"><value>اختیاری</value></data>
+  <data name="Remove line" xml:space="preserve"><value>حذف ردیف</value></data>
+  <data name="Add at least one material before submitting the request." xml:space="preserve"><value>پیش از ثبت درخواست، دست‌کم یک قلم مواد اضافه کنید.</value></data>
+  <data name="Select a valid material and enter a quantity greater than zero for every request line." xml:space="preserve"><value>برای هر ردیف، یک ماده معتبر و مقداری بیشتر از صفر وارد کنید.</value></data>
+  <data name="Sorry, the content you are looking for does not exist." xml:space="preserve"><value>متأسفانه محتوای موردنظر وجود ندارد.</value></data>
+  <data name="Not Found" xml:space="preserve"><value>یافت نشد</value></data>
+  <data name="Loading PDF pages..." xml:space="preserve"><value>در حال بارگذاری صفحات PDF...</value></data>
+  <data name="Production Orders" xml:space="preserve"><value>سفارش‌های تولید</value></data>
+  <data name="Order Number" xml:space="preserve"><value>شماره سفارش</value></data>
+  <data name="Sales Order" xml:space="preserve"><value>سفارش فروش</value></data>
+  <data name="Planned Start" xml:space="preserve"><value>شروع برنامه‌ریزی‌شده</value></data>
+  <data name="Planned End" xml:space="preserve"><value>پایان برنامه‌ریزی‌شده</value></data>
+  <data name="Material waste" xml:space="preserve"><value>پرت مواد</value></data>
+  <data name="Area utilization" xml:space="preserve"><value>بهره‌برداری از مساحت</value></data>
+  <data name="· Total planned output:" xml:space="preserve"><value>· مجموع تولید برنامه‌ریزی‌شده:</value></data>
+  <data name="Solver:" xml:space="preserve"><value>حل‌گر:</value></data>
+  <data name="Sheets required:" xml:space="preserve"><value>تعداد ورق موردنیاز:</value></data>
+  <data name="Total roll length:" xml:space="preserve"><value>طول کل رول:</value></data>
+  <data name="The preview shows one repeat; this pattern is repeated for the full run." xml:space="preserve"><value>پیش‌نمایش یک تکرار را نشان می‌دهد؛ این الگو در کل تیراژ تکرار می‌شود.</value></data>
+  <data name="Export SVG preview" xml:space="preserve"><value>خروجی پیش‌نمایش SVG</value></data>
+  <data name="Rectangular imposition preview" xml:space="preserve"><value>پیش‌نمایش چیدمان مستطیلی</value></data>
+  <data name="Imposition Optimizer" xml:space="preserve"><value>بهینه‌ساز چیدمان چاپ</value></data>
+  <data name="Sheet format" xml:space="preserve"><value>قطع ورق</value></data>
+  <data name="Parts on sheet" xml:space="preserve"><value>قطعات روی ورق</value></data>
+  <data name="Sheet copies" xml:space="preserve"><value>تعداد نسخه‌های ورق</value></data>
+  <data name="Fill / waste" xml:space="preserve"><value>پرشدگی / پرت</value></data>
+  <data name="Total sheets" xml:space="preserve"><value>تعداد کل ورق‌ها</value></data>
+  <data name="Paper weight required" xml:space="preserve"><value>وزن کاغذ موردنیاز</value></data>
+  <data name="Total placed" xml:space="preserve"><value>مجموع قطعات چیده‌شده</value></data>
+  <data name="Material type" xml:space="preserve"><value>نوع مواد</value></data>
+  <data name="Format" xml:space="preserve"><value>قالب</value></data>
+  <data name="Custom" xml:space="preserve"><value>سفارشی</value></data>
+  <data name="Width (mm)" xml:space="preserve"><value>عرض (میلی‌متر)</value></data>
+  <data name="Paper weight (gsm)" xml:space="preserve"><value>گرماژ کاغذ</value></data>
+  <data name="Material area" xml:space="preserve"><value>مساحت مواد</value></data>
+  <data name="Estimated paper weight" xml:space="preserve"><value>وزن تخمینی کاغذ</value></data>
+  <data name="Parts / Required quantities" xml:space="preserve"><value>قطعات / مقدار موردنیاز</value></data>
+  <data name="＋ Add part" xml:space="preserve"><value>＋ افزودن قطعه</value></data>
+  <data name="Height (mm)" xml:space="preserve"><value>ارتفاع (میلی‌متر)</value></data>
+  <data name="Required quantity (pieces)" xml:space="preserve"><value>تعداد موردنیاز (عدد)</value></data>
+  <data name="How many finished pieces of this part are needed?" xml:space="preserve"><value>چند قطعه نهایی از این بخش موردنیاز است؟</value></data>
+  <data name="Allow 90° rotation" xml:space="preserve"><value>اجازه چرخش ۹۰ درجه</value></data>
+  <data name="Required pieces" xml:space="preserve"><value>قطعات موردنیاز</value></data>
+  <data name="Total required pieces" xml:space="preserve"><value>مجموع قطعات موردنیاز</value></data>
+  <data name="Sheets / repeats needed" xml:space="preserve"><value>تعداد ورق / تکرار موردنیاز</value></data>
+  <data name="Pieces planned" xml:space="preserve"><value>قطعات برنامه‌ریزی‌شده</value></data>
+  <data name="Extra pieces" xml:space="preserve"><value>قطعات اضافی</value></data>
+  <data name="All sizes are given in them." xml:space="preserve"><value>تمام اندازه‌ها با این واحد بیان می‌شوند.</value></data>
+  <data name="Sheet margin" xml:space="preserve"><value>حاشیه ورق</value></data>
+  <data name="Top" xml:space="preserve"><value>بالا</value></data>
+  <data name="Right" xml:space="preserve"><value>راست</value></data>
+  <data name="Bottom" xml:space="preserve"><value>پایین</value></data>
+  <data name="Left" xml:space="preserve"><value>چپ</value></data>
+  <data name="Cutting" xml:space="preserve"><value>برش</value></data>
+  <data name="Identical sheets" xml:space="preserve"><value>ورق‌های یکسان</value></data>
+  <data name="Center on sheet" xml:space="preserve"><value>تراز در مرکز ورق</value></data>
+  <data name="Part spacing" xml:space="preserve"><value>فاصله بین قطعات</value></data>
+  <data name="Gap between parts" xml:space="preserve"><value>فاصله بین قطعات</value></data>
+  <data name="Optimization" xml:space="preserve"><value>بهینه‌سازی</value></data>
+  <data name="Find best layout" xml:space="preserve"><value>یافتن بهترین چیدمان</value></data>
+  <data name="Clear results" xml:space="preserve"><value>پاک کردن نتایج</value></data>
+  <data name="Layout" xml:space="preserve"><value>چیدمان</value></data>
+  <data name="⇩ Save / Calculate" xml:space="preserve"><value>⇩ ذخیره / محاسبه</value></data>
+  <data name="Best 3 layouts — ranked by waste (lowest first)" xml:space="preserve"><value>سه چیدمان برتر — به ترتیب کمترین پرت</value></data>
+  <data name="Part name" xml:space="preserve"><value>نام قطعه</value></data>
+  <data name="Remove part" xml:space="preserve"><value>حذف قطعه</value></data>
+  <data name="Sheet imposition preview" xml:space="preserve"><value>پیش‌نمایش چیدمان ورق</value></data>
 </root>
