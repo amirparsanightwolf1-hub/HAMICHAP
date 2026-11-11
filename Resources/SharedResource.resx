@@ -2575,4 +2575,5 @@
   <data name="ExistingMachineOverlap" xml:space="preserve"><value>Overlapping bookings detected</value></data>
   <data name="MachineWorkloadLegend" xml:space="preserve"><value>Blue = machine busy; empty cells = available. Red = existing overlapping bookings requiring correction. One machine cannot run two operations simultaneously.</value></data>
   <data name="MachineSchedulingFailed" xml:space="preserve"><value>Unable to save the machine booking. Another scheduling change may have occurred; refresh and try another available slot.</value></data>
+  <data name="BookedTasks" xml:space="preserve"><value>booked tasks</value></data>
 </root>
