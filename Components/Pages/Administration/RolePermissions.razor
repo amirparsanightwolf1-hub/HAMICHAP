@@ -158,7 +158,7 @@ else
 
             if (principal.Identity?.IsAuthenticated != true)
             {
-                SetError("You must be logged in to manage permissions.");
+                SetError(L["You must be logged in to manage permissions."]);
                 return;
             }
 
@@ -168,7 +168,7 @@ else
 
             if (currentUser == null)
             {
-                SetError("Current user could not be found.");
+                SetError(L["Current user could not be found."]);
                 return;
             }
 
@@ -182,7 +182,7 @@ else
 
             if (role == null)
             {
-                SetError("Role not found.");
+                SetError(L["Role not found."]);
                 return;
             }
 
@@ -213,7 +213,7 @@ else
                 if (!managerRoles.Any())
                 {
                     SetError(
-                        "You are not assigned to a role that can manage permissions.");
+                        L["You are not assigned to a role that can manage permissions."]);
 
                     return;
                 }
@@ -231,7 +231,7 @@ else
                 if (!canManageTargetRole)
                 {
                     SetError(
-                        "You are not authorized to manage permissions for this role.");
+                        L["You are not authorized to manage permissions for this role."]);
 
                     return;
                 }
@@ -297,7 +297,7 @@ else
         catch (Exception ex)
         {
             SetError(
-                $"Unable to load permissions: {ex.Message}");
+                L["Unable to load permissions:"] + " " + ex.Message);
         }
     }
 
@@ -356,7 +356,7 @@ else
         if (currentUser == null)
         {
             SetError(
-                "Current user could not be found.");
+                L["Current user could not be found."]);
 
             return;
         }
@@ -387,7 +387,7 @@ else
             if (!canManageTargetRole)
             {
                 SetError(
-                    "You are not authorized to modify permissions for this role.");
+                    L["You are not authorized to modify permissions for this role."]);
 
                 return;
             }
@@ -509,7 +509,7 @@ else
 
 
         message =
-            $"Permissions for '{role.Name}' saved successfully.";
+            String.Format(L["Permissions for '{0}' saved successfully."], role.Name);
 
         messageClass =
             "alert-success";
