@@ -10,6 +10,7 @@
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthenticationStateProvider Auth
 @inject LocalizationService L
+@inject ILogger<MachineSchedule> Logger
 
 <PageTitle>@L["MachineSchedule"]</PageTitle>
 
@@ -776,6 +777,10 @@
             }
 
             await using var db = await DbFactory.CreateDbContextAsync();
+            // Serialize competing bookings, including the empty-slot check, so simultaneous
+            // requests cannot both claim the same machine interval.
+            await using var transaction = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
             var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
             if (machine == null) { ShowError(L["SelectMachine"]); return; }
 
@@ -787,18 +792,22 @@
                 ShowError(L["CannotChangeActiveSchedule"]);
                 return;
             }
-            var overlapping = await db.ProductionSchedules
+            // Exclusive end: an operation ending at 14:00 frees the machine at 14:00.
+            // All other intersecting intervals are prohibited, even across breaks.
+            var conflict = await db.ProductionSchedules
                 .Include(x => x.ProductionOperation).ThenInclude(x => x.ProductionOrder)
                 .Where(x => x.MachineId == machineId && x.ProductionOperationId != operationId &&
-                    x.Status != ScheduleStatus.Cancelled && x.PlannedStart < end && x.PlannedEnd > start)
-                .ToListAsync();
-            if (overlapping.Any(x => ProductionPlanningTime.ProductiveConflict(start, end,
-                order.AvoidOvertime, order.AvoidNightShift,
-                x.PlannedStart, x.PlannedEnd,
-                x.ProductionOperation.ProductionOrder.AvoidOvertime,
-                x.ProductionOperation.ProductionOrder.AvoidNightShift)))
+                    x.Status != ScheduleStatus.Cancelled &&
+                    x.PlannedStart < end && start < x.PlannedEnd)
+                .OrderBy(x => x.PlannedStart)
+                .FirstOrDefaultAsync();
+            if (conflict != null)
             {
-                ShowError(L["MachineConflict"]);
+                ShowError(L["MachineConflict"] + ": " +
+                    conflict.ProductionOperation.ProductionOrder.OrderNumber + " · " +
+                    conflict.ProductionOperation.Name + " (" +
+                    FormatDateTime(conflict.PlannedStart) + " – " +
+                    FormatDateTime(conflict.PlannedEnd) + ")");
                 return;
             }
 
@@ -828,11 +837,16 @@
                     duplicate.Status = ScheduleStatus.Cancelled;
             }
             await db.SaveChangesAsync();
+            await transaction.CommitAsync();
             selectedOperationId = operationId;
             ShowSuccess(L["OperationScheduled"]);
             await ReloadAsync();
         }
-        catch (Exception ex) { ShowError(ex.Message); }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Machine booking failed for operation {OperationId}", operationId);
+            ShowError(L["MachineSchedulingFailed"]);
+        }
     }
 
     private async Task UnscheduleOperation(long id)
