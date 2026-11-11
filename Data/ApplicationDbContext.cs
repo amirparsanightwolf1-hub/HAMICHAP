@@ -14,6 +14,9 @@ namespace HamiChap_MES_ERP.Data
     {
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceSignature).HasMaxLength(64);
+            builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceConfirmedBy).HasMaxLength(450);
+
             builder.Entity<SalesInvoice>().Property(x => x.Subtotal).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().Property(x => x.TotalAmount).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().HasIndex(x => x.InvoiceNumber).IsUnique();
