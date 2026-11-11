@@ -151,13 +151,16 @@
                                                    value="@OperationHoursChoice(step)"
                                                    @onchange="e => SetOperationHours(step.Id, e.Value?.ToString())" />
                                             <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                                    @onclick:stopPropagation="true"
                                                     @onclick="() => SaveOperation(step.Id)">@L["SaveOperation"]</button>
                                             <button type="button" class="btn btn-outline-danger btn-sm w-100 mt-2"
+                                                    @onclick:stopPropagation="true"
                                                     @onclick="() => DeleteOperation(step.Id)">@L["DeleteOperation"]</button>
                                         </details>
                                         @if (booking != null && booking.Status == ScheduleStatus.Planned)
                                         {
                                             <button type="button" class="btn btn-outline-secondary btn-sm mt-2 w-100"
+                                                    @onclick:stopPropagation="true"
                                                     @onclick="() => UnscheduleOperation(step.Id)">@L["ReturnToQueue"]</button>
                                         }
                                     }
