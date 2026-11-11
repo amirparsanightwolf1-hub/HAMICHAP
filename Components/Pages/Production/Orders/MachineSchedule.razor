@@ -81,12 +81,15 @@
                                 <div class="small text-muted">@L["CeoDuration"]: @DurationLabel(operation.ProductionOrder.EstimatedDurationMinutes)</div>
                                 @if (canEdit)
                                 {
-                                    <label class="form-label mt-2">@L["AdjustStepHours"]</label>
-                                    <input type="number" min="0.016667" step="any" class="form-control form-control-sm"
-                                           value="@DurationInput(operation)"
-                                           @onchange="e => SetDurationInput(operation.Id, e.Value?.ToString())" />
-                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2 w-100"
-                                            @onclick="() => SaveOperationDuration(operation.Id)">@L["ApplyStepDuration"]</button>
+                                    <details class="machine-duration-settings mt-2">
+                                        <summary>@L["AdvancedDurationSettings"]</summary>
+                                        <label class="form-label mt-2">@L["AdjustStepHours"]</label>
+                                        <input type="number" min="0.016667" step="any" class="form-control form-control-sm"
+                                               value="@DurationInput(operation)"
+                                               @onchange="e => SetDurationInput(operation.Id, e.Value?.ToString())" />
+                                        <button type="button" class="btn btn-outline-primary btn-sm mt-2 w-100"
+                                                @onclick="() => SaveOperationDuration(operation.Id)">@L["ApplyStepDuration"]</button>
+                                    </details>
                                     <label class="form-label mt-2">@L["Machine"]</label>
                                     <select class="form-select form-select-sm" value="@MachineChoice(operation.Id)" @onchange="e => SetMachineChoice(operation.Id, e.Value?.ToString())">
                                         <option value="0">@L["SelectMachine"]</option>
@@ -145,10 +148,13 @@
                                         <span class="badge bg-secondary">@OrderScheduledCount(order.Id)/@OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
                                     </div>
                                     <div class="small machine-ceo-dates">@L["CeoWindow"]: @FormatDateOnly(order.PlannedStartDate) – @FormatDateOnly(order.PlannedEndDate)</div>
-                                    <div class="small @(OrderStepMinutes(order.Id) == order.EstimatedDurationMinutes ? "text-success" : "text-warning")">
-                                        @L["CeoDuration"]: @DurationLabel(order.EstimatedDurationMinutes)
-                                        · @L["MachineDuration"]: @DurationLabel(OrderStepMinutes(order.Id))
-                                    </div>
+                                    <details class="machine-duration-settings">
+                                        <summary>@L["AdvancedDurationSettings"]</summary>
+                                        <div class="small @(OrderStepMinutes(order.Id) == order.EstimatedDurationMinutes ? "text-success" : "text-warning")">
+                                            @L["CeoDuration"]: @DurationLabel(order.EstimatedDurationMinutes)
+                                            · @L["MachineDuration"]: @DurationLabel(OrderStepMinutes(order.Id))
+                                        </div>
+                                    </details>
                                     @if (canEdit && OrderScheduledCount(order.Id) > 0)
                                     {
                                         <button type="button" class="btn btn-outline-primary btn-sm mt-2"
