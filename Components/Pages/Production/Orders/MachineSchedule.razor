@@ -990,93 +990,151 @@
     private async Task PlaceOperationAsync(long operationId, DateTime requestedStart)
     {
         if (!canEdit) return;
-        var step = operations.FirstOrDefault(x => x.Id == operationId);
-        var order = step?.ProductionOrder;
-        if (step == null || order == null) return;
-        if (!order.PlannedStartDate.HasValue || !order.PlannedEndDate.HasValue)
-        {
-            ShowError(L["CeoPlanRequired"]);
-            return;
-        }
-        var machineId = MachineChoice(step);
-        if (machineId == 0)
-        {
-            ShowError(L["SelectMachineBeforeScheduling"]);
-            return;
-        }
         try
         {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            // The signature, order, machine and time conflicts are all checked against
+            // database state in the same serializable booking transaction.
+            await using var transaction = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+            var operation = await db.ProductionOperations
+                .Include(x => x.WorkCenter).Include(x => x.ProductionOrder)
+                .FirstOrDefaultAsync(x => x.Id == operationId);
+            if (operation == null) return;
+            var order = operation.ProductionOrder;
+
+            var steps = await db.ProductionOperations
+                .Where(x => x.ProductionOrderId == order.Id)
+                .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToListAsync();
+            if (order.OperationsSequenceConfirmedAt is null ||
+                !String.Equals(order.OperationsSequenceSignature,
+                    OperationSequenceSignature(order.EstimatedDurationMinutes, steps),
+                    StringComparison.Ordinal))
+            {
+                ShowError(L["SequenceMustBeConfirmed"]);
+                return;
+            }
+
+            if (!order.PlannedStartDate.HasValue || !order.PlannedEndDate.HasValue)
+            {
+                ShowError(L["CeoPlanRequired"]);
+                return;
+            }
+            if (requestedStart.Date < order.PlannedStartDate.Value.Date ||
+                requestedStart.Date > order.PlannedEndDate.Value.Date)
+            {
+                ShowError(L["MachineOutsideCeoWindow"]);
+                return;
+            }
+
+            var code = operation.WorkCenter?.Code;
+            if (code == null || !code.StartsWith("MC-", StringComparison.OrdinalIgnoreCase))
+            {
+                ShowError(L["SelectMachineBeforeScheduling"]);
+                return;
+            }
+            var machineCode = code[3..];
+            var machine = await db.Machines.FirstOrDefaultAsync(x => x.IsActive && x.Code == machineCode);
+            if (machine == null)
+            {
+                ShowError(L["SelectMachineBeforeScheduling"]);
+                return;
+            }
+            if (editedMachines.TryGetValue(operationId, out var unsavedMachine) &&
+                unsavedMachine != machine.Id)
+            {
+                ShowError(L["SaveAndReconfirmMachineChange"]);
+                return;
+            }
+
             var start = ProductionPlanningTime.NextAllowedProductionMinute(
-                requestedStart < order.PlannedStartDate.Value ? order.PlannedStartDate.Value : requestedStart,
+                requestedStart < order.PlannedStartDate.Value
+                    ? order.PlannedStartDate.Value : requestedStart,
                 order.AvoidOvertime, order.AvoidNightShift);
             var end = ProductionPlanningTime.CalculateEndDateTime(
-                start, OperationMinutes(step), order.AvoidOvertime, order.AvoidNightShift);
+                start, OperationMinutes(operation), order.AvoidOvertime, order.AvoidNightShift);
             if (!IsAllowed(order, start, end))
             {
                 ShowError(L["MachineOutsideCeoWindow"]);
                 return;
             }
 
-            await using var db = await DbFactory.CreateDbContextAsync();
-            // Serialize competing bookings, including the empty-slot check, so simultaneous
-            // requests cannot both claim the same machine interval.
-            await using var transaction = await db.Database.BeginTransactionAsync(
-                System.Data.IsolationLevel.Serializable);
-            var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
-            if (machine == null) { ShowError(L["SelectMachine"]); return; }
-
-            var active = await db.ProductionSchedules
-                .Where(x => x.ProductionOperationId == operationId && x.Status != ScheduleStatus.Cancelled)
+            var current = await db.ProductionSchedules
+                .Where(x => x.ProductionOperationId == operationId &&
+                    x.Status != ScheduleStatus.Cancelled)
                 .OrderBy(x => x.Id).ToListAsync();
-            if (active.Any(x => x.Status != ScheduleStatus.Planned))
+            if (current.Any(x => x.Status != ScheduleStatus.Planned))
             {
                 ShowError(L["CannotChangeActiveSchedule"]);
                 return;
             }
-            // Exclusive end: an operation ending at 14:00 frees the machine at 14:00.
-            // All other intersecting intervals are prohibited, even across breaks.
-            var conflict = await db.ProductionSchedules
-                .Include(x => x.ProductionOperation).ThenInclude(x => x.ProductionOrder)
-                .Where(x => x.MachineId == machineId && x.ProductionOperationId != operationId &&
-                    x.Status != ScheduleStatus.Cancelled &&
-                    x.PlannedStart < end && start < x.PlannedEnd)
-                .OrderBy(x => x.PlannedStart)
-                .FirstOrDefaultAsync();
-            if (conflict != null)
+
+            // All order operations are sequential, irrespective of assigned machine.
+            // A whole order must never occupy two operations at the same moment.
+            var otherOrderBookings = await db.ProductionSchedules
+                .Include(x => x.ProductionOperation)
+                .Where(x => x.ProductionOperation.ProductionOrderId == order.Id &&
+                    x.ProductionOperationId != operationId && x.Status != ScheduleStatus.Cancelled)
+                .ToListAsync();
+            var orderConflict = otherOrderBookings.FirstOrDefault(x =>
+                x.PlannedStart < end && start < x.PlannedEnd);
+            if (orderConflict != null)
             {
-                ShowError(L["MachineConflict"] + ": " +
-                    conflict.ProductionOperation.ProductionOrder.OrderNumber + " · " +
-                    conflict.ProductionOperation.Name + " (" +
-                    FormatDateTime(conflict.PlannedStart) + " – " +
-                    FormatDateTime(conflict.PlannedEnd) + ")");
+                ShowError(L["OrderOperationOverlap"] + ": " +
+                    orderConflict.ProductionOperation.Name + " (" +
+                    FormatDateTime(orderConflict.PlannedStart) + " – " +
+                    FormatDateTime(orderConflict.PlannedEnd) + ")");
                 return;
             }
 
-            // Persist the chosen machine only after calendar validation succeeds.
-            var storedStep = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == operationId);
-            if (storedStep == null) return;
-            storedStep.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
+            var previousIds = steps.Where(x => x.Sequence < operation.Sequence).Select(x => x.Id).ToList();
+            var laterIds = steps.Where(x => x.Sequence > operation.Sequence).Select(x => x.Id).ToList();
+            if (previousIds.Any(id => !otherOrderBookings.Any(x =>
+                    x.ProductionOperationId == id && x.PlannedEnd <= start)) ||
+                otherOrderBookings.Any(x => laterIds.Contains(x.ProductionOperationId) &&
+                    x.PlannedStart < end))
+            {
+                ShowError(L["OperationSequenceConflict"]);
+                return;
+            }
 
-            var entity = active.FirstOrDefault();
-            if (entity == null)
+            // A machine is a single-capacity resource: overlapping half-open [start,end)
+            // intervals are forbidden even when different orders own the tasks.
+            var machineConflict = await db.ProductionSchedules
+                .Include(x => x.ProductionOperation).ThenInclude(x => x.ProductionOrder)
+                .Where(x => x.MachineId == machine.Id &&
+                    x.ProductionOperationId != operationId &&
+                    x.Status != ScheduleStatus.Cancelled &&
+                    x.PlannedStart < end && start < x.PlannedEnd)
+                .OrderBy(x => x.PlannedStart).FirstOrDefaultAsync();
+            if (machineConflict != null)
+            {
+                ShowError(L["MachineConflict"] + ": " +
+                    machineConflict.ProductionOperation.ProductionOrder.OrderNumber + " · " +
+                    machineConflict.ProductionOperation.Name + " (" +
+                    FormatDateTime(machineConflict.PlannedStart) + " – " +
+                    FormatDateTime(machineConflict.PlannedEnd) + ")");
+                return;
+            }
+
+            var booking = current.FirstOrDefault();
+            if (booking == null)
             {
                 db.ProductionSchedules.Add(new ProductionSchedule
                 {
-                    ProductionOperationId = operationId,
-                    MachineId = machineId,
-                    PlannedStart = start,
-                    PlannedEnd = end,
-                    Status = ScheduleStatus.Planned
+                    ProductionOperationId = operationId, MachineId = machine.Id,
+                    PlannedStart = start, PlannedEnd = end, Status = ScheduleStatus.Planned
                 });
             }
             else
             {
-                entity.MachineId = machineId;
-                entity.PlannedStart = start;
-                entity.PlannedEnd = end;
-                foreach (var duplicate in active.Skip(1))
+                booking.MachineId = machine.Id;
+                booking.PlannedStart = start;
+                booking.PlannedEnd = end;
+                foreach (var duplicate in current.Skip(1))
                     duplicate.Status = ScheduleStatus.Cancelled;
             }
+
             await db.SaveChangesAsync();
             await transaction.CommitAsync();
             selectedOperationId = operationId;
@@ -1085,7 +1143,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Machine booking failed for operation {OperationId}", operationId);
+            Logger.LogError(ex, "Could not schedule order operation {OperationId}", operationId);
             ShowError(L["MachineSchedulingFailed"]);
         }
     }
