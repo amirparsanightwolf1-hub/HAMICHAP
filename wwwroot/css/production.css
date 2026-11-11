@@ -1354,10 +1354,6 @@
 
 
 /* Production Manager: exact CEO calendar grid and palette, enhanced with operation cards. */
-.machine-schedule .planning-calendar-panel .month-grid,
-.machine-schedule .planning-calendar-panel .timeline {
-    direction: ltr;
-}
 .machine-schedule .manager-stage-chip {
     position: relative;
     white-space: normal;
