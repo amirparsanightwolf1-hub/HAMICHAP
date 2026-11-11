@@ -1,3 +1,5 @@
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
 ﻿@page "/Account/ConfirmEmail"
 
 @using System.Text
@@ -8,9 +10,9 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Confirm email</PageTitle>
+<PageTitle>@L["Confirm email"]</PageTitle>
 
-<h1>Confirm email</h1>
+<h1>@L["Confirm email"]</h1>
 <StatusMessage Message="@statusMessage" />
 
 @code {
