@@ -235,7 +235,46 @@
     private long? draggedScheduledOperationId;
     private long? draggedScheduledOrderId;
 
-    private void SelectOperation(long id) => selectedOperationId = id;
+    private void SelectOperation(long id)
+    {
+        selectedOperationId = id;
+        var step = operations.FirstOrDefault(x => x.Id == id);
+        if (step?.ProductionOrder.PlannedStartDate is DateTime from &&
+            !SelectedOperationAllowedOn(selectedDate))
+            selectedDate = from.Date;
+    }
+
+    private static readonly string[] WeekDayNames =
+        { "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" };
+
+    private void FocusOrder(long orderId)
+    {
+        var order = orders.FirstOrDefault(x => x.Id == orderId);
+        if (order?.PlannedStartDate is DateTime from)
+            selectedDate = from.Date;
+        else if (order?.PlannedEndDate is DateTime until)
+            selectedDate = until.Date;
+
+        selectedOperationId = operations
+            .FirstOrDefault(x => x.ProductionOrderId == orderId &&
+                !schedules.Any(s => s.ProductionOperationId == x.Id))?.Id;
+    }
+
+    private bool SelectedOperationAllowedOn(DateTime day)
+    {
+        if (!selectedOperationId.HasValue) return false;
+        var step = operations.FirstOrDefault(x => x.Id == selectedOperationId.Value);
+        return step != null && IsWithinCeoWindow(step.ProductionOrder, day);
+    }
+
+    private static bool IsWithinCeoWindow(ProductionOrder order, DateTime day) =>
+        order.PlannedStartDate.HasValue && order.PlannedEndDate.HasValue &&
+        order.PlannedStartDate.Value.Date <= day.Date &&
+        day.Date <= order.PlannedEndDate.Value.Date;
+
+    private string FormatDateOnly(DateTime? value) =>
+        value.HasValue ? FormatDay(value.Value) : "—";
+
     private void ClearDrag()
     {
         draggedOperationId = null;
@@ -277,10 +316,14 @@
         draggedOperationId = null;
         draggedScheduledOperationId = null;
         draggedScheduledOrderId = null;
-        if (!id.HasValue) return;
+        if (!id.HasValue)
+        {
+            message = L["SelectOperationBeforeDrop"];
+            return;
+        }
 
         machineChoices[id.Value] = machineId;
-        startChoices[id.Value] = start.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+        startChoices[id.Value] = start.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         await Schedule(id.Value);
     }
 
@@ -393,12 +436,14 @@
             return Enumerable.Range(0, 42).Select(i => first.AddDays(i - offset));
         }
     }
-    private void ShiftPeriod(int direction) => selectedDate = viewMode == CalendarView.Month ? Persian.AddMonths(selectedDate, direction) : selectedDate.AddDays(direction * (viewMode == CalendarView.Week ? 7 : 1));
+    private void ShiftPeriod(int direction) => selectedDate =
+        viewMode == CalendarView.Month ? Persian.AddMonths(selectedDate, direction) :
+        selectedDate.AddDays(direction * (viewMode == CalendarView.Week ? 7 : 1));
     private void ChooseDay(DateTime day) { selectedDate = day; viewMode = CalendarView.Day; }
     private string ShiftColor(DateTime date) => date.Hour >= 8 && date.Hour < 17 ? "order-work" : date.Hour >= 17 && date.Hour < 22 ? "order-overtime" : "order-night";
     private IEnumerable<ProductionSchedule> DaySchedules(DateTime day, int machineId) =>
         schedules.Where(s => s.MachineId == machineId &&
-            ScheduleVisibleDuring(s, day.Date, day.Date.AddDays(1))).OrderBy(s => s.PlannedStart);
+            s.PlannedStart.Date == day.Date).OrderBy(s => s.ProductionOperation.Sequence);
 
     private DateTime selectedDate = DateTime.Today;
     private long newOrderId;
@@ -419,8 +464,23 @@
         canEdit = user.Identity?.IsAuthenticated == true && (user.IsInRole("Administrator") ||
             user.IsInRole("ProductionManager") || user.IsInRole("Production Manager") || user.IsInRole("Manager"));
         canView = canEdit || (user.Identity?.IsAuthenticated == true &&
-            (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") || user.IsInRole("Production")));
-        if (canView) await Reload();
+            (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
+             user.IsInRole("Production") || user.IsInRole("CEO") || user.IsInRole("Ceo")));
+
+        if (!canView) return;
+        await Reload();
+        if (canEdit)
+        {
+            try { await GenerateMissingOperationsCore(true); }
+            catch (Exception) { message = L["RoutingGenerationFailed"]; }
+        }
+
+        var upcoming = orders.Where(x => x.Status != ProductionOrderStatus.Cancelled &&
+            x.PlannedStartDate.HasValue)
+            .OrderBy(x => Math.Abs((x.PlannedStartDate!.Value.Date - DateTime.Today).TotalDays))
+            .FirstOrDefault();
+        if (upcoming?.PlannedStartDate is DateTime start)
+            selectedDate = start.Date;
     }
 
     private async Task Reload()
@@ -515,7 +575,12 @@
     }
 
     private int MachineChoice(long id) => machineChoices.GetValueOrDefault(id);
-    private string StartChoice(long id) => startChoices.GetValueOrDefault(id, "");
+    private string StartChoice(long id)
+    {
+        if (startChoices.TryGetValue(id, out var choice)) return choice;
+        var from = operations.FirstOrDefault(x => x.Id == id)?.ProductionOrder.PlannedStartDate;
+        return from?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
+    }
 
     // Machine names are routing recommendations. Actual machine choice remains editable.
     private static IEnumerable<string> RouteService(string service, bool sheet)
@@ -552,7 +617,9 @@
     private IEnumerable<Machine> SuggestedMachines(ProductionOperation operation) =>
         machines.Where(m => CompatibleMachine(operation.Name, m));
 
-    private async Task GenerateMissingOperations()
+    private Task GenerateMissingOperations() => GenerateMissingOperationsCore(false);
+
+    private async Task GenerateMissingOperationsCore(bool silent)
     {
         if (!canEdit) return;
         await using var db = await DbFactory.CreateDbContextAsync();
@@ -563,7 +630,8 @@
         var added = 0;
         var synchronized = 0;
         var blocked = 0;
-        foreach (var order in orders)
+        foreach (var order in orders.Where(x => x.Status != ProductionOrderStatus.Cancelled &&
+                                                 x.Status != ProductionOrderStatus.Completed))
         {
             var current = existing.Where(x => x.ProductionOrderId == order.Id)
                 .OrderBy(x => x.Sequence).ToList();
@@ -650,8 +718,9 @@
         }
 
         await db.SaveChangesAsync();
-        message = blocked > 0 ? L["DurationTooShortForSteps"]
-            : added + synchronized > 0 ? L["OperationsGenerated"] : L["NoRoutingFound"];
+        if (!silent)
+            message = blocked > 0 ? L["DurationTooShortForSteps"]
+                : added + synchronized > 0 ? L["OperationsGenerated"] : L["NoRoutingFound"];
         await Reload();
     }
 
@@ -697,96 +766,52 @@
     private async Task Schedule(long operationId)
     {
         if (!canEdit || !machineChoices.TryGetValue(operationId, out var machineId) || machineId == 0 ||
-            !startChoices.TryGetValue(operationId, out var startText) ||
-            !DateTime.TryParse(startText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var requestedStart))
+            !startChoices.TryGetValue(operationId, out var dateText) ||
+            !DateTime.TryParseExact(dateText, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var requestedDate))
         {
-            message = L["SelectMachineAndTime"];
+            message = L["SelectMachineAndDate"];
             return;
         }
 
         await using var db = await DbFactory.CreateDbContextAsync();
         var operation = await db.ProductionOperations.Include(x => x.ProductionOrder)
             .FirstOrDefaultAsync(x => x.Id == operationId);
-        if (operation == null || !await db.Machines.AnyAsync(x => x.Id == machineId && x.IsActive))
-            return;
-        var assignedMachine = machines.FirstOrDefault(x => x.Id == machineId);
+        if (operation == null) return;
+
+        var assignedMachine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
         if (assignedMachine == null || !CompatibleMachine(operation.Name, assignedMachine))
         {
             message = L["MachineMismatch"];
             return;
         }
 
-        var order = operation.ProductionOrder;
-        if (!order.PlannedStartDate.HasValue || !order.PlannedEndDate.HasValue)
+        // This calendar assigns a machine and calendar DATE, not a precise working hour.
+        // Only the CEO-defined inclusive date range is a hard placement boundary.
+        if (!IsWithinCeoWindow(operation.ProductionOrder, requestedDate))
         {
-            message = L["CeoPlanRequired"];
+            message = operation.ProductionOrder.PlannedStartDate.HasValue &&
+                      operation.ProductionOrder.PlannedEndDate.HasValue
+                ? L["MachineOutsideCeoWindow"] : L["CeoPlanRequired"];
             return;
         }
 
-        var steps = await db.ProductionOperations.Where(x => x.ProductionOrderId == order.Id)
-            .OrderBy(x => x.Sequence).ToListAsync();
-        if (steps.Sum(x => ProductionPlanningTime.OperationMinutes(x.PlannedHours))
-            != order.EstimatedDurationMinutes)
-        {
-            message = L["MachineDurationMismatch"];
-            return;
-        }
-
-        var start = ProductionPlanningTime.NextAllowedProductionMinute(
-            requestedStart, order.AvoidOvertime, order.AvoidNightShift);
-        var end = ProductionPlanningTime.CalculateEndDateTime(start,
-            ProductionPlanningTime.OperationMinutes(operation.PlannedHours),
-            order.AvoidOvertime, order.AvoidNightShift);
-        if (start < order.PlannedStartDate.Value || end > order.PlannedEndDate.Value)
-        {
-            message = L["MachineOutsideCeoWindow"];
-            return;
-        }
-
-        var current = await db.ProductionSchedules.Where(x => x.ProductionOperationId == operationId
-            && x.Status != ScheduleStatus.Cancelled).ToListAsync();
-        if (current.Any(x => x.Status != ScheduleStatus.Planned))
+        var active = await db.ProductionSchedules.Where(x => x.ProductionOperationId == operationId &&
+            x.Status != ScheduleStatus.Cancelled).OrderBy(x => x.Id).ToListAsync();
+        if (active.Any(x => x.Status != ScheduleStatus.Planned))
         {
             message = L["CannotChangeActiveSchedule"];
             return;
         }
-        var otherMachineSteps = await db.ProductionSchedules
-            .Include(x => x.ProductionOperation).ThenInclude(x => x.ProductionOrder)
-            .Where(x => x.MachineId == machineId && x.ProductionOperationId != operationId &&
-                x.Status != ScheduleStatus.Cancelled && x.PlannedStart < end && x.PlannedEnd > start)
-            .ToListAsync();
-        if (otherMachineSteps.Any(x => ProductionPlanningTime.ProductiveConflict(
-            start, end, order.AvoidOvertime, order.AvoidNightShift,
-            x.PlannedStart, x.PlannedEnd,
-            x.ProductionOperation.ProductionOrder.AvoidOvertime,
-            x.ProductionOperation.ProductionOrder.AvoidNightShift)))
-        {
-            message = L["MachineConflict"];
-            return;
-        }
 
-        var beforeIds = steps.Where(x => x.Sequence < operation.Sequence).Select(x => x.Id).ToList();
-        var afterIds = steps.Where(x => x.Sequence > operation.Sequence).Select(x => x.Id).ToList();
-        var dependencySchedules = await db.ProductionSchedules.Where(x =>
-            (beforeIds.Contains(x.ProductionOperationId) || afterIds.Contains(x.ProductionOperationId)) &&
-            x.Status != ScheduleStatus.Cancelled).ToListAsync();
-        if (beforeIds.Any(id => !dependencySchedules.Any(x => x.ProductionOperationId == id
-            && x.PlannedEnd <= start)) ||
-            dependencySchedules.Any(x => afterIds.Contains(x.ProductionOperationId) && x.PlannedStart < end))
-        {
-            message = L["OperationSequenceConflict"];
-            return;
-        }
-
-        if (current.Count > 0)
-        {
-            current[0].MachineId = machineId;
-            current[0].PlannedStart = start;
-            current[0].PlannedEnd = end;
-            foreach (var duplicate in current.Skip(1))
-                duplicate.Status = ScheduleStatus.Cancelled;
-        }
-        else
+        // The existing DateTime columns are retained for backwards compatibility.
+        // Midnight to midnight represents a DATE booking, not a timed reservation.
+        // Several steps may be planned for the same machine/day; hour-level capacity
+        // is outside the scope of this calendar.
+        var start = requestedDate.Date;
+        var end = start.AddDays(1);
+        var entry = active.FirstOrDefault();
+        if (entry == null)
         {
             db.ProductionSchedules.Add(new ProductionSchedule
             {
@@ -797,6 +822,15 @@
                 Status = ScheduleStatus.Planned
             });
         }
+        else
+        {
+            entry.MachineId = machineId;
+            entry.PlannedStart = start;
+            entry.PlannedEnd = end;
+            foreach (var duplicate in active.Skip(1))
+                duplicate.Status = ScheduleStatus.Cancelled;
+        }
+
         await db.SaveChangesAsync();
         selectedOperationId = operationId;
         message = L["OperationScheduled"];
