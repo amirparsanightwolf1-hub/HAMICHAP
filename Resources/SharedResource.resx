@@ -2674,4 +2674,69 @@
   <data name="Verification Code" xml:space="preserve"><value>Verification Code</value></data>
   <data name="Verify" xml:space="preserve"><value>Verify</value></data>
   <data name="Enter the code" xml:space="preserve"><value>Enter the code</value></data>
+  <data name="Manage your external logins" xml:space="preserve"><value>Manage your external logins</value></data>
+  <data name="Registered Logins" xml:space="preserve"><value>Registered Logins</value></data>
+  <data name="Add another service to log in." xml:space="preserve"><value>Add another service to log in.</value></data>
+  <data name="Generate two-factor authentication (2FA) recovery codes" xml:space="preserve"><value>Generate two-factor authentication (2FA) recovery codes</value></data>
+  <data name="Put these codes in a safe place." xml:space="preserve"><value>Put these codes in a safe place.</value></data>
+  <data name="Generate Recovery Codes" xml:space="preserve"><value>Generate Recovery Codes</value></data>
+  <data name="Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Phone number" xml:space="preserve"><value>Phone number</value></data>
+  <data name="Choose your username." xml:space="preserve"><value>Choose your username.</value></data>
+  <data name="Enter your phone number" xml:space="preserve"><value>Enter your phone number</value></data>
+  <data name="Manage your passkeys" xml:space="preserve"><value>Manage your passkeys</value></data>
+  <data name="Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="No passkeys are registered." xml:space="preserve"><value>No passkeys are registered.</value></data>
+  <data name="You have reached the maximum number of allowed passkeys. Please delete one before adding a new one." xml:space="preserve"><value>You have reached the maximum number of allowed passkeys. Please delete one before adding a new one.</value></data>
+  <data name="Add a new passkey" xml:space="preserve"><value>Add a new passkey</value></data>
+  <data name="Rename this passkey" xml:space="preserve"><value>Rename this passkey</value></data>
+  <data name="Remove this passkey from your account" xml:space="preserve"><value>Remove this passkey from your account</value></data>
+  <data name="Personal Data" xml:space="preserve"><value>Personal Data</value></data>
+  <data name="Your account contains personal data that you have given us. This page allows you to download or delete that data." xml:space="preserve"><value>Your account contains personal data that you have given us. This page allows you to download or delete that data.</value></data>
+  <data name="Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Enter a name for your passkey" xml:space="preserve"><value>Enter a name for your passkey</value></data>
+  <data name="Passkey name" xml:space="preserve"><value>Passkey name</value></data>
+  <data name="Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="My passkey" xml:space="preserve"><value>My passkey</value></data>
+  <data name="Reset authenticator key" xml:space="preserve"><value>Reset authenticator key</value></data>
+  <data name="If you reset your authenticator key your authenticator app will not work until you reconfigure it." xml:space="preserve"><value>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</value></data>
+  <data name="Set password" xml:space="preserve"><value>Set password</value></data>
+  <data name="Set your password" xml:space="preserve"><value>Set your password</value></data>
+  <data name="Two-factor authentication (2FA)" xml:space="preserve"><value>Two-factor authentication (2FA)</value></data>
+  <data name="You have no recovery codes left." xml:space="preserve"><value>You have no recovery codes left.</value></data>
+  <data name="You must" xml:space="preserve"><value>You must</value></data>
+  <data name="generate a new set of recovery codes" xml:space="preserve"><value>generate a new set of recovery codes</value></data>
+  <data name="before you can log in with a recovery code." xml:space="preserve"><value>before you can log in with a recovery code.</value></data>
+  <data name="You have 1 recovery code left." xml:space="preserve"><value>You have 1 recovery code left.</value></data>
+  <data name="You can" xml:space="preserve"><value>You can</value></data>
+  <data name="You should" xml:space="preserve"><value>You should</value></data>
+  <data name="Forget this browser" xml:space="preserve"><value>Forget this browser</value></data>
+  <data name="Reset recovery codes" xml:space="preserve"><value>Reset recovery codes</value></data>
+  <data name="Authenticator app" xml:space="preserve"><value>Authenticator app</value></data>
+  <data name="Add authenticator app" xml:space="preserve"><value>Add authenticator app</value></data>
+  <data name="Set up authenticator app" xml:space="preserve"><value>Set up authenticator app</value></data>
+  <data name="Reset authenticator app" xml:space="preserve"><value>Reset authenticator app</value></data>
+  <data name="Privacy and cookie policy have not been accepted." xml:space="preserve"><value>Privacy and cookie policy have not been accepted.</value></data>
+  <data name="You must accept the policy before you can enable two factor authentication." xml:space="preserve"><value>You must accept the policy before you can enable two factor authentication.</value></data>
+  <data name="Create a new account." xml:space="preserve"><value>Create a new account.</value></data>
+  <data name="Use another service to register." xml:space="preserve"><value>Use another service to register.</value></data>
+  <data name="Register confirmation" xml:space="preserve"><value>Register confirmation</value></data>
+  <data name="these docs" xml:space="preserve"><value>these docs</value></data>
+  <data name="Click here to confirm your account" xml:space="preserve"><value>Click here to confirm your account</value></data>
+  <data name="Please check your email to confirm your account." xml:space="preserve"><value>Please check your email to confirm your account.</value></data>
+  <data name="Resend email confirmation" xml:space="preserve"><value>Resend email confirmation</value></data>
+  <data name="Resend" xml:space="preserve"><value>Resend</value></data>
+  <data name="Reset your password." xml:space="preserve"><value>Reset your password.</value></data>
+  <data name="Please confirm your password." xml:space="preserve"><value>Please confirm your password.</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Reset password confirmation" xml:space="preserve"><value>Reset password confirmation</value></data>
+  <data name="Your password has been reset. Please" xml:space="preserve"><value>Your password has been reset. Please</value></data>
+  <data name="click here to log in" xml:space="preserve"><value>click here to log in</value></data>
+  <data name="Manage your account" xml:space="preserve"><value>Manage your account</value></data>
+  <data name="Change your account settings" xml:space="preserve"><value>Change your account settings</value></data>
+  <data name="External logins" xml:space="preserve"><value>External logins</value></data>
+  <data name="Passkeys" xml:space="preserve"><value>Passkeys</value></data>
+  <data name="Personal data" xml:space="preserve"><value>Personal data</value></data>
+  <data name="Recovery codes" xml:space="preserve"><value>Recovery codes</value></data>
 </root>
