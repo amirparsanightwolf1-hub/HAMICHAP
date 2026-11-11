@@ -376,9 +376,7 @@
         if (!canEdit) return;
         var orderId = draggedScheduledOrderId;
         var operationId = draggedScheduledOperationId;
-        draggedOperationId = null;
-        draggedScheduledOperationId = null;
-        draggedScheduledOrderId = null;
+        ClearDrag();
 
         if (orderId.HasValue) await UnscheduleOrder(orderId.Value);
         else if (operationId.HasValue) await UnscheduleOperation(operationId.Value);
