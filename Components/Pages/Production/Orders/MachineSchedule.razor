@@ -597,6 +597,8 @@
     private async Task ImportSalesRoutesAsync()
     {
         await using var db = await DbFactory.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.Serializable);
         var sourceOrders = await db.ProductionOrders
             .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation)
             .ThenInclude(x => x.SalesRequest)
@@ -623,7 +625,7 @@
             {
                 proposed = ProductionJobRouting.FromJob(request.JobType, request.JobSpecificationJson);
             }
-            catch (System.Text.Json.JsonException ex)
+            catch (Exception ex) when (ex is System.Text.Json.JsonException or InvalidOperationException)
             {
                 Logger.LogWarning(ex, "Malformed Sales job specifications for production order {OrderId}", order.Id);
                 continue;
@@ -661,6 +663,7 @@
             populated.Add(order.Id);
         }
         await db.SaveChangesAsync();
+        await transaction.CommitAsync();
     }
 
     private async Task ReimportSalesSuggestions()
@@ -812,7 +815,9 @@
     }
     private string MachineName(ProductionOperation step) =>
         machines.FirstOrDefault(x => x.Id == MachineChoice(step))?.Name ??
-        CurrentSchedule(step.Id)?.Machine.Name ?? L["SelectMachine"];
+        CurrentSchedule(step.Id)?.Machine.Name ??
+        (ProductionJobRouting.Candidates(step.Name).Length > 0
+            ? L["AutoMachineChoice"] : L["SelectMachine"]);
     private string OperationNameChoice(ProductionOperation step) =>
         editedNames.GetValueOrDefault(step.Id, step.Name);
     private string OperationHoursChoice(ProductionOperation step) =>
