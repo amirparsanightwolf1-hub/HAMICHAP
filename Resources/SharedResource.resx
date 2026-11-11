@@ -2546,4 +2546,5 @@
   <data name="SelectCompatibleOperation" xml:space="preserve"><value>This order has no unscheduled operation compatible with that machine. Generate operations or choose a compatible machine.</value></data>
   <data name="RoutingGenerationFailed" xml:space="preserve"><value>Automatic routing could not be completed. Use Generate Operations or add steps manually.</value></data>
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>Drag to a compatible machine calendar date to assign the next operation.</value></data>
+  <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>Existing booking is outside the CEO-approved date window; move or return it.</value></data>
 </root>
