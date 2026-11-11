@@ -2546,4 +2546,5 @@
   <data name="SelectCompatibleOperation" xml:space="preserve"><value>این سفارش عملیات زمان‌بندی‌نشده سازگار با دستگاه انتخابی ندارد. عملیات را ایجاد کنید یا دستگاه سازگار انتخاب کنید.</value></data>
   <data name="RoutingGenerationFailed" xml:space="preserve"><value>ایجاد خودکار مسیر تولید انجام نشد. از دکمه ایجاد عملیات استفاده کنید یا مراحل را دستی اضافه کنید.</value></data>
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>برای تخصیص مرحله بعد، سفارش را روی تاریخ دستگاه سازگار در تقویم بکشید.</value></data>
+  <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>زمان‌بندی قبلی خارج از بازه تاریخ تأییدشده مدیرعامل است؛ آن را جابه‌جا کرده یا به لیست بازگردانید.</value></data>
 </root>
