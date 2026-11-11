@@ -1034,13 +1034,13 @@
 
         if (linesToSave.Count == 0)
         {
-            errorMessage = "Add at least one material before submitting the request.";
+            errorMessage = L["Add at least one material before submitting the request."];
             return;
         }
 
         if (linesToSave.Any(x => x.ItemId <= 0 || x.UnitId <= 0 || x.Quantity <= 0))
         {
-            errorMessage = "Select a valid material and enter a quantity greater than zero for every request line.";
+            errorMessage = L["Select a valid material and enter a quantity greater than zero for every request line."];
             return;
         }
 
