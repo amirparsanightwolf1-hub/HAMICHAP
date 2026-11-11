@@ -798,10 +798,10 @@
 
             var machineCodes = await db.Machines.Where(x => x.IsActive)
                 .Select(x => x.Code).ToListAsync();
-            if (steps.Any(x => x.WorkCenter?.Code is not string code ||
-                               !code.StartsWith("MC-", StringComparison.OrdinalIgnoreCase) ||
+            if (steps.Any(x => x.WorkCenter == null ||
+                               !x.WorkCenter.Code.StartsWith("MC-", StringComparison.OrdinalIgnoreCase) ||
                                !machineCodes.Any(machineCode => String.Equals(machineCode,
-                                   code[3..], StringComparison.OrdinalIgnoreCase))))
+                                   x.WorkCenter.Code[3..], StringComparison.OrdinalIgnoreCase))))
             {
                 ShowError(L["MachineAssignmentsRequired"]);
                 return;
