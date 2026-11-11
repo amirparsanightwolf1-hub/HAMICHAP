@@ -2534,4 +2534,16 @@
   <data name="Day" xml:space="preserve"><value>Day</value></data>
   <data name="NewStepRelativeHours" xml:space="preserve"><value>Relative duration weight (hours)</value></data>
   <data name="NewStepWeightHelp" xml:space="preserve"><value>The CEO total is fixed. This value determines this step's share; all stages are rebalanced.</value></data>
+  <data name="CeoProductionOrders" xml:space="preserve"><value>CEO production orders</value></data>
+  <data name="CeoWindow" xml:space="preserve"><value>CEO date window</value></data>
+  <data name="NoOperationsGenerated" xml:space="preserve"><value>No machine operations yet. Use Generate Operations or add a step manually.</value></data>
+  <data name="ShowCeoWindow" xml:space="preserve"><value>Show CEO date range</value></data>
+  <data name="NoProductionOrders" xml:space="preserve"><value>No production orders have been created yet.</value></data>
+  <data name="DateBasedSchedulingHelp" xml:space="preserve"><value>Choose an operation, or drag an order from the left panel onto a compatible machine's date. Only dates inside the CEO window are allowed. Exact hours are not required.</value></data>
+  <data name="PlaceOnDate" xml:space="preserve"><value>Place here</value></data>
+  <data name="SelectMachineAndDate" xml:space="preserve"><value>Select a machine and calendar date.</value></data>
+  <data name="SelectOperationBeforeDrop" xml:space="preserve"><value>Select an order operation from the list before assigning a machine date.</value></data>
+  <data name="SelectCompatibleOperation" xml:space="preserve"><value>This order has no unscheduled operation compatible with that machine. Generate operations or choose a compatible machine.</value></data>
+  <data name="RoutingGenerationFailed" xml:space="preserve"><value>Automatic routing could not be completed. Use Generate Operations or add steps manually.</value></data>
+  <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>Drag to a compatible machine calendar date to assign the next operation.</value></data>
 </root>
