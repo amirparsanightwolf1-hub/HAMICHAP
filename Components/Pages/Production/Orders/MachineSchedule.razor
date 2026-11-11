@@ -26,14 +26,24 @@
             <aside class="planning-order-panel">
                 <div class="card mb-3">
                     <div class="card-header"><strong>@L["UnscheduledOperations"]</strong><span class="badge bg-secondary">@operations.Count(x => !schedules.Any(s => s.ProductionOperationId == x.Id))</span></div>
-                    <div class="card-body order-queue">
+                    <div class="card-body order-queue machine-return-zone"
+                         @ondragover:preventDefault="true"
+                         @ondrop:preventDefault="true"
+                         @ondrop="DropBackToQueue">
+                        <div class="machine-return-hint" role="status">@L["DropScheduledStepHere"]</div>
+                        @if (operations.All(x => schedules.Any(s => s.ProductionOperationId == x.Id)))
+                        {
+                            <p class="small text-muted mt-2">@L["NoUnscheduledSteps"]</p>
+                        }
                         @foreach (var operation in operations.Where(x => !schedules.Any(s => s.ProductionOperationId == x.Id)).OrderBy(x => x.ProductionOrder.PlannedEndDate).ThenBy(x => x.Sequence))
                         {
                             <div class="queue-order @(selectedOperationId == operation.Id ? "queue-order-selected" : "")" draggable="@canEdit" @ondragstart="() => SelectDraggedOperation(operation.Id)" @onclick="() => SelectOperation(operation.Id)">
                                 <div class="d-flex justify-content-between gap-2"><strong>@operation.ProductionOrder.OrderNumber</strong><span class="badge bg-secondary">#@operation.Sequence</span></div>
                                 <div class="small fw-semibold mt-1">@operation.Name</div>
                                 <div class="small text-muted">@L["DueDate"]: @FormatDate(operation.ProductionOrder.PlannedEndDate)</div>
-                                <div class="small text-muted">@L["EstimatedHours"]: @operation.PlannedHours</div>
+                                <div class="small text-muted">@L["EstimatedHours"]: @DurationLabel(ProductionPlanningTime.OperationMinutes(operation.PlannedHours))</div>
+                                <div class="small text-muted">@L["MachineStepCount"]: @operation.Sequence / @OrderOperationCount(operation.ProductionOrderId)</div>
+                                <div class="small text-muted">@L["CeoDuration"]: @DurationLabel(operation.ProductionOrder.EstimatedDurationMinutes)</div>
                                 @if (canEdit)
                                 {
                                     <label class="form-label mt-2">@L["Machine"]</label>
@@ -86,6 +96,30 @@
                         <span><i class="shift-dot overtime"></i> @L["OvertimeShift"]</span>
                         <span><i class="shift-dot night"></i> @L["NightShift"]</span>
                     </div>
+                    @if (operations.Count > 0)
+                    {
+                        <div class="machine-order-overview mb-3">
+                            @foreach (var order in orders.Where(x => operations.Any(op => op.ProductionOrderId == x.Id)))
+                            {
+                                <div class="machine-order-totals">
+                                    <div class="d-flex justify-content-between align-items-center gap-2">
+                                        <strong>@order.OrderNumber</strong>
+                                        <span class="badge bg-secondary">@OrderScheduledCount(order.Id) / @OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
+                                    </div>
+                                    <div class="small">@L["CeoDuration"]: <strong>@DurationLabel(order.EstimatedDurationMinutes)</strong></div>
+                                    <div class="small @(OrderStepMinutes(order.Id) == order.EstimatedDurationMinutes ? "text-success" : "text-danger")">
+                                        @L["MachineDuration"]: <strong>@DurationLabel(OrderStepMinutes(order.Id))</strong>
+                                    </div>
+                                    <div class="small text-muted">@FormatDate(order.PlannedStartDate) – @FormatDate(order.PlannedEndDate)</div>
+                                    @if (canEdit && OrderScheduledCount(order.Id) > 0)
+                                    {
+                                        <button type="button" class="btn btn-outline-primary btn-sm mt-2"
+                                                @onclick="() => UnscheduleOrder(order.Id)">@L["ReturnWholeOrder"]</button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
                     <label class="form-label" for="machine-filter">@L["Machine"]</label>
                     <select id="machine-filter" class="form-select mb-3" @bind="machineFilter">
                         <option value="0">@L["AllMachines"]</option>
@@ -132,11 +166,21 @@
                                             @foreach (var slot in DaySchedules(day, machine.Id))
                                             {
                                                 <div class="month-order-chip @ShiftColor(slot.PlannedStart)"
+                                                     draggable="@canEdit"
+                                                     @ondragstart="() => StartScheduledDrag(slot.ProductionOperationId)"
                                                      title="@slot.ProductionOperation.Name"
-                                                     @onclick:stopPropagation="true">
+                                                     @onclick:stopPropagation="true"
+                                                     @onclick="() => SelectOperation(slot.ProductionOperationId)">
                                                     <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
                                                     <span>@slot.ProductionOperation.Name</span>
                                                     <small>@slot.PlannedStart.ToString("HH:mm")–@slot.PlannedEnd.ToString("HH:mm")</small>
+                                                    <small>@DurationLabel(ProductionPlanningTime.OperationMinutes(slot.ProductionOperation.PlannedHours))</small>
+                                                    @if (canEdit)
+                                                    {
+                                                        <button type="button" class="machine-unschedule-button"
+                                                                @onclick:stopPropagation="true"
+                                                                @onclick="() => UnscheduleOperation(slot.ProductionOperationId)">@L["ReturnToQueue"]</button>
+                                                    }
                                                 </div>
                                             }
                                         </div>
@@ -171,11 +215,22 @@
                                                      @ondrop="() => DropOperation(machine.Id, day.Date.AddHours(slotHour))">
                                                     @foreach (var slot in HourSchedules(day, hour, machine.Id))
                                                     {
-                                                        <div class="timeline-order @ShiftColor(slot.PlannedStart)" @onclick:stopPropagation="true"
+                                                        <div class="timeline-order @ShiftColor(slot.PlannedStart)"
+                                                             draggable="@canEdit"
+                                                             @ondragstart="() => StartScheduledDrag(slot.ProductionOperationId)"
+                                                             @onclick:stopPropagation="true"
+                                                             @onclick="() => SelectOperation(slot.ProductionOperationId)"
                                                              title="@slot.ProductionOperation.Name">
                                                             <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
                                                             <span>@slot.ProductionOperation.Name</span>
                                                             <small>@slot.PlannedStart.ToString("HH:mm")–@slot.PlannedEnd.ToString("HH:mm")</small>
+                                                            <small>@DurationLabel(ProductionPlanningTime.OperationMinutes(slot.ProductionOperation.PlannedHours))</small>
+                                                            @if (canEdit)
+                                                            {
+                                                                <button type="button" class="machine-unschedule-button"
+                                                                        @onclick:stopPropagation="true"
+                                                                        @onclick="() => UnscheduleOperation(slot.ProductionOperationId)">@L["ReturnToQueue"]</button>
+                                                            }
                                                         </div>
                                                     }
                                                 </div>
