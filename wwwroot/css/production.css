@@ -1493,3 +1493,36 @@
     font-weight: 700;
     color: #a12e26;
 }
+
+
+/* Approval of the operation sequence by the Production Manager. */
+.machine-schedule .manager-sequence-approval {
+    border-top: 1px solid #d6e3ec;
+    padding-top: 12px;
+}
+.machine-schedule .manager-sequence-approved,
+.machine-schedule .manager-sequence-pending {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid #d6e3ec;
+    border-inline-start: 4px solid #0c568d;
+    border-radius: 7px;
+    padding: 10px 12px;
+    background: #f8fbfe;
+}
+.machine-schedule .manager-sequence-approved strong { color: #186249; }
+.machine-schedule .manager-sequence-pending strong { color: #0c568d; }
+.machine-schedule .manager-sequence-approved small,
+.machine-schedule .manager-sequence-pending small {
+    line-height: 1.55;
+    color: #5a6978;
+}
+.machine-schedule .manager-sequence-buttons {
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.machine-schedule .manager-sequence-buttons button {
+    min-width: 86px;
+    flex: 1;
+}
