@@ -2547,4 +2547,5 @@
   <data name="RoutingGenerationFailed" xml:space="preserve"><value>Automatic routing could not be completed. Use Generate Operations or add steps manually.</value></data>
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>Drag to a compatible machine calendar date to assign the next operation.</value></data>
   <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>Existing booking is outside the CEO-approved date window; move or return it.</value></data>
+  <data name="AdvancedDurationSettings" xml:space="preserve"><value>Advanced duration details (optional)</value></data>
 </root>
