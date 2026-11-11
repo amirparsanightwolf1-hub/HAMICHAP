@@ -2619,4 +2619,59 @@
   <data name="CannotRestoreEditedRoute" xml:space="preserve"><value>Existing stages must be removed before reimporting Sales suggestions.</value></data>
   <data name="SalesSuggestionsRestored" xml:space="preserve"><value>Sales job specifications were re-read and suggested operations restored where available.</value></data>
   <data name="SaveStageEditsBeforeConfirmation" xml:space="preserve"><value>Save changes to operation durations, names or machines before confirming and automatically generating the schedule.</value></data>
+  <data name="Access denied" xml:space="preserve"><value>Access denied</value></data>
+  <data name="You do not have access to this resource." xml:space="preserve"><value>You do not have access to this resource.</value></data>
+  <data name="Confirm email" xml:space="preserve"><value>Confirm email</value></data>
+  <data name="Confirm email change" xml:space="preserve"><value>Confirm email change</value></data>
+  <data name="Register" xml:space="preserve"><value>Register</value></data>
+  <data name="Please enter your email." xml:space="preserve"><value>Please enter your email.</value></data>
+  <data name="Forgot your password?" xml:space="preserve"><value>Forgot your password?</value></data>
+  <data name="Enter your email." xml:space="preserve"><value>Enter your email.</value></data>
+  <data name="Reset password" xml:space="preserve"><value>Reset password</value></data>
+  <data name="Forgot password confirmation" xml:space="preserve"><value>Forgot password confirmation</value></data>
+  <data name="Please check your email to reset your password." xml:space="preserve"><value>Please check your email to reset your password.</value></data>
+  <data name="Invalid password reset" xml:space="preserve"><value>Invalid password reset</value></data>
+  <data name="The password reset link is invalid." xml:space="preserve"><value>The password reset link is invalid.</value></data>
+  <data name="Invalid user" xml:space="preserve"><value>Invalid user</value></data>
+  <data name="Locked out" xml:space="preserve"><value>Locked out</value></data>
+  <data name="This account has been locked out, please try again later." xml:space="preserve"><value>This account has been locked out, please try again later.</value></data>
+  <data name="Two-factor authentication" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="Your login is protected with an authenticator app. Enter your authenticator code below." xml:space="preserve"><value>Your login is protected with an authenticator app. Enter your authenticator code below.</value></data>
+  <data name="Authenticator code" xml:space="preserve"><value>Authenticator code</value></data>
+  <data name="Remember this machine" xml:space="preserve"><value>Remember this machine</value></data>
+  <data name="Log in" xml:space="preserve"><value>Log in</value></data>
+  <data name="log in with a recovery code" xml:space="preserve"><value>log in with a recovery code</value></data>
+  <data name="Recovery code verification" xml:space="preserve"><value>Recovery code verification</value></data>
+  <data name="You have requested to log in with a recovery code. This login will not be remembered until you provide an authenticator app code at log in or disable 2FA and log in again." xml:space="preserve"><value>You have requested to log in with a recovery code. This login will not be remembered until you provide an authenticator app code at log in or disable 2FA and log in again.</value></data>
+  <data name="Recovery Code" xml:space="preserve"><value>Recovery Code</value></data>
+  <data name="Change password" xml:space="preserve"><value>Change password</value></data>
+  <data name="Old password" xml:space="preserve"><value>Old password</value></data>
+  <data name="New password" xml:space="preserve"><value>New password</value></data>
+  <data name="Confirm password" xml:space="preserve"><value>Confirm password</value></data>
+  <data name="Confirm Password" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="Update password" xml:space="preserve"><value>Update password</value></data>
+  <data name="Enter the old password" xml:space="preserve"><value>Enter the old password</value></data>
+  <data name="Enter the new password" xml:space="preserve"><value>Enter the new password</value></data>
+  <data name="Delete Personal Data" xml:space="preserve"><value>Delete Personal Data</value></data>
+  <data name="Deleting this data will permanently remove your account, and this cannot be recovered." xml:space="preserve"><value>Deleting this data will permanently remove your account, and this cannot be recovered.</value></data>
+  <data name="Delete data and close my account" xml:space="preserve"><value>Delete data and close my account</value></data>
+  <data name="Please enter your password." xml:space="preserve"><value>Please enter your password.</value></data>
+  <data name="Disable two-factor authentication (2FA)" xml:space="preserve"><value>Disable two-factor authentication (2FA)</value></data>
+  <data name="This action only disables 2FA." xml:space="preserve"><value>This action only disables 2FA.</value></data>
+  <data name="Disable 2FA" xml:space="preserve"><value>Disable 2FA</value></data>
+  <data name="reset your authenticator keys." xml:space="preserve"><value>reset your authenticator keys.</value></data>
+  <data name="Manage email" xml:space="preserve"><value>Manage email</value></data>
+  <data name="Send verification email" xml:space="preserve"><value>Send verification email</value></data>
+  <data name="New email" xml:space="preserve"><value>New email</value></data>
+  <data name="Change email" xml:space="preserve"><value>Change email</value></data>
+  <data name="Enter your email" xml:space="preserve"><value>Enter your email</value></data>
+  <data name="Enter a new email" xml:space="preserve"><value>Enter a new email</value></data>
+  <data name="Configure authenticator app" xml:space="preserve"><value>Configure authenticator app</value></data>
+  <data name="To use an authenticator app go through the following steps:" xml:space="preserve"><value>To use an authenticator app go through the following steps:</value></data>
+  <data name="Android" xml:space="preserve"><value>Android</value></data>
+  <data name="iOS" xml:space="preserve"><value>iOS</value></data>
+  <data name="and" xml:space="preserve"><value>and</value></data>
+  <data name="Verification Code" xml:space="preserve"><value>Verification Code</value></data>
+  <data name="Verify" xml:space="preserve"><value>Verify</value></data>
+  <data name="Enter the code" xml:space="preserve"><value>Enter the code</value></data>
 </root>
