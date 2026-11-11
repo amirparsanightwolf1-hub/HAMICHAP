@@ -575,7 +575,7 @@
             var centerId = await EnsureMachineWorkCenterAsync(db, machine);
             var existing = await db.ProductionOperations
                 .Where(x => x.ProductionOrderId == order.Id).OrderBy(x => x.Sequence).ToListAsync();
-            db.ProductionOperations.Add(new ProductionOperation
+            var newStep = new ProductionOperation
             {
                 ProductionOrderId = order.Id,
                 Sequence = (existing.LastOrDefault()?.Sequence ?? 0) + 1,
@@ -583,8 +583,10 @@
                 PlannedHours = newOperationHours,
                 WorkCenterId = centerId,
                 Status = ProductionOperationStatus.Pending
-            });
+            };
+            db.ProductionOperations.Add(newStep);
             await db.SaveChangesAsync();
+            selectedOperationId = newStep.Id;
             newOperationName = "";
             newOperationHours = 1m;
             ShowSuccess(L["OperationAdded"]);
@@ -706,6 +708,11 @@
             await using var db = await DbFactory.CreateDbContextAsync();
             var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
             if (machine == null) { ShowError(L["SelectMachine"]); return; }
+
+            // Persist the chosen machine for the stage even after its calendar slot is cleared.
+            var storedStep = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == operationId);
+            if (storedStep == null) return;
+            storedStep.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
 
             var active = await db.ProductionSchedules
                 .Where(x => x.ProductionOperationId == operationId && x.Status != ScheduleStatus.Cancelled)
