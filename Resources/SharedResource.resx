@@ -2596,4 +2596,5 @@
   <data name="SequenceMustBeConfirmed" xml:space="preserve"><value>The Production Manager must confirm the current operation sequence before scheduling. Select the order and click Confirm operation sequence.</value></data>
   <data name="OrderOperationOverlap" xml:space="preserve"><value>This order already has another operation during that interval</value></data>
   <data name="SaveAndReconfirmMachineChange" xml:space="preserve"><value>Save the updated machine assignment and have the Production Manager confirm the sequence again before scheduling.</value></data>
+  <data name="ExistingOrderOverlap" xml:space="preserve"><value>Existing operations for this order overlap; review the schedule before confirming a new sequence.</value></data>
 </root>
