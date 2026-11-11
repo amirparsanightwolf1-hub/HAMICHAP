@@ -1347,3 +1347,7 @@
         grid-template-columns: repeat(var(--machine-day-columns, 7), minmax(136px, 1fr));
     }
 }
+
+.machine-schedule .machine-ceo-order[draggable="true"] { cursor: grab; }
+.machine-schedule .machine-scheduled-chip.machine-outside-ceo { background: #9c3434; }
+.machine-schedule .machine-window-warning { font-weight: 700; }
