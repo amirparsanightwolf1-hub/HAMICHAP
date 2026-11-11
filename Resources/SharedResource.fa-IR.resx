@@ -2534,4 +2534,16 @@
   <data name="Day" xml:space="preserve"><value>روز</value></data>
   <data name="NewStepRelativeHours" xml:space="preserve"><value>وزن نسبی زمان مرحله (ساعت)</value></data>
   <data name="NewStepWeightHelp" xml:space="preserve"><value>مجموع زمان مدیرعامل ثابت است. این مقدار سهم مرحله جدید را مشخص می‌کند و زمان همه مراحل تنظیم می‌شود.</value></data>
+  <data name="CeoProductionOrders" xml:space="preserve"><value>سفارش‌های تولید مدیرعامل</value></data>
+  <data name="CeoWindow" xml:space="preserve"><value>بازه تاریخی مدیرعامل</value></data>
+  <data name="NoOperationsGenerated" xml:space="preserve"><value>هنوز عملیات دستگاه برای این سفارش ایجاد نشده است. از ایجاد عملیات استفاده کنید یا مرحله‌ای دستی اضافه کنید.</value></data>
+  <data name="ShowCeoWindow" xml:space="preserve"><value>نمایش بازه مدیرعامل</value></data>
+  <data name="NoProductionOrders" xml:space="preserve"><value>هنوز سفارش تولیدی ثبت نشده است.</value></data>
+  <data name="DateBasedSchedulingHelp" xml:space="preserve"><value>یک عملیات انتخاب کنید یا سفارش را از پنل کناری روی تاریخ دستگاه سازگار بکشید. فقط تاریخ‌های داخل بازه مدیرعامل مجازند و تعیین ساعت دقیق لازم نیست.</value></data>
+  <data name="PlaceOnDate" xml:space="preserve"><value>ثبت در این تاریخ</value></data>
+  <data name="SelectMachineAndDate" xml:space="preserve"><value>دستگاه و تاریخ تقویم را انتخاب کنید.</value></data>
+  <data name="SelectOperationBeforeDrop" xml:space="preserve"><value>برای تخصیص دستگاه و تاریخ، ابتدا یکی از عملیات سفارش را از لیست انتخاب کنید.</value></data>
+  <data name="SelectCompatibleOperation" xml:space="preserve"><value>این سفارش عملیات زمان‌بندی‌نشده سازگار با دستگاه انتخابی ندارد. عملیات را ایجاد کنید یا دستگاه سازگار انتخاب کنید.</value></data>
+  <data name="RoutingGenerationFailed" xml:space="preserve"><value>ایجاد خودکار مسیر تولید انجام نشد. از دکمه ایجاد عملیات استفاده کنید یا مراحل را دستی اضافه کنید.</value></data>
+  <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>برای تخصیص مرحله بعد، سفارش را روی تاریخ دستگاه سازگار در تقویم بکشید.</value></data>
 </root>
