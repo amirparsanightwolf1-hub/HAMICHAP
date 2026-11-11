@@ -2596,4 +2596,5 @@
   <data name="SequenceMustBeConfirmed" xml:space="preserve"><value>مدیر تولید باید پیش از زمان‌بندی، ترتیب فعلی عملیات را تأیید کند. سفارش را انتخاب و دکمه تأیید ترتیب عملیات را بزنید.</value></data>
   <data name="OrderOperationOverlap" xml:space="preserve"><value>این سفارش در آن بازه زمانی عملیات دیگری دارد</value></data>
   <data name="SaveAndReconfirmMachineChange" xml:space="preserve"><value>تغییر دستگاه را ذخیره کنید و پیش از زمان‌بندی، از مدیر تولید بخواهید ترتیب مراحل را دوباره تأیید کند.</value></data>
+  <data name="ExistingOrderOverlap" xml:space="preserve"><value>عملیات موجود این سفارش با هم هم‌پوشانی دارند؛ پیش از تأیید ترتیب جدید، زمان‌بندی را بررسی کنید.</value></data>
 </root>
