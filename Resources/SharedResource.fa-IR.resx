@@ -2532,4 +2532,6 @@
   <data name="Month" xml:space="preserve"><value>ماه</value></data>
   <data name="Week" xml:space="preserve"><value>هفته</value></data>
   <data name="Day" xml:space="preserve"><value>روز</value></data>
+  <data name="NewStepRelativeHours" xml:space="preserve"><value>وزن نسبی زمان مرحله (ساعت)</value></data>
+  <data name="NewStepWeightHelp" xml:space="preserve"><value>مجموع زمان مدیرعامل ثابت است. این مقدار سهم مرحله جدید را مشخص می‌کند و زمان همه مراحل تنظیم می‌شود.</value></data>
 </root>
