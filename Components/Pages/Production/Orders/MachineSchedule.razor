@@ -891,6 +891,8 @@
                 Status = ProductionOperationStatus.Pending
             };
             db.ProductionOperations.Add(newStep);
+            var trackedOrder = await db.ProductionOrders.FirstAsync(x => x.Id == order.Id);
+            InvalidateSequenceConfirmation(trackedOrder);
             await db.SaveChangesAsync();
             selectedOperationId = newStep.Id;
             newOperationName = "";
@@ -937,6 +939,8 @@
             entity.Name = name;
             entity.PlannedHours = hours;
             entity.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
+            var trackedOrder = await db.ProductionOrders.FirstAsync(x => x.Id == entity.ProductionOrderId);
+            InvalidateSequenceConfirmation(trackedOrder);
             await db.SaveChangesAsync();
             editedNames.Remove(id);
             editedHours.Remove(id);
@@ -973,6 +977,8 @@
                 .OrderBy(x => x.Sequence).ToListAsync();
             for (var i = 0; i < remaining.Count; i++)
                 remaining[i].Sequence = i + 1;
+            var trackedOrder = await db.ProductionOrders.FirstAsync(x => x.Id == step.ProductionOrderId);
+            InvalidateSequenceConfirmation(trackedOrder);
             await db.SaveChangesAsync();
             selectedOperationId = null;
             ShowSuccess(L["OperationRemoved"]);
