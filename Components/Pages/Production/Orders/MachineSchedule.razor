@@ -126,7 +126,7 @@
                                         }
                                     </select>
                                     <label class="form-label">@L["EstimatedHours"]</label>
-                                    <input class="form-control mb-2" type="number" min="0.25" step="0.25" @bind="newOperationHours" />
+                                    <input class="form-control mb-2" type="number" min="0.016667" step="any" @bind="newOperationHours" />
                                     <button type="button" class="btn btn-primary w-100" @onclick="AddOperation">@L["AddOperation"]</button>
                                 </details>
                             }
@@ -190,7 +190,7 @@
                                             <select class="form-select form-select-sm mb-2"
                                                     value="@MachineChoice(step)"
                                                     @onchange="e => SetMachineChoice(step.Id, e.Value?.ToString())">
-                                                <option value="0">@L["SelectMachine"]</option>
+                                                <option value="0">@(ProductionJobRouting.Candidates(OperationNameChoice(step)).Length > 0 ? L["AutoMachineChoice"] : L["SelectMachine"])</option>
                                                 @foreach (var machine in machines)
                                                 {
                                                     <option value="@machine.Id">@machine.Name</option>
@@ -244,6 +244,7 @@
                             <span><i class="shift-dot night"></i> @L["NightShift"]</span>
                         </div>
                         <div class="manager-selection-hint mb-3">
+                            <div class="small fw-semibold">@L["OperationsAutomaticallyShownAfterConfirmation"]</div>
                             @if (SelectedOperation is ProductionOperation selected)
                             {
                                 <strong>@L["SelectedOperation"]:</strong>
@@ -252,7 +253,7 @@
                             }
                             else
                             {
-                                <span>@L["OperationsAutomaticallyShownAfterConfirmation"]</span>
+                                <span>@L["SelectOrderToSplit"]</span>
                             }
                         </div>
 
