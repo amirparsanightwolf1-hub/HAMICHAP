@@ -166,6 +166,25 @@
                     @if (machines.Count == 0)
                     {
                         <div class="alert alert-warning">@L["NoActiveMachines"]</div>
+                        <section class="machine-calendar-section mb-4">
+                            <h5 class="machine-calendar-section-title">@L["MachineSchedule"]</h5>
+                            <div class="machine-day-grid" style="--machine-day-columns:@(viewMode == CalendarView.Day ? 1 : 7)">
+                                @if (viewMode != CalendarView.Day)
+                                {
+                                    @foreach (var name in WeekDayNames)
+                                    {
+                                        <div class="month-weekday">@L[name]</div>
+                                    }
+                                }
+                                @foreach (var day in CalendarDays)
+                                {
+                                    <div class="machine-day-cell @(day.Date == DateTime.Today ? "today" : "")">
+                                        <button type="button" class="machine-day-date"
+                                                @onclick="() => ChooseDay(day)">@FormatDateOnly(day)</button>
+                                    </div>
+                                }
+                            </div>
+                        </section>
                     }
                     @foreach (var machine in machines.Where(m => IsSelectedMachine(m.Id)))
                     {
@@ -809,8 +828,8 @@
 
     private async Task Schedule(long operationId)
     {
+        var dateText = StartChoice(operationId);
         if (!canEdit || !machineChoices.TryGetValue(operationId, out var machineId) || machineId == 0 ||
-            !startChoices.TryGetValue(operationId, out var dateText) ||
             !DateTime.TryParseExact(dateText, "yyyy-MM-dd", CultureInfo.InvariantCulture,
                 DateTimeStyles.None, out var requestedDate))
         {
