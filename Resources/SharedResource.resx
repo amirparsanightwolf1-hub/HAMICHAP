@@ -2223,79 +2223,79 @@
     <value>Sheet job specifications</value>
   </data>
 	<data name="RollJobSubtitle" xml:space="preserve">
-    <value>مشخصات لیبل و خدمات انتخاب‌شده</value>
+    <value>Label specifications and selected services</value>
   </data>
 	<data name="ArtworkFilesRequired" xml:space="preserve">
-    <value>فایل نمونه</value>
+    <value>Artwork file</value>
   </data>
 	<data name="ArtworkUploadInstructions" xml:space="preserve">
-    <value>فایل های نمونه را بارگزاری کنید. حداکثر 25 مگابایت.</value>
+    <value>Upload artwork files. Maximum size: 25 MB per file.</value>
   </data>
 	<data name="LabelSpecifications" xml:space="preserve">
-    <value>مشخصات لیبل</value>
+    <value>Label specifications</value>
   </data>
 	<data name="SelectColorCount" xml:space="preserve">
-    <value>انتخاب تعداد رنگ</value>
+    <value>Select color count</value>
   </data>
 	<data name="FrontPrintingColors" xml:space="preserve">
-    <value>رنگ‌های چاپ روی</value>
+    <value>Front-side printing colors</value>
   </data>
 	<data name="SelectAllColorsOnFront" xml:space="preserve">
     <value>Select all colors used on the front</value>
   </data>
 	<data name="BackPrintingColors" xml:space="preserve">
-    <value>رنگ‌های چاپ پشت</value>
+    <value>Back-side printing colors</value>
   </data>
 	<data name="None" xml:space="preserve">
-    <value>هیچ‌کدام</value>
+    <value>None</value>
   </data>
 	<data name="Option" xml:space="preserve">
-    <value>گزینه</value>
+    <value>Option</value>
   </data>
 	<data name="AdditionalServices" xml:space="preserve">
-    <value>خدمات تکمیلی</value>
+    <value>Additional services</value>
   </data>
 	<data name="MultipleOptionsCanBeSelected" xml:space="preserve">
-    <value>امکان انتخاب چند گزینه وجود دارد</value>
+    <value>You can select multiple options.</value>
   </data>
 	<data name="NotRollJob" xml:space="preserve">
-    <value>این درخواست از نوع سفارش رول نیست.</value>
+    <value>This request is not a roll job.</value>
   </data>
 	<data name="RollJobTitle" xml:space="preserve">
-    <value>سفارش رول</value>
+    <value>Roll job</value>
   </data>
 	<data name="CustomerCode" xml:space="preserve">
-    <value>کد مشتری</value>
+    <value>Customer code</value>
   </data>
 	<data name="CustomerName" xml:space="preserve">
-    <value>نام مشتری</value>
+    <value>Customer name</value>
   </data>
 	<data name="ArtworkFiles" xml:space="preserve">
-    <value>فایل‌های طرح</value>
+    <value>Artwork files</value>
   </data>
 	<data name="UploadMultipleArtworkFiles" xml:space="preserve">
-    <value>امکان بارگذاری چند فایل طرح وجود دارد. حداکثر حجم هر فایل ۲۵ مگابایت است.</value>
+    <value>You can upload multiple artwork files, up to 25 MB each.</value>
   </data>
 	<data name="GapBetweenLabels" xml:space="preserve">
-    <value>فاصله بین دو لیبل</value>
+    <value>Gap between labels</value>
   </data>
 	<data name="PaperTypeMaterial" xml:space="preserve">
-    <value>نوع کاغذ / متریال</value>
+    <value>Paper / material type</value>
   </data>
 	<data name="SelectOrEnterMaterial" xml:space="preserve">
-    <value>انتخاب کنید یا تایپ کنید</value>
+    <value>Select or type a material</value>
   </data>
 	<data name="SelectStandardOrEnterMaterial" xml:space="preserve">
-    <value>گزینه استاندارد را انتخاب کنید یا متریال دلخواه را وارد کنید.</value>
+    <value>Select a standard option or enter a custom material.</value>
   </data>
 	<data name="ColorCount" xml:space="preserve">
-    <value>تعداد رنگ</value>
+    <value>Number of colors</value>
   </data>
 	<data name="PrintingNotes" xml:space="preserve">
-    <value>توضیحات چاپ / رنگ اختصاصی</value>
+    <value>Printing notes / special colors</value>
   </data>
 	<data name="CustomDetailsPantone" xml:space="preserve">
-    <value>جزئیات سفارشی، رنگ پنتون و ...</value>
+    <value>Custom details, Pantone colors, etc.</value>
   </data>
 	<data name="SelectFrontColors" xml:space="preserve">
     <value>Select all colors used on the front</value>
@@ -2304,13 +2304,13 @@
     <value>Select All Colors On Back</value>
   </data>
 	<data name="RollOrientation" xml:space="preserve">
-    <value>جهت باز شدن رول</value>
+    <value>Roll unwind direction</value>
   </data>
 	<data name="ChooseUnwindDirection" xml:space="preserve">
-    <value>تصویری را انتخاب کنید که جهت باز شدن لیبل‌ها را نشان می‌دهد.</value>
+    <value>Choose the image showing the label's unwind direction.</value>
   </data>
 	<data name="SavedSpecificationsCouldNotBeRead" xml:space="preserve">
-    <value>مشخصات ذخیره‌شده قابل خواندن نیست. برای جایگزینی آن‌ها، ذخیره کنید.</value>
+    <value>The saved specifications could not be read. Save the form to replace them.</value>
   </data>
 	<data name="RollOrientationUnwindDirection" xml:space="preserve">
     <value>Roll Orientation Unwind Direction</value>
