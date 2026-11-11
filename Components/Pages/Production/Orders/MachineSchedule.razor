@@ -711,6 +711,154 @@
         return center.Id;
     }
 
+    private async Task MoveOperation(long operationId, int direction)
+    {
+        if (!canEdit || (direction != -1 && direction != 1)) return;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var operation = await db.ProductionOperations
+                .FirstOrDefaultAsync(x => x.Id == operationId);
+            if (operation == null) return;
+            var steps = await db.ProductionOperations
+                .Where(x => x.ProductionOrderId == operation.ProductionOrderId)
+                .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToListAsync();
+            var ids = steps.Select(x => x.Id).ToList();
+            if (steps.Any(x => x.Status is ProductionOperationStatus.Running or ProductionOperationStatus.Completed) ||
+                await db.ProductionSchedules.AnyAsync(x => ids.Contains(x.ProductionOperationId) &&
+                    x.Status != ScheduleStatus.Cancelled))
+            {
+                ShowError(L["UnscheduleBeforeReordering"]);
+                return;
+            }
+            var index = steps.FindIndex(x => x.Id == operationId);
+            var next = index + direction;
+            if (index < 0 || next < 0 || next >= steps.Count) return;
+
+            var moving = steps[index];
+            steps.RemoveAt(index);
+            steps.Insert(next, moving);
+            for (var i = 0; i < steps.Count; i++)
+                steps[i].Sequence = i + 1;
+
+            var order = await db.ProductionOrders.FirstAsync(x => x.Id == operation.ProductionOrderId);
+            InvalidateSequenceConfirmation(order);
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            ShowSuccess(L["SequenceUpdatedReconfirm"]);
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not reorder operation {OperationId}", operationId);
+            ShowError(L["SequenceUpdateFailed"]);
+        }
+    }
+
+    private async Task ConfirmOperationSequence()
+    {
+        if (!canEdit || !selectedOrderId.HasValue) return;
+        try
+        {
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
+            var approver = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (String.IsNullOrWhiteSpace(approver))
+            {
+                ShowError(L["ApprovalIdentityMissing"]);
+                return;
+            }
+
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var order = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == selectedOrderId.Value);
+            if (order == null) return;
+
+            var steps = await db.ProductionOperations
+                .Include(x => x.WorkCenter)
+                .Where(x => x.ProductionOrderId == order.Id)
+                .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToListAsync();
+            if (steps.Count == 0)
+            {
+                ShowError(L["NoOperationsGenerated"]);
+                return;
+            }
+            if (steps.Where((x, i) => x.Sequence != i + 1).Any() ||
+                steps.Any(x => x.PlannedHours <= 0 || String.IsNullOrWhiteSpace(x.Name) ||
+                    x.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled))
+            {
+                ShowError(L["InvalidOperationSequence"]);
+                return;
+            }
+            if (steps.Sum(OperationMinutes) != order.EstimatedDurationMinutes)
+            {
+                ShowError(L["StageDurationTotalMismatch"]);
+                return;
+            }
+
+            var machineCodes = await db.Machines.Where(x => x.IsActive)
+                .Select(x => x.Code).ToListAsync();
+            if (steps.Any(x => x.WorkCenter?.Code is not string code ||
+                               !code.StartsWith("MC-", StringComparison.OrdinalIgnoreCase) ||
+                               !machineCodes.Any(machineCode => String.Equals(machineCode,
+                                   code[3..], StringComparison.OrdinalIgnoreCase))))
+            {
+                ShowError(L["MachineAssignmentsRequired"]);
+                return;
+            }
+
+            // Existing legacy bookings must already match the proposed execution order.
+            // Confirmation is not a way to approve an invalid overlapping schedule.
+            var ids = steps.Select(x => x.Id).ToList();
+            var active = await db.ProductionSchedules
+                .Where(x => ids.Contains(x.ProductionOperationId) &&
+                    x.Status != ScheduleStatus.Cancelled).ToListAsync();
+            var scheduleById = active.GroupBy(x => x.ProductionOperationId)
+                .ToDictionary(x => x.Key, x => x.ToList());
+            if (scheduleById.Values.Any(x => x.Count != 1))
+            {
+                ShowError(L["ExistingOrderSequenceConflict"]);
+                return;
+            }
+            for (var i = 0; i < steps.Count; i++)
+            {
+                if (!scheduleById.TryGetValue(steps[i].Id, out var current)) continue;
+                for (var previous = 0; previous < i; previous++)
+                {
+                    if (!scheduleById.TryGetValue(steps[previous].Id, out var earlier) ||
+                        earlier[0].PlannedEnd > current[0].PlannedStart)
+                    {
+                        ShowError(L["ExistingOrderSequenceConflict"]);
+                        return;
+                    }
+                }
+                for (var next = i + 1; next < steps.Count; next++)
+                {
+                    if (scheduleById.TryGetValue(steps[next].Id, out var later) &&
+                        current[0].PlannedEnd > later[0].PlannedStart)
+                    {
+                        ShowError(L["ExistingOrderSequenceConflict"]);
+                        return;
+                    }
+                }
+            }
+
+            order.OperationsSequenceSignature =
+                OperationSequenceSignature(order.EstimatedDurationMinutes, steps);
+            order.OperationsSequenceConfirmedAt = DateTime.UtcNow;
+            order.OperationsSequenceConfirmedBy = approver;
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            ShowSuccess(L["SequenceConfirmationSaved"]);
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not confirm operation sequence for order {OrderId}", selectedOrderId);
+            ShowError(L["SequenceConfirmationFailed"]);
+        }
+    }
+
     private async Task AddOperation()
     {
         if (!canEdit || SelectedOrder is not ProductionOrder order) return;
