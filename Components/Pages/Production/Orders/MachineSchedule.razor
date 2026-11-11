@@ -61,6 +61,10 @@
                                 <div class="small text-muted">@order.SalesOrder?.Customer?.Name</div>
                                 <div class="small">@L["CeoDuration"]: @DurationLabel(order.EstimatedDurationMinutes)</div>
                                 <div class="small text-muted">@FormatDateTime(order.PlannedStartDate) – @FormatDateTime(order.PlannedEndDate)</div>
+                                @if (OrderHasExistingOverlap(order.Id))
+                                {
+                                    <div class="small text-danger fw-bold">@L["ExistingOrderOverlap"]</div>
+                                }
                             </div>
                         }
                     </div>
@@ -507,6 +511,19 @@
         var to = slots[^1].End;
         return schedules.Count(s => s.MachineId == machineId &&
             s.PlannedStart < to && s.PlannedEnd > from);
+    }
+
+    private bool OrderHasExistingOverlap(long orderId)
+    {
+        var bookings = schedules.Where(x => x.ProductionOperation.ProductionOrderId == orderId)
+            .OrderBy(x => x.PlannedStart).ToList();
+        for (var i = 0; i < bookings.Count; i++)
+            for (var j = i + 1; j < bookings.Count && bookings[j].PlannedStart < bookings[i].PlannedEnd; j++)
+                if (bookings[i].ProductionOperationId != bookings[j].ProductionOperationId &&
+                    bookings[i].PlannedStart < bookings[j].PlannedEnd &&
+                    bookings[j].PlannedStart < bookings[i].PlannedEnd)
+                    return true;
+        return false;
     }
 
     private static bool HasMachineOverlap(IReadOnlyList<ProductionSchedule> bookings)
