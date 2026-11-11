@@ -2548,7 +2548,7 @@
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>Drag to a compatible machine calendar date to assign the next operation.</value></data>
   <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>Existing booking is outside the CEO-approved date window; move or return it.</value></data>
   <data name="AdvancedDurationSettings" xml:space="preserve"><value>Advanced duration details (optional)</value></data>
-  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>The CEO-style production calendar with machine operation planning. Select an operation and click a calendar slot; view machine workload below.</value></data>
+  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>Same calendar as the CEO plan. Sales specifications suggest machines and stages; the Production Manager estimates durations, orders the stages and confirms to schedule everything automatically.</value></data>
   <data name="SelectOrderToSplit" xml:space="preserve"><value>Select a production order to review and split it into machine operations.</value></data>
   <data name="Scheduled" xml:space="preserve"><value>Scheduled</value></data>
   <data name="SplitOrderIntoOperations" xml:space="preserve"><value>Split order into operations</value></data>
@@ -2578,7 +2578,7 @@
   <data name="BookedTasks" xml:space="preserve"><value>booked tasks</value></data>
   <data name="SequenceConfirmed" xml:space="preserve"><value>Operation sequence confirmed by Production Manager</value></data>
   <data name="SequencePendingConfirmation" xml:space="preserve"><value>Operation sequence awaiting confirmation</value></data>
-  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>Review the order of operations and confirm it before assigning calendar times.</value></data>
+  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>Review the operation order, machine choices and estimated durations; confirm to automatically generate bookings inside the CEO's production window.</value></data>
   <data name="ConfirmOperationSequence" xml:space="preserve"><value>Confirm operation sequence</value></data>
   <data name="SequenceChangeNeedsReconfirmation" xml:space="preserve"><value>Changing a stage or its position cancels approval; confirm the updated sequence again.</value></data>
   <data name="MoveOperationUp" xml:space="preserve"><value>Move up</value></data>
@@ -2597,4 +2597,25 @@
   <data name="OrderOperationOverlap" xml:space="preserve"><value>This order already has another operation during that interval</value></data>
   <data name="SaveAndReconfirmMachineChange" xml:space="preserve"><value>Save the updated machine assignment and have the Production Manager confirm the sequence again before scheduling.</value></data>
   <data name="ExistingOrderOverlap" xml:space="preserve"><value>Existing operations for this order overlap; review the schedule before confirming a new sequence.</value></data>
+  <data name="SalesRoutingImportFailed" xml:space="preserve"><value>Could not load suggested operations from the Sales job specifications. Check the saved job data and retry.</value></data>
+  <data name="ConfirmAndAutoSchedule" xml:space="preserve"><value>Confirm sequence and generate schedule</value></data>
+  <data name="AutoScheduleAfterReconfirmation" xml:space="preserve"><value>Changing a stage or its sequence clears planned bookings. Confirm again to regenerate all machine bookings automatically.</value></data>
+  <data name="AutoRoutingOperationInstructions" xml:space="preserve"><value>Stages are suggested automatically from the Sales job. Adjust the estimated durations and sequence, then confirm to populate the calendar.</value></data>
+  <data name="MachineSuggestions" xml:space="preserve"><value>Compatible machine choices</value></data>
+  <data name="OperationsAutomaticallyShownAfterConfirmation" xml:space="preserve"><value>Calendar bookings appear automatically after the Production Manager confirms the stages and their durations.</value></data>
+  <data name="AutomaticManagerMonthHelp" xml:space="preserve"><value>Machine operations appear on the CEO-style month calendar automatically after the route is confirmed. Dates and shift colors match Production Planning.</value></data>
+  <data name="AutomaticManagerTimelineHelp" xml:space="preserve"><value>The weekly and daily calendar displays automatically calculated machine bookings. Edit the stage durations and reconfirm to recalculate.</value></data>
+  <data name="AddOperationOnlyIfNeeded" xml:space="preserve"><value>Add an additional operation (only if needed)</value></data>
+  <data name="ChooseMachineForUnmappedStep" xml:space="preserve"><value>Manual machine selection required</value></data>
+  <data name="AutoMachineChoice" xml:space="preserve"><value>Choose automatically from compatible machines</value></data>
+  <data name="AutoScheduleCannotFit" xml:space="preserve"><value>Unable to automatically schedule this order:</value></data>
+  <data name="AutoScheduleFailed" xml:space="preserve"><value>Automatic scheduling failed. The order was not partially scheduled. Please retry.</value></data>
+  <data name="SequenceAndAutomaticScheduleSaved" xml:space="preserve"><value>Operation order confirmed and all machine bookings generated automatically.</value></data>
+  <data name="OperationAddedReconfirm" xml:space="preserve"><value>Operation added. Review the total estimated duration and reconfirm to regenerate the calendar.</value></data>
+  <data name="OperationUpdatedReconfirm" xml:space="preserve"><value>Operation updated. Reconfirm the sequence to regenerate the machine bookings.</value></data>
+  <data name="OperationRemovedReconfirm" xml:space="preserve"><value>Operation removed. Reconfirm the revised sequence to regenerate the machine bookings.</value></data>
+  <data name="OperationUpdateFailed" xml:space="preserve"><value>Could not update the operation. No partial stage changes were committed.</value></data>
+  <data name="RestoreSalesSuggestions" xml:space="preserve"><value>Restore suggested stages from Sales</value></data>
+  <data name="CannotRestoreEditedRoute" xml:space="preserve"><value>Existing stages must be removed before reimporting Sales suggestions.</value></data>
+  <data name="SalesSuggestionsRestored" xml:space="preserve"><value>Sales job specifications were re-read and suggested operations restored where available.</value></data>
 </root>
