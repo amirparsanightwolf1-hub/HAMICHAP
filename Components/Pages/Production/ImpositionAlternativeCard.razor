@@ -1,3 +1,4 @@
+@inject LocalizationService L
 @using HamiChap_MES_ERP.Services.Imposition
 
 <div class="card h-100 shadow-sm">
@@ -7,11 +8,11 @@
     <div class="card-body">
         <div class="row g-2 mb-3">
             <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">@YieldLabel</div><strong>@YieldValue</strong></div></div>
-            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Material waste</div><strong>@Item.WastePercent.ToString("0.##")%</strong></div></div>
-            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Area utilization</div><strong>@Item.UtilizationPercent.ToString("0.##")%</strong></div></div>
-            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">Requested quantity</div><strong>@RequestedQuantity.ToString("N0")</strong></div></div>
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">@L["Material waste"]</div><strong>@Item.WastePercent.ToString("0.##")%</strong></div></div>
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">@L["Area utilization"]</div><strong>@Item.UtilizationPercent.ToString("0.##")%</strong></div></div>
+            <div class="col-6"><div class="border rounded p-2"><div class="small text-muted">@L["Requested quantity"]</div><strong>@RequestedQuantity.ToString("N0")</strong></div></div>
         </div>
-        <div class="small mb-2">@(Item.Mode == "Sheet" ? "Pieces on preview sheet" : "Pieces in each repeat"): <strong>@Item.PiecesPerSheet.ToString("N0")</strong> · Total planned output: <strong>@Item.ProducedQuantity.ToString("N0")</strong></div>
+        <div class="small mb-2">@(Item.Mode == "Sheet" ? "Pieces on preview sheet" : "Pieces in each repeat"): <strong>@Item.PiecesPerSheet.ToString("N0")</strong> @L["· Total planned output:"] <strong>@Item.ProducedQuantity.ToString("N0")</strong></div>
         @if (Item.PiecesPerArtwork is not null)
         {
             <div class="small mb-2">@(Item.Mode == "Sheet" ? "Preview sheet" : "Per repeat"): @string.Join(" · ", Item.PiecesPerArtwork.Select(kv => $"{kv.Key}: {kv.Value:N0}"))</div>
@@ -20,22 +21,22 @@
         {
             <div class="small mb-2">Planned output: @string.Join(" · ", Item.PlannedQuantityPerArtwork.Select(PlannedLabel))</div>
         }
-        <div class="small mb-2">Solver: <strong>@Item.SolverStatus</strong></div>
+        <div class="small mb-2">@L["Solver:"] <strong>@Item.SolverStatus</strong></div>
         @if (Item.Mode == "Sheet")
         {
-            <div class="small mb-2">Sheets required: <strong>@Item.SheetsRequired.ToString("N0")</strong></div>
+            <div class="small mb-2">@L["Sheets required:"] <strong>@Item.SheetsRequired.ToString("N0")</strong></div>
         }
         else
         {
-            <div class="small mb-2">Total roll length: <strong>@Item.RollLengthMm.ToString("N0") mm</strong></div>
-            <div class="small text-muted mb-2">The preview shows one repeat; this pattern is repeated for the full run.</div>
+            <div class="small mb-2">@L["Total roll length:"] <strong>@Item.RollLengthMm.ToString("N0") mm</strong></div>
+            <div class="small text-muted mb-2">@L["The preview shows one repeat; this pattern is repeated for the full run."]</div>
         }
         <div class="small text-muted mb-2">Material area: @Item.StockAreaMm2.ToString("N0") mm² · Artwork area: @Item.UsedAreaMm2.ToString("N0") mm² · Waste area: @Item.WasteAreaMm2.ToString("N0") mm²</div>
 
         <div class="d-flex justify-content-end mb-2">
-            <a class="btn btn-sm btn-outline-primary" href="@SvgDataUri" download="imposition-preview.svg">Export SVG preview</a>
+            <a class="btn btn-sm btn-outline-primary" href="@SvgDataUri" download="imposition-preview.svg">@L["Export SVG preview"]</a>
         </div>
-        <div class="imposition-preview" aria-label="Rectangular imposition preview">
+        <div class="imposition-preview" aria-label="@L["Rectangular imposition preview"]">
             <svg viewBox="@($"0 0 {PreviewWidth} {PreviewHeight}")" role="img"
                  aria-label="@(Item.Mode == "Roll" ? "One roll repeat layout" : "One sheet layout")"
                  preserveAspectRatio="xMidYMid meet">
