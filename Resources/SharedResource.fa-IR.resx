@@ -2548,7 +2548,7 @@
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>برای تخصیص مرحله بعد، سفارش را روی تاریخ دستگاه سازگار در تقویم بکشید.</value></data>
   <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>زمان‌بندی قبلی خارج از بازه تاریخ تأییدشده مدیرعامل است؛ آن را جابه‌جا کرده یا به لیست بازگردانید.</value></data>
   <data name="AdvancedDurationSettings" xml:space="preserve"><value>جزئیات پیشرفته زمان (اختیاری)</value></data>
-  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>تقویم تولید مشابه تقویم مدیرعامل، به همراه برنامه‌ریزی عملیات دستگاه‌ها. یک عملیات را انتخاب و روی بازه تقویم کلیک کنید؛ بار کاری دستگاه‌ها در پایین نمایش داده می‌شود.</value></data>
+  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>همان تقویم برنامه مدیرعامل. مشخصات فروش مراحل و دستگاه‌ها را پیشنهاد می‌کند؛ مدیر تولید زمان‌ها و ترتیب را تعیین کرده و برای زمان‌بندی خودکار همه مراحل تأیید می‌کند.</value></data>
   <data name="SelectOrderToSplit" xml:space="preserve"><value>برای بررسی و تقسیم به مراحل دستگاه‌ها، یک سفارش تولید را انتخاب کنید.</value></data>
   <data name="Scheduled" xml:space="preserve"><value>زمان‌بندی‌شده</value></data>
   <data name="SplitOrderIntoOperations" xml:space="preserve"><value>تقسیم سفارش به عملیات</value></data>
@@ -2578,7 +2578,7 @@
   <data name="BookedTasks" xml:space="preserve"><value>عملیات رزروشده</value></data>
   <data name="SequenceConfirmed" xml:space="preserve"><value>ترتیب عملیات توسط مدیر تولید تأیید شد</value></data>
   <data name="SequencePendingConfirmation" xml:space="preserve"><value>ترتیب عملیات در انتظار تأیید</value></data>
-  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>پیش از ثبت زمان‌بندی، ترتیب مراحل را بررسی و تأیید کنید.</value></data>
+  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>ترتیب مراحل، دستگاه‌های پیشنهادی و زمان‌های تخمینی را بررسی و برای ایجاد خودکار زمان‌بندی در بازه مدیرعامل تأیید کنید.</value></data>
   <data name="ConfirmOperationSequence" xml:space="preserve"><value>تأیید ترتیب عملیات</value></data>
   <data name="SequenceChangeNeedsReconfirmation" xml:space="preserve"><value>هر تغییر در مرحله یا ترتیب آن، تأیید قبلی را باطل می‌کند؛ ترتیب جدید را دوباره تأیید کنید.</value></data>
   <data name="MoveOperationUp" xml:space="preserve"><value>انتقال به بالا</value></data>
@@ -2597,4 +2597,25 @@
   <data name="OrderOperationOverlap" xml:space="preserve"><value>این سفارش در آن بازه زمانی عملیات دیگری دارد</value></data>
   <data name="SaveAndReconfirmMachineChange" xml:space="preserve"><value>تغییر دستگاه را ذخیره کنید و پیش از زمان‌بندی، از مدیر تولید بخواهید ترتیب مراحل را دوباره تأیید کند.</value></data>
   <data name="ExistingOrderOverlap" xml:space="preserve"><value>عملیات موجود این سفارش با هم هم‌پوشانی دارند؛ پیش از تأیید ترتیب جدید، زمان‌بندی را بررسی کنید.</value></data>
+  <data name="SalesRoutingImportFailed" xml:space="preserve"><value>پیشنهاد عملیات از مشخصات شغل فروش بارگذاری نشد. اطلاعات ذخیره‌شده سفارش را بررسی کرده و دوباره تلاش کنید.</value></data>
+  <data name="ConfirmAndAutoSchedule" xml:space="preserve"><value>تأیید ترتیب و ایجاد خودکار زمان‌بندی</value></data>
+  <data name="AutoScheduleAfterReconfirmation" xml:space="preserve"><value>تغییر یک مرحله یا ترتیب آن، زمان‌بندی‌های برنامه‌ریزی‌شده را پاک می‌کند. برای زمان‌بندی مجدد خودکار همه دستگاه‌ها دوباره تأیید کنید.</value></data>
+  <data name="AutoRoutingOperationInstructions" xml:space="preserve"><value>مراحل از مشخصات سفارش فروش به صورت خودکار پیشنهاد می‌شوند. مدت تخمینی و ترتیب را تنظیم کنید و سپس برای نمایش خودکار در تقویم تأیید کنید.</value></data>
+  <data name="MachineSuggestions" xml:space="preserve"><value>دستگاه‌های سازگار پیشنهادی</value></data>
+  <data name="OperationsAutomaticallyShownAfterConfirmation" xml:space="preserve"><value>پس از تأیید مراحل و زمان آن‌ها توسط مدیر تولید، زمان‌بندی دستگاه‌ها به‌طور خودکار در تقویم نمایش داده می‌شود.</value></data>
+  <data name="AutomaticManagerMonthHelp" xml:space="preserve"><value>پس از تأیید مسیر تولید، عملیات دستگاه‌ها به صورت خودکار در تقویم ماهانه مشابه مدیرعامل نمایش داده می‌شوند. تاریخ‌ها و رنگ شیفت‌ها مطابق برنامه‌ریزی تولید است.</value></data>
+  <data name="AutomaticManagerTimelineHelp" xml:space="preserve"><value>تقویم هفتگی و روزانه زمان‌بندی خودکار دستگاه‌ها را نشان می‌دهد. برای محاسبه مجدد، زمان مراحل را تغییر داده و دوباره تأیید کنید.</value></data>
+  <data name="AddOperationOnlyIfNeeded" xml:space="preserve"><value>افزودن مرحله جدید (فقط در صورت نیاز)</value></data>
+  <data name="ChooseMachineForUnmappedStep" xml:space="preserve"><value>انتخاب دستگاه به‌صورت دستی لازم است</value></data>
+  <data name="AutoMachineChoice" xml:space="preserve"><value>انتخاب خودکار از دستگاه‌های سازگار</value></data>
+  <data name="AutoScheduleCannotFit" xml:space="preserve"><value>امکان زمان‌بندی خودکار این سفارش وجود ندارد:</value></data>
+  <data name="AutoScheduleFailed" xml:space="preserve"><value>زمان‌بندی خودکار انجام نشد. هیچ برنامه ناقصی ثبت نشد. دوباره تلاش کنید.</value></data>
+  <data name="SequenceAndAutomaticScheduleSaved" xml:space="preserve"><value>ترتیب عملیات تأیید و زمان‌بندی همه دستگاه‌ها به صورت خودکار ایجاد شد.</value></data>
+  <data name="OperationAddedReconfirm" xml:space="preserve"><value>مرحله اضافه شد. مجموع زمان تخمینی را بررسی و برای ایجاد مجدد تقویم تأیید کنید.</value></data>
+  <data name="OperationUpdatedReconfirm" xml:space="preserve"><value>مرحله ویرایش شد. برای ایجاد مجدد زمان‌بندی دستگاه‌ها ترتیب را تأیید کنید.</value></data>
+  <data name="OperationRemovedReconfirm" xml:space="preserve"><value>مرحله حذف شد. برای ایجاد مجدد زمان‌بندی دستگاه‌ها ترتیب اصلاح‌شده را تأیید کنید.</value></data>
+  <data name="OperationUpdateFailed" xml:space="preserve"><value>ویرایش عملیات انجام نشد. هیچ تغییر ناقصی ثبت نشد.</value></data>
+  <data name="RestoreSalesSuggestions" xml:space="preserve"><value>بازیابی مراحل پیشنهادی از اطلاعات فروش</value></data>
+  <data name="CannotRestoreEditedRoute" xml:space="preserve"><value>برای بارگذاری مجدد پیشنهادهای فروش باید ابتدا مراحل موجود حذف شوند.</value></data>
+  <data name="SalesSuggestionsRestored" xml:space="preserve"><value>مشخصات سفارش فروش دوباره خوانده شد و مراحل پیشنهادی در صورت موجود بودن بازیابی شدند.</value></data>
 </root>
