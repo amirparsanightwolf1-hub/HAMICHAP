@@ -24,7 +24,10 @@
     {
         @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
         <div class="planning-layout">
-            <aside class="planning-order-panel">
+            <aside class="planning-order-panel"
+                   @ondragover:preventDefault="true"
+                   @ondrop:preventDefault="true"
+                   @ondrop="DropBackToQueue">
                 <div class="card mb-3">
                     <div class="card-header d-flex justify-content-between">
                         <strong>@L["CeoProductionOrders"]</strong>
