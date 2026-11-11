@@ -685,8 +685,11 @@
                 await db.SaveChangesAsync();
             }
             await ImportSalesRoutesAsync();
-            ShowSuccess(L["SalesSuggestionsRestored"]);
             await ReloadAsync();
+            if (SelectedOperations.Count > 0)
+                ShowSuccess(L["SalesSuggestionsRestored"]);
+            else
+                ShowError(L["NoRoutingFound"]);
         }
         catch (Exception ex)
         {
