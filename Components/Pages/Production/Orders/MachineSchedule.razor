@@ -1,6 +1,9 @@
 @page "/production/machine-schedule"
 @rendermode InteractiveServer
 @using System.Globalization
+@using System.Security.Claims
+@using System.Security.Cryptography
+@using System.Text
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Production
 @using HamiChap_MES_ERP.Services
@@ -80,6 +83,30 @@
                                 <div class="small text-success mt-2">@L["OperationTotalMatchesCeo"]</div>
                             }
 
+                            <div class="manager-sequence-approval mt-3">
+                                @if (IsSequenceConfirmed(orderForEdit))
+                                {
+                                    <div class="manager-sequence-approved">
+                                        <strong>@L["SequenceConfirmed"]</strong>
+                                        <small>@FormatDateTime(orderForEdit.OperationsSequenceConfirmedAt)</small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="manager-sequence-pending">
+                                        <strong>@L["SequencePendingConfirmation"]</strong>
+                                        <small>@L["ConfirmSequenceBeforeScheduling"]</small>
+                                    </div>
+                                }
+                                @if (canEdit)
+                                {
+                                    <button type="button" class="btn btn-primary btn-sm w-100 mt-2"
+                                            disabled="@(SelectedOperations.Count == 0)"
+                                            @onclick="ConfirmOperationSequence">@L["ConfirmOperationSequence"]</button>
+                                    <p class="small text-muted mt-2 mb-0">@L["SequenceChangeNeedsReconfirmation"]</p>
+                                }
+                            </div>
+
                             @if (canEdit)
                             {
                                 <div class="manager-new-operation mt-3">
@@ -121,6 +148,19 @@
                                         <strong>#@step.Sequence @step.Name</strong>
                                         <small>@(booking == null ? L["UnscheduledOperations"] : L["Scheduled"])</small>
                                     </div>
+                                    @if (canEdit)
+                                    {
+                                        <div class="d-flex gap-2 mt-2 manager-sequence-buttons">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                    disabled="@(step.Sequence <= SelectedOperations.Min(x => x.Sequence) || !CanReorderSelectedOrder)"
+                                                    @onclick:stopPropagation="true"
+                                                    @onclick="() => MoveOperation(step.Id, -1)">@L["MoveOperationUp"]</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                    disabled="@(step.Sequence >= SelectedOperations.Max(x => x.Sequence) || !CanReorderSelectedOrder)"
+                                                    @onclick:stopPropagation="true"
+                                                    @onclick="() => MoveOperation(step.Id, 1)">@L["MoveOperationDown"]</button>
+                                        </div>
+                                    }
                                     <div class="small text-muted">@L["Machine"]: @MachineName(step)</div>
                                     <div class="small text-muted">@L["EstimatedHours"]: @DurationLabel(OperationMinutes(step))</div>
                                     @if (booking != null)
@@ -402,6 +442,39 @@
         .Where(x => x.ProductionOrderId == selectedOrderId).OrderBy(x => x.Sequence).ToList();
     private int AllocatedMinutes => SelectedOperations.Sum(OperationMinutes);
     private int RemainingMinutes => (SelectedOrder?.EstimatedDurationMinutes ?? 0) - AllocatedMinutes;
+    private bool CanReorderSelectedOrder =>
+        SelectedOrder != null && !schedules.Any(x => x.ProductionOperation.ProductionOrderId == SelectedOrder.Id)
+        && SelectedOperations.All(x => x.Status != ProductionOperationStatus.Running &&
+                                        x.Status != ProductionOperationStatus.Completed);
+    private bool IsSequenceConfirmed(ProductionOrder? order)
+    {
+        if (order?.OperationsSequenceConfirmedAt == null ||
+            String.IsNullOrWhiteSpace(order.OperationsSequenceSignature)) return false;
+        return String.Equals(order.OperationsSequenceSignature, OperationSequenceSignature(
+            order.EstimatedDurationMinutes,
+            operations.Where(x => x.ProductionOrderId == order.Id)), StringComparison.Ordinal);
+    }
+
+    private static string OperationSequenceSignature(int totalMinutes, IEnumerable<ProductionOperation> steps)
+    {
+        var canonical = totalMinutes.ToString(CultureInfo.InvariantCulture) + "\n" +
+            String.Join("\n", steps.OrderBy(x => x.Sequence).ThenBy(x => x.Id).Select(x =>
+                String.Join("|", x.Id.ToString(CultureInfo.InvariantCulture),
+                    x.Sequence.ToString(CultureInfo.InvariantCulture),
+                    Convert.ToBase64String(Encoding.UTF8.GetBytes(x.Name.Trim())),
+                    x.WorkCenterId?.ToString(CultureInfo.InvariantCulture) ?? "",
+                    x.PlannedHours.ToString("G29", CultureInfo.InvariantCulture))));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
+    }
+
+    private static void InvalidateSequenceConfirmation(ProductionOrder order)
+    {
+        order.OperationsSequenceConfirmedAt = null;
+        order.OperationsSequenceConfirmedBy = null;
+        order.OperationsSequenceSignature = null;
+    }
+
+
     private ProductionOperation? SelectedOperation =>
         operations.FirstOrDefault(x => x.Id == selectedOperationId);
 
