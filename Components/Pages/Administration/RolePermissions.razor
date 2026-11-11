@@ -1,4 +1,6 @@
 ﻿@page "/administration/role-permissions/{RoleId}"
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -14,13 +16,13 @@
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 
-<PageTitle>Role Permissions</PageTitle>
+<PageTitle>@L["Role Permissions"]</PageTitle>
 
-<h3>Role Permissions</h3>
+<h3>@L["Role Permissions"]</h3>
 
 @if (loading)
 {
-    <p>Loading...</p>
+    <p>@L["Loading"]</p>
 }
 else if (!string.IsNullOrWhiteSpace(message))
 {
@@ -31,7 +33,7 @@ else if (!string.IsNullOrWhiteSpace(message))
 else if (role == null)
 {
     <div class="alert alert-danger">
-        Role not found.
+        @L["Role not found."]
     </div>
 }
 else
@@ -45,7 +47,7 @@ else
             </h5>
 
             <p class="text-muted mb-0">
-                Select the permissions that this role is allowed to use.
+                @L["Select the permissions that this role is allowed to use."]
             </p>
 
         </div>
@@ -56,7 +58,7 @@ else
     @if (!permissions.Any())
     {
         <div class="alert alert-warning">
-            You are not authorized to manage any permissions for this role.
+            @L["You are not authorized to manage any permissions for this role."]
         </div>
     }
     else
@@ -70,11 +72,11 @@ else
                     <tr>
 
                         <th>
-                            Permission
+                            @L["Permission"]
                         </th>
 
                         <th class="erp-width-120" >
-                            Enabled
+                            @L["Enabled"]
                         </th>
 
                     </tr>
@@ -113,7 +115,7 @@ else
         <button class="btn btn-primary"
                 @onclick="Save">
 
-            Save Changes
+            @L["SaveChanges"]
 
         </button>
     }
