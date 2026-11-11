@@ -314,12 +314,12 @@
 
         if (changed && hasScheduledSteps)
         {
-            errorMessage = "This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions.";
+            errorMessage = L["This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions."];
             return;
         }
         if (steps.Count > minutes)
         {
-            errorMessage = "The CEO duration must allow at least one minute for each machine operation.";
+            errorMessage = L["The CEO duration must allow at least one minute for each machine operation."];
             return;
         }
 
@@ -345,7 +345,7 @@
         await Db.SaveChangesAsync();
         await ReloadQueueAsync();
         SelectOrder(entity.Id);
-        successMessage = "CEO duration, machine-step allocations and permitted shifts are consistent.";
+        successMessage = L["CEO duration, machine-step allocations and permitted shifts are consistent."];
     }
 
     private void StartDrag(long orderId)
@@ -394,7 +394,7 @@
                 await Db.ProductionSchedules.AnyAsync(x => operationIds.Contains(x.ProductionOperationId)
                     && x.Status != ScheduleStatus.Cancelled))
             {
-                errorMessage = "This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar.";
+                errorMessage = L["This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar."];
                 return;
             }
 
