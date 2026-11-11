@@ -1,4 +1,5 @@
 ﻿@page "/administration/permission-management"
+@inject LocalizationService L
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -10,13 +11,13 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject PermissionService PermissionService
 
-<PageTitle>Permission Management</PageTitle>
+<PageTitle>@L["Permission Management"]</PageTitle>
 
-<h3>Permission Management</h3>
+<h3>@L["Permission Management"]</h3>
 
 @if (loading)
 {
-    <p>Loading...</p>
+    <p>@L["Loading"]</p>
 }
 else if (!string.IsNullOrWhiteSpace(message))
 {
@@ -27,7 +28,7 @@ else if (!string.IsNullOrWhiteSpace(message))
 else if (!manageableRoles.Any())
 {
     <div class="alert alert-warning">
-        You are not authorized to manage permissions for any roles.
+        @L["You are not authorized to manage permissions for any roles."]
     </div>
 }
 else
@@ -41,7 +42,7 @@ else
             <div class="card">
 
                 <div class="card-header">
-                    <strong>Roles You Can Manage</strong>
+                    <strong>@L["Roles You Can Manage"]</strong>
                 </div>
 
                 <div class="list-group list-group-flush">
@@ -74,7 +75,7 @@ else
             @if (selectedRole == null)
             {
                 <div class="alert alert-info">
-                    Select a role to manage its permissions.
+                    @L["Select a role to manage its permissions."]
                 </div>
             }
             else
@@ -92,15 +93,13 @@ else
                     <div class="card-body">
 
                         <p class="text-muted">
-                            Select the permissions that this role is
-                            allowed to use.
+                            @L["Select the permissions that this role is allowed to use."]
                         </p>
 
                         @if (!manageablePermissions.Any())
                         {
                             <div class="alert alert-warning">
-                                You are not authorized to delegate
-                                any permissions to this role.
+                                @L["You are not authorized to delegate any permissions to this role."]
                             </div>
                         }
                         else
@@ -114,15 +113,15 @@ else
                                         <tr>
 
                                             <th>
-                                                Permission
+                                                @L["Permission"]
                                             </th>
 
                                             <th>
-                                                Description
+                                                @L["Description"]
                                             </th>
 
                                             <th class="erp-width-100" >
-                                                Enabled
+                                                @L["Enabled"]
                                             </th>
 
                                         </tr>
@@ -171,7 +170,7 @@ else
                             <button class="btn btn-primary"
                                     @onclick="Save">
 
-                                Save Changes
+                                @L["SaveChanges"]
 
                             </button>
                         }
