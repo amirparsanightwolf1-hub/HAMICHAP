@@ -42,7 +42,7 @@
     }
     @if (isLoading)
     {
-        <div class="text-muted">Loading job…</div>
+        <div class="text-muted">@LocalizationService["LoadingJob"]</div>
     }
     else if (request is not null)
     {
@@ -114,7 +114,7 @@
         </div>
 
         <div class="card job-section mb-4">
-            <div class="card-header"><strong>مشخصات شیت</strong></div>
+            <div class="card-header"><strong>@LocalizationService["SheetJobSpecification"]</strong></div>
             <div class="card-body">
                 <div class="order-info-grid">
                     <label class="form-label">@LocalizationService["PaperType"]</label>
