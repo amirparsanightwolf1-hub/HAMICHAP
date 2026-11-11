@@ -2436,7 +2436,7 @@
     <value>برنامه تولید دستگاه‌ها</value>
   </data>
   <data name="MachineScheduleHelp" xml:space="preserve">
-    <value>عملیات تولید را بررسی کرده و برای هر دستگاه زمان‌بندی کنید.</value>
+    <value>عملیات سفارش‌ها را در تاریخ‌های مجاز تعیین‌شده توسط مدیرعامل روی تقویم دستگاه‌ها قرار دهید. عملیات را بین دستگاه‌ها جابه‌جا کنید یا به لیست بازگردانید.</value>
   </data>
   <data name="AccessDenied" xml:space="preserve">
     <value>شما به این صفحه دسترسی ندارید.</value>
@@ -2497,7 +2497,7 @@
   <data name="RegularShift" xml:space="preserve"><value>شیفت عادی (۰۸:۰۰ تا ۱۷:۰۰)</value></data>
   <data name="OvertimeShift" xml:space="preserve"><value>اضافه‌کاری (۱۷:۰۰ تا ۲۲:۰۰)</value></data>
   <data name="NightShift" xml:space="preserve"><value>شیفت شب (۲۲:۰۰ تا ۰۸:۰۰)</value></data>
-  <data name="DragOperationHelp" xml:space="preserve"><value>یک عملیات را از پنل سمت راست انتخاب کنید، سپس روی بازه زمانی دستگاه کلیک کنید یا عملیات را به روز یا ساعت موردنظر بکشید.</value></data>
+  <data name="DragOperationHelp" xml:space="preserve"><value>سفارش یا مرحله بدون زمان‌بندی را روی تاریخ دستگاه سازگار بکشید. برای حذف تخصیص، عملیات ثبت‌شده را به پنل سمت راست برگردانید. با کلیک روی دکمه ثبت نیز می‌توانید آن را قرار دهید.</value></data>
   <data name="Sat" xml:space="preserve"><value>شنبه</value></data>
   <data name="Sun" xml:space="preserve"><value>یکشنبه</value></data>
   <data name="Mon" xml:space="preserve"><value>دوشنبه</value></data>
@@ -2521,7 +2521,7 @@
   <data name="OperationsRebalanced" xml:space="preserve"><value>زمان مراحل دستگاه‌ها مطابق زمان تولید برنامه مدیرعامل دوباره تقسیم شد.</value></data>
   <data name="CeoPlanRequired" xml:space="preserve"><value>قبل از زمان‌بندی عملیات دستگاه، زمان شروع و پایان سفارش را در تقویم تولید مدیرعامل تعیین کنید.</value></data>
   <data name="MachineDurationMismatch" xml:space="preserve"><value>مجموع زمان مراحل دستگاه‌ها با زمان برنامه مدیرعامل برابر نیست. برای هماهنگ‌سازی مراحل بدون زمان‌بندی از ایجاد عملیات استفاده کنید.</value></data>
-  <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>این عملیات خارج از بازه تولید برنامه مدیرعامل است. زمان مجاز در همان بازه انتخاب کنید.</value></data>
+  <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>تاریخ انتخاب‌شده خارج از تاریخ شروع و پایان تأییدشده توسط مدیرعامل است. یک تاریخ در بازه مجاز انتخاب کنید.</value></data>
   <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>زمان‌بندی دستگاه‌های آزادشده، در حال اجرا و تکمیل‌شده قابل جابه‌جایی نیست.</value></data>
   <data name="AdjustStepHours" xml:space="preserve"><value>زمان مرحله (ساعت)</value></data>
   <data name="ApplyStepDuration" xml:space="preserve"><value>ثبت و تنظیم مجدد زمان مراحل دیگر</value></data>
