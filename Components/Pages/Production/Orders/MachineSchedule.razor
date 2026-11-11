@@ -223,7 +223,7 @@
                                         </div>
                                         @foreach (var slot in DaySchedules(day, machine.Id))
                                         {
-                                            <div class="machine-scheduled-chip"
+                                            <div class="machine-scheduled-chip @(IsWithinCeoWindow(slot.ProductionOperation.ProductionOrder, slot.PlannedStart) ? "" : "machine-outside-ceo")"
                                                  draggable="@canEdit"
                                                  @ondragstart="() => StartScheduledDrag(slot.ProductionOperationId)"
                                                  @onclick="() => SelectOperation(slot.ProductionOperationId)"
@@ -232,6 +232,10 @@
                                                 <span>@slot.ProductionOperation.Name</span>
                                                 <small>@L["MachineStepCount"] #@slot.ProductionOperation.Sequence</small>
                                                 <small>@L[slot.Status.ToString()]</small>
+                                                @if (!IsWithinCeoWindow(slot.ProductionOperation.ProductionOrder, slot.PlannedStart))
+                                                {
+                                                    <small class="machine-window-warning">@L["ExistingBookingOutsideCeo"]</small>
+                                                }
                                                 @if (canEdit && slot.Status == ScheduleStatus.Planned)
                                                 {
                                                     <button type="button" class="machine-unschedule-button"
