@@ -2208,13 +2208,13 @@
     <value>ایجاد کار</value>
   </data>
 	<data name="SelectExisting" xml:space="preserve">
-    <value>Select existing</value>
+    <value>انتخاب مشتری موجود</value>
   </data>
 	<data name="SelectExistingOrCreateCustomer" xml:space="preserve">
-    <value>Select an existing customer or create a new one.</value>
+    <value>یک مشتری موجود را انتخاب کنید یا مشتری جدید بسازید.</value>
   </data>
 	<data name="CustomerCodeAndNameRequired" xml:space="preserve">
-    <value>Customer code and customer name are required.</value>
+    <value>کد و نام مشتری الزامی است.</value>
   </data>
 	<data name="RollJobSpecifications" xml:space="preserve">
     <value>مشخصات سفارش رول</value>
