@@ -101,7 +101,7 @@
                         <div class="machine-order-overview mb-3">
                             @foreach (var order in orders.Where(x => operations.Any(op => op.ProductionOrderId == x.Id)))
                             {
-                                <div class="machine-order-totals">
+                                <div class="machine-order-totals" draggable="@canEdit" @ondragstart="() => StartScheduledOrderDrag(order.Id)">
                                     <div class="d-flex justify-content-between align-items-center gap-2">
                                         <strong>@order.OrderNumber</strong>
                                         <span class="badge bg-secondary">@OrderScheduledCount(order.Id) / @OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
@@ -252,6 +252,7 @@
     private long? selectedOperationId;
     private long? draggedOperationId;
     private long? draggedScheduledOperationId;
+    private long? draggedScheduledOrderId;
 
     private void SelectOperation(long id) => selectedOperationId = id;
 
@@ -261,6 +262,7 @@
         selectedOperationId = id;
         draggedOperationId = id;
         draggedScheduledOperationId = null;
+        draggedScheduledOrderId = null;
     }
 
     private void StartScheduledDrag(long id)
@@ -269,14 +271,24 @@
         selectedOperationId = id;
         draggedOperationId = id;
         draggedScheduledOperationId = id;
+        draggedScheduledOrderId = null;
+    }
+
+    private void StartScheduledOrderDrag(long orderId)
+    {
+        if (!canEdit) return;
+        draggedScheduledOrderId = orderId;
+        draggedScheduledOperationId = null;
+        draggedOperationId = null;
     }
 
     private async Task DropOperation(int machineId, DateTime start)
     {
-        if (!canEdit) return;
+        if (!canEdit || draggedScheduledOrderId.HasValue) return;
         var id = draggedOperationId ?? selectedOperationId;
         draggedOperationId = null;
         draggedScheduledOperationId = null;
+        draggedScheduledOrderId = null;
         if (!id.HasValue) return;
 
         machineChoices[id.Value] = machineId;
@@ -286,10 +298,15 @@
 
     private async Task DropBackToQueue()
     {
-        if (!canEdit || draggedScheduledOperationId is not long id) return;
+        if (!canEdit) return;
+        var orderId = draggedScheduledOrderId;
+        var operationId = draggedScheduledOperationId;
         draggedOperationId = null;
         draggedScheduledOperationId = null;
-        await UnscheduleOperation(id);
+        draggedScheduledOrderId = null;
+
+        if (orderId.HasValue) await UnscheduleOrder(orderId.Value);
+        else if (operationId.HasValue) await UnscheduleOperation(operationId.Value);
     }
 
     private async Task UnscheduleOperation(long operationId)
@@ -337,6 +354,7 @@
         await db.SaveChangesAsync();
         selectedOperationId = null;
         draggedScheduledOperationId = null;
+        draggedScheduledOrderId = null;
         draggedOperationId = null;
         message = L["OperationsReturnedToQueue"];
         await Reload();
@@ -353,7 +371,17 @@
         $"{minutes / 60m:0.##}h ({minutes} min)";
     private string ShiftClass(int hour) => hour >= 8 && hour < 13 || hour >= 14 && hour < 17 ? "work" : hour == 13 ? "break" : hour >= 17 && hour < 22 ? "overtime" : "night";
     private string FormatDay(DateTime date) => L.IsPersian ? $"{Persian.GetYear(date)}/{Persian.GetMonth(date):00}/{Persian.GetDayOfMonth(date):00}" : date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-    private IEnumerable<ProductionSchedule> HourSchedules(DateTime day, int hour, int machineId) => schedules.Where(s => s.MachineId == machineId && s.PlannedStart < day.Date.AddHours(hour + 1) && s.PlannedEnd > day.Date.AddHours(hour)).OrderBy(s => s.PlannedStart);
+    private IEnumerable<ProductionSchedule> HourSchedules(DateTime day, int hour, int machineId) =>
+        schedules.Where(s => s.MachineId == machineId &&
+            ScheduleVisibleDuring(s, day.Date.AddHours(hour), day.Date.AddHours(hour + 1)))
+            .OrderBy(s => s.PlannedStart);
+
+    private static bool ScheduleVisibleDuring(ProductionSchedule schedule, DateTime start, DateTime end)
+    {
+        var order = schedule.ProductionOperation.ProductionOrder;
+        return ProductionPlanningTime.HasProductiveTime(schedule.PlannedStart, schedule.PlannedEnd,
+            order.AvoidOvertime, order.AvoidNightShift, start, end);
+    }
     private bool IsSelectedMachine(int id) => machineFilter == 0 || machineFilter == id;
     private bool canView;
     private bool canEdit;
@@ -380,7 +408,9 @@
     private void ShiftPeriod(int direction) => selectedDate = viewMode == CalendarView.Month ? Persian.AddMonths(selectedDate, direction) : selectedDate.AddDays(direction * (viewMode == CalendarView.Week ? 7 : 1));
     private void ChooseDay(DateTime day) { selectedDate = day; viewMode = CalendarView.Day; }
     private string ShiftColor(DateTime date) => date.Hour >= 8 && date.Hour < 17 ? "order-work" : date.Hour >= 17 && date.Hour < 22 ? "order-overtime" : "order-night";
-    private IEnumerable<ProductionSchedule> DaySchedules(DateTime day, int machineId) => schedules.Where(s => s.MachineId == machineId && s.PlannedStart.Date <= day.Date && s.PlannedEnd.Date >= day.Date).OrderBy(s => s.PlannedStart);
+    private IEnumerable<ProductionSchedule> DaySchedules(DateTime day, int machineId) =>
+        schedules.Where(s => s.MachineId == machineId &&
+            ScheduleVisibleDuring(s, day.Date, day.Date.AddDays(1))).OrderBy(s => s.PlannedStart);
 
     private DateTime selectedDate = DateTime.Today;
     private long newOrderId;
@@ -667,10 +697,16 @@
             message = L["CannotChangeActiveSchedule"];
             return;
         }
-        var currentId = current.FirstOrDefault()?.Id ?? 0L;
-        if (await db.ProductionSchedules.AnyAsync(x => x.MachineId == machineId &&
-            x.Id != currentId && x.Status != ScheduleStatus.Cancelled &&
-            x.PlannedStart < end && x.PlannedEnd > start))
+        var otherMachineSteps = await db.ProductionSchedules
+            .Include(x => x.ProductionOperation).ThenInclude(x => x.ProductionOrder)
+            .Where(x => x.MachineId == machineId && x.ProductionOperationId != operationId &&
+                x.Status != ScheduleStatus.Cancelled && x.PlannedStart < end && x.PlannedEnd > start)
+            .ToListAsync();
+        if (otherMachineSteps.Any(x => ProductionPlanningTime.ProductiveConflict(
+            start, end, order.AvoidOvertime, order.AvoidNightShift,
+            x.PlannedStart, x.PlannedEnd,
+            x.ProductionOperation.ProductionOrder.AvoidOvertime,
+            x.ProductionOperation.ProductionOrder.AvoidNightShift)))
         {
             message = L["MachineConflict"];
             return;
