@@ -2523,4 +2523,9 @@
   <data name="MachineDurationMismatch" xml:space="preserve"><value>مجموع زمان مراحل دستگاه‌ها با زمان برنامه مدیرعامل برابر نیست. برای هماهنگ‌سازی مراحل بدون زمان‌بندی از ایجاد عملیات استفاده کنید.</value></data>
   <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>این عملیات خارج از بازه تولید برنامه مدیرعامل است. زمان مجاز در همان بازه انتخاب کنید.</value></data>
   <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>زمان‌بندی دستگاه‌های آزادشده، در حال اجرا و تکمیل‌شده قابل جابه‌جایی نیست.</value></data>
+  <data name="AdjustStepHours" xml:space="preserve"><value>زمان مرحله (ساعت)</value></data>
+  <data name="ApplyStepDuration" xml:space="preserve"><value>ثبت و تنظیم مجدد زمان مراحل دیگر</value></data>
+  <data name="InvalidStepDuration" xml:space="preserve"><value>لطفاً تعداد ساعت مثبت و معتبر وارد کنید.</value></data>
+  <data name="UnscheduleBeforeAdjusting" xml:space="preserve"><value>قبل از تغییر زمان مراحل، تمام عملیات زمان‌بندی‌شده سفارش را به لیست بازگردانید.</value></data>
+  <data name="StepDurationBudget" xml:space="preserve"><value>زمان این مرحله از بودجه زمانی مدیرعامل بیشتر است یا برای مراحل دیگر زمان کافی باقی نمی‌گذارد.</value></data>
 </root>
