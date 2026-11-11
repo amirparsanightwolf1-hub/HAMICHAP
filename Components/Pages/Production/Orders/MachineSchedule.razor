@@ -34,10 +34,7 @@
         </div>
 
         <div class="planning-layout">
-            <aside class="planning-order-panel"
-                   @ondragover:preventDefault="true"
-                   @ondrop:preventDefault="true"
-                   @ondrop="ReturnDraggedOperation">
+            <aside class="planning-order-panel">
                 <div class="card mb-3">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <strong>@L["CeoProductionOrders"]</strong>
@@ -108,12 +105,8 @@
                             <strong>@L["OrderOperations"]</strong>
                             <span class="badge bg-secondary">@SelectedOperations.Count</span>
                         </div>
-                        <div class="card-body order-queue manager-operation-queue"
-                             @ondragover:preventDefault="true"
-                             @ondrop:preventDefault="true"
-                             @ondrop:stopPropagation="true"
-                             @ondrop="ReturnDraggedOperation">
-                            <div class="machine-return-hint">@L["DropScheduledStepHere"]</div>
+                        <div class="card-body order-queue manager-operation-queue">
+                            <div class="machine-return-hint">@L["ClickSchedulingInstructions"]</div>
                             @if (SelectedOperations.Count == 0)
                             {
                                 <p class="small text-muted">@L["NoOperationsGenerated"]</p>
@@ -122,8 +115,6 @@
                             {
                                 var booking = CurrentSchedule(step.Id);
                                 <div class="queue-order @(selectedOperationId == step.Id ? "queue-order-selected" : "")"
-                                     draggable="@canEdit"
-                                     @ondragstart="() => BeginDrag(step.Id)"
                                      @onclick="() => SelectOperation(step.Id)">
                                     <div class="d-flex justify-content-between gap-2">
                                         <strong>#@step.Sequence @step.Name</strong>
@@ -202,6 +193,18 @@
                             <span><i class="shift-dot overtime"></i> @L["OvertimeShift"]</span>
                             <span><i class="shift-dot night"></i> @L["NightShift"]</span>
                         </div>
+                        <div class="manager-selection-hint mb-3">
+                            @if (SelectedOperation is ProductionOperation selected)
+                            {
+                                <strong>@L["SelectedOperation"]:</strong>
+                                <span>@selected.ProductionOrder.OrderNumber · @selected.Name · @MachineName(selected)</span>
+                                <span class="small text-muted">(@DurationLabel(OperationMinutes(selected)))</span>
+                            }
+                            else
+                            {
+                                <span>@L["SelectOperationToSchedule"]</span>
+                            }
+                        </div>
 
                         @if (viewMode == CalendarView.Month)
                         {
@@ -216,9 +219,7 @@
                                                          Persian.GetYear(date) == Persian.GetYear(displayMonth);
                                     <div class="month-day @(isCurrentMonth ? "" : "outside-month") @(date.Date == DateTime.Today ? "today" : "")"
                                          @onclick="() => PlaceSelectedOperation(date.Date, new TimeSpan(8, 0, 0))"
-                                         @ondragover:preventDefault="true"
-                                         @ondrop:preventDefault="true"
-                                         @ondrop="() => DropOperation(date.Date, new TimeSpan(8, 0, 0))">
+>
                                         <div class="month-day-number">@Persian.GetDayOfMonth(date)</div>
                                         @foreach (var order in OrdersForDate(date))
                                         {
@@ -233,8 +234,6 @@
                                         {
                                             <div class="month-order-chip manager-stage-chip @ScheduleColor(schedule)"
                                                  title="@OperationTooltip(schedule)"
-                                                 draggable="@canEdit"
-                                                 @ondragstart="() => BeginDrag(schedule.ProductionOperationId)"
                                                  @onclick:stopPropagation="true"
                                                  @onclick="() => SelectOperation(schedule.ProductionOperationId)">
                                                 @schedule.ProductionOperation.ProductionOrder.OrderNumber
@@ -267,9 +266,7 @@
                                         {
                                             <div class="timeline-slot @ShiftClass(hour)"
                                                  @onclick="() => PlaceSelectedOperation(date.Date, TimeSpan.FromHours(slotHour))"
-                                                 @ondragover:preventDefault="true"
-                                                 @ondrop:preventDefault="true"
-                                                 @ondrop="() => DropOperation(date.Date, TimeSpan.FromHours(slotHour))">
+>
                                                 @foreach (var order in OrdersForHour(date, hour))
                                                 {
                                                     <div class="timeline-order @OrderColor(order)"
@@ -282,8 +279,6 @@
                                                 @foreach (var schedule in SchedulesForHour(date, hour))
                                                 {
                                                     <div class="timeline-order manager-stage-chip @ScheduleColor(schedule)"
-                                                         draggable="@canEdit"
-                                                         @ondragstart="() => BeginDrag(schedule.ProductionOperationId)"
                                                          @onclick:stopPropagation="true"
                                                          @onclick="() => SelectOperation(schedule.ProductionOperationId)"
                                                          title="@OperationTooltip(schedule)">
@@ -298,6 +293,68 @@
                             </div>
                             <div class="small text-muted mt-2">@L["ManagerTimelineHelp"]</div>
                         }
+                    </div>
+                </div>
+
+                <div class="card mt-3 machine-workload-panel">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <strong>@L["MachineWorkload"]</strong>
+                        <span class="small text-muted">@L["MachineWorkloadDescription"]</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="machine-workload-scroll">
+                            <table class="machine-workload-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="machine-workload-name">@L["Machine"]</th>
+                                        @foreach (var slot in WorkloadSlots)
+                                        {
+                                            <th scope="col">@slot.Label</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var machine in machines)
+                                    {
+                                        <tr>
+                                            <th scope="row" class="machine-workload-name">
+                                                <strong>@machine.Name</strong>
+                                                <small>@machine.Code</small>
+                                            </th>
+                                            @foreach (var slot in WorkloadSlots)
+                                            {
+                                                var bookings = WorkloadBookings(machine.Id, slot.Start, slot.End);
+                                                var hasConflict = HasMachineOverlap(bookings);
+                                                <td class="@(hasConflict ? "machine-workload-conflict" : bookings.Count > 0 ? "machine-workload-busy" : "machine-workload-free")">
+                                                    @foreach (var booking in bookings)
+                                                    {
+                                                        <button type="button" class="machine-workload-chip"
+                                                                title="@OperationTooltip(booking)"
+                                                                @onclick="() => SelectOperation(booking.ProductionOperationId)">
+                                                            <strong>@booking.ProductionOperation.ProductionOrder.OrderNumber</strong>
+                                                            <span>@booking.ProductionOperation.Name</span>
+                                                            @if (viewMode == CalendarView.Day)
+                                                            {
+                                                                <small>@booking.PlannedStart.ToString("HH:mm")–@booking.PlannedEnd.ToString("HH:mm")</small>
+                                                            }
+                                                        </button>
+                                                    }
+                                                    @if (hasConflict)
+                                                    {
+                                                        <small class="machine-workload-warning">@L["ExistingMachineOverlap"]</small>
+                                                    }
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (machines.Count == 0)
+                        {
+                            <div class="text-muted small mt-2">@L["NoActiveMachines"]</div>
+                        }
+                        <p class="small text-muted mt-2 mb-0">@L["MachineWorkloadLegend"]</p>
                     </div>
                 </div>
             </section>
