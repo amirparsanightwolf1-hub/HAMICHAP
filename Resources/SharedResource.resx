@@ -2548,4 +2548,23 @@
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>Drag to a compatible machine calendar date to assign the next operation.</value></data>
   <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>Existing booking is outside the CEO-approved date window; move or return it.</value></data>
   <data name="AdvancedDurationSettings" xml:space="preserve"><value>Advanced duration details (optional)</value></data>
+  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>Same calendar as Production Planning. Select an order, divide it into machine operations, enter each duration, and place the operations on the calendar.</value></data>
+  <data name="SelectOrderToSplit" xml:space="preserve"><value>Select a production order to review and split it into machine operations.</value></data>
+  <data name="Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="SplitOrderIntoOperations" xml:space="preserve"><value>Split order into operations</value></data>
+  <data name="RemainingDuration" xml:space="preserve"><value>Unallocated duration</value></data>
+  <data name="OperationTotalMatchesCeo" xml:space="preserve"><value>Total estimated operation time matches the CEO's order duration.</value></data>
+  <data name="OperationNamePlaceholder" xml:space="preserve"><value>e.g. Printing, lamination, die cutting</value></data>
+  <data name="OrderOperations" xml:space="preserve"><value>Order operations</value></data>
+  <data name="EditOperation" xml:space="preserve"><value>Edit operation</value></data>
+  <data name="SaveOperation" xml:space="preserve"><value>Save operation</value></data>
+  <data name="DeleteOperation" xml:space="preserve"><value>Delete operation</value></data>
+  <data name="Break" xml:space="preserve"><value>Lunch break</value></data>
+  <data name="ManagerMonthHelp" xml:space="preserve"><value>Order colors show the CEO's planned time. Colored machine-operation cards show each planned stage. Drag a stage onto a date to schedule it from its next permitted working time.</value></data>
+  <data name="ManagerTimelineHelp" xml:space="preserve"><value>Select or drag an operation onto an hour slot. The system skips lunch and disallowed shifts and checks the CEO's start/end and machine availability.</value></data>
+  <data name="EnterOperationDetails" xml:space="preserve"><value>Enter an operation name, machine and positive estimated duration.</value></data>
+  <data name="OperationAdded" xml:space="preserve"><value>The machine operation has been added to the order.</value></data>
+  <data name="OperationSaved" xml:space="preserve"><value>Machine operation saved.</value></data>
+  <data name="OperationRemoved" xml:space="preserve"><value>Machine operation deleted.</value></data>
+  <data name="SelectMachineBeforeScheduling" xml:space="preserve"><value>Choose and save a machine for this operation before placing it on the calendar.</value></data>
 </root>
