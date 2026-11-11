@@ -351,6 +351,15 @@
                             steps.Add("Heidelberg | Sheet offset printing");
                         foreach (var service in spec.SelectedServices ?? new())
                             steps.AddRange(RouteService(service, true));
+                        using (var details = JsonDocument.Parse(request.JobSpecificationJson))
+                        {
+                            if (details.RootElement.TryGetProperty("FinishType", out var finish) && finish.ValueKind == JsonValueKind.String)
+                            {
+                                var finishText = finish.GetString() ?? "";
+                                if (finishText.Contains("screen", StringComparison.OrdinalIgnoreCase) || finishText.Contains("سیلک")) steps.Add("Sakurai | Screen printing");
+                                if (finishText.Contains("cylinder", StringComparison.OrdinalIgnoreCase) || finishText.Contains("سیلندر")) steps.Add("Heidelberg | Cylinder coating");
+                            }
+                        }
                         if (!string.IsNullOrWhiteSpace(spec.Die))
                             steps.Add("SBL | Die cutting");
                     }
