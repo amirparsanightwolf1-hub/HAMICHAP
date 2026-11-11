@@ -39,7 +39,7 @@
                                     <label class="form-label mt-2">@L["Machine"]</label>
                                     <select class="form-select form-select-sm" value="@MachineChoice(operation.Id)" @onchange="e => SetMachineChoice(operation.Id, e.Value?.ToString())">
                                         <option value="0">@L["SelectMachine"]</option>
-                                        @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name</option> }
+                                        @foreach (var machine in SuggestedMachines(operation)) { <option value="@machine.Id">@machine.Name</option> }
                                     </select>
                                     <label class="form-label mt-2">@L["PlannedStart"]</label>
                                     <input type="datetime-local" class="form-control form-control-sm" value="@StartChoice(operation.Id)" @onchange="e => SetStartChoice(operation.Id, e.Value?.ToString())" />
@@ -291,6 +291,41 @@
     private int MachineChoice(long id) => machineChoices.GetValueOrDefault(id);
     private string StartChoice(long id) => startChoices.GetValueOrDefault(id, "");
 
+    // Machine names are routing recommendations. Actual machine choice remains editable.
+    private static IEnumerable<string> RouteService(string service, bool sheet)
+    {
+        if (string.IsNullOrWhiteSpace(service)) yield break;
+        if (service.Contains("سلفون") || service.Contains("لمینیت") || service.Contains("laminat", StringComparison.OrdinalIgnoreCase))
+            yield return "Wenchun | Lamination / film";
+        else if (service.Contains("یووی") || service.Contains("UV", StringComparison.OrdinalIgnoreCase))
+            yield return "Tops 102 / Heidelberg | Spot UV";
+        else if (service.Contains("جعبه‌چسبانی") || service.Contains("چسبانی"))
+            yield return "Folder-gluer | Folding and assembly";
+        else if (service.Contains("برش و بسته‌بندی"))
+            yield return "Polar | Cutting and packing";
+        else if (service.Contains("قالب") || service.Contains("دیلن"))
+            yield return sheet ? "SBL | Die cutting" : "Nilpeter | Rotary / flat die";
+        else
+            yield return "Review | " + service;
+    }
+
+    private static bool CompatibleMachine(string operationName, Machine machine)
+    {
+        var name = (machine.Name + " " + machine.Code).ToLowerInvariant();
+        var operation = operationName.ToLowerInvariant();
+        if (operation.StartsWith("polar")) return name.Contains("polar") || name.Contains("guillotine");
+        if (operation.StartsWith("heidelberg")) return name.Contains("heidelberg");
+        if (operation.StartsWith("nilpeter")) return name.Contains("nilpeter");
+        if (operation.StartsWith("wenchun")) return name.Contains("wenchun");
+        if (operation.StartsWith("tops 102 / heidelberg")) return name.Contains("tops") || name.Contains("heidelberg");
+        if (operation.StartsWith("sbl")) return name.Contains("sbl");
+        if (operation.StartsWith("folder-gluer")) return name.Contains("folder") || name.Contains("gluer");
+        if (operation.StartsWith("sakurai")) return name.Contains("sakurai");
+        return true; // Unclassified work requires manual review.
+    }
+    private IEnumerable<Machine> SuggestedMachines(ProductionOperation operation) =>
+        machines.Where(m => CompatibleMachine(operation.Name, m));
+
     private async Task GenerateMissingOperations()
     {
         if (!canEdit) return;
@@ -310,19 +345,29 @@
                     var spec = JsonSerializer.Deserialize<SheetJobSpecification>(request.JobSpecificationJson);
                     if (spec != null)
                     {
-                        if (!string.IsNullOrWhiteSpace(spec.PrintingNotes) || !string.IsNullOrWhiteSpace(spec.Zinc)) steps.Add("Printing");
-                        steps.AddRange(spec.SelectedServices ?? new());
-                        if (!string.IsNullOrWhiteSpace(spec.Die)) steps.Add("Die Cutting");
+                        if (spec.BeforeCutLengthCm.HasValue || spec.BeforeCutWidthCm.HasValue || spec.CutLengthCm.HasValue || spec.CutWidthCm.HasValue)
+                            steps.Add("Polar | Cutting");
+                        if (!string.IsNullOrWhiteSpace(spec.PrintingNotes) || !string.IsNullOrWhiteSpace(spec.Zinc))
+                            steps.Add("Heidelberg | Sheet offset printing");
+                        foreach (var service in spec.SelectedServices ?? new())
+                            steps.AddRange(RouteService(service, true));
+                        if (!string.IsNullOrWhiteSpace(spec.Die))
+                            steps.Add("SBL | Die cutting");
                     }
                 }
-                else
+                else if (request.JobType == SalesJobType.Roll)
                 {
                     var spec = JsonSerializer.Deserialize<RollJobSpecification>(request.JobSpecificationJson);
                     if (spec != null)
                     {
-                        if (spec.ColorCount.GetValueOrDefault() > 0 || !string.IsNullOrWhiteSpace(spec.PrintingNotes)) steps.Add("Printing");
-                        steps.AddRange(spec.SelectedServices ?? new());
-                        if (spec.HandGluing || spec.MachineGluing) steps.Add("Gluing");
+                        if (spec.ColorCount.GetValueOrDefault() > 0 || !string.IsNullOrWhiteSpace(spec.PrintingNotes))
+                            steps.Add("Nilpeter | Roll offset/flexo printing");
+                        foreach (var service in spec.SelectedServices ?? new())
+                            steps.AddRange(RouteService(service, false));
+                        if (spec.MachineGluing)
+                            steps.Add("Folder-gluer | Machine gluing");
+                        else if (spec.HandGluing)
+                            steps.Add("Manual | Hand gluing");
                     }
                 }
             }
@@ -367,6 +412,9 @@
         var operation = await db.ProductionOperations.Include(x => x.ProductionOrder)
             .FirstOrDefaultAsync(x => x.Id == operationId);
         if (operation == null || !await db.Machines.AnyAsync(x => x.Id == machineId && x.IsActive)) return;
+        var assignedMachine = machines.FirstOrDefault(x => x.Id == machineId);
+        if (assignedMachine == null || !CompatibleMachine(operation.Name, assignedMachine))
+        { message = L["MachineMismatch"]; return; }
         var end = start.AddHours((double)Math.Max(0.25m, operation.PlannedHours));
         if (await db.ProductionSchedules.AnyAsync(x => x.MachineId == machineId &&
             x.Status != ScheduleStatus.Cancelled && x.PlannedStart < end && x.PlannedEnd > start))
