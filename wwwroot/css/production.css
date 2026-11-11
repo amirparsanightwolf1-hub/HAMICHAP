@@ -1149,15 +1149,7 @@
     color: #0c568d; background: #eaf3fa; font-weight: 700;
 }
 .production-planning .machine-calendar-section-title small { font-size: .75em; font-weight: 400; }
-.machine-schedule .month-grid { min-width: 650px; }
 .machine-schedule .machine-calendar-section { overflow-x: auto; }
-.machine-schedule .month-order-chip { white-space: normal; text-align: start; }
-.machine-schedule .month-order-chip span,
-.machine-schedule .month-order-chip small,
-.machine-schedule .timeline-order span,
-.machine-schedule .timeline-order small { display: block; font-weight: 400; }
-.machine-schedule .timeline { min-width: max(650px, calc(150px * var(--day-count))); }
-.machine-schedule .timeline-order { text-align: start; }
 .machine-schedule .queue-order-selected { border-color: #0c568d; background: #eaf3fa; }
 .home-page .planning-home-button { background: #0c568d; border-color: #0c568d; color: #fff; }
 .home-page .planning-home-button:hover { background: #08446f; border-color: #08446f; }
@@ -1200,12 +1192,7 @@
     white-space: normal;
     text-align: center;
 }
-.machine-schedule .month-order-chip,
-.machine-schedule .timeline-order {
-    overflow: visible;
-    white-space: normal;
-    cursor: grab;
-}
+
 .machine-schedule .machine-unschedule-button {
     display: block;
     margin-top: 5px;
