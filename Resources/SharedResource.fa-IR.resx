@@ -2918,4 +2918,25 @@
   <data name="Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed." xml:space="preserve"><value>تعداد موردنیاز تولید برای هر قطعه را وارد کنید. بهینه‌ساز بر اساس این مقادیر، تعداد ورق یا تکرار رول را محاسبه می‌کند.</value></data>
   <data name="Generate layouts using the selected sheet, parts, and setup." xml:space="preserve"><value>با استفاده از ورق، قطعات و تنظیمات انتخاب‌شده چیدمان ایجاد کنید.</value></data>
   <data name="No valid layout was found." xml:space="preserve"><value>چیدمان معتبری یافت نشد.</value></data>
+  <data name="You must be logged in." xml:space="preserve"><value>برای ادامه باید وارد حساب کاربری شوید.</value></data>
+  <data name="Unable to load permission management:" xml:space="preserve"><value>بارگذاری مدیریت مجوزها انجام نشد:</value></data>
+  <data name="Please select a role." xml:space="preserve"><value>لطفاً یک نقش انتخاب کنید.</value></data>
+  <data name="You are not assigned to a role that can manage permissions." xml:space="preserve"><value>هیچ نقش دارای مجوز مدیریت دسترسی به شما اختصاص داده نشده است.</value></data>
+  <data name="You are not authorized to manage permissions for this role." xml:space="preserve"><value>اجازه مدیریت مجوزهای این نقش را ندارید.</value></data>
+  <data name="You are not authorized to modify permissions for this role." xml:space="preserve"><value>اجازه تغییر مجوزهای این نقش را ندارید.</value></data>
+  <data name="You are not authorized to create roles." xml:space="preserve"><value>شما مجاز به ایجاد نقش نیستید.</value></data>
+  <data name="Please enter a role name." xml:space="preserve"><value>نام نقش را وارد کنید.</value></data>
+  <data name="That role already exists." xml:space="preserve"><value>این نقش از قبل وجود دارد.</value></data>
+  <data name="You are not authorized to delete roles." xml:space="preserve"><value>شما مجاز به حذف نقش نیستید.</value></data>
+  <data name="The Administrator role cannot be deleted." xml:space="preserve"><value>نقش مدیر سامانه قابل حذف نیست.</value></data>
+  <data name="Invalid role." xml:space="preserve"><value>نقش نامعتبر است.</value></data>
+  <data name="Unable to load roles:" xml:space="preserve"><value>بارگذاری نقش‌ها انجام نشد:</value></data>
+  <data name="Role '{0}' created successfully." xml:space="preserve"><value>نقش «{0}» با موفقیت ایجاد شد.</value></data>
+  <data name="Role '{0}' deleted successfully." xml:space="preserve"><value>نقش «{0}» با موفقیت حذف شد.</value></data>
+  <data name="Role '{0}' is assigned to {1} user(s) and cannot be deleted." xml:space="preserve"><value>نقش «{0}» به {1} کاربر اختصاص داده شده و قابل حذف نیست.</value></data>
+  <data name="Permissions for '{0}' saved successfully." xml:space="preserve"><value>مجوزهای «{0}» با موفقیت ذخیره شد.</value></data>
+  <data name="Role '{0}' could not be deleted." xml:space="preserve"><value>حذف نقش «{0}» انجام نشد.</value></data>
+  <data name="Failed to save permissions." xml:space="preserve"><value>ذخیره مجوزها انجام نشد.</value></data>
+  <data name="Unexpected error while loading roles." xml:space="preserve"><value>هنگام بارگذاری نقش‌ها خطایی غیرمنتظره رخ داد.</value></data>
+  <data name="Unable to load permission management." xml:space="preserve"><value>بارگذاری مدیریت مجوزها انجام نشد.</value></data>
 </root>
