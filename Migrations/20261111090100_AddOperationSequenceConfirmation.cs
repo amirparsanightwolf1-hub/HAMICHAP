@@ -13,6 +13,13 @@ public partial class AddOperationSequenceConfirmation : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.AddColumn<bool>(
+            name: "OperationsRouteInitialized",
+            table: "ProductionOrders",
+            type: "bit",
+            nullable: false,
+            defaultValue: false);
+
         migrationBuilder.AddColumn<DateTime>(
             name: "OperationsSequenceConfirmedAt",
             table: "ProductionOrders",
@@ -36,6 +43,7 @@ public partial class AddOperationSequenceConfirmation : Migration
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.DropColumn(name: "OperationsRouteInitialized", table: "ProductionOrders");
         migrationBuilder.DropColumn(name: "OperationsSequenceConfirmedAt", table: "ProductionOrders");
         migrationBuilder.DropColumn(name: "OperationsSequenceConfirmedBy", table: "ProductionOrders");
         migrationBuilder.DropColumn(name: "OperationsSequenceSignature", table: "ProductionOrders");
