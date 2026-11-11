@@ -1,10 +1,12 @@
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
 ﻿@using Microsoft.JSInterop
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 
 <div class="proof-pdf-pages" @ref="_container">
-    <div class="text-muted small text-center py-3">Loading PDF pages...</div>
+    <div class="text-muted small text-center py-3">@L["Loading PDF pages..."]</div>
 </div>
 
 @code {
