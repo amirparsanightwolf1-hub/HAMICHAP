@@ -2739,4 +2739,43 @@
   <data name="Passkeys" xml:space="preserve"><value>کلیدهای عبور</value></data>
   <data name="Personal data" xml:space="preserve"><value>اطلاعات شخصی</value></data>
   <data name="Recovery codes" xml:space="preserve"><value>کدهای بازیابی</value></data>
+  <data name="Manage employees and user accounts." xml:space="preserve"><value>مدیریت کارکنان و حساب‌های کاربری.</value></data>
+  <data name="Manage Users" xml:space="preserve"><value>مدیریت کاربران</value></data>
+  <data name="Manage access levels." xml:space="preserve"><value>مدیریت سطح دسترسی‌ها.</value></data>
+  <data name="Manage Roles" xml:space="preserve"><value>مدیریت نقش‌ها</value></data>
+  <data name="Control access to system features." xml:space="preserve"><value>کنترل دسترسی به امکانات سامانه.</value></data>
+  <data name="Permission Management" xml:space="preserve"><value>مدیریت مجوزها</value></data>
+  <data name="You are not authorized to manage permissions for any roles." xml:space="preserve"><value>شما مجوز مدیریت دسترسی هیچ نقشی را ندارید.</value></data>
+  <data name="Roles You Can Manage" xml:space="preserve"><value>نقش‌های قابل مدیریت</value></data>
+  <data name="Select a role to manage its permissions." xml:space="preserve"><value>برای مدیریت مجوزها یک نقش را انتخاب کنید.</value></data>
+  <data name="Select the permissions that this role is allowed to use." xml:space="preserve"><value>مجوزهای مجاز برای استفاده این نقش را انتخاب کنید.</value></data>
+  <data name="You are not authorized to delegate any permissions to this role." xml:space="preserve"><value>شما مجوز واگذاری دسترسی به این نقش را ندارید.</value></data>
+  <data name="Permission" xml:space="preserve"><value>مجوز</value></data>
+  <data name="Enabled" xml:space="preserve"><value>فعال</value></data>
+  <data name="You can manage permissions only for roles that you are authorized to manage." xml:space="preserve"><value>فقط می‌توانید مجوز نقش‌هایی را مدیریت کنید که اجازه مدیریت آن‌ها را دارید.</value></data>
+  <data name="You are not authorized to manage permissions for any role." xml:space="preserve"><value>شما مجاز به مدیریت مجوز هیچ نقشی نیستید.</value></data>
+  <data name="-- Select Role --" xml:space="preserve"><value>-- انتخاب نقش --</value></data>
+  <data name="Select the permissions that you are allowed to manage for this role." xml:space="preserve"><value>مجوزهایی را که اجازه مدیریت آن‌ها برای این نقش را دارید انتخاب کنید.</value></data>
+  <data name="You have no delegated permissions for this role." xml:space="preserve"><value>هیچ مجوز قابل واگذاری برای این نقش ندارید.</value></data>
+  <data name="Role Permissions" xml:space="preserve"><value>مجوزهای نقش</value></data>
+  <data name="Role not found." xml:space="preserve"><value>نقش یافت نشد.</value></data>
+  <data name="You are not authorized to manage any permissions for this role." xml:space="preserve"><value>شما اجازه مدیریت هیچ مجوزی برای این نقش ندارید.</value></data>
+  <data name="You are not authorized to view roles." xml:space="preserve"><value>شما مجوز مشاهده نقش‌ها را ندارید.</value></data>
+  <data name="Loading roles..." xml:space="preserve"><value>در حال بارگذاری نقش‌ها...</value></data>
+  <data name="No roles have been created yet." xml:space="preserve"><value>هنوز نقشی ایجاد نشده است.</value></data>
+  <data name="e.g. Warehouse Manager" xml:space="preserve"><value>مثلاً مدیر انبار</value></data>
+  <data name="Remove all users from this role before deleting it." xml:space="preserve"><value>پیش از حذف این نقش، تمام کاربران آن را حذف کنید.</value></data>
+  <data name="Users Management" xml:space="preserve"><value>مدیریت کاربران</value></data>
+  <data name="Add Employee" xml:space="preserve"><value>افزودن کارمند</value></data>
+  <data name="You are not authenticated." xml:space="preserve"><value>وارد حساب کاربری نشده‌اید.</value></data>
+  <data name="Current user could not be found." xml:space="preserve"><value>کاربر فعلی یافت نشد.</value></data>
+  <data name="You are not authorized to manage this role." xml:space="preserve"><value>شما مجاز به مدیریت این نقش نیستید.</value></data>
+  <data name="You are not authorized to modify this role." xml:space="preserve"><value>شما مجاز به تغییر این نقش نیستید.</value></data>
+  <data name="You must be logged in to manage permissions." xml:space="preserve"><value>برای مدیریت مجوزها باید وارد سامانه شوید.</value></data>
+  <data name="No permissions available." xml:space="preserve"><value>هیچ مجوزی در دسترس نیست.</value></data>
+  <data name="Create an employee account" xml:space="preserve"><value>ایجاد حساب کاربری کارمند</value></data>
+  <data name="Choose a role" xml:space="preserve"><value>انتخاب نقش</value></data>
+  <data name="Unable to load permissions:" xml:space="preserve"><value>بارگذاری مجوزها انجام نشد:</value></data>
+  <data name="Unable to save permissions:" xml:space="preserve"><value>ذخیره مجوزها انجام نشد:</value></data>
+  <data name="Permission changes saved successfully." xml:space="preserve"><value>تغییرات مجوزها با موفقیت ذخیره شد.</value></data>
 </root>
