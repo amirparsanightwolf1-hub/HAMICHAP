@@ -574,7 +574,88 @@
         canView = canEdit || user.Identity?.IsAuthenticated == true &&
             (user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
              user.IsInRole("Production") || user.IsInRole("CEO") || user.IsInRole("Ceo"));
-        if (canView) await ReloadAsync();
+        if (!canView) return;
+        if (canEdit)
+        {
+            try { await ImportSalesRoutesAsync(); }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Could not import Sales job specifications into production routes");
+                ShowError(L["SalesRoutingImportFailed"]);
+            }
+        }
+        await ReloadAsync();
+    }
+
+    // Import a route once per order. Never re-add operations that the manager deliberately
+    // deleted or replace names, machines, durations or sequence already edited by the manager.
+    private async Task ImportSalesRoutesAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var sourceOrders = await db.ProductionOrders
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation)
+            .ThenInclude(x => x.SalesRequest)
+            .Where(x => x.Status != ProductionOrderStatus.Cancelled && !x.OperationsRouteInitialized)
+            .ToListAsync();
+        var existing = await db.ProductionOperations
+            .Select(x => x.ProductionOrderId).Distinct().ToListAsync();
+        var populated = existing.ToHashSet();
+        var availableMachines = await db.Machines.Where(x => x.IsActive).ToListAsync();
+
+        foreach (var order in sourceOrders)
+        {
+            if (populated.Contains(order.Id))
+            {
+                order.OperationsRouteInitialized = true;
+                continue;
+            }
+            var request = order.SalesOrder?.Quotation?.SalesRequest;
+            if (request == null || String.IsNullOrWhiteSpace(request.JobSpecificationJson))
+                continue;
+
+            IReadOnlyList<ProductionJobRouting.SuggestedStage> proposed;
+            try
+            {
+                proposed = ProductionJobRouting.FromJob(request.JobType, request.JobSpecificationJson);
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                Logger.LogWarning(ex, "Malformed Sales job specifications for production order {OrderId}", order.Id);
+                continue;
+            }
+            if (proposed.Count == 0 || order.EstimatedDurationMinutes < proposed.Count)
+                continue;
+
+            var minutes = ProductionPlanningTime.AllocateOperationMinutes(
+                order.EstimatedDurationMinutes, proposed.Select(_ => 1m).ToArray());
+
+            for (var i = 0; i < proposed.Count; i++)
+            {
+                var proposal = proposed[i];
+                int? workCenterId = null;
+                if (proposal.MachineCodes.Length == 1)
+                {
+                    var machine = availableMachines.FirstOrDefault(x =>
+                        x.Code.Equals(proposal.MachineCodes[0], StringComparison.OrdinalIgnoreCase));
+                    if (machine != null)
+                        workCenterId = await EnsureMachineWorkCenterAsync(db, machine);
+                }
+
+                db.ProductionOperations.Add(new ProductionOperation
+                {
+                    ProductionOrderId = order.Id,
+                    Sequence = i + 1,
+                    Name = proposal.Name,
+                    PlannedHours = Math.Round(minutes[i] / 60m, 6),
+                    WorkCenterId = workCenterId,
+                    Status = ProductionOperationStatus.Pending
+                });
+            }
+            order.OperationsRouteInitialized = true;
+            InvalidateSequenceConfirmation(order);
+            populated.Add(order.Id);
+        }
+        await db.SaveChangesAsync();
     }
 
     private async Task ReloadAsync()
