@@ -2739,4 +2739,43 @@
   <data name="Passkeys" xml:space="preserve"><value>Passkeys</value></data>
   <data name="Personal data" xml:space="preserve"><value>Personal data</value></data>
   <data name="Recovery codes" xml:space="preserve"><value>Recovery codes</value></data>
+  <data name="Manage employees and user accounts." xml:space="preserve"><value>Manage employees and user accounts.</value></data>
+  <data name="Manage Users" xml:space="preserve"><value>Manage Users</value></data>
+  <data name="Manage access levels." xml:space="preserve"><value>Manage access levels.</value></data>
+  <data name="Manage Roles" xml:space="preserve"><value>Manage Roles</value></data>
+  <data name="Control access to system features." xml:space="preserve"><value>Control access to system features.</value></data>
+  <data name="Permission Management" xml:space="preserve"><value>Permission Management</value></data>
+  <data name="You are not authorized to manage permissions for any roles." xml:space="preserve"><value>You are not authorized to manage permissions for any roles.</value></data>
+  <data name="Roles You Can Manage" xml:space="preserve"><value>Roles You Can Manage</value></data>
+  <data name="Select a role to manage its permissions." xml:space="preserve"><value>Select a role to manage its permissions.</value></data>
+  <data name="Select the permissions that this role is allowed to use." xml:space="preserve"><value>Select the permissions that this role is allowed to use.</value></data>
+  <data name="You are not authorized to delegate any permissions to this role." xml:space="preserve"><value>You are not authorized to delegate any permissions to this role.</value></data>
+  <data name="Permission" xml:space="preserve"><value>Permission</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="You can manage permissions only for roles that you are authorized to manage." xml:space="preserve"><value>You can manage permissions only for roles that you are authorized to manage.</value></data>
+  <data name="You are not authorized to manage permissions for any role." xml:space="preserve"><value>You are not authorized to manage permissions for any role.</value></data>
+  <data name="-- Select Role --" xml:space="preserve"><value>-- Select Role --</value></data>
+  <data name="Select the permissions that you are allowed to manage for this role." xml:space="preserve"><value>Select the permissions that you are allowed to manage for this role.</value></data>
+  <data name="You have no delegated permissions for this role." xml:space="preserve"><value>You have no delegated permissions for this role.</value></data>
+  <data name="Role Permissions" xml:space="preserve"><value>Role Permissions</value></data>
+  <data name="Role not found." xml:space="preserve"><value>Role not found.</value></data>
+  <data name="You are not authorized to manage any permissions for this role." xml:space="preserve"><value>You are not authorized to manage any permissions for this role.</value></data>
+  <data name="You are not authorized to view roles." xml:space="preserve"><value>You are not authorized to view roles.</value></data>
+  <data name="Loading roles..." xml:space="preserve"><value>Loading roles...</value></data>
+  <data name="No roles have been created yet." xml:space="preserve"><value>No roles have been created yet.</value></data>
+  <data name="e.g. Warehouse Manager" xml:space="preserve"><value>e.g. Warehouse Manager</value></data>
+  <data name="Remove all users from this role before deleting it." xml:space="preserve"><value>Remove all users from this role before deleting it.</value></data>
+  <data name="Users Management" xml:space="preserve"><value>Users Management</value></data>
+  <data name="Add Employee" xml:space="preserve"><value>Add Employee</value></data>
+  <data name="You are not authenticated." xml:space="preserve"><value>You are not authenticated.</value></data>
+  <data name="Current user could not be found." xml:space="preserve"><value>Current user could not be found.</value></data>
+  <data name="You are not authorized to manage this role." xml:space="preserve"><value>You are not authorized to manage this role.</value></data>
+  <data name="You are not authorized to modify this role." xml:space="preserve"><value>You are not authorized to modify this role.</value></data>
+  <data name="You must be logged in to manage permissions." xml:space="preserve"><value>You must be logged in to manage permissions.</value></data>
+  <data name="No permissions available." xml:space="preserve"><value>No permissions available.</value></data>
+  <data name="Create an employee account" xml:space="preserve"><value>Create an employee account</value></data>
+  <data name="Choose a role" xml:space="preserve"><value>Choose a role</value></data>
+  <data name="Unable to load permissions:" xml:space="preserve"><value>Unable to load permissions:</value></data>
+  <data name="Unable to save permissions:" xml:space="preserve"><value>Unable to save permissions:</value></data>
+  <data name="Permission changes saved successfully." xml:space="preserve"><value>Permission changes saved successfully.</value></data>
 </root>
