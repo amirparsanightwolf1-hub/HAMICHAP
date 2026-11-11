@@ -801,6 +801,26 @@
         return center.Id;
     }
 
+    // Planned bookings are provisional and replaced by the next manager-approved
+    // automatic schedule; released/running/completed work is never silently changed.
+    private static async Task<bool> CancelPlannedOrderBookingsAsync(
+        ApplicationDbContext db, long orderId)
+    {
+        var steps = await db.ProductionOperations
+            .Where(x => x.ProductionOrderId == orderId).ToListAsync();
+        if (steps.Any(x => x.Status is ProductionOperationStatus.Running or
+                ProductionOperationStatus.Completed))
+            return false;
+
+        var ids = steps.Select(x => x.Id).ToList();
+        var active = await db.ProductionSchedules.Where(x =>
+            ids.Contains(x.ProductionOperationId) && x.Status != ScheduleStatus.Cancelled)
+            .ToListAsync();
+        if (active.Any(x => x.Status != ScheduleStatus.Planned)) return false;
+        foreach (var booking in active) booking.Status = ScheduleStatus.Cancelled;
+        return true;
+    }
+
     private async Task MoveOperation(long operationId, int direction)
     {
         if (!canEdit || (direction != -1 && direction != 1)) return;
@@ -815,11 +835,9 @@
                 .Where(x => x.ProductionOrderId == operation.ProductionOrderId)
                 .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToListAsync();
             var ids = steps.Select(x => x.Id).ToList();
-            if (steps.Any(x => x.Status is ProductionOperationStatus.Running or ProductionOperationStatus.Completed) ||
-                await db.ProductionSchedules.AnyAsync(x => ids.Contains(x.ProductionOperationId) &&
-                    x.Status != ScheduleStatus.Cancelled))
+            if (!await CancelPlannedOrderBookingsAsync(db, operation.ProductionOrderId))
             {
-                ShowError(L["UnscheduleBeforeReordering"]);
+                ShowError(L["CannotChangeActiveSchedule"]);
                 return;
             }
             var index = steps.FindIndex(x => x.Id == operationId);
@@ -982,45 +1000,55 @@
     private async Task AddOperation()
     {
         if (!canEdit || SelectedOrder is not ProductionOrder order) return;
-        if (string.IsNullOrWhiteSpace(newOperationName) || newMachineId == 0 || newOperationHours <= 0)
+        if (String.IsNullOrWhiteSpace(newOperationName) || newMachineId == 0 ||
+            newOperationHours <= 0)
         {
             ShowError(L["EnterOperationDetails"]);
-            return;
-        }
-        var minutes = ProductionPlanningTime.OperationMinutes(newOperationHours);
-        if (AllocatedMinutes + minutes > order.EstimatedDurationMinutes)
-        {
-            ShowError(L["StepDurationBudget"]);
             return;
         }
         try
         {
             await using var db = await DbFactory.CreateDbContextAsync();
-            var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == newMachineId && x.IsActive);
+            await using var transaction = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+            var machine = await db.Machines.FirstOrDefaultAsync(x =>
+                x.Id == newMachineId && x.IsActive);
             if (machine == null) { ShowError(L["SelectMachine"]); return; }
+            if (!await CancelPlannedOrderBookingsAsync(db, order.Id))
+            {
+                ShowError(L["CannotChangeActiveSchedule"]);
+                return;
+            }
+            var trackedOrder = await db.ProductionOrders.FirstAsync(x => x.Id == order.Id);
+            var steps = await db.ProductionOperations
+                .Where(x => x.ProductionOrderId == order.Id).OrderBy(x => x.Sequence)
+                .ToListAsync();
             var centerId = await EnsureMachineWorkCenterAsync(db, machine);
-            var existing = await db.ProductionOperations
-                .Where(x => x.ProductionOrderId == order.Id).OrderBy(x => x.Sequence).ToListAsync();
-            var newStep = new ProductionOperation
+            var created = new ProductionOperation
             {
                 ProductionOrderId = order.Id,
-                Sequence = (existing.LastOrDefault()?.Sequence ?? 0) + 1,
+                Sequence = (steps.LastOrDefault()?.Sequence ?? 0) + 1,
                 Name = newOperationName.Trim(),
                 PlannedHours = newOperationHours,
                 WorkCenterId = centerId,
                 Status = ProductionOperationStatus.Pending
             };
-            db.ProductionOperations.Add(newStep);
-            var trackedOrder = await db.ProductionOrders.FirstAsync(x => x.Id == order.Id);
+            db.ProductionOperations.Add(created);
+            trackedOrder.OperationsRouteInitialized = true;
             InvalidateSequenceConfirmation(trackedOrder);
             await db.SaveChangesAsync();
-            selectedOperationId = newStep.Id;
+            await transaction.CommitAsync();
+            selectedOperationId = created.Id;
             newOperationName = "";
             newOperationHours = 1m;
-            ShowSuccess(L["OperationAdded"]);
+            ShowSuccess(L["OperationAddedReconfirm"]);
             await ReloadAsync();
         }
-        catch (Exception ex) { ShowError(ex.Message); }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not add operation for order {OrderId}", order.Id);
+            ShowError(L["OperationUpdateFailed"]);
+        }
     }
 
     private async Task SaveOperation(long id)
@@ -1028,111 +1056,97 @@
         if (!canEdit) return;
         var step = operations.FirstOrDefault(x => x.Id == id);
         if (step == null) return;
-        if (CurrentSchedule(id) != null)
-        {
-            ShowError(L["UnscheduleBeforeAdjusting"]);
-            return;
-        }
         var name = OperationNameChoice(step).Trim();
-        if (!decimal.TryParse(OperationHoursChoice(step), NumberStyles.Number,
+        if (!Decimal.TryParse(OperationHoursChoice(step), NumberStyles.Number,
             CultureInfo.InvariantCulture, out var hours) ||
-            hours <= 0 || string.IsNullOrWhiteSpace(name))
+            hours <= 0 || String.IsNullOrWhiteSpace(name))
         {
             ShowError(L["InvalidStepDuration"]);
             return;
         }
-        var newTotal = AllocatedMinutes - OperationMinutes(step) +
-            ProductionPlanningTime.OperationMinutes(hours);
-        if (newTotal > (SelectedOrder?.EstimatedDurationMinutes ?? 0))
-        {
-            ShowError(L["StepDurationBudget"]);
-            return;
-        }
+
         var machineId = MachineChoice(step);
-        if (machineId == 0) { ShowError(L["SelectMachine"]); return; }
+        // 0 is allowed for Sales-derived multi-machine routes; the auto
+        // scheduler chooses among the suggested active machines later.
+        if (machineId == 0 && ProductionJobRouting.Candidates(name).Length == 0)
+        {
+            ShowError(L["SelectMachine"]); return;
+        }
+
         try
         {
             await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
             var entity = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == id);
-            var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
-            if (entity == null || machine == null) return;
+            if (entity == null) return;
+            if (!await CancelPlannedOrderBookingsAsync(db, entity.ProductionOrderId))
+            {
+                ShowError(L["CannotChangeActiveSchedule"]); return;
+            }
+
             entity.Name = name;
             entity.PlannedHours = hours;
-            entity.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
-            var trackedOrder = await db.ProductionOrders.FirstAsync(x => x.Id == entity.ProductionOrderId);
-            InvalidateSequenceConfirmation(trackedOrder);
+            if (machineId != 0)
+            {
+                var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
+                if (machine == null) { ShowError(L["SelectMachine"]); return; }
+                entity.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
+            }
+            else entity.WorkCenterId = null;
+            var order = await db.ProductionOrders.FirstAsync(x => x.Id == entity.ProductionOrderId);
+            InvalidateSequenceConfirmation(order);
             await db.SaveChangesAsync();
+            await transaction.CommitAsync();
             editedNames.Remove(id);
             editedHours.Remove(id);
             editedMachines.Remove(id);
-            ShowSuccess(L["OperationSaved"]);
+            ShowSuccess(L["OperationUpdatedReconfirm"]);
             await ReloadAsync();
         }
-        catch (Exception ex) { ShowError(ex.Message); }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not edit operation {OperationId}", id);
+            ShowError(L["OperationUpdateFailed"]);
+        }
     }
 
     private async Task DeleteOperation(long id)
     {
         if (!canEdit) return;
-        var step = operations.FirstOrDefault(x => x.Id == id);
-        if (step == null) return;
-        if (CurrentSchedule(id) != null)
-        {
-            ShowError(L["UnscheduleBeforeAdjusting"]);
-            return;
-        }
         try
         {
             await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
             var entity = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == id);
             if (entity == null) return;
-            if (entity.Status is ProductionOperationStatus.Running or ProductionOperationStatus.Completed)
+            if (!await CancelPlannedOrderBookingsAsync(db, entity.ProductionOrderId))
             {
-                ShowError(L["CannotChangeActiveSchedule"]);
-                return;
+                ShowError(L["CannotChangeActiveSchedule"]); return;
             }
+            var orderId = entity.ProductionOrderId;
             db.ProductionOperations.Remove(entity);
-            var remaining = await db.ProductionOperations
-                .Where(x => x.ProductionOrderId == step.ProductionOrderId && x.Id != id)
-                .OrderBy(x => x.Sequence).ToListAsync();
+            var remaining = await db.ProductionOperations.Where(x =>
+                x.ProductionOrderId == orderId && x.Id != id)
+                .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToListAsync();
             for (var i = 0; i < remaining.Count; i++)
                 remaining[i].Sequence = i + 1;
-            var trackedOrder = await db.ProductionOrders.FirstAsync(x => x.Id == step.ProductionOrderId);
-            InvalidateSequenceConfirmation(trackedOrder);
-            await db.SaveChangesAsync();
-            selectedOperationId = null;
-            ShowSuccess(L["OperationRemoved"]);
-            await ReloadAsync();
-        }
-        catch (Exception ex) { ShowError(ex.Message); }
-    }
 
-    private async Task UnscheduleOperation(long id)
-    {
-        if (!canEdit) return;
-        try
-        {
-            await using var db = await DbFactory.CreateDbContextAsync();
-            var step = await db.ProductionOperations.FirstOrDefaultAsync(x => x.Id == id);
-            if (step == null) return;
-            var dependentIds = await db.ProductionOperations
-                .Where(x => x.ProductionOrderId == step.ProductionOrderId && x.Sequence >= step.Sequence)
-                .Select(x => x.Id).ToListAsync();
-            var active = await db.ProductionSchedules
-                .Where(x => dependentIds.Contains(x.ProductionOperationId) &&
-                    x.Status != ScheduleStatus.Cancelled).ToListAsync();
-            if (active.Any(x => x.Status != ScheduleStatus.Planned))
-            {
-                ShowError(L["CannotUnscheduleActive"]);
-                return;
-            }
-            foreach (var entry in active)
-                entry.Status = ScheduleStatus.Cancelled;
+            var order = await db.ProductionOrders.FirstAsync(x => x.Id == orderId);
+            order.OperationsRouteInitialized = true; // A manager's removal must persist.
+            InvalidateSequenceConfirmation(order);
             await db.SaveChangesAsync();
-            ShowSuccess(L["OperationsReturnedToQueue"]);
+            await transaction.CommitAsync();
+            selectedOperationId = null;
+            ShowSuccess(L["OperationRemovedReconfirm"]);
             await ReloadAsync();
         }
-        catch (Exception ex) { ShowError(ex.Message); }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not remove operation {OperationId}", id);
+            ShowError(L["OperationUpdateFailed"]);
+        }
     }
 
     private void SetView(CalendarView view)
