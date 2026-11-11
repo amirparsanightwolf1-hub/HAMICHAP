@@ -14,7 +14,7 @@
     });
     document.addEventListener("dragover", function (event) {
         if (!(event.target instanceof Element)) return;
-        if (!event.target.closest(".machine-schedule .machine-day-cell, .machine-schedule .planning-order-panel"))
+        if (!event.target.closest(".machine-schedule .month-day, .machine-schedule .timeline-slot, .machine-schedule .planning-order-panel"))
             return;
         event.preventDefault();
         if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
