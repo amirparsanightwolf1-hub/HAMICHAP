@@ -2576,4 +2576,24 @@
   <data name="MachineWorkloadLegend" xml:space="preserve"><value>آبی = دستگاه مشغول؛ خانه خالی = دستگاه آزاد. قرمز = هم‌پوشانی موجود که باید اصلاح شود. هر دستگاه نمی‌تواند همزمان دو عملیات انجام دهد.</value></data>
   <data name="MachineSchedulingFailed" xml:space="preserve"><value>ثبت زمان‌بندی دستگاه انجام نشد. ممکن است زمان‌بندی دیگری همزمان تغییر کرده باشد؛ صفحه را تازه کنید و بازه آزاد دیگری انتخاب کنید.</value></data>
   <data name="BookedTasks" xml:space="preserve"><value>عملیات رزروشده</value></data>
+  <data name="SequenceConfirmed" xml:space="preserve"><value>ترتیب عملیات توسط مدیر تولید تأیید شد</value></data>
+  <data name="SequencePendingConfirmation" xml:space="preserve"><value>ترتیب عملیات در انتظار تأیید</value></data>
+  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>پیش از ثبت زمان‌بندی، ترتیب مراحل را بررسی و تأیید کنید.</value></data>
+  <data name="ConfirmOperationSequence" xml:space="preserve"><value>تأیید ترتیب عملیات</value></data>
+  <data name="SequenceChangeNeedsReconfirmation" xml:space="preserve"><value>هر تغییر در مرحله یا ترتیب آن، تأیید قبلی را باطل می‌کند؛ ترتیب جدید را دوباره تأیید کنید.</value></data>
+  <data name="MoveOperationUp" xml:space="preserve"><value>انتقال به بالا</value></data>
+  <data name="MoveOperationDown" xml:space="preserve"><value>انتقال به پایین</value></data>
+  <data name="SequenceUpdatedReconfirm" xml:space="preserve"><value>ترتیب مراحل تغییر کرد. مدیر تولید باید ترتیب جدید را تأیید کند.</value></data>
+  <data name="SequenceUpdateFailed" xml:space="preserve"><value>تغییر ترتیب مراحل انجام نشد. دوباره تلاش کنید.</value></data>
+  <data name="UnscheduleBeforeReordering" xml:space="preserve"><value>پیش از تغییر ترتیب، همه مراحل زمان‌بندی‌شده این سفارش را به فهرست بازگردانید.</value></data>
+  <data name="ApprovalIdentityMissing" xml:space="preserve"><value>برای تأیید ترتیب، حساب کاربری واردشده مدیر تولید لازم است.</value></data>
+  <data name="InvalidOperationSequence" xml:space="preserve"><value>برای تأیید، شماره مراحل باید پیوسته و بدون تکرار، نام‌ها معتبر و مدت زمان‌ها مثبت باشند.</value></data>
+  <data name="StageDurationTotalMismatch" xml:space="preserve"><value>پیش از تأیید ترتیب، مجموع زمان مراحل باید با زمان کل تعیین‌شده توسط مدیرعامل برابر باشد.</value></data>
+  <data name="MachineAssignmentsRequired" xml:space="preserve"><value>پیش از تأیید ترتیب، برای هر مرحله یک دستگاه فعال انتخاب و ذخیره کنید.</value></data>
+  <data name="ExistingOrderSequenceConflict" xml:space="preserve"><value>زمان‌بندی‌های موجود هم‌پوشانی دارند یا مطابق ترتیب مراحل نیستند. پیش از تأیید، آن‌ها را اصلاح کرده یا به فهرست بازگردانید.</value></data>
+  <data name="SequenceConfirmationSaved" xml:space="preserve"><value>تأیید ترتیب مراحل توسط مدیر تولید ذخیره شد.</value></data>
+  <data name="SequenceConfirmationFailed" xml:space="preserve"><value>ثبت تأیید ترتیب مراحل انجام نشد. دوباره تلاش کنید.</value></data>
+  <data name="SequenceMustBeConfirmed" xml:space="preserve"><value>مدیر تولید باید پیش از زمان‌بندی، ترتیب فعلی عملیات را تأیید کند. سفارش را انتخاب و دکمه تأیید ترتیب عملیات را بزنید.</value></data>
+  <data name="OrderOperationOverlap" xml:space="preserve"><value>این سفارش در آن بازه زمانی عملیات دیگری دارد</value></data>
+  <data name="SaveAndReconfirmMachineChange" xml:space="preserve"><value>تغییر دستگاه را ذخیره کنید و پیش از زمان‌بندی، از مدیر تولید بخواهید ترتیب مراحل را دوباره تأیید کند.</value></data>
 </root>
