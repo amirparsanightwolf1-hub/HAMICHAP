@@ -2576,4 +2576,24 @@
   <data name="MachineWorkloadLegend" xml:space="preserve"><value>Blue = machine busy; empty cells = available. Red = existing overlapping bookings requiring correction. One machine cannot run two operations simultaneously.</value></data>
   <data name="MachineSchedulingFailed" xml:space="preserve"><value>Unable to save the machine booking. Another scheduling change may have occurred; refresh and try another available slot.</value></data>
   <data name="BookedTasks" xml:space="preserve"><value>booked tasks</value></data>
+  <data name="SequenceConfirmed" xml:space="preserve"><value>Operation sequence confirmed by Production Manager</value></data>
+  <data name="SequencePendingConfirmation" xml:space="preserve"><value>Operation sequence awaiting confirmation</value></data>
+  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>Review the order of operations and confirm it before assigning calendar times.</value></data>
+  <data name="ConfirmOperationSequence" xml:space="preserve"><value>Confirm operation sequence</value></data>
+  <data name="SequenceChangeNeedsReconfirmation" xml:space="preserve"><value>Changing a stage or its position cancels approval; confirm the updated sequence again.</value></data>
+  <data name="MoveOperationUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="MoveOperationDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="SequenceUpdatedReconfirm" xml:space="preserve"><value>Operation sequence updated. The Production Manager must confirm the new order.</value></data>
+  <data name="SequenceUpdateFailed" xml:space="preserve"><value>Could not change the operation sequence. Please retry.</value></data>
+  <data name="UnscheduleBeforeReordering" xml:space="preserve"><value>Return all scheduled stages of this order to the list before changing their sequence.</value></data>
+  <data name="ApprovalIdentityMissing" xml:space="preserve"><value>A signed-in Production Manager account is required to confirm the sequence.</value></data>
+  <data name="InvalidOperationSequence" xml:space="preserve"><value>Operations must have unique sequential numbers, valid names and positive durations before confirmation.</value></data>
+  <data name="StageDurationTotalMismatch" xml:space="preserve"><value>The sum of stage durations must equal the CEO's total duration before confirming the sequence.</value></data>
+  <data name="MachineAssignmentsRequired" xml:space="preserve"><value>Select and save an active machine for every operation before confirming the sequence.</value></data>
+  <data name="ExistingOrderSequenceConflict" xml:space="preserve"><value>Existing bookings overlap or are out of the requested order. Return or correct these bookings before confirming.</value></data>
+  <data name="SequenceConfirmationSaved" xml:space="preserve"><value>The Production Manager's operation sequence confirmation has been saved.</value></data>
+  <data name="SequenceConfirmationFailed" xml:space="preserve"><value>Could not save the sequence confirmation. Please try again.</value></data>
+  <data name="SequenceMustBeConfirmed" xml:space="preserve"><value>The Production Manager must confirm the current operation sequence before scheduling. Select the order and click Confirm operation sequence.</value></data>
+  <data name="OrderOperationOverlap" xml:space="preserve"><value>This order already has another operation during that interval</value></data>
+  <data name="SaveAndReconfirmMachineChange" xml:space="preserve"><value>Save the updated machine assignment and have the Production Manager confirm the sequence again before scheduling.</value></data>
 </root>
