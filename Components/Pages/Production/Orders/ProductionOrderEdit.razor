@@ -448,8 +448,7 @@
                 @if (productionOperations.Count == 0)
                 {
                     <div class="alert alert-info mb-0">
-                        No production operations have been defined for this
-                        production order yet.
+                        @L["No production operations have been defined for this production order yet."]
                     </div>
                 }
                 else
@@ -576,8 +575,7 @@
                 @if (productionSchedules.Count == 0)
                 {
                     <div class="alert alert-info mb-0">
-                        No production schedule has been created for this
-                        production order yet.
+                        @L["No production schedule has been created for this production order yet."]
                     </div>
                 }
                 else
@@ -699,11 +697,11 @@
 
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <strong>Material Request</strong>
-                <span class="badge bg-info">Operator entered</span>
+                <strong>@L["Material Request"]</strong>
+                <span class="badge bg-info">@L["Operator entered"]</span>
             </div>
             <div class="card-body">
-                <p class="section-hint">Select the materials needed for this production order and enter the requested quantities. Submitting this request does not reserve or issue inventory.</p>
+                <p class="section-hint">@L["Select the materials needed for this production order and enter the requested quantities. Submitting this request does not reserve or issue inventory."]</p>
 
                 <datalist id="production-material-items">
                     @foreach (var item in activeItems)
@@ -716,9 +714,9 @@
                     <table class="table table-hover align-middle">
                         <thead>
                             <tr>
-                                <th class="erp-min-width-280" >Material</th>
-                                <th class="erp-min-width-130" >Requested quantity</th>
-                                <th class="erp-width-120">Unit</th>
+                                <th class="erp-min-width-280" >@L["Material"]</th>
+                                <th class="erp-min-width-130" >@L["Requested quantity"]</th>
+                                <th class="erp-width-120">@L["Unit"]</th>
                                 <th class="erp-min-width-180" >Note</th>
                                 <th class="erp-width-70" ></th>
                             </tr>
@@ -731,10 +729,10 @@
                                         <input class="form-control" list="production-material-items"
                                                value="@line.ItemSearchText"
                                                @onchange="(e) => OnRequestItemChanged(line, e.Value?.ToString())"
-                                               placeholder="Search by item name or code" />
+                                               placeholder="@L["Search by item name or code"]" />
                                         @if (line.ItemId == 0 && !string.IsNullOrWhiteSpace(line.ItemSearchText))
                                         {
-                                            <small class="text-danger">Choose an item from the suggestions.</small>
+                                            <small class="text-danger">@L["Choose an item from the suggestions."]</small>
                                         }
                                     </td>
                                     <td>
@@ -742,10 +740,10 @@
                                                @bind="line.Quantity" @bind:event="oninput" />
                                     </td>
                                     <td><input class="form-control" value="@line.UnitSymbol" readonly /></td>
-                                    <td><input class="form-control" @bind="line.Notes" placeholder="Optional" /></td>
+                                    <td><input class="form-control" @bind="line.Notes" placeholder="@L["Optional"]" /></td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-outline-danger"
-                                                title="Remove line" @onclick="() => RemoveRequestLine(line)">×</button>
+                                                title="@L["Remove line"]" @onclick="() => RemoveRequestLine(line)">×</button>
                                     </td>
                                 </tr>
                             }
@@ -755,7 +753,7 @@
 
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
                     <button type="button" class="btn btn-outline-primary" @onclick="AddRequestLine">
-                        + Add material line
+                        @L["+ Add material line"]
                     </button>
                     <button type="button" class="btn btn-primary" @onclick="SubmitMaterialRequest"
                             disabled="@isSavingMaterialRequest">
@@ -766,11 +764,11 @@
         </div>
 
         <div class="card mb-4">
-            <div class="card-header"><strong>Submitted Material Requests</strong></div>
+            <div class="card-header"><strong>@L["Submitted Material Requests"]</strong></div>
             <div class="card-body">
                 @if (materialRequests.Count == 0)
                 {
-                    <div class="text-muted">No material requests have been submitted for this production order.</div>
+                    <div class="text-muted">@L["No material requests have been submitted for this production order."]</div>
                 }
                 else
                 {
@@ -784,7 +782,7 @@
                             </div>
                             <div class="table-responsive">
                                 <table class="table table-sm mb-0">
-                                    <thead><tr><th>Material</th><th>Code</th><th>Quantity</th><th>Unit</th><th>Note</th></tr></thead>
+                                    <thead><tr><th>@L["Material"]</th><th>@L["Code"]</th><th>@L["Quantity"]</th><th>@L["Unit"]</th><th>Note</th></tr></thead>
                                     <tbody>
                                         @foreach (var requestedLine in request.Lines)
                                         {
@@ -820,8 +818,7 @@
                 @if (materialReservations.Count == 0)
                 {
                     <div class="alert alert-info mb-0">
-                        No material reservations have been created for this
-                        production order.
+                        @L["No material reservations have been created for this production order."]
                     </div>
                 }
                 else
