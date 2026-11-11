@@ -1,4 +1,5 @@
 @page "/production/machine-schedule"
+@rendermode InteractiveServer
 @using System.Globalization
 @using System.Text.Json
 @using HamiChap_MES_ERP.Data
@@ -24,12 +25,41 @@
         @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
         <div class="planning-layout">
             <aside class="planning-order-panel">
-                <div class="card mb-3" @ondragover:preventDefault="true" @ondrop:preventDefault="true" @ondrop="DropBackToQueue">
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between">
+                        <strong>@L["CeoProductionOrders"]</strong>
+                        <span class="badge bg-secondary">@orders.Count(x => x.Status != ProductionOrderStatus.Cancelled)</span>
+                    </div>
+                    <div class="card-body machine-ceo-order-list">
+                        @foreach (var order in orders.Where(x => x.Status != ProductionOrderStatus.Cancelled).OrderBy(x => x.PlannedStartDate ?? DateTime.MaxValue))
+                        {
+                            <div class="machine-ceo-order mb-2">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <strong>@order.OrderNumber</strong>
+                                    <span class="small text-muted">@OrderScheduledCount(order.Id)/@OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
+                                </div>
+                                <div class="small machine-ceo-dates">@L["CeoWindow"]: @FormatDateOnly(order.PlannedStartDate) – @FormatDateOnly(order.PlannedEndDate)</div>
+                                @if (OrderOperationCount(order.Id) == 0)
+                                {
+                                    <div class="small text-muted">@L["NoOperationsGenerated"]</div>
+                                }
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2"
+                                        @onclick="() => FocusOrder(order.Id)">@L["ShowCeoWindow"]</button>
+                            </div>
+                        }
+                        @if (orders.Count == 0)
+                        {
+                            <p class="small text-muted">@L["NoProductionOrders"]</p>
+                        }
+                    </div>
+                </div>
+                <div class="card mb-3">
                     <div class="card-header"><strong>@L["UnscheduledOperations"]</strong><span class="badge bg-secondary">@operations.Count(x => !schedules.Any(s => s.ProductionOperationId == x.Id))</span></div>
                     <div class="card-body order-queue machine-return-zone"
                          @ondragover:preventDefault="true"
                          @ondrop:preventDefault="true"
-                         @ondrop="DropBackToQueue">
+                         @ondrop="DropBackToQueue"
+                         @ondrop:stopPropagation="true">
                         <div class="machine-return-hint" role="status">@L["DropScheduledStepHere"]</div>
                         @if (operations.Count > 0 && operations.All(x => schedules.Any(s => s.ProductionOperationId == x.Id)))
                         {
@@ -37,11 +67,12 @@
                         }
                         @foreach (var operation in operations.Where(x => !schedules.Any(s => s.ProductionOperationId == x.Id)).OrderBy(x => x.ProductionOrder.PlannedEndDate).ThenBy(x => x.Sequence))
                         {
-                            <div class="queue-order @(selectedOperationId == operation.Id ? "queue-order-selected" : "")" draggable="@canEdit" @ondragstart="() => SelectDraggedOperation(operation.Id)" @ondragend="ClearDrag" @onclick="() => SelectOperation(operation.Id)">
+                            <div class="queue-order @(selectedOperationId == operation.Id ? "queue-order-selected" : "")" draggable="@canEdit" @ondragstart="() => SelectDraggedOperation(operation.Id)" @onclick="() => SelectOperation(operation.Id)">
                                 <div class="d-flex justify-content-between gap-2"><strong>@operation.ProductionOrder.OrderNumber</strong><span class="badge bg-secondary">#@operation.Sequence</span></div>
                                 <div class="small fw-semibold mt-1">@operation.Name</div>
                                 <div class="small text-muted">@L["DueDate"]: @FormatDate(operation.ProductionOrder.PlannedEndDate)</div>
                                 <div class="small text-muted">@L["EstimatedHours"]: @DurationLabel(ProductionPlanningTime.OperationMinutes(operation.PlannedHours))</div>
+                                <div class="small fw-semibold machine-ceo-dates">@L["CeoWindow"]: @FormatDateOnly(operation.ProductionOrder.PlannedStartDate) – @FormatDateOnly(operation.ProductionOrder.PlannedEndDate)</div>
                                 <div class="small text-muted">@L["MachineStepCount"]: @operation.Sequence / @OrderOperationCount(operation.ProductionOrderId)</div>
                                 <div class="small text-muted">@L["CeoDuration"]: @DurationLabel(operation.ProductionOrder.EstimatedDurationMinutes)</div>
                                 @if (canEdit)
@@ -57,8 +88,8 @@
                                         <option value="0">@L["SelectMachine"]</option>
                                         @foreach (var machine in SuggestedMachines(operation)) { <option value="@machine.Id">@machine.Name</option> }
                                     </select>
-                                    <label class="form-label mt-2">@L["PlannedStart"]</label>
-                                    <input type="datetime-local" class="form-control form-control-sm" value="@StartChoice(operation.Id)" @onchange="e => SetStartChoice(operation.Id, e.Value?.ToString())" />
+                                    <label class="form-label mt-2">@L["PlannedDate"]</label>
+                                    <input type="date" class="form-control form-control-sm" value="@StartChoice(operation.Id)" @onchange="e => SetStartChoice(operation.Id, e.Value?.ToString())" />
                                     <button class="btn btn-primary btn-sm mt-2 w-100" @onclick="() => Schedule(operation.Id)">@L["ScheduleOperation"]</button>
                                 }
                             </div>
@@ -98,26 +129,22 @@
                             <button class="btn @(viewMode == CalendarView.Day ? "btn-primary" : "btn-outline-primary")" @onclick="() => viewMode = CalendarView.Day">@L["Day"]</button>
                         </div>
                     </div>
-                    <div class="shift-legend mb-3">
-                        <span><i class="shift-dot work"></i> @L["RegularShift"]</span>
-                        <span><i class="shift-dot overtime"></i> @L["OvertimeShift"]</span>
-                        <span><i class="shift-dot night"></i> @L["NightShift"]</span>
-                    </div>
+                    <p class="small text-muted mb-3">@L["DateBasedSchedulingHelp"]</p>
                     @if (operations.Count > 0)
                     {
                         <div class="machine-order-overview mb-3">
                             @foreach (var order in orders.Where(x => operations.Any(op => op.ProductionOrderId == x.Id)))
                             {
-                                <div class="machine-order-totals" draggable="@canEdit" @ondragstart="() => StartScheduledOrderDrag(order.Id)" @ondragend="ClearDrag">
+                                <div class="machine-order-totals" draggable="@canEdit" @ondragstart="() => StartScheduledOrderDrag(order.Id)">
                                     <div class="d-flex justify-content-between align-items-center gap-2">
                                         <strong>@order.OrderNumber</strong>
-                                        <span class="badge bg-secondary">@OrderScheduledCount(order.Id) / @OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
+                                        <span class="badge bg-secondary">@OrderScheduledCount(order.Id)/@OrderOperationCount(order.Id) @L["MachineStepCount"]</span>
                                     </div>
-                                    <div class="small">@L["CeoDuration"]: <strong>@DurationLabel(order.EstimatedDurationMinutes)</strong></div>
-                                    <div class="small @(OrderStepMinutes(order.Id) == order.EstimatedDurationMinutes ? "text-success" : "text-danger")">
-                                        @L["MachineDuration"]: <strong>@DurationLabel(OrderStepMinutes(order.Id))</strong>
+                                    <div class="small machine-ceo-dates">@L["CeoWindow"]: @FormatDateOnly(order.PlannedStartDate) – @FormatDateOnly(order.PlannedEndDate)</div>
+                                    <div class="small @(OrderStepMinutes(order.Id) == order.EstimatedDurationMinutes ? "text-success" : "text-warning")">
+                                        @L["CeoDuration"]: @DurationLabel(order.EstimatedDurationMinutes)
+                                        · @L["MachineDuration"]: @DurationLabel(OrderStepMinutes(order.Id))
                                     </div>
-                                    <div class="small text-muted">@FormatDate(order.PlannedStartDate) – @FormatDate(order.PlannedEndDate)</div>
                                     @if (canEdit && OrderScheduledCount(order.Id) > 0)
                                     {
                                         <button type="button" class="btn btn-outline-primary btn-sm mt-2"
@@ -130,124 +157,70 @@
                     <label class="form-label" for="machine-filter">@L["Machine"]</label>
                     <select id="machine-filter" class="form-select mb-3" @bind="machineFilter">
                         <option value="0">@L["AllMachines"]</option>
-                        @foreach (var machine in machines) { <option value="@machine.Id">@machine.Name (@machine.Code)</option> }
+                        @foreach (var machine in machines)
+                        {
+                            <option value="@machine.Id">@machine.Name (@machine.Code)</option>
+                        }
                     </select>
                     @if (machines.Count == 0)
                     {
                         <div class="alert alert-warning">@L["NoActiveMachines"]</div>
-                        <div class="machine-calendar-section mb-4">
-                            <h5 class="machine-calendar-section-title">@L["MachineSchedule"]</h5>
-                            <div class="month-grid">
-                                @foreach (var dayName in new[] { "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" })
-                                {
-                                    <div class="month-weekday">@L[dayName]</div>
-                                }
-                                @foreach (var day in MonthDays)
-                                {
-                                    <div class="month-day @(day.Date == DateTime.Today ? "today" : "")">
-                                        <div class="month-day-number">@Persian.GetDayOfMonth(day)</div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
                     }
-                    @if (viewMode == CalendarView.Month)
+                    @foreach (var machine in machines.Where(m => IsSelectedMachine(m.Id)))
                     {
-                        @foreach (var machine in machines.Where(m => IsSelectedMachine(m.Id)))
-                        {
-                            <div class="machine-calendar-section mb-4">
-                                <h5 class="machine-calendar-section-title">@machine.Name <small>(@machine.Code)</small></h5>
-                                <div class="month-grid">
-                                    @foreach (var dayName in new[] { "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" })
+                        <section class="machine-calendar-section mb-4">
+                            <h5 class="machine-calendar-section-title">@machine.Name <small>(@machine.Code)</small></h5>
+                            <div class="machine-day-grid" style="--machine-day-columns:@(viewMode == CalendarView.Day ? 1 : 7)">
+                                @if (viewMode != CalendarView.Day)
+                                {
+                                    @foreach (var dayName in WeekDayNames)
                                     {
                                         <div class="month-weekday">@L[dayName]</div>
                                     }
-                                    @foreach (var day in CalendarDays)
-                                    {
-                                        <div class="month-day @(day.Date == DateTime.Today ? "today" : "")"
-                                             @onclick="() => DropOperation(machine.Id, day.Date.AddHours(8))"
-                                             @ondragover:preventDefault="true"
-                                             @ondrop:preventDefault="true"
-                                             @ondrop="() => DropOperation(machine.Id, day.Date.AddHours(8))">
-                                            <div class="month-day-number">@Persian.GetDayOfMonth(day)</div>
-                                            @foreach (var slot in DaySchedules(day, machine.Id))
+                                }
+                                @foreach (var day in CalendarDays)
+                                {
+                                    var withinCeoWindow = SelectedOperationAllowedOn(day);
+                                    var isOutsideMonth = viewMode == CalendarView.Month &&
+                                        (Persian.GetMonth(day) != Persian.GetMonth(selectedDate) ||
+                                         Persian.GetYear(day) != Persian.GetYear(selectedDate));
+                                    <div class="machine-day-cell @(day.Date == DateTime.Today ? "today" : "") @(isOutsideMonth ? "outside-month" : "") @(withinCeoWindow ? "machine-available-day" : "")"
+                                         @ondragover:preventDefault="true"
+                                         @ondrop:preventDefault="true"
+                                         @ondrop:stopPropagation="true"
+                                         @ondrop="() => DropOperation(machine.Id, day.Date)">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <button type="button" class="machine-day-date"
+                                                    @onclick="() => ChooseDay(day)">@FormatDateOnly(day)</button>
+                                            @if (canEdit && withinCeoWindow)
                                             {
-                                                <div class="month-order-chip @ShiftColor(slot.PlannedStart)"
-                                                     draggable="@canEdit"
-                                                     @ondragstart="() => StartScheduledDrag(slot.ProductionOperationId)"
-                                                     @ondragend="ClearDrag"
-                                                     title="@slot.ProductionOperation.Name"
-                                                     @onclick:stopPropagation="true"
-                                                     @onclick="() => SelectOperation(slot.ProductionOperationId)">
-                                                    <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
-                                                    <span>@slot.ProductionOperation.Name</span>
-                                                    <small>@slot.PlannedStart.ToString("HH:mm")–@slot.PlannedEnd.ToString("HH:mm")</small>
-                                                    <small>@DurationLabel(ProductionPlanningTime.OperationMinutes(slot.ProductionOperation.PlannedHours))</small>
-                                                    @if (canEdit)
-                                                    {
-                                                        <button type="button" class="machine-unschedule-button"
-                                                                @onclick:stopPropagation="true"
-                                                                @onclick="() => UnscheduleOperation(slot.ProductionOperationId)">@L["ReturnToQueue"]</button>
-                                                    }
-                                                </div>
+                                                <button type="button" class="machine-place-button"
+                                                        @onclick="() => DropOperation(machine.Id, day.Date)">@L["PlaceOnDate"]</button>
                                             }
                                         </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        @foreach (var machine in machines.Where(m => IsSelectedMachine(m.Id)))
-                        {
-                            <div class="machine-calendar-section mb-4">
-                                <h5 class="machine-calendar-section-title">@machine.Name <small>(@machine.Code)</small></h5>
-                                <div class="timeline-scroll">
-                                    <div class="timeline" style="--day-count:@CalendarDays.Count()">
-                                        <div class="timeline-time-head"></div>
-                                        @foreach (var day in CalendarDays)
+                                        @foreach (var slot in DaySchedules(day, machine.Id))
                                         {
-                                            <div class="timeline-day-head"><strong>@Persian.GetDayOfMonth(day)</strong><small>@FormatDay(day)</small></div>
-                                        }
-                                        @for (var hour = 0; hour < 24; hour++)
-                                        {
-                                            var slotHour = hour;
-                                            <div class="timeline-hour">@hour.ToString("00"):00</div>
-                                            @foreach (var day in CalendarDays)
-                                            {
-                                                <div class="timeline-slot @ShiftClass(hour)"
-                                                     @onclick="() => DropOperation(machine.Id, day.Date.AddHours(slotHour))"
-                                                     @ondragover:preventDefault="true"
-                                                     @ondrop:preventDefault="true"
-                                                     @ondrop="() => DropOperation(machine.Id, day.Date.AddHours(slotHour))">
-                                                    @foreach (var slot in HourSchedules(day, hour, machine.Id))
-                                                    {
-                                                        <div class="timeline-order @ShiftColor(slot.PlannedStart)"
-                                                             draggable="@canEdit"
-                                                             @ondragstart="() => StartScheduledDrag(slot.ProductionOperationId)"
-                                                             @onclick:stopPropagation="true"
-                                                             @onclick="() => SelectOperation(slot.ProductionOperationId)"
-                                                             title="@slot.ProductionOperation.Name">
-                                                            <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
-                                                            <span>@slot.ProductionOperation.Name</span>
-                                                            <small>@slot.PlannedStart.ToString("HH:mm")–@slot.PlannedEnd.ToString("HH:mm")</small>
-                                                            <small>@DurationLabel(ProductionPlanningTime.OperationMinutes(slot.ProductionOperation.PlannedHours))</small>
-                                                            @if (canEdit)
-                                                            {
-                                                                <button type="button" class="machine-unschedule-button"
-                                                                        @onclick:stopPropagation="true"
-                                                                        @onclick="() => UnscheduleOperation(slot.ProductionOperationId)">@L["ReturnToQueue"]</button>
-                                                            }
-                                                        </div>
-                                                    }
-                                                </div>
-                                            }
+                                            <div class="machine-scheduled-chip"
+                                                 draggable="@canEdit"
+                                                 @ondragstart="() => StartScheduledDrag(slot.ProductionOperationId)"
+                                                 @onclick="() => SelectOperation(slot.ProductionOperationId)"
+                                                 title="@slot.ProductionOperation.Name">
+                                                <strong>@slot.ProductionOperation.ProductionOrder.OrderNumber</strong>
+                                                <span>@slot.ProductionOperation.Name</span>
+                                                <small>@L["MachineStepCount"] #@slot.ProductionOperation.Sequence</small>
+                                                <small>@L[slot.Status.ToString()]</small>
+                                                @if (canEdit && slot.Status == ScheduleStatus.Planned)
+                                                {
+                                                    <button type="button" class="machine-unschedule-button"
+                                                            @onclick:stopPropagation="true"
+                                                            @onclick="() => UnscheduleOperation(slot.ProductionOperationId)">@L["ReturnToQueue"]</button>
+                                                }
+                                            </div>
                                         }
                                     </div>
-                                </div>
+                                }
                             </div>
-                        }
+                        </section>
                     }
                     <p class="small text-muted">@L["DragOperationHelp"]</p>
                 </div></div>
