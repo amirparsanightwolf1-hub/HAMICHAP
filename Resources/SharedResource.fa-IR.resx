@@ -2507,4 +2507,20 @@
   <data name="Fri" xml:space="preserve"><value>جمعه</value></data>
   <data name="NoActiveMachines" xml:space="preserve"><value>هیچ دستگاه فعالی یافت نشد. برای زمان‌بندی عملیات تولید، دستگاه‌ها را اضافه یا فعال کنید.</value></data>
   <data name="MachineMismatch" xml:space="preserve"><value>این عملیات با دستگاه انتخاب‌شده سازگار نیست. یک دستگاه پیشنهادی انتخاب کنید یا مسیر تولید را بررسی کنید.</value></data>
+  <data name="DropScheduledStepHere" xml:space="preserve"><value>عملیات زمان‌بندی‌شده را اینجا رها کنید تا به همراه مراحل برنامه‌ریزی‌شده وابسته به لیست عملیات بدون زمان‌بندی برگردد.</value></data>
+  <data name="NoUnscheduledSteps" xml:space="preserve"><value>عملیات بدون زمان‌بندی وجود ندارد. یک عملیات را از تقویم به این قسمت بکشید.</value></data>
+  <data name="CeoDuration" xml:space="preserve"><value>مجموع زمان برنامه مدیرعامل</value></data>
+  <data name="MachineDuration" xml:space="preserve"><value>مجموع زمان مراحل دستگاه‌ها</value></data>
+  <data name="MachineStepCount" xml:space="preserve"><value>مرحله</value></data>
+  <data name="ReturnWholeOrder" xml:space="preserve"><value>بازگرداندن تمام مراحل سفارش به لیست</value></data>
+  <data name="ReturnToQueue" xml:space="preserve"><value>بازگشت به لیست</value></data>
+  <data name="CannotUnscheduleActive" xml:space="preserve"><value>عملیات آزادشده، در حال اجرا یا تکمیل‌شده را نمی‌توان از تقویم حذف کرد.</value></data>
+  <data name="OperationsReturnedToQueue" xml:space="preserve"><value>عملیات زمان‌بندی‌شده به لیست بدون زمان‌بندی بازگردانده شدند.</value></data>
+  <data name="DurationTooShortForSteps" xml:space="preserve"><value>زمان تولید تعیین‌شده توسط مدیرعامل برای تعداد مراحل عملیات کافی نیست.</value></data>
+  <data name="UnscheduleBeforeAdding" xml:space="preserve"><value>برای افزودن عملیات و تنظیم مجدد زمان‌ها ابتدا تمام مراحل زمان‌بندی‌شده سفارش را به لیست بازگردانید.</value></data>
+  <data name="OperationsRebalanced" xml:space="preserve"><value>زمان مراحل دستگاه‌ها مطابق زمان تولید برنامه مدیرعامل دوباره تقسیم شد.</value></data>
+  <data name="CeoPlanRequired" xml:space="preserve"><value>قبل از زمان‌بندی عملیات دستگاه، زمان شروع و پایان سفارش را در تقویم تولید مدیرعامل تعیین کنید.</value></data>
+  <data name="MachineDurationMismatch" xml:space="preserve"><value>مجموع زمان مراحل دستگاه‌ها با زمان برنامه مدیرعامل برابر نیست. برای هماهنگ‌سازی مراحل بدون زمان‌بندی از ایجاد عملیات استفاده کنید.</value></data>
+  <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>این عملیات خارج از بازه تولید برنامه مدیرعامل است. زمان مجاز در همان بازه انتخاب کنید.</value></data>
+  <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>زمان‌بندی دستگاه‌های آزادشده، در حال اجرا و تکمیل‌شده قابل جابه‌جایی نیست.</value></data>
 </root>
