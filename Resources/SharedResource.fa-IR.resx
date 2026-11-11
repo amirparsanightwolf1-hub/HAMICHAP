@@ -2881,4 +2881,32 @@
   <data name="Sheet imposition preview" xml:space="preserve"><value>پیش‌نمایش چیدمان ورق</value></data>
   <data name="RollWorkflowInfo" xml:space="preserve"><value>اطلاعات گردش کار و تولید</value></data>
   <data name="LoadingJob" xml:space="preserve"><value>در حال بارگذاری مشخصات سفارش…</value></data>
+  <data name="Error." xml:space="preserve"><value>خطا.</value></data>
+  <data name="An error occurred while processing your request." xml:space="preserve"><value>هنگام پردازش درخواست شما خطایی رخ داد.</value></data>
+  <data name="Request ID:" xml:space="preserve"><value>شناسه درخواست:</value></data>
+  <data name="Development Mode" xml:space="preserve"><value>حالت توسعه</value></data>
+  <data name="Swapping to" xml:space="preserve"><value>تغییر به</value></data>
+  <data name="environment will display more detailed information about the error that occurred." xml:space="preserve"><value>محیط، اطلاعات بیشتری درباره خطای رخ‌داده نمایش می‌دهد.</value></data>
+  <data name="The Development environment shouldn't be enabled for deployed applications." xml:space="preserve"><value>محیط توسعه نباید برای نسخه عملیاتی فعال باشد.</value></data>
+  <data name="It can result in displaying sensitive information from exceptions to end users." xml:space="preserve"><value>ممکن است اطلاعات حساس خطاها را به کاربران نهایی نمایش دهد.</value></data>
+  <data name="For local debugging, enable the" xml:space="preserve"><value>برای عیب‌یابی محلی، محیط</value></data>
+  <data name="environment by setting the" xml:space="preserve"><value>را با تنظیم متغیر</value></data>
+  <data name="environment variable to" xml:space="preserve"><value>محیطی روی</value></data>
+  <data name="and restarting the app." xml:space="preserve"><value>و راه‌اندازی مجدد برنامه فعال کنید.</value></data>
+  <data name="This app does not currently have a real email sender registered, see" xml:space="preserve"><value>در حال حاضر ارسال‌کننده ایمیل برای این برنامه تنظیم نشده است؛ به</value></data>
+  <data name="for how to configure a real email sender. Normally this would be emailed:" xml:space="preserve"><value>برای تنظیم ارسال ایمیل مراجعه کنید. معمولاً این پیام از طریق ایمیل ارسال می‌شود:</value></data>
+  <data name="You do not have a local username/password for this site. Add a local account so you can log in without an external login." xml:space="preserve"><value>برای این سامانه نام کاربری و رمز عبور محلی ندارید. برای ورود بدون حساب خارجی، یک حساب محلی بسازید.</value></data>
+  <data name="This process disables 2FA until you verify your authenticator app. If you do not complete your authenticator app configuration you may lose access to your account." xml:space="preserve"><value>این فرایند تا زمان تأیید برنامه احراز هویت، ورود دومرحله‌ای را غیرفعال می‌کند. اگر تنظیمات را کامل نکنید، ممکن است به حساب خود دسترسی نداشته باشید.</value></data>
+  <data name="If you lose your device and don't have the recovery codes you will lose access to your account." xml:space="preserve"><value>اگر دستگاه خود را از دست بدهید و کد بازیابی نداشته باشید، دسترسی به حساب خود را از دست خواهید داد.</value></data>
+  <data name="Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should" xml:space="preserve"><value>ایجاد کد بازیابی جدید، کلید برنامه احراز هویت را تغییر نمی‌دهد. برای تغییر کلید باید</value></data>
+  <data name="Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should" xml:space="preserve"><value>غیرفعال کردن ورود دومرحله‌ای، کلید برنامه احراز هویت را تغییر نمی‌دهد. برای تغییر کلید باید</value></data>
+  <data name="Download a two-factor authenticator app like Microsoft Authenticator for" xml:space="preserve"><value>برنامه احراز هویت دومرحله‌ای مانند Microsoft Authenticator را برای</value></data>
+  <data name="or Google Authenticator for" xml:space="preserve"><value>یا Google Authenticator را برای</value></data>
+  <data name="into your two factor authenticator app. Spaces and casing do not matter." xml:space="preserve"><value>در برنامه احراز هویت دومرحله‌ای وارد کنید. فاصله و بزرگی حروف اهمیتی ندارد.</value></data>
+  <data name="Scan the QR Code or enter this key" xml:space="preserve"><value>کد QR را اسکن کنید یا این کلید را وارد کنید</value></data>
+  <data name="Learn how to" xml:space="preserve"><value>راهنمای</value></data>
+  <data name="enable QR code generation" xml:space="preserve"><value>فعال‌سازی ایجاد کد QR</value></data>
+  <data name="Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below." xml:space="preserve"><value>پس از اسکن کد QR یا وارد کردن کلید بالا، برنامه احراز هویت کدی ایجاد می‌کند. آن را در کادر تأیید وارد کنید.</value></data>
+  <data name="You’ve successfully authenticated with" xml:space="preserve"><value>با موفقیت از طریق حساب خارجی وارد شده‌اید:</value></data>
+  <data name="You’ve successfully authenticated with your external provider." xml:space="preserve"><value>با موفقیت از طریق حساب خارجی وارد شده‌اید.</value></data>
 </root>
