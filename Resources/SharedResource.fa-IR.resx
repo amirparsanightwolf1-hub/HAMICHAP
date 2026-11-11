@@ -2548,7 +2548,7 @@
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>برای تخصیص مرحله بعد، سفارش را روی تاریخ دستگاه سازگار در تقویم بکشید.</value></data>
   <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>زمان‌بندی قبلی خارج از بازه تاریخ تأییدشده مدیرعامل است؛ آن را جابه‌جا کرده یا به لیست بازگردانید.</value></data>
   <data name="AdvancedDurationSettings" xml:space="preserve"><value>جزئیات پیشرفته زمان (اختیاری)</value></data>
-  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>همان تقویم برنامه‌ریزی تولید مدیرعامل. سفارش را انتخاب کنید، آن را به عملیات دستگاه‌ها تقسیم کنید، زمان هر مرحله را وارد کرده و روی تقویم قرار دهید.</value></data>
+  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>تقویم تولید مشابه تقویم مدیرعامل، به همراه برنامه‌ریزی عملیات دستگاه‌ها. یک عملیات را انتخاب و روی بازه تقویم کلیک کنید؛ بار کاری دستگاه‌ها در پایین نمایش داده می‌شود.</value></data>
   <data name="SelectOrderToSplit" xml:space="preserve"><value>برای بررسی و تقسیم به مراحل دستگاه‌ها، یک سفارش تولید را انتخاب کنید.</value></data>
   <data name="Scheduled" xml:space="preserve"><value>زمان‌بندی‌شده</value></data>
   <data name="SplitOrderIntoOperations" xml:space="preserve"><value>تقسیم سفارش به عملیات</value></data>
@@ -2560,11 +2560,19 @@
   <data name="SaveOperation" xml:space="preserve"><value>ذخیره عملیات</value></data>
   <data name="DeleteOperation" xml:space="preserve"><value>حذف عملیات</value></data>
   <data name="Break" xml:space="preserve"><value>استراحت ناهار</value></data>
-  <data name="ManagerMonthHelp" xml:space="preserve"><value>رنگ سفارش‌ها برنامه مدیرعامل را نشان می‌دهد و کارت‌های عملیات رنگی، مراحل دستگاه‌ها را نمایش می‌دهند. هر مرحله را به تاریخ موردنظر بکشید تا در زمان کاری مجاز برنامه‌ریزی شود.</value></data>
-  <data name="ManagerTimelineHelp" xml:space="preserve"><value>یک عملیات را انتخاب کرده یا روی بازه ساعتی بکشید. زمان استراحت و شیفت‌های ممنوع حذف و محدوده شروع/پایان مدیرعامل و ظرفیت دستگاه بررسی می‌شود.</value></data>
+  <data name="ManagerMonthHelp" xml:space="preserve"><value>یک عملیات را انتخاب کنید و روی تاریخ موردنظر کلیک کنید تا از اولین زمان مجاز کار زمان‌بندی شود. عملیات دستگاه و سفارش‌های مدیرعامل در یک تقویم دیده می‌شوند.</value></data>
+  <data name="ManagerTimelineHelp" xml:space="preserve"><value>یک عملیات را انتخاب کرده و روی بازه ساعتی کلیک کنید. پیش از ثبت عملیات جدید، زمان‌بندی‌های موجود دستگاه بررسی می‌شوند.</value></data>
   <data name="EnterOperationDetails" xml:space="preserve"><value>نام عملیات، دستگاه و زمان تخمینی مثبت را وارد کنید.</value></data>
   <data name="OperationAdded" xml:space="preserve"><value>عملیات دستگاه به سفارش اضافه شد.</value></data>
   <data name="OperationSaved" xml:space="preserve"><value>عملیات دستگاه ذخیره شد.</value></data>
   <data name="OperationRemoved" xml:space="preserve"><value>عملیات دستگاه حذف شد.</value></data>
   <data name="SelectMachineBeforeScheduling" xml:space="preserve"><value>پیش از قرار دادن عملیات در تقویم، دستگاه آن را انتخاب و ذخیره کنید.</value></data>
+  <data name="ClickSchedulingInstructions" xml:space="preserve"><value>یک عملیات را انتخاب کنید، سپس روی روز یا ساعت دلخواه در تقویم کلیک کنید. برای حذف زمان‌بندی از «بازگشت به لیست» استفاده کنید.</value></data>
+  <data name="SelectedOperation" xml:space="preserve"><value>عملیات انتخاب‌شده</value></data>
+  <data name="SelectOperationToSchedule" xml:space="preserve"><value>برای ثبت در تقویم، یک عملیات را از لیست انتخاب کنید.</value></data>
+  <data name="MachineWorkload" xml:space="preserve"><value>بار کاری دستگاه‌ها</value></data>
+  <data name="MachineWorkloadDescription" xml:space="preserve"><value>عملیات گروه‌بندی‌شده بر اساس دستگاه در روزها و ساعت‌های قابل مشاهده</value></data>
+  <data name="ExistingMachineOverlap" xml:space="preserve"><value>هم‌پوشانی در زمان‌بندی دستگاه شناسایی شد</value></data>
+  <data name="MachineWorkloadLegend" xml:space="preserve"><value>آبی = دستگاه مشغول؛ خانه خالی = دستگاه آزاد. قرمز = هم‌پوشانی موجود که باید اصلاح شود. هر دستگاه نمی‌تواند همزمان دو عملیات انجام دهد.</value></data>
+  <data name="MachineSchedulingFailed" xml:space="preserve"><value>ثبت زمان‌بندی دستگاه انجام نشد. ممکن است زمان‌بندی دیگری همزمان تغییر کرده باشد؛ صفحه را تازه کنید و بازه آزاد دیگری انتخاب کنید.</value></data>
 </root>
