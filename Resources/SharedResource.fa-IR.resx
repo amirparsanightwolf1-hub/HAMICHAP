@@ -2674,4 +2674,69 @@
   <data name="Verification Code" xml:space="preserve"><value>کد تأیید</value></data>
   <data name="Verify" xml:space="preserve"><value>تأیید</value></data>
   <data name="Enter the code" xml:space="preserve"><value>کد را وارد کنید</value></data>
+  <data name="Manage your external logins" xml:space="preserve"><value>مدیریت ورود با حساب‌های خارجی</value></data>
+  <data name="Registered Logins" xml:space="preserve"><value>حساب‌های خارجی ثبت‌شده</value></data>
+  <data name="Add another service to log in." xml:space="preserve"><value>افزودن سرویس دیگری برای ورود.</value></data>
+  <data name="Generate two-factor authentication (2FA) recovery codes" xml:space="preserve"><value>ایجاد کدهای بازیابی احراز هویت دومرحله‌ای</value></data>
+  <data name="Put these codes in a safe place." xml:space="preserve"><value>این کدها را در محلی امن نگهداری کنید.</value></data>
+  <data name="Generate Recovery Codes" xml:space="preserve"><value>ایجاد کدهای بازیابی</value></data>
+  <data name="Profile" xml:space="preserve"><value>پروفایل</value></data>
+  <data name="Username" xml:space="preserve"><value>نام کاربری</value></data>
+  <data name="Phone number" xml:space="preserve"><value>شماره تلفن</value></data>
+  <data name="Choose your username." xml:space="preserve"><value>نام کاربری خود را انتخاب کنید.</value></data>
+  <data name="Enter your phone number" xml:space="preserve"><value>شماره تلفن را وارد کنید</value></data>
+  <data name="Manage your passkeys" xml:space="preserve"><value>مدیریت کلیدهای عبور</value></data>
+  <data name="Rename" xml:space="preserve"><value>تغییر نام</value></data>
+  <data name="No passkeys are registered." xml:space="preserve"><value>هیچ کلید عبوری ثبت نشده است.</value></data>
+  <data name="You have reached the maximum number of allowed passkeys. Please delete one before adding a new one." xml:space="preserve"><value>به حداکثر تعداد کلید عبور رسیده‌اید. پیش از افزودن کلید جدید، یکی را حذف کنید.</value></data>
+  <data name="Add a new passkey" xml:space="preserve"><value>افزودن کلید عبور جدید</value></data>
+  <data name="Rename this passkey" xml:space="preserve"><value>تغییر نام این کلید عبور</value></data>
+  <data name="Remove this passkey from your account" xml:space="preserve"><value>حذف این کلید عبور از حساب شما</value></data>
+  <data name="Personal Data" xml:space="preserve"><value>اطلاعات شخصی</value></data>
+  <data name="Your account contains personal data that you have given us. This page allows you to download or delete that data." xml:space="preserve"><value>حساب شما شامل اطلاعات شخصی ارائه‌شده توسط شماست. در این صفحه می‌توانید آن‌ها را دریافت یا حذف کنید.</value></data>
+  <data name="Download" xml:space="preserve"><value>دریافت</value></data>
+  <data name="Enter a name for your passkey" xml:space="preserve"><value>نامی برای کلید عبور خود وارد کنید</value></data>
+  <data name="Passkey name" xml:space="preserve"><value>نام کلید عبور</value></data>
+  <data name="Continue" xml:space="preserve"><value>ادامه</value></data>
+  <data name="My passkey" xml:space="preserve"><value>کلید عبور من</value></data>
+  <data name="Reset authenticator key" xml:space="preserve"><value>بازنشانی کلید احراز هویت</value></data>
+  <data name="If you reset your authenticator key your authenticator app will not work until you reconfigure it." xml:space="preserve"><value>در صورت بازنشانی کلید، برنامه احراز هویت تا زمان پیکربندی مجدد کار نخواهد کرد.</value></data>
+  <data name="Set password" xml:space="preserve"><value>تنظیم رمز عبور</value></data>
+  <data name="Set your password" xml:space="preserve"><value>رمز عبور خود را تنظیم کنید</value></data>
+  <data name="Two-factor authentication (2FA)" xml:space="preserve"><value>احراز هویت دومرحله‌ای</value></data>
+  <data name="You have no recovery codes left." xml:space="preserve"><value>هیچ کد بازیابی باقی نمانده است.</value></data>
+  <data name="You must" xml:space="preserve"><value>باید</value></data>
+  <data name="generate a new set of recovery codes" xml:space="preserve"><value>مجموعه جدیدی از کدهای بازیابی ایجاد کنید</value></data>
+  <data name="before you can log in with a recovery code." xml:space="preserve"><value>تا بتوانید با کد بازیابی وارد شوید.</value></data>
+  <data name="You have 1 recovery code left." xml:space="preserve"><value>یک کد بازیابی باقی مانده است.</value></data>
+  <data name="You can" xml:space="preserve"><value>می‌توانید</value></data>
+  <data name="You should" xml:space="preserve"><value>بهتر است</value></data>
+  <data name="Forget this browser" xml:space="preserve"><value>فراموش کردن این مرورگر</value></data>
+  <data name="Reset recovery codes" xml:space="preserve"><value>بازنشانی کدهای بازیابی</value></data>
+  <data name="Authenticator app" xml:space="preserve"><value>برنامه احراز هویت</value></data>
+  <data name="Add authenticator app" xml:space="preserve"><value>افزودن برنامه احراز هویت</value></data>
+  <data name="Set up authenticator app" xml:space="preserve"><value>راه‌اندازی برنامه احراز هویت</value></data>
+  <data name="Reset authenticator app" xml:space="preserve"><value>بازنشانی برنامه احراز هویت</value></data>
+  <data name="Privacy and cookie policy have not been accepted." xml:space="preserve"><value>سیاست حریم خصوصی و کوکی‌ها پذیرفته نشده است.</value></data>
+  <data name="You must accept the policy before you can enable two factor authentication." xml:space="preserve"><value>پیش از فعال‌سازی احراز هویت دومرحله‌ای باید سیاست را بپذیرید.</value></data>
+  <data name="Create a new account." xml:space="preserve"><value>ساخت حساب کاربری جدید.</value></data>
+  <data name="Use another service to register." xml:space="preserve"><value>ثبت‌نام با سرویس دیگری.</value></data>
+  <data name="Register confirmation" xml:space="preserve"><value>تأیید ثبت‌نام</value></data>
+  <data name="these docs" xml:space="preserve"><value>مستندات</value></data>
+  <data name="Click here to confirm your account" xml:space="preserve"><value>برای تأیید حساب کلیک کنید</value></data>
+  <data name="Please check your email to confirm your account." xml:space="preserve"><value>برای تأیید حساب، ایمیل خود را بررسی کنید.</value></data>
+  <data name="Resend email confirmation" xml:space="preserve"><value>ارسال مجدد ایمیل تأیید</value></data>
+  <data name="Resend" xml:space="preserve"><value>ارسال مجدد</value></data>
+  <data name="Reset your password." xml:space="preserve"><value>رمز عبور خود را بازنشانی کنید.</value></data>
+  <data name="Please confirm your password." xml:space="preserve"><value>لطفاً رمز عبور را تکرار کنید.</value></data>
+  <data name="Reset" xml:space="preserve"><value>بازنشانی</value></data>
+  <data name="Reset password confirmation" xml:space="preserve"><value>تأیید بازنشانی رمز عبور</value></data>
+  <data name="Your password has been reset. Please" xml:space="preserve"><value>رمز عبور شما بازنشانی شد. لطفاً</value></data>
+  <data name="click here to log in" xml:space="preserve"><value>برای ورود اینجا کلیک کنید</value></data>
+  <data name="Manage your account" xml:space="preserve"><value>مدیریت حساب کاربری</value></data>
+  <data name="Change your account settings" xml:space="preserve"><value>تغییر تنظیمات حساب</value></data>
+  <data name="External logins" xml:space="preserve"><value>ورود با حساب‌های خارجی</value></data>
+  <data name="Passkeys" xml:space="preserve"><value>کلیدهای عبور</value></data>
+  <data name="Personal data" xml:space="preserve"><value>اطلاعات شخصی</value></data>
+  <data name="Recovery codes" xml:space="preserve"><value>کدهای بازیابی</value></data>
 </root>
