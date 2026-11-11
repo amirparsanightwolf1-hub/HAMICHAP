@@ -1227,3 +1227,123 @@
 .machine-schedule .machine-calendar-section-title {
     border-inline-start: 4px solid #0c568d;
 }
+
+
+/* DATE-FIRST MACHINE CALENDAR
+   The CEO defines the allowed date window; machines receive dated operations.
+   Shares the Sales-first month/day visual language without an hourly timeline. */
+.machine-schedule .machine-ceo-order-list {
+    max-height: 340px;
+    overflow-y: auto;
+}
+.machine-schedule .machine-ceo-order {
+    border: 1px solid #d8e6f0;
+    border-inline-start: 3px solid #0c568d;
+    border-radius: 8px;
+    background: #fcfdff;
+    padding: 10px 11px;
+}
+.machine-schedule .machine-ceo-dates {
+    color: #0c568d;
+    font-weight: 600;
+    line-height: 1.7;
+}
+.machine-schedule .machine-day-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--machine-day-columns, 7), minmax(136px, 1fr));
+    gap: 5px;
+    min-width: max-content;
+}
+.machine-schedule .machine-day-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 107px;
+    padding: 8px 7px;
+    border: 1px solid #dfe6ed;
+    border-radius: 8px;
+    background: var(--planning-surface, #fff);
+    transition: background-color .15s, border-color .15s;
+}
+.machine-schedule .machine-day-cell.today {
+    border-color: #0c568d;
+    box-shadow: inset 0 0 0 1px #0c568d;
+}
+.machine-schedule .machine-day-cell.outside-month {
+    background: #f5f7f9;
+}
+.machine-schedule .machine-day-cell.machine-available-day {
+    border-color: #85b2d1;
+    background: #eef6fb;
+}
+.machine-schedule .machine-day-cell.machine-available-day:hover {
+    background: #dceef9;
+}
+.machine-schedule .machine-day-date {
+    display: inline-block;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    padding: 2px 3px;
+    color: #0c568d;
+    font-size: .77rem;
+    font-weight: 700;
+    text-align: start;
+    cursor: pointer;
+}
+.machine-schedule .machine-day-date:hover {
+    text-decoration: underline;
+}
+.machine-schedule .machine-place-button {
+    padding: 4px 6px;
+    font-size: .7rem;
+    font-weight: 700;
+    color: #fff;
+    background: #0c568d;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.machine-schedule .machine-place-button:hover {
+    background: #08446f;
+}
+.machine-schedule .machine-scheduled-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-wrap: anywhere;
+    padding: 8px;
+    background: #0c568d;
+    color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.13);
+    cursor: grab;
+    font-size: .76rem;
+}
+.machine-schedule .machine-scheduled-chip strong,
+.machine-schedule .machine-scheduled-chip small,
+.machine-schedule .machine-scheduled-chip span {
+    color: inherit;
+    line-height: 1.35;
+}
+.machine-schedule .machine-scheduled-chip:active,
+.machine-schedule .queue-order:active,
+.machine-schedule .machine-order-totals:active {
+    cursor: grabbing;
+}
+.machine-schedule .queue-order { cursor: grab; }
+.machine-schedule .machine-order-totals { cursor: grab; }
+.machine-schedule .machine-return-zone { min-height: 175px; }
+.machine-schedule .machine-calendar-section {
+    max-width: 100%;
+    overflow-x: auto;
+}
+.machine-schedule .machine-calendar-section-title {
+    position: sticky;
+    inset-inline-start: 0;
+}
+@media (max-width: 800px) {
+    .machine-schedule .machine-day-grid {
+        grid-template-columns: repeat(var(--machine-day-columns, 7), minmax(136px, 1fr));
+    }
+}
