@@ -14,6 +14,22 @@ The Production Manager **manually splits** each order into operations by enterin
 4. On success, the scheduled operation appears as a card on the same CEO calendar, labeled with order, machine and operation name. To move the stage, select it and click another slot. To remove it, click **Return to list**; the stage and dependent downstream planned bookings return to the unscheduled list. Released/running/completed bookings cannot be edited from this page.
 5. The manager's calendar contains no drag/drop event handlers. No JavaScript drag helper is loaded.
 
+## Manager confirmation and no simultaneous operations on the same order
+
+**Sequence approval is mandatory before booking or moving any operation.**
+
+1. The Production Manager selects an order, adds its operations and specifies an active machine and estimated hours for every stage.
+2. The manager uses **Move up** / **Move down** in the operation list to arrange the intended production sequence. Reordering is blocked if any of that order's operations already has an active machine booking; first use **Return to list** to clear the bookings.
+3. The manager clicks **Confirm operation sequence**. Confirmation is allowed only when step numbers are sequential, every step has a valid machine, the stage durations sum to the CEO's estimated order duration, and existing bookings (if any) already respect that sequence.
+4. The approval is **persisted with the confirming user's ID, UTC timestamp and a SHA-256 fingerprint of the ordered operations**. Any add/edit/delete/reorder invalidates it; the fingerprint also detects changes made through other code paths. Changes to the CEO duration likewise require re-confirmation.
+5. On every calendar placement or move, the application re-reads and verifies the approval **inside the serializable transaction**. Each earlier step of the order must already be scheduled and finish no later than the new step starts. Later scheduled steps must start no earlier than the new step ends.
+6. **An order cannot be assigned to two operations at the same time even when the machines are different.** Before insertion, the application checks *every other active operation for the same order* for any interval overlap. The manager receives the conflicting operation and time range when a proposed booking is rejected. The existing separate one-task-per-machine rule also remains in force.
+7. Historical order overlaps appear as warnings in the order list; invalid legacy bookings must be removed or corrected before confirmation.
+
+### Required database migration
+
+This PR adds nullable columns on `ProductionOrders`: `OperationsSequenceConfirmedAt`, `OperationsSequenceConfirmedBy` and `OperationsSequenceSignature`, using migration `20261111090100_AddOperationSequenceConfirmation`. Apply the EF Core database migration to the target SQL Server database **before opening the revised scheduler**, for example from the solution folder: `dotnet ef database update`. Existing orders start **unconfirmed** and require an explicit manager review; they are not auto-approved.
+
 ## Machine workload matrix
 
 Below the shared calendar is a scrollable utilization table with **one row per active machine** (Polar, Heidelberg, Nilpeter 1/2, Wenchun, Tops 102, Sakurai, SBL and Folder-gluer). Its columns correspond to the currently visible period: individual days for Month/Week and individual hours for Day. Each occupied cell shows the order and operation. Empty cells indicate availability. Historical overlapping assignments, if present, display a visible red warning.
@@ -24,11 +40,11 @@ Below the shared calendar is a scrollable utilization table with **one row per a
 
 1. Select a CEO order planned for a specific week. Confirm Month/Week/Day calendars look the same as ProductionPlanning, with its original colors.
 2. Split a 6-hour order into 1-hour Polar, 3-hour Heidelberg, 1-hour Wenchun and 1-hour SBL operations; confirm their total matches the CEO budget.
-3. Select the Heidelberg stage and click a permitted calendar slot. The card appears in the CEO-style calendar **and** in the Heidelberg machine workload row.
-4. Schedule another stage on a different machine at the same time; permit it. Schedule a second stage overlapping Heidelberg at the same time; **reject** it with a message identifying the conflicting booking.
-5. Schedule an operation immediately after a prior operation ends on the same machine; permit it. Move a planned operation by selecting it and clicking a different free slot.
+3. Use Move up/down to establish the expected stage sequence, confirm it as a Production Manager, then select the Heidelberg stage and click a permitted calendar slot. The card appears in the CEO-style calendar **and** in the Heidelberg machine workload row.
+4. Try placing a *different stage of the same order* on another machine while Heidelberg is active; **reject** it. Try assigning another order to an occupied Heidelberg slot; also **reject** it. Two different orders may run simultaneously on different free machines.
+5. Schedule the second stage only after the first stage ends, and require all prior stages to be booked; adjacent end/start time boundaries are permitted. Move a planned operation by selecting it and clicking a different free slot, while maintaining stage order.
 6. Attempt to place an operation outside the CEO start/end, or into a CEO-prohibited shift; reject it. Ensure lunch is excluded from productive-time duration.
 7. Check red warnings for pre-existing overlapping data, English/Persian and RTL layout, Floor Manager read-only permissions, and two nearly simultaneous scheduling requests.
-8. Confirm the manager page has no draggable cards, drop zones or required drag-and-drop interactions.
+8. Verify that edits or reordering revoke confirmation and scheduling is blocked until the manager reconfirms. Verify approval persists across page reload and different manager sessions. Confirm no drag-and-drop remains.
 
 No .NET SDK, automated integration suite or browser was available during these changes. Keep draft PR #4 unmerged until build, database concurrency and UI testing pass.
