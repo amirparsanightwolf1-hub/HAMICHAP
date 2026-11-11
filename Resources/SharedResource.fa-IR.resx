@@ -2575,4 +2575,5 @@
   <data name="ExistingMachineOverlap" xml:space="preserve"><value>هم‌پوشانی در زمان‌بندی دستگاه شناسایی شد</value></data>
   <data name="MachineWorkloadLegend" xml:space="preserve"><value>آبی = دستگاه مشغول؛ خانه خالی = دستگاه آزاد. قرمز = هم‌پوشانی موجود که باید اصلاح شود. هر دستگاه نمی‌تواند همزمان دو عملیات انجام دهد.</value></data>
   <data name="MachineSchedulingFailed" xml:space="preserve"><value>ثبت زمان‌بندی دستگاه انجام نشد. ممکن است زمان‌بندی دیگری همزمان تغییر کرده باشد؛ صفحه را تازه کنید و بازه آزاد دیگری انتخاب کنید.</value></data>
+  <data name="BookedTasks" xml:space="preserve"><value>عملیات رزروشده</value></data>
 </root>
