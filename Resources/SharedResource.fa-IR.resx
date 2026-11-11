@@ -2547,4 +2547,5 @@
   <data name="RoutingGenerationFailed" xml:space="preserve"><value>ایجاد خودکار مسیر تولید انجام نشد. از دکمه ایجاد عملیات استفاده کنید یا مراحل را دستی اضافه کنید.</value></data>
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>برای تخصیص مرحله بعد، سفارش را روی تاریخ دستگاه سازگار در تقویم بکشید.</value></data>
   <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>زمان‌بندی قبلی خارج از بازه تاریخ تأییدشده مدیرعامل است؛ آن را جابه‌جا کرده یا به لیست بازگردانید.</value></data>
+  <data name="AdvancedDurationSettings" xml:space="preserve"><value>جزئیات پیشرفته زمان (اختیاری)</value></data>
 </root>
