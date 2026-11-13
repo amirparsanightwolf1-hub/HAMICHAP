@@ -28,7 +28,7 @@
             <div class="erp-page-subtitle">@LocalizationService["RollJobSubtitle"]</div>
         </div>
         <button class="btn btn-outline-secondary" @onclick="BackToRequest">
-            <i class="bi bi-arrow-left"></i> @LocalizationService["BackToRequest"]
+            <i class="bi bi-arrow-left"></i> @LocalizationService["SalesRequests"]
         </button>
     </div>
 
@@ -339,6 +339,8 @@
         <SalesRequestWorkflowPanel Request="request" SaveJobAsync="@SaveJobForWorkflowAsync" />
 
         <div class="d-flex flex-wrap gap-2 mb-4">
+            @if (request.Status == SalesRequestStatus.Draft)
+            {
             <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
                 @if (isSaving)
                 {
@@ -346,12 +348,18 @@
                 }
                 @LocalizationService["SaveSpecifications"]
             </button>
+            }
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
-                <i class="bi bi-file-earmark-pdf"></i> @LocalizationService["SaveAndPreviewApprovalProof"]
+                <i class="bi bi-file-earmark-pdf"></i> @(request.Status == SalesRequestStatus.Draft
+                    ? LocalizationService["SaveAndPreviewApprovalProof"]
+                    : LocalizationService["CustomerApprovalProof"])
             </button>
+            @if (request.Status == SalesRequestStatus.Draft)
+            {
             <button class="btn btn-outline-primary" @onclick="SaveAndContinueAsync" disabled="@isSaving">
                 @LocalizationService["SaveAndContinueSalesWorkflow"]
             </button>
+            }
         </div>
     }
 </div>
