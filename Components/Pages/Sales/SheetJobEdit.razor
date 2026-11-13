@@ -46,6 +46,7 @@
     }
     else if (request is not null)
     {
+        <fieldset class="border-0 p-0 m-0 w-100" disabled="@(request.Status != SalesRequestStatus.Draft)">
         <div class="card job-section mb-4">
             <div class="card-header"><strong>@LocalizationService["OrderInformation"]</strong></div>
             <div class="card-body">
@@ -377,6 +378,10 @@
             </div>
         </div>
 
+        </fieldset>
+
+        <SalesRequestWorkflowPanel Request="request" SaveJobAsync="@SaveJobForWorkflowAsync" />
+
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
                 @if (isSaving)
@@ -474,6 +479,10 @@
 
         request = await Db.SalesRequests
             .Include(x => x.Customer)
+            .Include(x => x.CreatedByUser)
+            .Include(x => x.AssignedToUser)
+            .Include(x => x.Lines).ThenInclude(x => x.Item)
+            .Include(x => x.Lines).ThenInclude(x => x.Unit)
             .FirstOrDefaultAsync(x => x.Id == RequestId);
 
         if (request is not null)
@@ -585,14 +594,15 @@
 
     private async Task SaveAndOpenProofAsync()
     {
-        await SaveAsync();
+        if (request?.Status == SalesRequestStatus.Draft)
+            await SaveAsync();
         if (string.IsNullOrWhiteSpace(errorMessage))
             Navigation.NavigateTo($"/sales/requests/proof/{RequestId}");
     }
 
     private async Task SaveAsync()
     {
-        if (request is null) return;
+        if (request is null || request.Status != SalesRequestStatus.Draft) return;
 
         if (string.IsNullOrWhiteSpace(spec.JobTitle))
         {
@@ -613,6 +623,17 @@
         {
             isSaving = true;
             errorMessage = null;
+
+            // Reject incomplete manually entered lines before any database writes.
+            foreach (var line in request.Lines)
+            {
+                if (line.ItemId <= 0)
+                    throw new InvalidOperationException(LocalizationService["ItemRequired"]);
+                if (line.Quantity <= 0)
+                    throw new InvalidOperationException(LocalizationService["QuantityMustBeGreaterThanZero"]);
+                if (line.UnitId <= 0)
+                    throw new InvalidOperationException(LocalizationService["UnitRequired"]);
+            }
 
             // Keep customer creation/selection, item creation/reuse, and specifications in one transaction.
             await using var transaction = await Db.Database.BeginTransactionAsync();
@@ -661,7 +682,10 @@
             var item = await JobProductItemHelper.GetOrCreateAsync(
                 Db, request, spec.JobTitle, "products-sheet");
 
+            var previousFinishedProductItemId = spec.FinishedProductItemId;
             spec.FinishedProductItemId = item.Id;
+            SalesRequestFinishedLineSync.Apply(
+                request, item, spec.SheetCount ?? spec.PrintRunSheets, previousFinishedProductItemId);
 
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(
@@ -713,6 +737,12 @@
             BackToRequest();
     }
 
+    private async Task<bool> SaveJobForWorkflowAsync()
+    {
+        await SaveAsync();
+        return string.IsNullOrWhiteSpace(errorMessage);
+    }
+
     private void BackToRequest() =>
-        Navigation.NavigateTo($"/sales/requests/edit/{RequestId}");
+        Navigation.NavigateTo("/sales/requests");
 }
