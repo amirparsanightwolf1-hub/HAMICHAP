@@ -1,0 +1,365 @@
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject SalesRequestService SalesRequestService
+@inject LocalizationService LocalizationService
+@inject NavigationManager Navigation
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header">
+        <strong>@LocalizationService["SalesRequestInformation"]</strong>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">@LocalizationService["Status"]</label>
+                <input class="form-control" value="@LocalizationService.TranslateEnum(Request.Status)" readonly />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@LocalizationService["CreatedBy"]</label>
+                <input class="form-control" value="@UserDisplayName(Request.CreatedByUser)" readonly />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@LocalizationService["AssignedEvaluator"]</label>
+                <input class="form-control" value="@UserDisplayName(Request.AssignedToUser)" readonly />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">@LocalizationService["RequestedDeliveryDate"]</label>
+                @if (IsDraft)
+                {
+                    <InputDate class="form-control" @bind-Value="Request.RequestedDeliveryDate" />
+                }
+                else
+                {
+                    <input class="form-control" value="@(Request.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")" readonly />
+                }
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">@LocalizationService["Notes"]</label>
+                @if (IsDraft)
+                {
+                    <textarea class="form-control" rows="3" @bind="Request.Notes"></textarea>
+                }
+                else
+                {
+                    <textarea class="form-control" rows="3" readonly>@Request.Notes</textarea>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>@LocalizationService["RequestLines"]</strong>
+        @if (IsDraft)
+        {
+            <button type="button" class="btn btn-sm btn-primary" @onclick="AddLine">
+                <i class="bi bi-plus-circle"></i> @LocalizationService["AddLine"]
+            </button>
+        }
+    </div>
+    <div class="card-body p-0">
+        @if (isLoading)
+        {
+            <div class="p-3 text-muted">@LocalizationService["Loading"]</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="erp-min-width-260">@LocalizationService["Item"]</th>
+                            <th class="text-end erp-min-width-140">@LocalizationService["Quantity"]</th>
+                            <th class="erp-min-width-140">@LocalizationService["Unit"]</th>
+                            <th class="erp-min-width-250">@LocalizationService["Notes"]</th>
+                            @if (IsDraft)
+                            {
+                                <th class="erp-width-80"></th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var line in Request.Lines)
+                        {
+                            <tr @key="line">
+                                <td>
+                                    @if (IsDraft)
+                                    {
+                                        <SearchableSelect TItem="Item"
+                                                          Items="items"
+                                                          Value="line.ItemId"
+                                                          ValueChanged="@(v => ItemChanged(line, v))"
+                                                          TextSelector="@(i => $"{i.Code} - {i.Name}")"
+                                                          ValueSelector="@(i => i.Id)"
+                                                          Placeholder="@LocalizationService["SelectItem"]" />
+                                    }
+                                    else
+                                    {
+                                        <div class="fw-semibold">@GetItemName(line)</div>
+                                        <small class="text-muted">@line.Item?.Code</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (IsDraft)
+                                    {
+                                        <input type="number" class="form-control text-end"
+                                               min="0" step="0.0001" @bind="line.Quantity" />
+                                    }
+                                    else
+                                    {
+                                        <div class="text-end">@line.Quantity.ToString("N2")</div>
+                                    }
+                                </td>
+                                <td>
+                                    @if (IsDraft)
+                                    {
+                                        <select class="form-select" @bind="line.UnitId">
+                                            <option value="0">--</option>
+                                            @foreach (var unit in units)
+                                            {
+                                                <option value="@unit.Id">@unit.Name (@unit.Symbol)</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        @GetUnitName(line)
+                                    }
+                                </td>
+                                <td>
+                                    @if (IsDraft)
+                                    {
+                                        <input class="form-control" type="text" @bind="line.Notes" />
+                                    }
+                                    else
+                                    {
+                                        @line.Notes
+                                    }
+                                </td>
+                                @if (IsDraft)
+                                {
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                @onclick="() => RemoveLine(line)">
+                                            @LocalizationService["Delete"]
+                                        </button>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger mb-3">@errorMessage</div>
+}
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success mb-3">@successMessage</div>
+}
+
+<div class="d-flex flex-wrap gap-2 mb-4">
+    @if (IsDraft)
+    {
+        <button type="button" class="btn btn-outline-primary" disabled="@isBusy" @onclick="SaveRequestAsync">
+            @LocalizationService["Save"]
+        </button>
+        <button type="button" class="btn btn-success" disabled="@isBusy" @onclick="SubmitAsync">
+            @LocalizationService["Submit"]
+        </button>
+    }
+    @if (Request.Status == SalesRequestStatus.Submitted ||
+         Request.Status == SalesRequestStatus.EvaluationCompleted)
+    {
+        <button type="button" class="btn btn-primary" disabled="@isBusy" @onclick="CreateQuotationAsync">
+            @LocalizationService["CreateQuotation"]
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public SalesRequest Request { get; set; } = default!;
+
+    // The parent Roll/Sheet editor saves customer, artwork, specifications
+    // and the tracked request/lines before any workflow transition.
+    [Parameter, EditorRequired]
+    public Func<Task<bool>> SaveJobAsync { get; set; } = default!;
+
+    private List<Item> items = new();
+    private List<Unit> units = new();
+    private long loadedRequestId;
+    private bool isLoading = true;
+    private bool isBusy;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool IsDraft => Request.Status == SalesRequestStatus.Draft;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (loadedRequestId == Request.Id)
+            return;
+
+        isLoading = true;
+        loadedRequestId = Request.Id;
+        items = await Db.Items.Include(x => x.Unit)
+            .Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        units = await Db.Units.Where(x => x.IsActive)
+            .OrderBy(x => x.Name).ToListAsync();
+        isLoading = false;
+    }
+
+    private void AddLine()
+    {
+        if (!IsDraft) return;
+        Request.Lines.Add(new SalesRequestLine
+        {
+            SalesRequestId = Request.Id,
+            Quantity = 0,
+            UnitId = 0,
+            Notes = ""
+        });
+    }
+
+    private void RemoveLine(SalesRequestLine line)
+    {
+        if (!IsDraft) return;
+        if (line.Id != 0)
+            Db.SalesRequestLines.Remove(line);
+        Request.Lines.Remove(line);
+    }
+
+    private async Task ItemChanged(SalesRequestLine line, int itemId)
+    {
+        if (!IsDraft || itemId <= 0) return;
+        var item = items.FirstOrDefault(x => x.Id == itemId);
+        if (item is null) return;
+        line.ItemId = item.Id;
+        line.Item = item;
+        line.UnitId = item.UnitId;
+        line.Unit = item.Unit;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string GetItemName(SalesRequestLine line) =>
+        line.Item?.Name ?? items.FirstOrDefault(x => x.Id == line.ItemId)?.Name
+        ?? line.ItemId.ToString();
+
+    private string GetUnitName(SalesRequestLine line)
+    {
+        var unit = line.Unit ?? units.FirstOrDefault(x => x.Id == line.UnitId);
+        return unit is null ? "-" :
+            string.IsNullOrWhiteSpace(unit.Symbol) ? unit.Name : $"{unit.Name} ({unit.Symbol})";
+    }
+
+    private static string UserDisplayName(HamiChap_MES_ERP.Models.Shared.ApplicationUser? user)
+    {
+        if (user is null) return "-";
+        var fullName = $"{user.FirstName} {user.LastName}".Trim();
+        return fullName.Length > 0 ? fullName : user.UserName ?? "-";
+    }
+
+    private void ValidateRequest()
+    {
+        if (Request.CustomerId <= 0)
+            throw new InvalidOperationException(LocalizationService["CustomerRequired"]);
+        if (Request.Lines.Count == 0)
+            throw new InvalidOperationException(LocalizationService["AtLeastOneRequestLineRequired"]);
+
+        foreach (var line in Request.Lines)
+        {
+            if (line.ItemId <= 0)
+                throw new InvalidOperationException(LocalizationService["ItemRequired"]);
+            if (line.Quantity <= 0)
+                throw new InvalidOperationException(LocalizationService["QuantityMustBeGreaterThanZero"]);
+            if (line.UnitId <= 0)
+                throw new InvalidOperationException(LocalizationService["UnitRequired"]);
+        }
+    }
+
+    private async Task SaveRequestAsync()
+    {
+        if (!IsDraft) return;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            isBusy = true;
+            if (!await SaveJobAsync())
+                return;
+
+            ValidateRequest();
+            await Db.SaveChangesAsync();
+            successMessage = LocalizationService["SalesRequestSavedSuccessfully"];
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (!IsDraft) return;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            isBusy = true;
+            if (!await SaveJobAsync())
+                return;
+
+            ValidateRequest();
+            await SalesRequestService.SubmitAsync(Request.Id);
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task CreateQuotationAsync()
+    {
+        if (Request.Status != SalesRequestStatus.Submitted &&
+            Request.Status != SalesRequestStatus.EvaluationCompleted)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            isBusy = true;
+            await SalesRequestService.CreateQuotationAsync(Request.Id);
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+}
