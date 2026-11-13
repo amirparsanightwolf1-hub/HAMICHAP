@@ -1,0 +1,33 @@
+@page "/sales/requests/edit/{Id:long}"
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+
+<p>Opening the job editor...</p>
+
+@code {
+    [Parameter]
+    public long Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Preserve existing links/bookmarks without retaining the obsolete
+        // generic SalesRequestEdit form.
+        var jobType = await Db.SalesRequests.AsNoTracking()
+            .Where(x => x.Id == Id)
+            .Select(x => (SalesJobType?)x.JobType)
+            .FirstOrDefaultAsync();
+
+        if (jobType is null)
+        {
+            Navigation.NavigateTo("/sales/requests", replace: true);
+            return;
+        }
+
+        var job = jobType == SalesJobType.Roll ? "roll" : "sheet";
+        Navigation.NavigateTo($"/sales/requests/{job}/edit/{Id}", replace: true);
+    }
+}
