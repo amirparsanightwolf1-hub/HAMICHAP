@@ -339,16 +339,6 @@
         <SalesRequestWorkflowPanel Request="request" FinishedProductItemId="@spec.FinishedProductItemId" SaveJobAsync="@SaveJobForWorkflowAsync" />
 
         <div class="d-flex flex-wrap gap-2 mb-4">
-            @if (request.Status == SalesRequestStatus.Draft)
-            {
-            <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
-                @if (isSaving)
-                {
-                    <span class="spinner-border spinner-border-sm me-1"></span>
-                }
-                @LocalizationService["SaveSpecifications"]
-            </button>
-            }
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
                 <i class="bi bi-file-earmark-pdf"></i> @(request.Status == SalesRequestStatus.Draft
                     ? LocalizationService["SaveAndPreviewApprovalProof"]
