@@ -109,6 +109,9 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
+// PDF artwork previews are rendered locally by Docnet.Core (no external API/CDN).
+app.MapLocalPdfPreview();
+
 // Serve runtime-uploaded files only.
 var uploadsPath = Path.Combine(
     app.Environment.ContentRootPath,
