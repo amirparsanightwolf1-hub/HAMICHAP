@@ -380,7 +380,7 @@
 
         </fieldset>
 
-        <SalesRequestWorkflowPanel Request="request" SaveJobAsync="@SaveJobForWorkflowAsync" />
+        <SalesRequestWorkflowPanel Request="request" FinishedProductItemId="@spec.FinishedProductItemId" SaveJobAsync="@SaveJobForWorkflowAsync" />
 
         <div class="d-flex flex-wrap gap-2 mb-4">
             @if (request.Status == SalesRequestStatus.Draft)
