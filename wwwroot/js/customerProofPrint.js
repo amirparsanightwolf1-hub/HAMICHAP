@@ -33,7 +33,7 @@ function prepareProof() {
         usableWidth / Math.max(width, 1));
 
     page.style.setProperty("--proof-print-scale",
-        Math.max(0.05, factor).toFixed(5));
+        String(Number.isFinite(factor) && factor > 0 ? factor : 1));
     prepared = true;
 }
 
