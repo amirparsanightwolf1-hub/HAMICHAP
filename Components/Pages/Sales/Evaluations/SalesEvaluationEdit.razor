@@ -297,8 +297,13 @@ else
 
     private void GoBack()
     {
-        Navigation.NavigateTo(
-            "/sales/requests/edit/" +
-            evaluation?.SalesRequestId);
+        if (evaluation?.SalesRequest is null)
+        {
+            Navigation.NavigateTo("/sales/requests");
+            return;
+        }
+
+        var job = evaluation.SalesRequest.JobType == SalesJobType.Roll ? "roll" : "sheet";
+        Navigation.NavigateTo($"/sales/requests/{job}/edit/{evaluation.SalesRequestId}");
     }
 }
