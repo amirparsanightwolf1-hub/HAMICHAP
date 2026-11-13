@@ -1,0 +1,263 @@
+/*
+ * Dedicated Customer Approval Proof print stylesheet.
+ * Loaded only on the roll/sheet proof page so A4 page settings do not
+ * affect quotations, invoices or other printable screens.
+ * The proof-print-layout class is applied synchronously before printing
+ * and while measuring content, so print and measurement geometry match.
+ */
+@page {
+    size: A4 landscape;
+    margin: 5mm;
+}
+
+html.proof-print-layout .proof-page {
+    width: 287mm !important;
+    max-width: 287mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    color: #20283a !important;
+}
+
+html.proof-print-layout .proof-sheet {
+    zoom: var(--proof-print-scale, 1);
+    width: 287mm !important;
+    max-width: 287mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    box-sizing: border-box !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    font-size: 7pt !important;
+    line-height: 1.15 !important;
+}
+
+html.proof-print-layout .proof-card-header {
+    margin-bottom: 2mm !important;
+    padding-bottom: 2mm !important;
+    gap: 2mm !important;
+}
+html.proof-print-layout .proof-logo {
+    width: 13mm !important;
+    height: 10mm !important;
+}
+html.proof-print-layout .proof-brand {
+    font-size: 10pt !important;
+}
+html.proof-print-layout .proof-header-meta,
+html.proof-print-layout .proof-brand-subtitle {
+    font-size: 6.5pt !important;
+}
+
+html.proof-print-layout .proof-columns {
+    direction: ltr !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, .9fr) !important;
+    grid-template-areas: "left right" !important;
+    gap: 2mm !important;
+    align-items: start !important;
+}
+
+html.proof-print-layout .proof-left-column {
+    grid-column: 1 !important;
+    grid-area: left !important;
+}
+html.proof-print-layout .proof-right-column {
+    grid-column: 2 !important;
+    grid-area: right !important;
+}
+html.proof-print-layout .proof-left-column,
+html.proof-print-layout .proof-right-column {
+    min-width: 0 !important;
+    gap: 1.4mm !important;
+}
+html.proof-print-layout .proof-panel {
+    border-radius: 2mm !important;
+    break-inside: avoid !important;
+}
+html.proof-print-layout .proof-panel-title {
+    padding: 1mm 1.5mm !important;
+    font-size: 6.6pt !important;
+}
+html.proof-print-layout .proof-panel-body {
+    padding: 1.1mm !important;
+}
+
+html.proof-print-layout .proof-artwork-frame {
+    height: 70mm !important;
+}
+html.proof-print-layout .proof-artwork-grid {
+    gap: 1mm !important;
+}
+html.proof-print-layout .proof-artwork-card img {
+    inset: 1mm !important;
+    width: calc(100% - 2mm) !important;
+    height: calc(100% - 2mm) !important;
+}
+html.proof-print-layout .proof-pdf-pages {
+    inset: 1mm !important;
+    overflow: hidden !important;
+    gap: 1mm !important;
+}
+html.proof-print-layout .proof-pdf-page {
+    padding: .5mm !important;
+}
+html.proof-print-layout .proof-pdf-page-number {
+    font-size: 5pt !important;
+    padding-top: .4mm !important;
+}
+
+html.proof-print-layout .proof-dimensions {
+    padding: 1mm !important;
+    margin-top: 1mm !important;
+    font-size: 6pt !important;
+}
+html.proof-print-layout .proof-kv {
+    padding: .8mm 1mm !important;
+    gap: 1mm !important;
+    font-size: 6.2pt !important;
+}
+html.proof-print-layout .proof-technical-grid {
+    column-gap: 1.5mm !important;
+}
+html.proof-print-layout .proof-notes {
+    min-height: 18mm !important;
+    font-size: 6.1pt !important;
+    line-height: 1.2 !important;
+}
+html.proof-print-layout .proof-roll-orientation {
+    min-height: 25mm !important;
+    padding: 1mm !important;
+}
+html.proof-print-layout .proof-roll-orientation img {
+    height: 24mm !important;
+}
+html.proof-print-layout .proof-service-groups {
+    gap: 1mm !important;
+}
+html.proof-print-layout .proof-service-group-title {
+    font-size: 6pt !important;
+    margin-bottom: .4mm !important;
+    padding-bottom: .4mm !important;
+}
+html.proof-print-layout .proof-service-list {
+    gap: .5mm 1mm !important;
+}
+html.proof-print-layout .proof-service {
+    font-size: 5.7pt !important;
+    gap: .6mm !important;
+}
+html.proof-print-layout .proof-service-indicator {
+    width: 3mm !important;
+    height: 3mm !important;
+    flex-basis: 3mm !important;
+    font-size: 5pt !important;
+}
+html.proof-print-layout .proof-two-col {
+    gap: 1mm !important;
+}
+html.proof-print-layout .proof-cmyk-grid {
+    gap: .7mm !important;
+}
+html.proof-print-layout .proof-cmyk-chip {
+    padding: .6mm .2mm !important;
+    gap: .3mm !important;
+}
+html.proof-print-layout .proof-cmyk-swatch {
+    width: 4mm !important;
+    height: 4mm !important;
+    font-size: 5pt !important;
+}
+html.proof-print-layout .proof-cmyk-name {
+    font-size: 5pt !important;
+}
+html.proof-print-layout .proof-approval {
+    margin-top: 1.4mm !important;
+}
+html.proof-print-layout .proof-approval-fields {
+    gap: 2mm !important;
+    font-size: 6pt !important;
+}
+html.proof-print-layout .proof-approval-line {
+    min-height: 5mm !important;
+    padding-bottom: .5mm !important;
+}
+html.proof-print-layout .proof-footer {
+    margin-top: 1.5mm !important;
+    padding-top: .8mm !important;
+    font-size: 5.5pt !important;
+}
+
+html.proof-print-layout .sheet-proof .proof-artwork-frame {
+    height: 65mm !important;
+}
+html.proof-print-layout .sheet-proof .proof-left-column,
+html.proof-print-layout .sheet-proof .proof-right-column {
+    gap: 1.2mm !important;
+}
+html.proof-print-layout .sheet-proof .proof-kv {
+    padding: .7mm .8mm !important;
+    font-size: 6pt !important;
+}
+
+/* Preserve brand and CMYK colors in saved PDF and printed output. */
+@media print {
+    html, body {
+        width: 287mm !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+    body * {
+        visibility: hidden !important;
+    }
+    .proof-page,
+    .proof-page * {
+        visibility: visible !important;
+    }
+    .app-layout,
+    .main-content {
+        display: block !important;
+        width: 287mm !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+    .sidebar,
+    .sidebar-backdrop,
+    .mobile-menu-btn,
+    .language-switcher,
+    .no-print,
+    .proof-page > .erp-page-header {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    .proof-page {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+    }
+    .proof-sheet {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .proof-panel-title,
+    .proof-cmyk-chip,
+    .proof-cmyk-swatch,
+    .proof-service-indicator {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
