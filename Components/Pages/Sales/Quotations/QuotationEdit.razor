@@ -939,7 +939,7 @@
             return;
         }
 
-        Navigation.NavigateTo(
-            $"/sales/requests/edit/{quotation.SalesRequestId}");
+        var job = quotation.SalesRequest?.JobType == SalesJobType.Roll ? "roll" : "sheet";
+        Navigation.NavigateTo($"/sales/requests/{job}/edit/{quotation.SalesRequestId}");
     }
 }
