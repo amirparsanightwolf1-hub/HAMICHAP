@@ -90,7 +90,7 @@
                         {
                             <tr @key="line">
                                 <td>
-                                    @if (IsDraft)
+                                    @if (IsDraft && !IsFinishedProductLine(line))
                                     {
                                         <SearchableSelect TItem="Item"
                                                           Items="items"
@@ -107,7 +107,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (IsDraft)
+                                    @if (IsDraft && !IsFinishedProductLine(line))
                                     {
                                         <input type="number" class="form-control text-end"
                                                min="0" step="0.0001" @bind="line.Quantity" />
@@ -118,7 +118,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (IsDraft)
+                                    @if (IsDraft && !IsFinishedProductLine(line))
                                     {
                                         <select class="form-select" @bind="line.UnitId">
                                             <option value="0">--</option>
@@ -147,6 +147,7 @@
                                 {
                                     <td class="text-center">
                                         <button type="button" class="btn btn-sm btn-outline-danger"
+                                                disabled="@IsFinishedProductLine(line)"
                                                 @onclick="() => RemoveLine(line)">
                                             @LocalizationService["Delete"]
                                         </button>
@@ -198,6 +199,9 @@
     [Parameter, EditorRequired]
     public Func<Task<bool>> SaveJobAsync { get; set; } = default!;
 
+    [Parameter]
+    public int? FinishedProductItemId { get; set; }
+
     private List<Item> items = new();
     private List<Unit> units = new();
     private long loadedRequestId;
@@ -206,6 +210,8 @@
     private string? errorMessage;
     private string? successMessage;
     private bool IsDraft => Request.Status == SalesRequestStatus.Draft;
+    private bool IsFinishedProductLine(SalesRequestLine line) =>
+        FinishedProductItemId.HasValue && line.ItemId == FinishedProductItemId.Value;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -235,7 +241,7 @@
 
     private void RemoveLine(SalesRequestLine line)
     {
-        if (!IsDraft) return;
+        if (!IsDraft || IsFinishedProductLine(line)) return;
         if (line.Id != 0)
             Db.SalesRequestLines.Remove(line);
         Request.Lines.Remove(line);
@@ -264,7 +270,7 @@
             string.IsNullOrWhiteSpace(unit.Symbol) ? unit.Name : $"{unit.Name} ({unit.Symbol})";
     }
 
-    private static string UserDisplayName(HamiChap_MES_ERP.Models.Shared.ApplicationUser? user)
+    private static string UserDisplayName(ApplicationUser? user)
     {
         if (user is null) return "-";
         var fullName = $"{user.FirstName} {user.LastName}".Trim();
