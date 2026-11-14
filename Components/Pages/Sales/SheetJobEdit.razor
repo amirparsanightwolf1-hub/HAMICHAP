@@ -380,20 +380,14 @@
 
         </fieldset>
 
-        <SalesRequestWorkflowPanel Request="request" FinishedProductItemId="@spec.FinishedProductItemId" SaveJobAsync="@SaveJobForWorkflowAsync" />
+        <SalesRequestWorkflowPanel Request="request" SaveJobAsync="@SaveJobForWorkflowAsync" />
 
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
                 <i class="bi bi-file-earmark-pdf"></i> @(request.Status == SalesRequestStatus.Draft
-                    ? LocalizationService["SaveAndPreviewApprovalProof"]
+                    ? LocalizationService["SavePreviewAndContinueSalesWorkflow"]
                     : LocalizationService["CustomerApprovalProof"])
             </button>
-            @if (request.Status == SalesRequestStatus.Draft)
-            {
-            <button class="btn btn-outline-primary" @onclick="SaveAndContinueAsync" disabled="@isSaving">
-                @LocalizationService["SaveAndContinueSalesWorkflow"]
-            </button>
-            }
         </div>
     }
 </div>
@@ -592,10 +586,19 @@
 
     private async Task SaveAndOpenProofAsync()
     {
-        if (request?.Status == SalesRequestStatus.Draft)
+        if (request is null)
+            return;
+
+        if (request.Status == SalesRequestStatus.Draft)
+        {
             await SaveAsync();
-        if (string.IsNullOrWhiteSpace(errorMessage))
-            Navigation.NavigateTo($"/sales/requests/proof/{RequestId}");
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+                return;
+        }
+
+        // The single button saves the job and opens its approval proof.
+        // Submission/quotation actions remain on the job editor.
+        Navigation.NavigateTo($"/sales/requests/proof/{RequestId}");
     }
 
     private async Task SaveAsync()
@@ -605,6 +608,14 @@
         if (string.IsNullOrWhiteSpace(spec.JobTitle))
         {
             errorMessage = LocalizationService["JobTitleRequired"];
+            return;
+        }
+        var orderedQuantity = spec.SheetCount.GetValueOrDefault() > 0
+            ? spec.SheetCount
+            : spec.PrintRunSheets;
+        if (orderedQuantity.GetValueOrDefault() <= 0)
+        {
+            errorMessage = LocalizationService["QuantityMustBeGreaterThanZero"];
             return;
         }
         if (pendingArtworks.Count == 0 && (spec.ArtworkFiles?.Count ?? 0) == 0 && string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
@@ -621,17 +632,6 @@
         {
             isSaving = true;
             errorMessage = null;
-
-            // Reject incomplete manually entered lines before any database writes.
-            foreach (var line in request.Lines)
-            {
-                if (line.ItemId <= 0)
-                    throw new InvalidOperationException(LocalizationService["ItemRequired"]);
-                if (line.Quantity <= 0)
-                    throw new InvalidOperationException(LocalizationService["QuantityMustBeGreaterThanZero"]);
-                if (line.UnitId <= 0)
-                    throw new InvalidOperationException(LocalizationService["UnitRequired"]);
-            }
 
             // Keep customer creation/selection, item creation/reuse, and specifications in one transaction.
             await using var transaction = await Db.Database.BeginTransactionAsync();
@@ -683,7 +683,7 @@
             var previousFinishedProductItemId = spec.FinishedProductItemId;
             spec.FinishedProductItemId = item.Id;
             SalesRequestFinishedLineSync.Apply(
-                request, item, spec.SheetCount ?? spec.PrintRunSheets, previousFinishedProductItemId);
+                Db, request, item, orderedQuantity, previousFinishedProductItemId);
 
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(
@@ -726,13 +726,6 @@
         {
             isSaving = false;
         }
-    }
-
-    private async Task SaveAndContinueAsync()
-    {
-        await SaveAsync();
-        if (string.IsNullOrWhiteSpace(errorMessage))
-            BackToRequest();
     }
 
     private async Task<bool> SaveJobForWorkflowAsync()
