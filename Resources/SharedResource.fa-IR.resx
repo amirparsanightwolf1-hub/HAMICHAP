@@ -2972,4 +2972,6 @@
   <data name="SelectOneReplacementArtwork" xml:space="preserve"><value>برای جایگزینی، دقیقاً یک فایل انتخاب کنید.</value></data>
   <data name="ReplacementArtwork" xml:space="preserve"><value>فایل جایگزین</value></data>
   <data name="ArtworkChangesSavedOnSave" xml:space="preserve"><value>تغییرات فایل‌های طرح پس از انتخاب «ذخیره و پیش‌نمایش تأییدیه» اعمال می‌شوند.</value></data>
+  <data name="ArtworkMissingWarning" xml:space="preserve"><value>هیچ فایل طرحی به این سفارش پیوست نشده است. تا زمان بارگذاری طرح جدید، تأییدیه بدون طرح نمایش داده می‌شود.</value></data>
+  <data name="ArtworkLockedAfterApproval" xml:space="preserve"><value>پس از تأیید پیش‌فاکتور، فایل طرح قابل تغییر نیست. پیش از جایگزینی طرح، درخواست اصلاح ثبت کنید.</value></data>
 </root>
