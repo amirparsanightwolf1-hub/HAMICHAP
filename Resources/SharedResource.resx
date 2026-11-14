@@ -2960,4 +2960,16 @@
   <data name="QuotationNotEditable" xml:space="preserve"><value>This quotation is no longer editable.</value></data>
   <data name="QuotationCustomerMustMatch" xml:space="preserve"><value>Only jobs for the quotation's customer can be attached.</value></data>
   <data name="StartNewJobQuotation" xml:space="preserve"><value>Start new job and quotation</value></data>
+  <data name="MatchingExistingJobFound" xml:space="preserve"><value>An existing job has this title.</value></data>
+  <data name="OpenExistingJobInsteadOfDuplicate" xml:space="preserve"><value>Load the matching job to see its saved specifications and artwork. Unsaved edits on this form will not be transferred.</value></data>
+  <data name="LoadExistingJob" xml:space="preserve"><value>Load existing job</value></data>
+  <data name="MatchingExistingJobSaveBlocked" xml:space="preserve"><value>A job with this title already exists for this customer and job type. Load the existing job instead of creating a duplicate.</value></data>
+  <data name="SelectReplacementArtwork" xml:space="preserve"><value>Choose one replacement artwork file</value></data>
+  <data name="ReplacingArtwork" xml:space="preserve"><value>Replacing</value></data>
+  <data name="ArtworkMarkedForRemoval" xml:space="preserve"><value>Marked for removal when saved</value></data>
+  <data name="ReplaceArtwork" xml:space="preserve"><value>Replace artwork</value></data>
+  <data name="Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="SelectOneReplacementArtwork" xml:space="preserve"><value>Select exactly one replacement file.</value></data>
+  <data name="ReplacementArtwork" xml:space="preserve"><value>Replacement file</value></data>
+  <data name="ArtworkChangesSavedOnSave" xml:space="preserve"><value>Artwork changes are saved when you select Save and preview approval proof.</value></data>
 </root>
