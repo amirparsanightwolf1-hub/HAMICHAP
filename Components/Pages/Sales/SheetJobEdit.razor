@@ -11,11 +11,13 @@
 @using Microsoft.AspNetCore.Hosting
 @using System.IO
 @using HamiChap_MES_ERP.Services
+@using Microsoft.JSInterop
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject IWebHostEnvironment HostEnvironment
 @inject LocalizationService LocalizationService
+@inject IJSRuntime JS
 
 <PageTitle>@LocalizationService["SheetJobSpecification"]</PageTitle>
 
@@ -102,7 +104,7 @@
                     }
 
                     <label class="form-label">@LocalizationService["JobTitle"]</label>
-                    <InputText class="form-control" @bind-Value="spec.JobTitle" />
+                    <InputText class="form-control" @bind-Value="spec.JobTitle" @bind-Value:after="LookupExistingJobAsync" />
                     <div style="grid-column: 1 / -1;">
                         <ExistingJobTitlePrompt CurrentRequestId="@RequestId" CustomerId="@selectedCustomerId"
                                                 JobType="SalesJobType.Sheet" JobTitle="@spec.JobTitle"
@@ -475,6 +477,31 @@
         }
 
         isLoading = false;
+    }
+
+    private async Task LookupExistingJobAsync()
+    {
+        if (request?.Status != SalesRequestStatus.Draft || isCreatingCustomer)
+            return;
+
+        var matches = await ExistingSalesJobLookup.FindAsync(
+            Db, selectedCustomerId, SalesJobType.Sheet, spec.JobTitle, RequestId);
+
+        // A single unambiguous match can be loaded immediately, but ask before
+        // navigating so other unsaved values are never silently discarded.
+        if (matches.Count != 1)
+            return;
+
+        var confirmed = await JS.InvokeAsync<bool>(
+            "confirm", LocalizationService["ConfirmOpenExistingJob"]);
+        if (!confirmed)
+            return;
+
+        var kind = "sheet";
+        var route = $"/sales/requests/{kind}/edit/{matches[0].Id}";
+        if (TargetQuotationId.HasValue)
+            route += $"?quotationId={TargetQuotationId.Value}";
+        Navigation.NavigateTo(route);
     }
 
     private void StartNewCustomer()
