@@ -103,7 +103,7 @@
 
                     <label class="form-label">@LocalizationService["JobTitle"]</label>
                     <InputText class="form-control" @bind-Value="spec.JobTitle" />
-                    <div class="order-info-grid-full">
+                    <div style="grid-column: 1 / -1;">
                         <ExistingJobTitlePrompt CurrentRequestId="@RequestId" CustomerId="@selectedCustomerId"
                                                 JobType="SalesJobType.Sheet" JobTitle="@spec.JobTitle"
                                                 TargetQuotationId="@TargetQuotationId" />
@@ -334,7 +334,9 @@
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
                 <i class="bi bi-file-earmark-pdf"></i> @(request.Status == SalesRequestStatus.Draft
                     ? LocalizationService["SavePreviewAndContinueSalesWorkflow"]
-                    : LocalizationService["CustomerApprovalProof"])
+                    : (canEditArtwork
+                        ? LocalizationService["SaveAndPreviewApprovalProof"]
+                        : LocalizationService["CustomerApprovalProof"]))
             </button>
         </div>
     }
@@ -527,6 +529,17 @@
         {
             isSaving = true;
             errorMessage = null;
+
+            // Recheck approval state immediately before writing: a quotation
+            // could have become approved since the job editor was opened.
+            var locked = await Db.Quotations.AsNoTracking().AnyAsync(q =>
+                (q.SalesRequestId == RequestId ||
+                 q.Lines.Any(line => line.SourceRequestId == RequestId)) &&
+                q.Status != QuotationStatus.Draft &&
+                q.Status != QuotationStatus.RevisionRequired);
+            if (locked)
+                throw new InvalidOperationException(LocalizationService["ArtworkLockedAfterApproval"]);
+
             await using var transaction = await Db.Database.BeginTransactionAsync();
             await SaveArtworkFileAsync();
             var json = JsonNode.Parse(originalJson) as JsonObject ?? new();
