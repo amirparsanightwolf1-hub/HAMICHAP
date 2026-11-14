@@ -334,6 +334,64 @@
             </div>
         </div>
 
+        <!-- All jobs on this quotation, each retaining its own approval proof. -->
+        <div class="card quotation-card mb-4">
+            <div class="card-header quotation-card-header">
+                <strong>@LocalizationService["JobsOnQuotation"] (@linkedRequests.Count)</strong>
+            </div>
+            <div class="card-body quotation-card-body">
+                @foreach (var job in linkedRequests)
+                {
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom py-2" @key="job.Id">
+                        <div>
+                            <strong>@GetRequestTitle(job)</strong>
+                            <div class="text-muted small">
+                                @job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="@($"/sales/requests/{(job.JobType == SalesJobType.Roll ? "roll" : "sheet")}/edit/{job.Id}")">
+                                @LocalizationService["OpenJob"]
+                            </a>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@($"/sales/requests/proof/{job.Id}")">
+                                @LocalizationService["OpenApprovalProof"]
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                @if (IsEditable)
+                {
+                    <div class="row g-2 align-items-end mt-3">
+                        <div class="col-md-8">
+                            <label class="form-label">@LocalizationService["AddSavedJobToQuotation"]</label>
+                            <select class="form-select" @bind="selectedRequestId">
+                                <option value="0">@LocalizationService["SelectSavedJob"]</option>
+                                @foreach (var job in availableRequests)
+                                {
+                                    <option value="@job.Id">@job.RequestNumber — @GetRequestTitle(job)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-auto">
+                            <button type="button" class="btn btn-primary"
+                                    disabled="@(isAttachingRequest || selectedRequestId == 0)"
+                                    @onclick="AttachRequestAsync">
+                                @LocalizationService["AddJobToQuotation"]
+                            </button>
+                        </div>
+                        <div class="col-md-auto">
+                            <a class="btn btn-outline-secondary" href="/sales/requests/create">
+                                @LocalizationService["CreateAnotherJob"]
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
         <!-- Quotation Lines -->
 
         <div class="card quotation-card mb-4">
@@ -390,6 +448,15 @@
                                         <small class="text-muted">
                                             @line.Item?.Code
                                         </small>
+                                        @if (line.SourceRequestId is long sourceId)
+                                        {
+                                            <div class="small mt-1">
+                                                @GetLinkedRequestNumber(sourceId) ·
+                                                <a href="@($"/sales/requests/proof/{sourceId}")">
+                                                    @LocalizationService["OpenApprovalProof"]
+                                                </a>
+                                            </div>
+                                        }
                                     </td>
 
                                     <td class="text-end">
@@ -468,6 +535,10 @@
     public long Id { get; set; }
 
     private Quotation? quotation;
+    private List<SalesRequest> linkedRequests = new();
+    private List<SalesRequest> availableRequests = new();
+    private long selectedRequestId;
+    private bool isAttachingRequest;
 
     private bool isLoading = true;
     private bool isSaving;
@@ -535,6 +606,26 @@
                 errorMessage =
                     LocalizationService["QuotationNotFound"];
             }
+            else
+            {
+                // The primary request remains linked for legacy quotations.
+                var requestIds = quotation.Lines
+                    .Where(line => line.SourceRequestId.HasValue)
+                    .Select(line => line.SourceRequestId!.Value)
+                    .Append(quotation.SalesRequestId)
+                    .Distinct()
+                    .ToArray();
+
+                linkedRequests = await Db.SalesRequests.AsNoTracking()
+                    .Where(job => requestIds.Contains(job.Id))
+                    .OrderBy(job => job.RequestDate)
+                    .ToListAsync();
+
+                availableRequests = IsEditable
+                    ? await QuotationService.GetAvailableRequestsAsync(quotation.CustomerId)
+                    : new List<SalesRequest>();
+                selectedRequestId = 0;
+            }
         }
         catch (Exception ex)
         {
@@ -546,6 +637,50 @@
         }
     }
 
+
+    private string GetLinkedRequestNumber(long requestId) =>
+        linkedRequests.FirstOrDefault(x => x.Id == requestId)?.RequestNumber ?? $"#{requestId}";
+
+    private static string GetRequestTitle(SalesRequest request)
+    {
+        try
+        {
+            using var json = JsonDocument.Parse(
+                string.IsNullOrWhiteSpace(request.JobSpecificationJson)
+                    ? "{}" : request.JobSpecificationJson);
+            if (json.RootElement.TryGetProperty("JobTitle", out var value) &&
+                value.ValueKind == JsonValueKind.String &&
+                !string.IsNullOrWhiteSpace(value.GetString()))
+                return value.GetString()!;
+        }
+        catch (JsonException) { }
+
+        return request.RequestNumber;
+    }
+
+    private async Task AttachRequestAsync()
+    {
+        if (quotation is null || !IsEditable || selectedRequestId <= 0)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            isAttachingRequest = true;
+            await QuotationService.AddRequestToQuotationAsync(quotation.Id, selectedRequestId);
+            await LoadAsync();
+            successMessage = LocalizationService["JobAddedToQuotation"];
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isAttachingRequest = false;
+        }
+    }
 
     private async Task SaveAsync()
     {
@@ -850,6 +985,8 @@
 
     private string GetJobTitle()
     {
+        if (linkedRequests.Count > 1)
+            return $"{linkedRequests.Count} {LocalizationService["JobsOnQuotation"]}";
         var json = quotation?.SalesRequest?.JobSpecificationJson;
         if (string.IsNullOrWhiteSpace(json))
             return "-";
@@ -939,7 +1076,6 @@
             return;
         }
 
-        var job = quotation.SalesRequest?.JobType == SalesJobType.Roll ? "roll" : "sheet";
-        Navigation.NavigateTo($"/sales/requests/{job}/edit/{quotation.SalesRequestId}");
+        Navigation.NavigateTo("/sales/quotations");
     }
 }
