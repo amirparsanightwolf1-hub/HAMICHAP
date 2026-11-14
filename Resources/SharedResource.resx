@@ -2945,4 +2945,7 @@
   <data name="SavePreviewAndContinueSalesWorkflow" xml:space="preserve">
     <value>Save, preview approval proof, and continue sales workflow</value>
   </data>
+  <data name="ContinueSalesWorkflow" xml:space="preserve">
+    <value>Continue sales workflow</value>
+  </data>
 </root>
