@@ -322,6 +322,9 @@
 
 @code {
     [Parameter] public long RequestId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "quotationId")]
+    public long? TargetQuotationId { get; set; }
     private HamiChap_MES_ERP.Models.Sales.SalesRequest? request;
     private bool isLoading = true;
     private string? errorMessage;
@@ -590,7 +593,13 @@
     private static string Empty(string? s) => string.IsNullOrWhiteSpace(s) ? "—" : s;
     private static string Fmt(decimal? d) => d.HasValue ? d.Value.ToString("0.##") : "—";
     private static bool IsImage(string path) => new[] { ".png", ".jpg", ".jpeg", ".webp" }.Any(x => path.EndsWith(x, StringComparison.OrdinalIgnoreCase));
-    private void BackToJob() => Navigation.NavigateTo(request?.JobType == SalesJobType.Roll ? $"/sales/requests/roll/edit/{RequestId}" : $"/sales/requests/sheet/edit/{RequestId}");
+    private void BackToJob()
+    {
+        var job = request?.JobType == SalesJobType.Roll ? "roll" : "sheet";
+        Navigation.NavigateTo(TargetQuotationId.HasValue
+            ? $"/sales/requests/{job}/edit/{RequestId}?quotationId={TargetQuotationId.Value}"
+            : $"/sales/requests/{job}/edit/{RequestId}");
+    }
     private bool isOpeningQuotation;
     private string? quotationError;
 
@@ -604,8 +613,17 @@
             isOpeningQuotation = true;
             // Reuses an existing quote when the job has already been attached.
             // Draft requests go straight to quoting (no duplicate Submit step).
-            var quotation = await QuotationService.CreateFromRequestAsync(RequestId);
-            Navigation.NavigateTo($"/sales/quotations/edit/{quotation.Id}");
+            if (TargetQuotationId.HasValue)
+            {
+                await QuotationService.AddRequestToQuotationAsync(
+                    TargetQuotationId.Value, RequestId);
+                Navigation.NavigateTo($"/sales/quotations/edit/{TargetQuotationId.Value}");
+            }
+            else
+            {
+                var quotation = await QuotationService.CreateFromRequestAsync(RequestId);
+                Navigation.NavigateTo($"/sales/quotations/edit/{quotation.Id}");
+            }
         }
         catch (Exception ex)
         {
