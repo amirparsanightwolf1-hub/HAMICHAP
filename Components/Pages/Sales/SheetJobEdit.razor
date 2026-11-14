@@ -380,7 +380,7 @@
 
         </fieldset>
 
-        <SalesRequestWorkflowPanel Request="request" SaveJobAsync="@SaveJobForWorkflowAsync" />
+        <SalesRequestWorkflowPanel Request="request" />
 
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
@@ -726,12 +726,6 @@
         {
             isSaving = false;
         }
-    }
-
-    private async Task<bool> SaveJobForWorkflowAsync()
-    {
-        await SaveAsync();
-        return string.IsNullOrWhiteSpace(errorMessage);
     }
 
     private void BackToRequest() =>
