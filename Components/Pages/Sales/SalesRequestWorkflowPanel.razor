@@ -2,9 +2,7 @@
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Services
 
-@inject SalesRequestService SalesRequestService
 @inject LocalizationService LocalizationService
-@inject NavigationManager Navigation
 
 @* The finished-product request line is generated from RollJobEdit/SheetJobEdit.
    It must not be entered independently: quotations still read that saved line. *@
@@ -52,38 +50,10 @@
     </div>
 </div>
 
-@if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="alert alert-danger mb-3">@errorMessage</div>
-}
-
-<div class="d-flex flex-wrap gap-2 mb-4">
-    @if (IsDraft)
-    {
-        <button type="button" class="btn btn-success" disabled="@isBusy" @onclick="SubmitAsync">
-            @LocalizationService["Submit"]
-        </button>
-    }
-    @if (Request.Status == SalesRequestStatus.Submitted ||
-         Request.Status == SalesRequestStatus.EvaluationCompleted)
-    {
-        <button type="button" class="btn btn-primary" disabled="@isBusy" @onclick="CreateQuotationAsync">
-            @LocalizationService["CreateQuotation"]
-        </button>
-    }
-</div>
-
 @code {
     [Parameter, EditorRequired]
     public SalesRequest Request { get; set; } = default!;
 
-    // Saves job title, artwork, automatically derived finished-product line,
-    // requested delivery date, and request notes before a workflow transition.
-    [Parameter, EditorRequired]
-    public Func<Task<bool>> SaveJobAsync { get; set; } = default!;
-
-    private bool isBusy;
-    private string? errorMessage;
     private bool IsDraft => Request.Status == SalesRequestStatus.Draft;
 
     private static string UserDisplayName(ApplicationUser? user)
@@ -91,59 +61,5 @@
         if (user is null) return "-";
         var fullName = $"{user.FirstName} {user.LastName}".Trim();
         return fullName.Length > 0 ? fullName : user.UserName ?? "-";
-    }
-
-    private async Task SubmitAsync()
-    {
-        if (!IsDraft) return;
-        errorMessage = null;
-        try
-        {
-            isBusy = true;
-            if (!await SaveJobAsync())
-                return;
-
-            // A quotation requires one positive-quantity finished-product line.
-            if (Request.Lines.Count != 1 ||
-                Request.Lines.First().ItemId <= 0 ||
-                Request.Lines.First().UnitId <= 0 ||
-                Request.Lines.First().Quantity <= 0)
-                throw new InvalidOperationException(
-                    LocalizationService["QuantityMustBeGreaterThanZero"]);
-
-            await SalesRequestService.SubmitAsync(Request.Id);
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
-        }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
-        }
-        finally
-        {
-            isBusy = false;
-        }
-    }
-
-    private async Task CreateQuotationAsync()
-    {
-        if (Request.Status != SalesRequestStatus.Submitted &&
-            Request.Status != SalesRequestStatus.EvaluationCompleted)
-            return;
-
-        errorMessage = null;
-        try
-        {
-            isBusy = true;
-            await SalesRequestService.CreateQuotationAsync(Request.Id);
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
-        }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
-        }
-        finally
-        {
-            isBusy = false;
-        }
     }
 }
