@@ -123,6 +123,15 @@
                                     <td>
                                         <div class="fw-semibold">@line.Item?.Name</div>
                                         <small class="text-muted">@line.Item?.Code</small>
+                                        @if (line.QuotationLine?.SourceRequestId is long sourceId)
+                                        {
+                                            <div class="small mt-1">
+                                                @(line.QuotationLine.SourceRequest?.RequestNumber ?? $"#{sourceId}") ·
+                                                <a href="@($"/sales/requests/proof/{sourceId}")">
+                                                    @LocalizationService["OpenApprovalProof"]
+                                                </a>
+                                            </div>
+                                        }
                                     </td>
                                     <td class="text-end">@line.Quantity.ToString("N2")</td>
                                     <td>@GetUnitName(line)</td>
@@ -210,6 +219,8 @@
                 .Include(x => x.Quotation)
                 .Include(x => x.Lines).ThenInclude(x => x.Item)
                 .Include(x => x.Lines).ThenInclude(x => x.Unit)
+                .Include(x => x.Lines).ThenInclude(x => x.QuotationLine)
+                    .ThenInclude(x => x.SourceRequest)
                 .FirstOrDefaultAsync(x => x.Id == Id);
 
             if (salesOrder == null)
