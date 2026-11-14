@@ -2945,4 +2945,7 @@
   <data name="SavePreviewAndContinueSalesWorkflow" xml:space="preserve">
     <value>ذخیره، پیش‌نمایش تأییدیه و ادامه فرایند فروش</value>
   </data>
+  <data name="ContinueSalesWorkflow" xml:space="preserve">
+    <value>ادامه فرایند فروش</value>
+  </data>
 </root>
