@@ -2957,4 +2957,6 @@
   <data name="AddJobToQuotation" xml:space="preserve"><value>Add job to quotation</value></data>
   <data name="CreateAnotherJob" xml:space="preserve"><value>Create another job</value></data>
   <data name="JobAddedToQuotation" xml:space="preserve"><value>Job added to quotation.</value></data>
+  <data name="QuotationNotEditable" xml:space="preserve"><value>This quotation is no longer editable.</value></data>
+  <data name="QuotationCustomerMustMatch" xml:space="preserve"><value>Only jobs for the quotation's customer can be attached.</value></data>
 </root>
