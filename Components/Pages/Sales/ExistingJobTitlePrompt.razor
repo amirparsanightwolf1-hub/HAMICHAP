@@ -3,6 +3,7 @@
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Services
 @using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Logging
 
 @inject IServiceScopeFactory ScopeFactory
 @inject NavigationManager Navigation
@@ -49,12 +50,13 @@
     private IReadOnlyList<ExistingSalesJobLookup.Match> matches =
         Array.Empty<ExistingSalesJobLookup.Match>();
 
-    private (long Id, int CustomerId, SalesJobType Kind, string Title)? lastQuery;
+    private (long Id, int Customer, SalesJobType Kind, string Title)? lastQuery;
     private bool lookupFailed;
 
     protected override async Task OnParametersSetAsync()
     {
-        var query = (CurrentRequestId, CustomerId, JobType, JobTitle?.Trim() ?? "");
+        var query = (Id: CurrentRequestId, Customer: CustomerId,
+            Kind: JobType, Title: JobTitle?.Trim() ?? string.Empty);
         if (lastQuery == query)
             return;
 
@@ -62,7 +64,7 @@
         matches = Array.Empty<ExistingSalesJobLookup.Match>();
         lookupFailed = false;
 
-        if (query.CustomerId <= 0 || string.IsNullOrWhiteSpace(query.Item4))
+        if (query.Customer <= 0 || string.IsNullOrWhiteSpace(query.Title))
             return;
 
         try
@@ -72,8 +74,8 @@
             using var scope = ScopeFactory.CreateScope();
             var lookupDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var found = await ExistingSalesJobLookup.FindAsync(
-                lookupDb, query.CustomerId, query.JobType,
-                query.Item4, query.CurrentRequestId);
+                lookupDb, query.Customer, query.Kind,
+                query.Title, query.Id);
 
             // Ignore a slow result if the employee changed title/customer.
             if (lastQuery == query)
@@ -83,7 +85,7 @@
         {
             Logger.LogError(ex,
                 "Existing job title lookup failed for request {RequestId}",
-                query.CurrentRequestId);
+                query.Id);
             if (lastQuery == query)
                 lookupFailed = true;
         }
