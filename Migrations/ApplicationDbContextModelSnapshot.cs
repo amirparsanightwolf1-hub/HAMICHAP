@@ -1566,6 +1566,9 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<long>("QuotationId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SourceRequestId")
+                        .HasColumnType("bigint");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -1580,6 +1583,8 @@ namespace HamiChap_MES_ERP.Migrations
                     b.HasIndex("ItemId");
 
                     b.HasIndex("QuotationId");
+
+                    b.HasIndex("SourceRequestId");
 
                     b.ToTable("QuotationLines");
                 });
@@ -3003,9 +3008,16 @@ namespace HamiChap_MES_ERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.SalesRequest", "SourceRequest")
+                        .WithMany()
+                        .HasForeignKey("SourceRequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Item");
 
                     b.Navigation("Quotation");
+
+                    b.Navigation("SourceRequest");
                 });
 
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesDelivery", b =>
