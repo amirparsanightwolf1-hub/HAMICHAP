@@ -137,6 +137,10 @@
                                         <td class="text-center">@rowNumber</td>
                                         <td>
                                             @(line.Item?.Name ?? $"#{line.ItemId}")
+                                            @if (line.SourceRequestId is long requestId)
+                                            {
+                                                <div class="small text-muted">@GetRequestNumber(requestId)</div>
+                                            }
                                         </td>
                                         <td>@line.Notes</td>
                                         <td class="text-end">
@@ -155,6 +159,22 @@
                         </tbody>
                     </table>
                 </div>
+            </section>
+
+            <section class="mt-4">
+                <h2 class="section-heading">@T("JobsOnQuotation")</h2>
+                @foreach (var job in linkedRequests)
+                {
+                    <div class="d-flex justify-content-between align-items-center gap-3 border-bottom py-2">
+                        <div>
+                            <strong>@job.RequestNumber</strong>
+                            <span class="ms-2">@LocalizationService.TranslateEnum(job.JobType)</span>
+                        </div>
+                        <a href="@($"/sales/requests/proof/{job.Id}")" target="_blank" rel="noopener">
+                            @T("OpenApprovalProof")
+                        </a>
+                    </div>
+                }
             </section>
 
             <section class="totals-section">
@@ -196,6 +216,7 @@
     public long Id { get; set; }
 
     private Quotation? quotation;
+    private List<SalesRequest> linkedRequests = new();
     private bool isLoading = true;
 
     protected override async Task OnParametersSetAsync()
@@ -233,12 +254,25 @@
             }
 
             quotation = result;
+            var requestIds = quotation.Lines
+                .Where(line => line.SourceRequestId.HasValue)
+                .Select(line => line.SourceRequestId!.Value)
+                .Append(quotation.SalesRequestId)
+                .Distinct()
+                .ToArray();
+            linkedRequests = await Db.SalesRequests.AsNoTracking()
+                .Where(job => requestIds.Contains(job.Id))
+                .OrderBy(job => job.RequestDate)
+                .ToListAsync();
         }
         finally
         {
             isLoading = false;
         }
     }
+
+    private string GetRequestNumber(long id) =>
+        linkedRequests.FirstOrDefault(x => x.Id == id)?.RequestNumber ?? $"#{id}";
 
     private string T(string key)
         => LocalizationService[key];
