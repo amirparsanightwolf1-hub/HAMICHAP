@@ -160,7 +160,9 @@
                                         <td>
                                             @if (quotation.SalesRequest != null)
                                             {
-                                                <span class="quotation-job-type-badge">@LocalizationService.TranslateEnum(quotation.SalesRequest.JobType)</span>
+                                                <span class="quotation-job-type-badge">@(GetLinkedJobs(quotation).Count > 1
+                                                    ? $"{GetLinkedJobs(quotation).Count} {LocalizationService["JobsOnQuotation"]}"
+                                                    : LocalizationService.TranslateEnum(quotation.SalesRequest.JobType))</span>
                                             }
                                             else
                                             {
@@ -261,21 +263,23 @@
                                                         }
                                                     </div>
 
-                                                    @if (quotation.SalesRequest != null)
+                                                    @foreach (var job in GetLinkedJobs(quotation))
                                                     {
-                                                        <div class="quotation-summary-section">
+                                                        <div class="quotation-summary-section" @key="job.Id">
                                                             <div class="quotation-summary-heading">
-                                                                @LocalizationService["LinkedSalesRequest"] — @quotation.SalesRequest.RequestNumber
+                                                                @LocalizationService["LinkedSalesRequest"] — @job.RequestNumber
+                                                                <a class="ms-2" href="@($"/sales/requests/proof/{job.Id}")">
+                                                                    @LocalizationService["OpenApprovalProof"]
+                                                                </a>
                                                             </div>
                                                             <div class="quotation-source-meta">
-                                                                <span>@LocalizationService["JobType"]: <strong>@LocalizationService.TranslateEnum(quotation.SalesRequest.JobType)</strong></span>
-                                                                <span>@LocalizationService["Status"]: <strong>@LocalizationService.TranslateEnum(quotation.SalesRequest.Status)</strong></span>
-                                                                <span>@LocalizationService["RequestDate"]: <strong>@quotation.SalesRequest.RequestDate.ToString("yyyy-MM-dd")</strong></span>
-                                                                <span>@LocalizationService["RequestedDeliveryDate"]: <strong>@(quotation.SalesRequest.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")</strong></span>
-                                                                <span>@LocalizationService["JobTitle"]: <strong>@GetJobTitle(quotation)</strong></span>
+                                                                <span>@LocalizationService["JobType"]: <strong>@LocalizationService.TranslateEnum(job.JobType)</strong></span>
+                                                                <span>@LocalizationService["Status"]: <strong>@LocalizationService.TranslateEnum(job.Status)</strong></span>
+                                                                <span>@LocalizationService["RequestDate"]: <strong>@job.RequestDate.ToString("yyyy-MM-dd")</strong></span>
+                                                                <span>@LocalizationService["RequestedDeliveryDate"]: <strong>@(job.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")</strong></span>
                                                             </div>
                                                             <div class="quotation-specification-grid">
-                                                                @foreach (var detail in GetSpecificationSummary(quotation.SalesRequest.JobSpecificationJson))
+                                                                @foreach (var detail in GetSpecificationSummary(job.JobSpecificationJson))
                                                                 {
                                                                     <div class="quotation-specification-item">
                                                                         <span class="quotation-specification-label">@detail.Label</span>
@@ -380,6 +384,7 @@
                 .Include(x => x.Customer)
                 .Include(x => x.SalesRequest)
                 .Include(x => x.Lines).ThenInclude(x => x.Item)
+                .Include(x => x.Lines).ThenInclude(x => x.SourceRequest)
                 .OrderByDescending(x => x.QuotationDate)
                 .ThenByDescending(x => x.Id)
                 .ToListAsync();
@@ -391,6 +396,7 @@
                     (x.QuotationNumber?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (x.Customer?.Name?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (x.SalesRequest?.RequestNumber?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    GetLinkedJobs(x).Any(job => job.RequestNumber.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
                     GetJobTitle(x).Contains(term, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
@@ -527,9 +533,25 @@
         builder.CloseElement();
     };
 
+    private static List<SalesRequest> GetLinkedJobs(Quotation quotation)
+    {
+        var jobs = quotation.Lines
+            .Where(line => line.SourceRequest is not null)
+            .Select(line => line.SourceRequest!)
+            .DistinctBy(job => job.Id)
+            .OrderBy(job => job.RequestDate)
+            .ToList();
+        if (jobs.Count == 0 && quotation.SalesRequest is not null)
+            jobs.Add(quotation.SalesRequest);
+        return jobs;
+    }
+
     private static string GetJobTitle(Quotation quotation)
     {
-        var json = quotation.SalesRequest?.JobSpecificationJson;
+        var jobs = GetLinkedJobs(quotation);
+        if (jobs.Count > 1)
+            return $"{jobs.Count} jobs";
+        var json = (jobs.FirstOrDefault() ?? quotation.SalesRequest)?.JobSpecificationJson;
         try
         {
             using var doc = JsonDocument.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
