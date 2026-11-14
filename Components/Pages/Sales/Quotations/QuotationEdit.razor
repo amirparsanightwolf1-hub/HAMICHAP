@@ -174,24 +174,6 @@
                     </button>
                 }
 
-                @if (quotation.Status == QuotationStatus.Accepted)
-                {
-                    <button type="button"
-                            class="btn btn-success"
-                            @onclick="CreateSalesOrderAsync"
-                            disabled="@isCreatingSalesOrder">
-
-                        @if (isCreatingSalesOrder)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1"></span>
-                        }
-
-                        <i class="bi bi-cart-check"></i>
-                        @LocalizationService["CreateSalesOrder"]
-
-                    </button>
-                }
-
             </div>
         </div>
 
@@ -546,7 +528,6 @@
     private bool isApproving;
     private bool isRejecting;
     private bool isDeciding;
-    private bool isCreatingSalesOrder;
 
     private string? errorMessage;
     private string? successMessage;
@@ -823,10 +804,9 @@
     }
 
 
-    private async Task CustomerDecisionAsync(
-        bool accepted)
+    private async Task CustomerDecisionAsync(bool accepted)
     {
-        if (quotation == null)
+        if (quotation == null || isDeciding)
             return;
 
         errorMessage = null;
@@ -836,54 +816,31 @@
         {
             isDeciding = true;
 
-            await QuotationService
-                .CustomerDecisionAsync(
-                    quotation.Id,
-                    accepted);
+            if (accepted)
+            {
+                // One action: record customer acceptance and create the order
+                // in a single transaction. Repeated requests reuse the order.
+                var salesOrder = await SalesOrderService
+                    .AcceptQuotationAndCreateOrderAsync(quotation.Id);
 
+                Navigation.NavigateTo($"/sales/orders/edit/{salesOrder.Id}");
+                return;
+            }
+
+            // Rejection only returns the quotation for price revision.
+            await QuotationService.CustomerDecisionAsync(quotation.Id, false);
             await LoadAsync();
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
-        }
-        finally
-        {
-            isDeciding = false;
-        }
-    }
-
-
-    private async Task CreateSalesOrderAsync()
-    {
-        if (quotation == null)
-            return;
-
-        if (quotation.Status != QuotationStatus.Accepted)
-            return;
-
-        errorMessage = null;
-        successMessage = null;
-
-        try
-        {
-            isCreatingSalesOrder = true;
-
-            var salesOrder =
-                await SalesOrderService
-                    .CreateFromQuotationAsync(
-                        quotation.Id);
-
-            Navigation.NavigateTo(
-                $"/sales/orders/edit/{salesOrder.Id}");
-        }
-        catch (Exception ex)
-        {
+            // Refresh the actual persisted state after a rolled-back acceptance.
+            await LoadAsync();
             errorMessage = ex.Message;
         }
         finally
         {
-            isCreatingSalesOrder = false;
+            isDeciding = false;
         }
     }
 
