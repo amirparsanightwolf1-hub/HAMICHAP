@@ -2972,4 +2972,6 @@
   <data name="SelectOneReplacementArtwork" xml:space="preserve"><value>Select exactly one replacement file.</value></data>
   <data name="ReplacementArtwork" xml:space="preserve"><value>Replacement file</value></data>
   <data name="ArtworkChangesSavedOnSave" xml:space="preserve"><value>Artwork changes are saved when you select Save and preview approval proof.</value></data>
+  <data name="ArtworkMissingWarning" xml:space="preserve"><value>No artwork is attached. The approval proof will have no artwork until you upload a new file.</value></data>
+  <data name="ArtworkLockedAfterApproval" xml:space="preserve"><value>Artwork cannot be changed after the quotation has been approved. Request a revision before replacing the proof.</value></data>
 </root>
