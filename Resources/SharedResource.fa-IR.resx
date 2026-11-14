@@ -2948,4 +2948,13 @@
   <data name="ContinueSalesWorkflow" xml:space="preserve">
     <value>ادامه فرایند فروش</value>
   </data>
+  <data name="ContinueToQuotation" xml:space="preserve"><value>ادامه به پیش‌فاکتور</value></data>
+  <data name="JobsOnQuotation" xml:space="preserve"><value>سفارش‌های این پیش‌فاکتور</value></data>
+  <data name="OpenJob" xml:space="preserve"><value>نمایش سفارش</value></data>
+  <data name="OpenApprovalProof" xml:space="preserve"><value>مشاهده برگه تأیید</value></data>
+  <data name="AddSavedJobToQuotation" xml:space="preserve"><value>افزودن سفارش رول یا شیت ذخیره‌شده</value></data>
+  <data name="SelectSavedJob" xml:space="preserve"><value>انتخاب سفارش ذخیره‌شده این مشتری</value></data>
+  <data name="AddJobToQuotation" xml:space="preserve"><value>افزودن سفارش به پیش‌فاکتور</value></data>
+  <data name="CreateAnotherJob" xml:space="preserve"><value>ایجاد سفارش دیگر</value></data>
+  <data name="JobAddedToQuotation" xml:space="preserve"><value>سفارش به پیش‌فاکتور اضافه شد.</value></data>
 </root>
