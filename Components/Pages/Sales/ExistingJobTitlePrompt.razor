@@ -1,20 +1,21 @@
-@using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Services
 
-@inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
 
-@if (matches.Count > 0)
+@* Parent editors run the lookup. This component only renders its results:
+   querying the shared scoped DbContext in OnParametersSetAsync can overlap
+   with the parent's @bind-Value:after callback and break the Blazor circuit. *@
+@if (Matches.Count > 0)
 {
     <div class="alert alert-info mb-2">
         <div class="fw-semibold mb-2">
             @LocalizationService["MatchingExistingJobFound"]
         </div>
         <div class="small mb-2">@LocalizationService["OpenExistingJobInsteadOfDuplicate"]</div>
-        @foreach (var match in matches)
+        @foreach (var match in Matches)
         {
             <div class="d-flex align-items-center justify-content-between gap-2 border-top py-2" @key="match.Id">
                 <div class="text-break">
@@ -31,28 +32,19 @@
 }
 
 @code {
-    [Parameter] public long CurrentRequestId { get; set; }
-    [Parameter] public int CustomerId { get; set; }
+    [Parameter]
+    public IReadOnlyList<ExistingSalesJobLookup.Match> Matches { get; set; } =
+        Array.Empty<ExistingSalesJobLookup.Match>();
+
     [Parameter] public SalesJobType JobType { get; set; }
-    [Parameter] public string? JobTitle { get; set; }
     [Parameter] public long? TargetQuotationId { get; set; }
-
-    private List<ExistingSalesJobLookup.Match> matches = new();
-    private (long Id, int CustomerId, SalesJobType Type, string Title)? lastQuery;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        var query = (CurrentRequestId, CustomerId, JobType, JobTitle?.Trim() ?? string.Empty);
-        if (lastQuery == query)
-            return;
-
-        lastQuery = query;
-        matches = await ExistingSalesJobLookup.FindAsync(
-            Db, CustomerId, JobType, JobTitle, CurrentRequestId);
-    }
 
     private void OpenExisting(long id)
     {
+        // Do not navigate if an old button/event no longer matches the results.
+        if (!Matches.Any(match => match.Id == id))
+            return;
+
         var kind = JobType == SalesJobType.Roll ? "roll" : "sheet";
         var url = $"/sales/requests/{kind}/edit/{id}";
         if (TargetQuotationId.HasValue)
