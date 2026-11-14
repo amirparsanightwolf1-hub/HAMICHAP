@@ -418,6 +418,15 @@ namespace HamiChap_MES_ERP.Data
                 .HasForeignKey(x => x.QuotationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // A quotation may contain lines from several Roll/Sheet requests.
+            // The original Quotation.SalesRequestId remains the primary request
+            // for backwards compatibility with existing integrations.
+            builder.Entity<QuotationLine>()
+                .HasOne(x => x.SourceRequest)
+                .WithMany()
+                .HasForeignKey(x => x.SourceRequestId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
 
             builder.Entity<ApprovalHistory>()
