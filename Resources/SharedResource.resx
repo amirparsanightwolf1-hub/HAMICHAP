@@ -2948,4 +2948,13 @@
   <data name="ContinueSalesWorkflow" xml:space="preserve">
     <value>Continue sales workflow</value>
   </data>
+  <data name="ContinueToQuotation" xml:space="preserve"><value>Continue to quotation</value></data>
+  <data name="JobsOnQuotation" xml:space="preserve"><value>Jobs in this quotation</value></data>
+  <data name="OpenJob" xml:space="preserve"><value>Open job</value></data>
+  <data name="OpenApprovalProof" xml:space="preserve"><value>View approval proof</value></data>
+  <data name="AddSavedJobToQuotation" xml:space="preserve"><value>Add another saved Roll or Sheet job</value></data>
+  <data name="SelectSavedJob" xml:space="preserve"><value>Select a saved job from this customer</value></data>
+  <data name="AddJobToQuotation" xml:space="preserve"><value>Add job to quotation</value></data>
+  <data name="CreateAnotherJob" xml:space="preserve"><value>Create another job</value></data>
+  <data name="JobAddedToQuotation" xml:space="preserve"><value>Job added to quotation.</value></data>
 </root>
