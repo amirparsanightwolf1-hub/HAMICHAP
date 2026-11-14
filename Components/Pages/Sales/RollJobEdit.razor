@@ -105,7 +105,7 @@
                     <InputText class="form-control" @bind-Value="spec.JobTitle" />
                     <div style="grid-column: 1 / -1;">
                         <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
-                                                CustomerId="@selectedCustomerId"
+                                                CustomerId="@(isCreatingCustomer ? 0 : selectedCustomerId)"
                                                 JobType="SalesJobType.Roll"
                                                 JobTitle="@spec.JobTitle"
                                                 TargetQuotationId="@TargetQuotationId" />
