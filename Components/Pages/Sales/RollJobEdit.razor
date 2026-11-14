@@ -103,32 +103,30 @@
 
                     <label class="form-label">@LocalizationService["JobTitle"]</label>
                     <InputText class="form-control" @bind-Value="spec.JobTitle" />
-
-                    <label class="form-label">@LocalizationService["ArtworkFilesRequired"]</label>
-                    <div>
-                        <InputFile OnChange="ArtworkSelected" multiple accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp" class="form-control" />
-                        <div class="form-text">@LocalizationService["ArtworkUploadInstructions"]</div>
-                        @if (!string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
-                        {
-                            <div class="mt-2 d-flex align-items-center gap-3 flex-wrap">
-                                @if (IsPreviewableImage(spec.ArtworkRelativePath))
-                                {
-                                    <img class="erp-job-preview-image" src="@spec.ArtworkRelativePath" alt="@LocalizationService["ArtworkPreview"]"  />
-                                }
-                                <span class="small text-muted">@LocalizationService["SavedFile"]: @spec.ArtworkOriginalFileName</span>
-                            </div>
-                        }
-                        @if (pendingArtworks.Count > 0)
-                        {
-                            <div class="small text-primary mt-1">
-                                Selected: @string.Join(", ", pendingArtworks.Select(file => file.Name))
-                                — will be saved when you save specifications.
-                            </div>
-                        }
+                    <div class="order-info-grid-full">
+                        <ExistingJobTitlePrompt CurrentRequestId="@RequestId" CustomerId="@selectedCustomerId"
+                                                JobType="SalesJobType.Roll" JobTitle="@spec.JobTitle"
+                                                TargetQuotationId="@TargetQuotationId" />
                     </div>
+
                 </div>
             </div>
         </div>
+
+        </fieldset>
+
+        <div class="card job-section mb-4">
+            <div class="card-header"><strong>@LocalizationService["ArtworkFiles"]</strong></div>
+            <div class="card-body">
+                <JobArtworkEditor @ref="artworkEditor"
+                                  SavedFiles="@spec.ArtworkFiles"
+                                  LegacyPath="@spec.ArtworkRelativePath"
+                                  LegacyName="@spec.ArtworkOriginalFileName"
+                                  CanEdit="@canEditArtwork" />
+            </div>
+        </div>
+
+        <fieldset class="border-0 p-0 m-0 w-100" disabled="@(request.Status != SalesRequestStatus.Draft)">
 
         <div class="card job-section mb-4">
             <div class="card-header"><strong>@LocalizationService["LabelSpecifications"]</strong></div>
@@ -397,7 +395,8 @@
         workflowFields[key] = args.Value is bool value && value ? "true" : "false";
     }
 
-    private List<IBrowserFile> pendingArtworks = new();
+    private JobArtworkEditor? artworkEditor;
+    private bool canEditArtwork;
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private static readonly (string Key, string Name, string Css)[] CmykColors =
@@ -438,7 +437,15 @@
             .FirstOrDefaultAsync(x => x.Id == RequestId);
 
         if (request is not null)
+        {
             selectedCustomerId = request.CustomerId;
+            canEditArtwork = request.Status != SalesRequestStatus.Cancelled &&
+                !await Db.Quotations.AsNoTracking().AnyAsync(q =>
+                    (q.SalesRequestId == RequestId ||
+                     q.Lines.Any(line => line.SourceRequestId == RequestId)) &&
+                    q.Status != QuotationStatus.Draft &&
+                    q.Status != QuotationStatus.RevisionRequired);
+        }
 
         if (request is null)
         {
@@ -514,41 +521,56 @@
             spec.SelectedServices.Remove(service);
     }
 
-    private void ArtworkSelected(InputFileChangeEventArgs args)
-    {
-        pendingArtworks = args.GetMultipleFiles(20).ToList();
-        errorMessage = null;
-    }
-
-    private static bool IsPreviewableImage(string path) =>
-        path.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
-
     private async Task SaveArtworkFileAsync()
     {
-        if (request is null || pendingArtworks.Count == 0) return;
-        const long maxBytes = 25 * 1024 * 1024;
-        var allowed = new[] { ".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp" };
-        var uploadFolder = Path.Combine(HostEnvironment.WebRootPath, "uploads", "job-artwork");
-        Directory.CreateDirectory(uploadFolder);
-        spec.ArtworkFiles ??= new List<JobArtworkFile>();
-        foreach (var file in pendingArtworks)
-        {
-            if (file.Size > maxBytes) throw new InvalidOperationException(string.Format(LocalizationService["ArtworkMaxSize"], file.Name));
-            var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-            if (!allowed.Contains(extension)) throw new InvalidOperationException(string.Format(LocalizationService["UnsupportedArtworkFormat"], file.Name));
-            var safeName = $"request-{request.Id}-{Guid.NewGuid():N}{extension}";
-            var fullPath = Path.Combine(uploadFolder, safeName);
-            await using (var source = file.OpenReadStream(maxBytes))
-            await using (var destination = File.Create(fullPath))
-                await source.CopyToAsync(destination);
-            spec.ArtworkFiles.Add(new JobArtworkFile { RelativePath = $"/uploads/job-artwork/{safeName}", OriginalFileName = Path.GetFileName(file.Name) });
-        }
+        if (request is null || artworkEditor is null) return;
+
+        spec.ArtworkFiles = await artworkEditor.StageForSaveAsync(
+            request.Id, HostEnvironment.WebRootPath);
         var first = spec.ArtworkFiles.FirstOrDefault();
-        if (first is not null) { spec.ArtworkRelativePath = first.RelativePath; spec.ArtworkOriginalFileName = first.OriginalFileName; }
-        pendingArtworks.Clear();
+        spec.ArtworkRelativePath = first?.RelativePath ?? string.Empty;
+        spec.ArtworkOriginalFileName = first?.OriginalFileName ?? string.Empty;
+    }
+
+    private async Task SaveArtworkOnlyAsync()
+    {
+        if (request is null || artworkEditor is null ||
+            !artworkEditor.HasPendingChanges || !canEditArtwork)
+            return;
+
+        var originalFiles = spec.ArtworkFiles?.ToList() ?? new();
+        var originalPath = spec.ArtworkRelativePath;
+        var originalName = spec.ArtworkOriginalFileName;
+        var originalJson = request.JobSpecificationJson;
+
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+            await using var transaction = await Db.Database.BeginTransactionAsync();
+            await SaveArtworkFileAsync();
+            var json = JsonNode.Parse(originalJson) as JsonObject ?? new();
+            json["ArtworkFiles"] = JsonSerializer.SerializeToNode(spec.ArtworkFiles);
+            json["ArtworkRelativePath"] = spec.ArtworkRelativePath;
+            json["ArtworkOriginalFileName"] = spec.ArtworkOriginalFileName;
+            request.JobSpecificationJson = json.ToJsonString();
+            await Db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            artworkEditor.CompleteSave();
+        }
+        catch (Exception ex)
+        {
+            artworkEditor.RollbackNewFiles();
+            spec.ArtworkFiles = originalFiles;
+            spec.ArtworkRelativePath = originalPath;
+            spec.ArtworkOriginalFileName = originalName;
+            request.JobSpecificationJson = originalJson;
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
     private async Task SaveAndOpenProofAsync()
@@ -557,11 +579,12 @@
             return;
 
         if (request.Status == SalesRequestStatus.Draft)
-        {
             await SaveAsync();
-            if (!string.IsNullOrWhiteSpace(errorMessage))
-                return;
-        }
+        else
+            await SaveArtworkOnlyAsync();
+
+        if (!string.IsNullOrWhiteSpace(errorMessage))
+            return;
 
         // The single button saves the job and opens its approval proof.
         // Submission/quotation actions remain on the job editor.
@@ -604,15 +627,24 @@
             errorMessage = LocalizationService["QuantityMustBeGreaterThanZero"];
             return;
         }
-        if (pendingArtworks.Count == 0 && (spec.ArtworkFiles?.Count ?? 0) == 0 && string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
+        // Correcting an artwork mistake may temporarily leave the job without artwork.
+        if (!isCreatingCustomer)
         {
-            errorMessage = LocalizationService["UploadArtworkBeforeSaving"];
-            return;
+            var duplicates = await ExistingSalesJobLookup.FindAsync(
+                Db, selectedCustomerId, SalesJobType.Roll, spec.JobTitle, RequestId);
+            if (duplicates.Count > 0)
+            {
+                errorMessage = LocalizationService["MatchingExistingJobSaveBlocked"];
+                return;
+            }
         }
 
         Customer? customerCreatedThisAttempt = null;
         var originalCustomerId = request.CustomerId;
         var originalCustomer = request.Customer;
+        var originalFiles = spec.ArtworkFiles?.ToList() ?? new();
+        var originalArtworkPath = spec.ArtworkRelativePath;
+        var originalArtworkName = spec.ArtworkOriginalFileName;
 
         try
         {
@@ -680,6 +712,7 @@
             request.JobSpecificationJson = savedSpec.ToJsonString();
             await Db.SaveChangesAsync();
             await transaction.CommitAsync();
+            artworkEditor?.CompleteSave();
 
             if (customerCreatedThisAttempt is not null)
             {
@@ -692,6 +725,10 @@
         }
         catch (Exception ex)
         {
+            artworkEditor?.RollbackNewFiles();
+            spec.ArtworkFiles = originalFiles;
+            spec.ArtworkRelativePath = originalArtworkPath;
+            spec.ArtworkOriginalFileName = originalArtworkName;
             if (customerCreatedThisAttempt is not null)
             {
                 Db.Entry(customerCreatedThisAttempt).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
