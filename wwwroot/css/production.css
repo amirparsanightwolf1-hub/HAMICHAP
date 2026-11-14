@@ -1091,3 +1091,438 @@
         }
     }
 
+
+
+/* Production manager machine calendar: same navy panels and shift colors as the original planner. */
+.machine-schedule .machine-calendar-scroll { overflow-x: auto; }
+.machine-schedule .machine-calendar-grid {
+    display: grid;
+    grid-template-columns: minmax(140px, 190px) repeat(var(--machine-days), minmax(150px, 1fr));
+    min-width: max-content;
+    border: 1px solid var(--planning-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.machine-schedule .machine-calendar-corner,
+.machine-schedule .machine-calendar-date,
+.machine-schedule .machine-calendar-machine {
+    background: var(--planning-navy-soft);
+    color: var(--planning-navy);
+    padding: 12px;
+    border: 0;
+    border-inline-end: 1px solid var(--planning-border);
+    border-bottom: 1px solid var(--planning-border);
+    text-align: start;
+}
+.machine-schedule .machine-calendar-date { font-weight: 700; cursor: pointer; }
+.machine-schedule .machine-calendar-date:hover { background: #dce5f5; }
+.machine-schedule .machine-calendar-machine small { display: block; color: var(--planning-muted); }
+.machine-schedule .machine-calendar-cell {
+    padding: 8px;
+    min-height: 110px;
+    border-inline-end: 1px solid var(--planning-border);
+    border-bottom: 1px solid var(--planning-border);
+    background: var(--planning-surface);
+}
+.machine-schedule .machine-calendar-cell .month-order-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    white-space: normal;
+    margin-bottom: 6px;
+    padding: 9px;
+    border-radius: 7px;
+}
+.machine-schedule .machine-calendar-cell .month-order-chip small { font-size: .75rem; }
+.machine-schedule .queue-order { cursor: default; }
+@media (max-width: 900px) {
+    .machine-schedule .planning-layout { grid-template-columns: 1fr; }
+    .machine-schedule .planning-order-panel,
+    .machine-schedule .planning-calendar-panel { grid-column: 1; position: static; }
+}
+
+
+/* Sales-first calendar blue accent, including the original planner and machine breakdown. */
+.production-planning { --planning-navy: #0c568d; --planning-navy-soft: #eaf3fa; }
+.production-planning .machine-calendar-section-title {
+    padding: 12px 14px; margin: 0 0 10px; border-radius: 8px;
+    color: #0c568d; background: #eaf3fa; font-weight: 700;
+}
+.production-planning .machine-calendar-section-title small { font-size: .75em; font-weight: 400; }
+.machine-schedule .machine-calendar-section { overflow-x: auto; }
+.machine-schedule .queue-order-selected { border-color: #0c568d; background: #eaf3fa; }
+.home-page .planning-home-button { background: #0c568d; border-color: #0c568d; color: #fff; }
+.home-page .planning-home-button:hover { background: #08446f; border-color: #08446f; }
+
+
+/* Multi-stage machine schedule: visible drop target and synchronized CEO/step totals. */
+.machine-schedule .machine-return-zone {
+    min-height: 160px;
+    border: 2px dashed #accfe7;
+    border-radius: 8px;
+    background: #f8fcff;
+}
+.machine-schedule .machine-return-hint {
+    padding: 11px;
+    border-radius: 7px;
+    background: #eaf3fa;
+    border: 1px dashed #0c568d;
+    color: #0c568d;
+    font-size: .82rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+.machine-schedule .machine-order-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 9px;
+    max-height: 210px;
+    overflow-y: auto;
+}
+.machine-schedule .machine-order-totals {
+    min-width: 0;
+    border: 1px solid #d2e4f1;
+    border-inline-start: 4px solid #0c568d;
+    border-radius: 8px;
+    padding: 9px 11px;
+    background: #f8fcff;
+}
+.machine-schedule .machine-order-totals .badge {
+    white-space: normal;
+    text-align: center;
+}
+
+.machine-schedule .machine-unschedule-button {
+    display: block;
+    margin-top: 5px;
+    border: 1px solid rgba(255,255,255,.65);
+    border-radius: 4px;
+    background: rgba(255,255,255,.18);
+    color: #fff;
+    font-weight: 700;
+    font-size: .72rem;
+    width: 100%;
+    padding: 3px 5px;
+    cursor: pointer;
+}
+.machine-schedule .machine-unschedule-button:hover,
+.machine-schedule .machine-unschedule-button:focus-visible {
+    background: #fff;
+    color: #0c568d;
+}
+.machine-schedule .machine-calendar-section-title {
+    border-inline-start: 4px solid #0c568d;
+}
+
+
+/* DATE-FIRST MACHINE CALENDAR
+   The CEO defines the allowed date window; machines receive dated operations.
+   Shares the Sales-first month/day visual language without an hourly timeline. */
+.machine-schedule .machine-ceo-order-list {
+    max-height: 340px;
+    overflow-y: auto;
+}
+.machine-schedule .machine-ceo-order {
+    border: 1px solid #d8e6f0;
+    border-inline-start: 3px solid #0c568d;
+    border-radius: 8px;
+    background: #fcfdff;
+    padding: 10px 11px;
+}
+.machine-schedule .machine-ceo-dates {
+    color: #0c568d;
+    font-weight: 600;
+    line-height: 1.7;
+}
+.machine-schedule .machine-day-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--machine-day-columns, 7), minmax(136px, 1fr));
+    gap: 5px;
+    min-width: max-content;
+}
+.machine-schedule .machine-day-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 107px;
+    padding: 8px 7px;
+    border: 1px solid #dfe6ed;
+    border-radius: 8px;
+    background: var(--planning-surface, #fff);
+    transition: background-color .15s, border-color .15s;
+}
+.machine-schedule .machine-day-cell.today {
+    border-color: #0c568d;
+    box-shadow: inset 0 0 0 1px #0c568d;
+}
+.machine-schedule .machine-day-cell.outside-month {
+    background: #f5f7f9;
+}
+.machine-schedule .machine-day-cell.machine-available-day {
+    border-color: #85b2d1;
+    background: #eef6fb;
+}
+.machine-schedule .machine-day-cell.machine-available-day:hover {
+    background: #dceef9;
+}
+.machine-schedule .machine-day-date {
+    display: inline-block;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    padding: 2px 3px;
+    color: #0c568d;
+    font-size: .77rem;
+    font-weight: 700;
+    text-align: start;
+    cursor: pointer;
+}
+.machine-schedule .machine-day-date:hover {
+    text-decoration: underline;
+}
+.machine-schedule .machine-place-button {
+    padding: 4px 6px;
+    font-size: .7rem;
+    font-weight: 700;
+    color: #fff;
+    background: #0c568d;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.machine-schedule .machine-place-button:hover {
+    background: #08446f;
+}
+.machine-schedule .machine-scheduled-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-wrap: anywhere;
+    padding: 8px;
+    background: #0c568d;
+    color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.13);
+    cursor: grab;
+    font-size: .76rem;
+}
+.machine-schedule .machine-scheduled-chip strong,
+.machine-schedule .machine-scheduled-chip small,
+.machine-schedule .machine-scheduled-chip span {
+    color: inherit;
+    line-height: 1.35;
+}
+.machine-schedule .machine-scheduled-chip:active,
+.machine-schedule .queue-order:active,
+.machine-schedule .machine-order-totals:active {
+    cursor: grabbing;
+}
+.machine-schedule .queue-order { cursor: grab; }
+.machine-schedule .machine-order-totals { cursor: grab; }
+.machine-schedule .machine-return-zone { min-height: 175px; }
+.machine-schedule .machine-calendar-section {
+    max-width: 100%;
+    overflow-x: auto;
+}
+.machine-schedule .machine-calendar-section-title {
+    position: sticky;
+    inset-inline-start: 0;
+}
+@media (max-width: 800px) {
+    .machine-schedule .machine-day-grid {
+        grid-template-columns: repeat(var(--machine-day-columns, 7), minmax(136px, 1fr));
+    }
+}
+
+.machine-schedule .machine-ceo-order[draggable="true"] { cursor: grab; }
+.machine-schedule .machine-scheduled-chip.machine-outside-ceo { background: #9c3434; }
+.machine-schedule .machine-window-warning { font-weight: 700; }
+
+
+/* Production Manager: exact CEO calendar grid and palette, enhanced with operation cards. */
+.machine-schedule .manager-stage-chip {
+    position: relative;
+    white-space: normal;
+    text-align: start;
+    overflow-wrap: anywhere;
+    outline: 1px solid rgba(255,255,255,.72);
+    border-inline-start: 3px solid #0c568d;
+    box-shadow: 0 2px 5px rgba(12,86,141,.16);
+    cursor: grab;
+}
+.machine-schedule .timeline-order.manager-stage-chip small {
+    display: block;
+    color: inherit;
+    font-weight: 500;
+    margin-top: 2px;
+}
+.machine-schedule .month-day .manager-stage-chip {
+    font-size: .7rem;
+    line-height: 1.45;
+    padding: 7px 6px;
+}
+.machine-schedule .manager-duration-budget {
+    border: 1px solid #d2e4f1;
+    background: #f4f9fd;
+    color: #264962;
+    border-radius: 8px;
+    padding: 11px;
+    font-size: .83rem;
+    line-height: 1.8;
+}
+.machine-schedule .manager-new-operation {
+    border-top: 1px solid #dfe4ee;
+    padding-top: 13px;
+}
+.machine-schedule .manager-operation-queue {
+    max-height: 58vh;
+}
+.machine-schedule .manager-operation-editor summary {
+    color: #0c568d;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .8rem;
+}
+.machine-schedule .manager-operation-editor[open] {
+    background: #f6fafe;
+    border-radius: 7px;
+    padding: 8px;
+}
+.machine-schedule .planning-order-panel > .card:first-child .queue-order { cursor: pointer; }
+.machine-schedule .manager-operation-queue .queue-order { cursor: grab; }
+.machine-schedule .machine-return-hint { line-height: 1.6; }
+.machine-schedule .timeline-scroll { max-height: 720px; }
+
+
+/* Production Manager machine allocation: one shared CEO calendar plus machine occupancy. */
+.machine-schedule .manager-selection-hint {
+    padding: 10px 12px;
+    border: 1px solid #c7ddeb;
+    border-inline-start: 4px solid #0c568d;
+    border-radius: 7px;
+    background: #f1f7fc;
+    font-size: .85rem;
+    line-height: 1.6;
+}
+.machine-schedule .manager-operation-queue .queue-order,
+.machine-schedule .month-order-chip.manager-stage-chip,
+.machine-schedule .timeline-order.manager-stage-chip {
+    cursor: pointer;
+}
+.machine-schedule .machine-workload-panel {
+    overflow: hidden;
+}
+.machine-schedule .machine-workload-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+    border: 1px solid #dce8f1;
+    border-radius: 9px;
+}
+.machine-schedule .machine-workload-table {
+    width: max-content;
+    min-width: 100%;
+    table-layout: fixed;
+    border-spacing: 3px;
+    border-collapse: separate;
+    font-size: .78rem;
+}
+.machine-schedule .machine-workload-table th,
+.machine-schedule .machine-workload-table td {
+    padding: 7px;
+    min-width: 125px;
+    max-width: 180px;
+    vertical-align: top;
+    border: 1px solid #dfe8f0;
+    border-radius: 5px;
+}
+.machine-schedule .machine-workload-table thead th {
+    background: #eaf3fa;
+    color: #0c568d;
+    font-weight: 700;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+.machine-schedule .machine-workload-table .machine-workload-name {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 2;
+    background: #f6f9fc;
+    min-width: 155px;
+    width: 155px;
+    max-width: 155px;
+    text-align: start;
+    border-inline-start: 3px solid #0c568d;
+}
+.machine-schedule .machine-workload-name strong,
+.machine-schedule .machine-workload-name small {
+    display: block;
+    overflow-wrap: anywhere;
+}
+.machine-schedule .machine-workload-name small { color: #697e91; font-weight: 400; }
+.machine-schedule .machine-workload-table td { min-height: 70px; }
+.machine-schedule .machine-workload-table .machine-workload-free { background: #fbfcfe; }
+.machine-schedule .machine-workload-table .machine-workload-busy { background: #e6f1f9; }
+.machine-schedule .machine-workload-table .machine-workload-conflict {
+    background: #fff1f0;
+    border-color: #cd5b52;
+}
+.machine-schedule .machine-workload-chip {
+    display: block;
+    width: 100%;
+    margin: 2px 0 5px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: #0c568d;
+    color: white;
+    cursor: pointer;
+    text-align: start;
+    font-size: .72rem;
+    overflow-wrap: anywhere;
+}
+.machine-schedule .machine-workload-chip:hover,
+.machine-schedule .machine-workload-chip:focus-visible { background: #08446f; }
+.machine-schedule .machine-workload-chip strong,
+.machine-schedule .machine-workload-chip span,
+.machine-schedule .machine-workload-chip small { display: block; color: inherit; }
+.machine-schedule .machine-workload-warning {
+    display: block;
+    font-weight: 700;
+    color: #a12e26;
+}
+
+
+/* Approval of the operation sequence by the Production Manager. */
+.machine-schedule .manager-sequence-approval {
+    border-top: 1px solid #d6e3ec;
+    padding-top: 12px;
+}
+.machine-schedule .manager-sequence-approved,
+.machine-schedule .manager-sequence-pending {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid #d6e3ec;
+    border-inline-start: 4px solid #0c568d;
+    border-radius: 7px;
+    padding: 10px 12px;
+    background: #f8fbfe;
+}
+.machine-schedule .manager-sequence-approved strong { color: #186249; }
+.machine-schedule .manager-sequence-pending strong { color: #0c568d; }
+.machine-schedule .manager-sequence-approved small,
+.machine-schedule .manager-sequence-pending small {
+    line-height: 1.55;
+    color: #5a6978;
+}
+.machine-schedule .manager-sequence-buttons {
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.machine-schedule .manager-sequence-buttons button {
+    min-width: 86px;
+    flex: 1;
+}

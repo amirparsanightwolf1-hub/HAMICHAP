@@ -14,6 +14,9 @@ namespace HamiChap_MES_ERP.Data
     {
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceSignature).HasMaxLength(64);
+            builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceConfirmedBy).HasMaxLength(450);
+
             builder.Entity<SalesInvoice>().Property(x => x.Subtotal).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().Property(x => x.TotalAmount).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().HasIndex(x => x.InvoiceNumber).IsUnique();
@@ -414,6 +417,15 @@ namespace HamiChap_MES_ERP.Data
                 .WithMany(x => x.Lines)
                 .HasForeignKey(x => x.QuotationId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // A quotation may contain lines from several Roll/Sheet requests.
+            // The original Quotation.SalesRequestId remains the primary request
+            // for backwards compatibility with existing integrations.
+            builder.Entity<QuotationLine>()
+                .HasOne(x => x.SourceRequest)
+                .WithMany()
+                .HasForeignKey(x => x.SourceRequestId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
 

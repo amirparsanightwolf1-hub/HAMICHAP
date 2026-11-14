@@ -2,6 +2,7 @@
 @page "/"
 
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject HamiChap_MES_ERP.Services.PermissionService PermissionService
@@ -23,6 +24,15 @@
                 🔐 @LocalizationService["Login"]
             </a>
 
+            @if (canViewProductionDeadlines)
+            {
+                <a class="login-button planning-home-button" href="/production/planning">📅 @LocalizationService["CeoDeadlineCalendar"]</a>
+            }
+            @if (canViewMachineSchedule)
+            {
+                <a class="login-button planning-home-button" href="/production/machine-schedule">🏭 @LocalizationService["MachineSchedule"]</a>
+            }
+
             @if (canCreateSalesRequest)
             {
                 <button type="button"
@@ -40,6 +50,8 @@
 
 @code {
     private bool canCreateSalesRequest;
+    private bool canViewProductionDeadlines;
+    private bool canViewMachineSchedule;
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,6 +60,8 @@
 
         if (authState.User.Identity?.IsAuthenticated == true)
         {
+            canViewProductionDeadlines = authState.User.IsInRole("CEO") || authState.User.IsInRole("Ceo") || authState.User.IsInRole("Administrator");
+            canViewMachineSchedule = authState.User.IsInRole("ProductionManager") || authState.User.IsInRole("Production Manager") || authState.User.IsInRole("Manager") || authState.User.IsInRole("Production") || authState.User.IsInRole("FloorManager") || authState.User.IsInRole("Floor Manager") || authState.User.IsInRole("Administrator");
             canCreateSalesRequest =
                 await PermissionService.HasPermissionAsync(
                     authState.User,

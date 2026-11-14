@@ -1,4 +1,5 @@
 ﻿@page "/administration/roles"
+@inject LocalizationService L
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -13,22 +14,22 @@
 @inject PermissionService PermissionService
 @inject NavigationManager Nav
 
-<PageTitle>Roles</PageTitle>
+<PageTitle>@L["Roles"]</PageTitle>
 
 @if (loading)
 {
-    <p>Loading...</p>
+    <p>@L["Loading"]</p>
 }
 else if (!canViewRoles)
 {
     <div class="alert alert-danger">
-        You are not authorized to view roles.
+        @L["You are not authorized to view roles."]
     </div>
 }
 else
 {
     <div class="erp-page-header">
-        <h3 class="erp-page-title">Roles</h3>
+        <h3 class="erp-page-title">@L["Roles"]</h3>
     </div>
 
     @if (canCreateRoles)
@@ -37,19 +38,19 @@ else
 
             <div class="card-body">
 
-                <h5>Create Role</h5>
+                <h5>@L["CreateRole"]</h5>
 
                 <div class="row align-items-end">
 
                     <div class="col-md-6">
 
                         <label class="form-label">
-                            Role Name
+                            @L["RoleName"]
                         </label>
 
                         <input class="form-control"
                                @bind="newRoleName"
-                               placeholder="e.g. Warehouse Manager" />
+                               placeholder="@L["e.g. Warehouse Manager"]" />
 
                     </div>
 
@@ -58,7 +59,7 @@ else
                         <button class="btn btn-primary"
                                 @onclick="CreateRole">
 
-                            Create Role
+                            @L["CreateRole"]
 
                         </button>
 
@@ -82,12 +83,12 @@ else
 
     @if (roles == null)
     {
-        <p>Loading roles...</p>
+        <p>@L["Loading roles..."]</p>
     }
     else if (!roles.Any())
     {
         <div class="alert alert-warning">
-            No roles have been created yet.
+            @L["No roles have been created yet."]
         </div>
     }
     else
@@ -101,15 +102,15 @@ else
                     <tr>
 
                         <th>
-                            Role
+                            @L["Role"]
                         </th>
 
                         <th>
-                            Users
+                            @L["Users"]
                         </th>
 
                         <th>
-                            Actions
+                            @L["Actions"]
                         </th>
 
                     </tr>
@@ -139,7 +140,7 @@ else
                                     <button class="btn btn-sm btn-primary me-2"
                                             @onclick="@(() => Nav.NavigateTo("/administration/permission-management"))">
 
-                                        Manage Permissions
+                                        @L["ManagePermissions"]
 
                                     </button>
                                 }
@@ -150,7 +151,7 @@ else
                                     <button class="btn btn-sm btn-secondary"
                                             disabled>
 
-                                        Protected
+                                        @L["Protected"]
 
                                     </button>
                                 }
@@ -158,9 +159,9 @@ else
                                 {
                                     <button class="btn btn-sm btn-secondary"
                                             disabled
-                                            title="Remove all users from this role before deleting it.">
+                                            title="@L["Remove all users from this role before deleting it."]">
 
-                                        In Use
+                                        @L["InUse"]
 
                                     </button>
                                 }
@@ -169,7 +170,7 @@ else
                                     <button class="btn btn-sm btn-danger"
                                             @onclick="() => DeleteRole(role)">
 
-                                        Delete
+                                        @L["Delete"]
 
                                     </button>
                                 }
@@ -269,7 +270,7 @@ else
             loading = false;
 
             ShowError(
-                $"Unable to load roles: {ex.Message}");
+                L["Unable to load roles:"] + " " + ex.Message);
         }
     }
 
@@ -332,7 +333,7 @@ else
                 "Roles.Create"))
         {
             ShowError(
-                "You are not authorized to create roles.");
+                L["You are not authorized to create roles."]);
 
             return;
         }
@@ -345,7 +346,7 @@ else
         if (string.IsNullOrWhiteSpace(roleName))
         {
             ShowError(
-                "Please enter a role name.");
+                L["Please enter a role name."]);
 
             return;
         }
@@ -359,7 +360,7 @@ else
         if (exists)
         {
             ShowError(
-                "That role already exists.");
+                L["That role already exists."]);
 
             return;
         }
@@ -373,7 +374,7 @@ else
         if (result.Succeeded)
         {
             ShowSuccess(
-                $"Role '{roleName}' created successfully.");
+                String.Format(L["Role '{0}' created successfully."], roleName));
 
             newRoleName = "";
 
@@ -409,7 +410,7 @@ else
                 "Roles.Delete"))
         {
             ShowError(
-                "You are not authorized to delete roles.");
+                L["You are not authorized to delete roles."]);
 
             return;
         }
@@ -418,7 +419,7 @@ else
         if (role.Name == "Administrator")
         {
             ShowError(
-                "The Administrator role cannot be deleted.");
+                L["The Administrator role cannot be deleted."]);
 
             return;
         }
@@ -427,7 +428,7 @@ else
         if (role.Name == null)
         {
             ShowError(
-                "Invalid role.");
+                L["Invalid role."]);
 
             return;
         }
@@ -441,7 +442,7 @@ else
         if (users.Count > 0)
         {
             ShowError(
-                $"Role '{role.Name}' is assigned to {users.Count} user(s) and cannot be deleted.");
+                String.Format(L["Role '{0}' is assigned to {1} user(s) and cannot be deleted."], role.Name, users.Count));
 
             return;
         }
@@ -455,7 +456,7 @@ else
         if (result.Succeeded)
         {
             ShowSuccess(
-                $"Role '{role.Name}' deleted successfully.");
+                String.Format(L["Role '{0}' deleted successfully."], role.Name));
 
             await LoadRoles();
         }

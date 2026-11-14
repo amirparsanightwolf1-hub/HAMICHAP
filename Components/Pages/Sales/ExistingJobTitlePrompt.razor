@@ -1,0 +1,106 @@
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Logging
+
+@inject IServiceScopeFactory ScopeFactory
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+@inject ILogger<ExistingJobTitlePrompt> Logger
+
+@* Title matching runs as an independent child lifecycle task, not within
+   InputText's onchange/.NET JS callback. Every query gets its own DbContext.
+   The user explicitly chooses whether to open a matching job. *@
+@if (matches.Count > 0)
+{
+    <div class="alert alert-info mb-2">
+        <div class="fw-semibold mb-2">
+            @LocalizationService["MatchingExistingJobFound"]
+        </div>
+        <div class="small mb-2">@LocalizationService["OpenExistingJobInsteadOfDuplicate"]</div>
+        @foreach (var match in matches)
+        {
+            <div class="d-flex align-items-center justify-content-between gap-2 border-top py-2" @key="match.Id">
+                <div class="text-break">
+                    <strong>@match.RequestNumber</strong>
+                    <small class="text-muted ms-2">@LocalizationService.TranslateEnum(match.Status)</small>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary"
+                        @onclick="() => OpenExisting(match.Id)">
+                    @LocalizationService["LoadExistingJob"]
+                </button>
+            </div>
+        }
+    </div>
+}
+@if (lookupFailed)
+{
+    <div class="alert alert-warning mb-2">@LocalizationService["ExistingJobLookupFailed"]</div>
+}
+
+@code {
+    [Parameter] public long CurrentRequestId { get; set; }
+    [Parameter] public int CustomerId { get; set; }
+    [Parameter] public SalesJobType JobType { get; set; }
+    [Parameter] public string? JobTitle { get; set; }
+    [Parameter] public long? TargetQuotationId { get; set; }
+
+    private IReadOnlyList<ExistingSalesJobLookup.Match> matches =
+        Array.Empty<ExistingSalesJobLookup.Match>();
+
+    private (long Id, int Customer, SalesJobType Kind, string Title)? lastQuery;
+    private bool lookupFailed;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var query = (Id: CurrentRequestId, Customer: CustomerId,
+            Kind: JobType, Title: JobTitle?.Trim() ?? string.Empty);
+        if (lastQuery == query)
+            return;
+
+        lastQuery = query;
+        matches = Array.Empty<ExistingSalesJobLookup.Match>();
+        lookupFailed = false;
+
+        if (query.Customer <= 0 || string.IsNullOrWhiteSpace(query.Title))
+            return;
+
+        try
+        {
+            // The lookup cannot overlap a parent save/query on the parent's
+            // scoped DbContext. Never navigate as part of this async operation.
+            using var scope = ScopeFactory.CreateScope();
+            var lookupDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var found = await ExistingSalesJobLookup.FindAsync(
+                lookupDb, query.Customer, query.Kind,
+                query.Title, query.Id);
+
+            // Ignore a slow result if the employee changed title/customer.
+            if (lastQuery == query)
+                matches = found;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex,
+                "Existing job title lookup failed for request {RequestId}",
+                query.Id);
+            if (lastQuery == query)
+                lookupFailed = true;
+        }
+    }
+
+    private void OpenExisting(long id)
+    {
+        if (!matches.Any(match => match.Id == id))
+            return;
+
+        var kind = JobType == SalesJobType.Roll ? "roll" : "sheet";
+        var url = $"/sales/requests/{kind}/edit/{id}";
+        if (TargetQuotationId.HasValue)
+            url += $"?quotationId={TargetQuotationId.Value}";
+
+        Navigation.NavigateTo(url);
+    }
+}

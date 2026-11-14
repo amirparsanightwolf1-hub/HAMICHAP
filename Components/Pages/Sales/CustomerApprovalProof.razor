@@ -5,12 +5,20 @@
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Services
+@using HamiChap_MES_ERP.Models.Shared.Services
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
+@inject QuotationService QuotationService
+@inject IJSRuntime JS
 
 
+<HeadContent>
+    <link rel="stylesheet" href="css/customerProofPrint.css" />
+</HeadContent>
 
 <div class="page-container proof-page">
     <div class="erp-page-header mb-3 no-print">
@@ -22,11 +30,19 @@
             <button class="btn btn-outline-secondary" @onclick="BackToJob">
                 @LocalizationService["BackToJob"]
             </button>
+            <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow" disabled="@isOpeningQuotation">
+                @LocalizationService["ContinueToQuotation"]
+            </button>
             <button class="btn btn-primary" @onclick="PrintProof">
                 <i class="bi bi-printer"></i> @LocalizationService["PrintSaveAsPdf"]
             </button>
         </div>
     </div>
+
+    @if (!string.IsNullOrWhiteSpace(quotationError))
+    {
+        <div class="alert alert-danger no-print">@quotationError</div>
+    }
 
     @if (isLoading)
     {
@@ -306,6 +322,9 @@
 
 @code {
     [Parameter] public long RequestId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "quotationId")]
+    public long? TargetQuotationId { get; set; }
     private HamiChap_MES_ERP.Models.Sales.SalesRequest? request;
     private bool isLoading = true;
     private string? errorMessage;
@@ -574,10 +593,89 @@
     private static string Empty(string? s) => string.IsNullOrWhiteSpace(s) ? "—" : s;
     private static string Fmt(decimal? d) => d.HasValue ? d.Value.ToString("0.##") : "—";
     private static bool IsImage(string path) => new[] { ".png", ".jpg", ".jpeg", ".webp" }.Any(x => path.EndsWith(x, StringComparison.OrdinalIgnoreCase));
-    private void BackToJob() => Navigation.NavigateTo(request?.JobType == SalesJobType.Roll ? $"/sales/requests/roll/edit/{RequestId}" : $"/sales/requests/sheet/edit/{RequestId}");
-    private async Task PrintProof() { await Task.Yield(); await JSPrintFallback(); }
-    [Inject] private Microsoft.JSInterop.IJSRuntime JS { get; set; } = default!;
-    private async Task JSPrintFallback() => await JS.InvokeVoidAsync("window.print");
+    private void BackToJob()
+    {
+        var job = request?.JobType == SalesJobType.Roll ? "roll" : "sheet";
+        Navigation.NavigateTo(TargetQuotationId.HasValue
+            ? $"/sales/requests/{job}/edit/{RequestId}?quotationId={TargetQuotationId.Value}"
+            : $"/sales/requests/{job}/edit/{RequestId}");
+    }
+    private bool isOpeningQuotation;
+    private string? quotationError;
+
+    private async Task ContinueSalesWorkflow()
+    {
+        if (request is null) return;
+
+        quotationError = null;
+        try
+        {
+            isOpeningQuotation = true;
+            // Reuses an existing quote when the job has already been attached.
+            // Draft requests go straight to quoting (no duplicate Submit step).
+            if (TargetQuotationId.HasValue)
+            {
+                await QuotationService.AddRequestToQuotationAsync(
+                    TargetQuotationId.Value, RequestId);
+                Navigation.NavigateTo($"/sales/quotations/edit/{TargetQuotationId.Value}");
+            }
+            else
+            {
+                var quotation = await QuotationService.CreateFromRequestAsync(RequestId);
+                Navigation.NavigateTo($"/sales/quotations/edit/{quotation.Id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            quotationError = ex.Message;
+        }
+        finally
+        {
+            isOpeningQuotation = false;
+        }
+    }
+    private IJSObjectReference? _proofPrintModule;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        try
+        {
+            _proofPrintModule = await JS.InvokeAsync<IJSObjectReference>(
+                "import", Navigation.ToAbsoluteUri("js/customerProofPrint.js").ToString());
+            await _proofPrintModule.InvokeVoidAsync("registerProofPrint");
+        }
+        catch (JSException)
+        {
+            // The Print button retains the normal browser print fallback.
+        }
+    }
+
+    private async Task PrintProof()
+    {
+        if (_proofPrintModule is not null)
+            await _proofPrintModule.InvokeVoidAsync("printProof");
+        else
+            await JS.InvokeVoidAsync("window.print");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_proofPrintModule is null)
+            return;
+
+        try
+        {
+            await _proofPrintModule.InvokeVoidAsync("unregisterProofPrint");
+            await _proofPrintModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The interactive circuit may already have closed.
+        }
+    }
     private static bool IsPdf(string path) =>
     path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
 }

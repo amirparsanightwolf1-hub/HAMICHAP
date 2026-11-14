@@ -2223,79 +2223,79 @@
     <value>Sheet job specifications</value>
   </data>
 	<data name="RollJobSubtitle" xml:space="preserve">
-    <value>مشخصات لیبل و خدمات انتخاب‌شده</value>
+    <value>Label specifications and selected services</value>
   </data>
 	<data name="ArtworkFilesRequired" xml:space="preserve">
-    <value>فایل نمونه</value>
+    <value>Artwork file</value>
   </data>
 	<data name="ArtworkUploadInstructions" xml:space="preserve">
-    <value>فایل های نمونه را بارگزاری کنید. حداکثر 25 مگابایت.</value>
+    <value>Upload artwork files. Maximum size: 25 MB per file.</value>
   </data>
 	<data name="LabelSpecifications" xml:space="preserve">
-    <value>مشخصات لیبل</value>
+    <value>Label specifications</value>
   </data>
 	<data name="SelectColorCount" xml:space="preserve">
-    <value>انتخاب تعداد رنگ</value>
+    <value>Select color count</value>
   </data>
 	<data name="FrontPrintingColors" xml:space="preserve">
-    <value>رنگ‌های چاپ روی</value>
+    <value>Front-side printing colors</value>
   </data>
 	<data name="SelectAllColorsOnFront" xml:space="preserve">
     <value>Select all colors used on the front</value>
   </data>
 	<data name="BackPrintingColors" xml:space="preserve">
-    <value>رنگ‌های چاپ پشت</value>
+    <value>Back-side printing colors</value>
   </data>
 	<data name="None" xml:space="preserve">
-    <value>هیچ‌کدام</value>
+    <value>None</value>
   </data>
 	<data name="Option" xml:space="preserve">
-    <value>گزینه</value>
+    <value>Option</value>
   </data>
 	<data name="AdditionalServices" xml:space="preserve">
-    <value>خدمات تکمیلی</value>
+    <value>Additional services</value>
   </data>
 	<data name="MultipleOptionsCanBeSelected" xml:space="preserve">
-    <value>امکان انتخاب چند گزینه وجود دارد</value>
+    <value>You can select multiple options.</value>
   </data>
 	<data name="NotRollJob" xml:space="preserve">
-    <value>این درخواست از نوع سفارش رول نیست.</value>
+    <value>This request is not a roll job.</value>
   </data>
 	<data name="RollJobTitle" xml:space="preserve">
-    <value>سفارش رول</value>
+    <value>Roll job</value>
   </data>
 	<data name="CustomerCode" xml:space="preserve">
-    <value>کد مشتری</value>
+    <value>Customer code</value>
   </data>
 	<data name="CustomerName" xml:space="preserve">
-    <value>نام مشتری</value>
+    <value>Customer name</value>
   </data>
 	<data name="ArtworkFiles" xml:space="preserve">
-    <value>فایل‌های طرح</value>
+    <value>Artwork files</value>
   </data>
 	<data name="UploadMultipleArtworkFiles" xml:space="preserve">
-    <value>امکان بارگذاری چند فایل طرح وجود دارد. حداکثر حجم هر فایل ۲۵ مگابایت است.</value>
+    <value>You can upload multiple artwork files, up to 25 MB each.</value>
   </data>
 	<data name="GapBetweenLabels" xml:space="preserve">
-    <value>فاصله بین دو لیبل</value>
+    <value>Gap between labels</value>
   </data>
 	<data name="PaperTypeMaterial" xml:space="preserve">
-    <value>نوع کاغذ / متریال</value>
+    <value>Paper / material type</value>
   </data>
 	<data name="SelectOrEnterMaterial" xml:space="preserve">
-    <value>انتخاب کنید یا تایپ کنید</value>
+    <value>Select or type a material</value>
   </data>
 	<data name="SelectStandardOrEnterMaterial" xml:space="preserve">
-    <value>گزینه استاندارد را انتخاب کنید یا متریال دلخواه را وارد کنید.</value>
+    <value>Select a standard option or enter a custom material.</value>
   </data>
 	<data name="ColorCount" xml:space="preserve">
-    <value>تعداد رنگ</value>
+    <value>Number of colors</value>
   </data>
 	<data name="PrintingNotes" xml:space="preserve">
-    <value>توضیحات چاپ / رنگ اختصاصی</value>
+    <value>Printing notes / special colors</value>
   </data>
 	<data name="CustomDetailsPantone" xml:space="preserve">
-    <value>جزئیات سفارشی، رنگ پنتون و ...</value>
+    <value>Custom details, Pantone colors, etc.</value>
   </data>
 	<data name="SelectFrontColors" xml:space="preserve">
     <value>Select all colors used on the front</value>
@@ -2304,13 +2304,13 @@
     <value>Select All Colors On Back</value>
   </data>
 	<data name="RollOrientation" xml:space="preserve">
-    <value>جهت باز شدن رول</value>
+    <value>Roll unwind direction</value>
   </data>
 	<data name="ChooseUnwindDirection" xml:space="preserve">
-    <value>تصویری را انتخاب کنید که جهت باز شدن لیبل‌ها را نشان می‌دهد.</value>
+    <value>Choose the image showing the label's unwind direction.</value>
   </data>
 	<data name="SavedSpecificationsCouldNotBeRead" xml:space="preserve">
-    <value>مشخصات ذخیره‌شده قابل خواندن نیست. برای جایگزینی آن‌ها، ذخیره کنید.</value>
+    <value>The saved specifications could not be read. Save the form to replace them.</value>
   </data>
 	<data name="RollOrientationUnwindDirection" xml:space="preserve">
     <value>Roll Orientation Unwind Direction</value>
@@ -2426,4 +2426,554 @@
 	<data name="ViewUploadedArtwork" xml:space="preserve">
     <value>View uploaded artwork</value>
   </data>
+  <data name="CeoDeadlineCalendar" xml:space="preserve">
+    <value>CEO deadline calendar</value>
+  </data>
+  <data name="CeoDeadlineHelp" xml:space="preserve">
+    <value>Set the required completion date for each production order. Machine assignments are managed separately.</value>
+  </data>
+  <data name="MachineSchedule" xml:space="preserve">
+    <value>Machine production schedule</value>
+  </data>
+  <data name="MachineScheduleHelp" xml:space="preserve">
+    <value>Place order operations on machine calendar dates inside the CEO-approved window. Drag between machines or back to the queue.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>You do not have access to this page.</value>
+  </data>
+  <data name="SaveDeadline" xml:space="preserve">
+    <value>Save deadline</value>
+  </data>
+  <data name="SelectDueDate" xml:space="preserve">
+    <value>Choose a valid due date.</value>
+  </data>
+  <data name="DeadlineSaved" xml:space="preserve">
+    <value>Production deadline saved.</value>
+  </data>
+  <data name="AllMachines" xml:space="preserve">
+    <value>All machines</value>
+  </data>
+  <data name="UnscheduledOperations" xml:space="preserve">
+    <value>Unscheduled operations</value>
+  </data>
+  <data name="SelectMachine" xml:space="preserve">
+    <value>Select machine</value>
+  </data>
+  <data name="ScheduleOperation" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="GenerateOperations" xml:space="preserve">
+    <value>Generate missing operations</value>
+  </data>
+  <data name="OperationsGenerated" xml:space="preserve">
+    <value>Manufacturing operations generated. Review the sequence and durations before scheduling.</value>
+  </data>
+  <data name="NoRoutingFound" xml:space="preserve">
+    <value>No new operations were generated. Review job specifications and add missing steps manually.</value>
+  </data>
+  <data name="AddOperation" xml:space="preserve">
+    <value>Add operation</value>
+  </data>
+  <data name="SelectOrder" xml:space="preserve">
+    <value>Select order</value>
+  </data>
+  <data name="SelectMachineAndTime" xml:space="preserve">
+    <value>Choose a machine and start time.</value>
+  </data>
+  <data name="MachineConflict" xml:space="preserve">
+    <value>The machine already has another job at this time.</value>
+  </data>
+  <data name="OperationSequenceConflict" xml:space="preserve">
+    <value>A previous operation overlaps this start time.</value>
+  </data>
+  <data name="DeadlineWarning" xml:space="preserve">
+    <value>The operation would finish after the CEO's deadline. Choose an earlier slot.</value>
+  </data>
+  <data name="OperationScheduled" xml:space="preserve">
+    <value>Operation scheduled successfully.</value>
+  </data>
+  <data name="ScheduleDay" xml:space="preserve"><value>Schedule day</value></data>
+  <data name="EstimatedHours" xml:space="preserve"><value>Estimated hours</value></data>
+  <data name="RegularShift" xml:space="preserve"><value>Regular shift (08:00–17:00)</value></data>
+  <data name="OvertimeShift" xml:space="preserve"><value>Overtime (17:00–22:00)</value></data>
+  <data name="NightShift" xml:space="preserve"><value>Night shift (22:00–08:00)</value></data>
+  <data name="DragOperationHelp" xml:space="preserve"><value>Drag a CEO order or unscheduled step onto a compatible machine date. Drag a booked step back to the left panel to remove its assignment. You can also click Place here.</value></data>
+  <data name="Sat" xml:space="preserve"><value>Sat</value></data>
+  <data name="Sun" xml:space="preserve"><value>Sun</value></data>
+  <data name="Mon" xml:space="preserve"><value>Mon</value></data>
+  <data name="Tue" xml:space="preserve"><value>Tue</value></data>
+  <data name="Wed" xml:space="preserve"><value>Wed</value></data>
+  <data name="Thu" xml:space="preserve"><value>Thu</value></data>
+  <data name="Fri" xml:space="preserve"><value>Fri</value></data>
+  <data name="NoActiveMachines" xml:space="preserve"><value>No active machines were found. Add or activate machines to schedule production operations.</value></data>
+  <data name="MachineMismatch" xml:space="preserve"><value>This operation is not compatible with the selected machine. Choose a suggested machine or review its routing.</value></data>
+  <data name="DropScheduledStepHere" xml:space="preserve"><value>Drop a scheduled step here to return it (and any dependent planned steps) to the unscheduled list.</value></data>
+  <data name="NoUnscheduledSteps" xml:space="preserve"><value>No unscheduled steps. Drag a machine operation from the calendar here to return it.</value></data>
+  <data name="CeoDuration" xml:space="preserve"><value>CEO plan total</value></data>
+  <data name="MachineDuration" xml:space="preserve"><value>Machine steps total</value></data>
+  <data name="MachineStepCount" xml:space="preserve"><value>steps</value></data>
+  <data name="ReturnWholeOrder" xml:space="preserve"><value>Return all order steps to list</value></data>
+  <data name="ReturnToQueue" xml:space="preserve"><value>Return to list</value></data>
+  <data name="CannotUnscheduleActive" xml:space="preserve"><value>Cannot remove released, running or completed operations from the calendar.</value></data>
+  <data name="OperationsReturnedToQueue" xml:space="preserve"><value>Scheduled operations returned to the unscheduled list.</value></data>
+  <data name="DurationTooShortForSteps" xml:space="preserve"><value>The CEO production duration is too short for the number of operation steps.</value></data>
+  <data name="UnscheduleBeforeAdding" xml:space="preserve"><value>Return all scheduled steps of this order to the list before adding an operation and redistributing durations.</value></data>
+  <data name="OperationsRebalanced" xml:space="preserve"><value>Machine-step durations redistributed to match the CEO production duration.</value></data>
+  <data name="CeoPlanRequired" xml:space="preserve"><value>Set an order start and end in the CEO Production Planning calendar before scheduling machine operations.</value></data>
+  <data name="MachineDurationMismatch" xml:space="preserve"><value>Machine-step durations do not add up to the CEO total. Use Generate Operations to synchronize unscheduled steps.</value></data>
+  <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>The selected date is outside the CEO-approved start/end dates. Choose a date within that window.</value></data>
+  <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>Released, running and completed machine schedules cannot be moved.</value></data>
+  <data name="AdjustStepHours" xml:space="preserve"><value>Step duration (hours)</value></data>
+  <data name="ApplyStepDuration" xml:space="preserve"><value>Apply and rebalance remaining steps</value></data>
+  <data name="InvalidStepDuration" xml:space="preserve"><value>Enter a valid positive number of hours.</value></data>
+  <data name="UnscheduleBeforeAdjusting" xml:space="preserve"><value>Return all scheduled steps of this order to the list before adjusting stage durations.</value></data>
+  <data name="StepDurationBudget" xml:space="preserve"><value>The step duration exceeds the CEO's time budget or leaves insufficient time for the other steps.</value></data>
+  <data name="Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Month" xml:space="preserve"><value>Month</value></data>
+  <data name="Week" xml:space="preserve"><value>Week</value></data>
+  <data name="Day" xml:space="preserve"><value>Day</value></data>
+  <data name="NewStepRelativeHours" xml:space="preserve"><value>Relative duration weight (hours)</value></data>
+  <data name="NewStepWeightHelp" xml:space="preserve"><value>The CEO total is fixed. This value determines this step's share; all stages are rebalanced.</value></data>
+  <data name="CeoProductionOrders" xml:space="preserve"><value>CEO production orders</value></data>
+  <data name="CeoWindow" xml:space="preserve"><value>CEO date window</value></data>
+  <data name="NoOperationsGenerated" xml:space="preserve"><value>No machine operations yet. Use Generate Operations or add a step manually.</value></data>
+  <data name="ShowCeoWindow" xml:space="preserve"><value>Show CEO date range</value></data>
+  <data name="NoProductionOrders" xml:space="preserve"><value>No production orders have been created yet.</value></data>
+  <data name="DateBasedSchedulingHelp" xml:space="preserve"><value>Choose an operation, or drag an order from the left panel onto a compatible machine's date. Only dates inside the CEO window are allowed. Exact hours are not required.</value></data>
+  <data name="PlaceOnDate" xml:space="preserve"><value>Place here</value></data>
+  <data name="SelectMachineAndDate" xml:space="preserve"><value>Select a machine and calendar date.</value></data>
+  <data name="SelectOperationBeforeDrop" xml:space="preserve"><value>Select an order operation from the list before assigning a machine date.</value></data>
+  <data name="SelectCompatibleOperation" xml:space="preserve"><value>This order has no unscheduled operation compatible with that machine. Generate operations or choose a compatible machine.</value></data>
+  <data name="RoutingGenerationFailed" xml:space="preserve"><value>Automatic routing could not be completed. Use Generate Operations or add steps manually.</value></data>
+  <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>Drag to a compatible machine calendar date to assign the next operation.</value></data>
+  <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>Existing booking is outside the CEO-approved date window; move or return it.</value></data>
+  <data name="AdvancedDurationSettings" xml:space="preserve"><value>Advanced duration details (optional)</value></data>
+  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>Same calendar as the CEO plan. Sales specifications suggest machines and stages; the Production Manager estimates durations, orders the stages and confirms to schedule everything automatically.</value></data>
+  <data name="SelectOrderToSplit" xml:space="preserve"><value>Select a production order to review and split it into machine operations.</value></data>
+  <data name="Scheduled" xml:space="preserve"><value>Scheduled</value></data>
+  <data name="SplitOrderIntoOperations" xml:space="preserve"><value>Split order into operations</value></data>
+  <data name="RemainingDuration" xml:space="preserve"><value>Unallocated duration</value></data>
+  <data name="OperationTotalMatchesCeo" xml:space="preserve"><value>Total estimated operation time matches the CEO's order duration.</value></data>
+  <data name="OperationNamePlaceholder" xml:space="preserve"><value>e.g. Printing, lamination, die cutting</value></data>
+  <data name="OrderOperations" xml:space="preserve"><value>Order operations</value></data>
+  <data name="EditOperation" xml:space="preserve"><value>Edit operation</value></data>
+  <data name="SaveOperation" xml:space="preserve"><value>Save operation</value></data>
+  <data name="DeleteOperation" xml:space="preserve"><value>Delete operation</value></data>
+  <data name="Break" xml:space="preserve"><value>Lunch break</value></data>
+  <data name="ManagerMonthHelp" xml:space="preserve"><value>Select an operation and click a date to schedule it from the first permitted work time. Machine bookings and CEO orders remain visible together.</value></data>
+  <data name="ManagerTimelineHelp" xml:space="preserve"><value>Select an operation and click an hour slot. Existing machine bookings are checked before the new operation can be saved.</value></data>
+  <data name="EnterOperationDetails" xml:space="preserve"><value>Enter an operation name, machine and positive estimated duration.</value></data>
+  <data name="OperationAdded" xml:space="preserve"><value>The machine operation has been added to the order.</value></data>
+  <data name="OperationSaved" xml:space="preserve"><value>Machine operation saved.</value></data>
+  <data name="OperationRemoved" xml:space="preserve"><value>Machine operation deleted.</value></data>
+  <data name="SelectMachineBeforeScheduling" xml:space="preserve"><value>Choose and save a machine for this operation before placing it on the calendar.</value></data>
+  <data name="ClickSchedulingInstructions" xml:space="preserve"><value>Select an operation, then click its desired calendar day or hour. Use Return to list to remove a booking.</value></data>
+  <data name="SelectedOperation" xml:space="preserve"><value>Selected operation</value></data>
+  <data name="SelectOperationToSchedule" xml:space="preserve"><value>Choose an operation from the list to place on the calendar.</value></data>
+  <data name="MachineWorkload" xml:space="preserve"><value>Machine workload</value></data>
+  <data name="MachineWorkloadDescription" xml:space="preserve"><value>Operations grouped by machine across the visible dates and hours</value></data>
+  <data name="ExistingMachineOverlap" xml:space="preserve"><value>Overlapping bookings detected</value></data>
+  <data name="MachineWorkloadLegend" xml:space="preserve"><value>Blue = machine busy; empty cells = available. Red = existing overlapping bookings requiring correction. One machine cannot run two operations simultaneously.</value></data>
+  <data name="MachineSchedulingFailed" xml:space="preserve"><value>Unable to save the machine booking. Another scheduling change may have occurred; refresh and try another available slot.</value></data>
+  <data name="BookedTasks" xml:space="preserve"><value>booked tasks</value></data>
+  <data name="SequenceConfirmed" xml:space="preserve"><value>Operation sequence confirmed by Production Manager</value></data>
+  <data name="SequencePendingConfirmation" xml:space="preserve"><value>Operation sequence awaiting confirmation</value></data>
+  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>Review the operation order, machine choices and estimated durations; confirm to automatically generate bookings inside the CEO's production window.</value></data>
+  <data name="ConfirmOperationSequence" xml:space="preserve"><value>Confirm operation sequence</value></data>
+  <data name="SequenceChangeNeedsReconfirmation" xml:space="preserve"><value>Changing a stage or its position cancels approval; confirm the updated sequence again.</value></data>
+  <data name="MoveOperationUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="MoveOperationDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="SequenceUpdatedReconfirm" xml:space="preserve"><value>Operation sequence updated. The Production Manager must confirm the new order.</value></data>
+  <data name="SequenceUpdateFailed" xml:space="preserve"><value>Could not change the operation sequence. Please retry.</value></data>
+  <data name="UnscheduleBeforeReordering" xml:space="preserve"><value>Return all scheduled stages of this order to the list before changing their sequence.</value></data>
+  <data name="ApprovalIdentityMissing" xml:space="preserve"><value>A signed-in Production Manager account is required to confirm the sequence.</value></data>
+  <data name="InvalidOperationSequence" xml:space="preserve"><value>Operations must have unique sequential numbers, valid names and positive durations before confirmation.</value></data>
+  <data name="StageDurationTotalMismatch" xml:space="preserve"><value>The sum of stage durations must equal the CEO's total duration before confirming the sequence.</value></data>
+  <data name="MachineAssignmentsRequired" xml:space="preserve"><value>Select and save an active machine for every operation before confirming the sequence.</value></data>
+  <data name="ExistingOrderSequenceConflict" xml:space="preserve"><value>Existing bookings overlap or are out of the requested order. Return or correct these bookings before confirming.</value></data>
+  <data name="SequenceConfirmationSaved" xml:space="preserve"><value>The Production Manager's operation sequence confirmation has been saved.</value></data>
+  <data name="SequenceConfirmationFailed" xml:space="preserve"><value>Could not save the sequence confirmation. Please try again.</value></data>
+  <data name="SequenceMustBeConfirmed" xml:space="preserve"><value>The Production Manager must confirm the current operation sequence before scheduling. Select the order and click Confirm operation sequence.</value></data>
+  <data name="OrderOperationOverlap" xml:space="preserve"><value>This order already has another operation during that interval</value></data>
+  <data name="SaveAndReconfirmMachineChange" xml:space="preserve"><value>Save the updated machine assignment and have the Production Manager confirm the sequence again before scheduling.</value></data>
+  <data name="ExistingOrderOverlap" xml:space="preserve"><value>Existing operations for this order overlap; review the schedule before confirming a new sequence.</value></data>
+  <data name="SalesRoutingImportFailed" xml:space="preserve"><value>Could not load suggested operations from the Sales job specifications. Check the saved job data and retry.</value></data>
+  <data name="ConfirmAndAutoSchedule" xml:space="preserve"><value>Confirm sequence and generate schedule</value></data>
+  <data name="AutoScheduleAfterReconfirmation" xml:space="preserve"><value>Changing a stage or its sequence clears planned bookings. Confirm again to regenerate all machine bookings automatically.</value></data>
+  <data name="AutoRoutingOperationInstructions" xml:space="preserve"><value>Stages are suggested automatically from the Sales job. Adjust the estimated durations and sequence, then confirm to populate the calendar.</value></data>
+  <data name="MachineSuggestions" xml:space="preserve"><value>Compatible machine choices</value></data>
+  <data name="OperationsAutomaticallyShownAfterConfirmation" xml:space="preserve"><value>Calendar bookings appear automatically after the Production Manager confirms the stages and their durations.</value></data>
+  <data name="AutomaticManagerMonthHelp" xml:space="preserve"><value>Machine operations appear on the CEO-style month calendar automatically after the route is confirmed. Dates and shift colors match Production Planning.</value></data>
+  <data name="AutomaticManagerTimelineHelp" xml:space="preserve"><value>The weekly and daily calendar displays automatically calculated machine bookings. Edit the stage durations and reconfirm to recalculate.</value></data>
+  <data name="AddOperationOnlyIfNeeded" xml:space="preserve"><value>Add an additional operation (only if needed)</value></data>
+  <data name="ChooseMachineForUnmappedStep" xml:space="preserve"><value>Manual machine selection required</value></data>
+  <data name="AutoMachineChoice" xml:space="preserve"><value>Choose automatically from compatible machines</value></data>
+  <data name="AutoScheduleCannotFit" xml:space="preserve"><value>Unable to automatically schedule this order:</value></data>
+  <data name="AutoScheduleFailed" xml:space="preserve"><value>Automatic scheduling failed. The order was not partially scheduled. Please retry.</value></data>
+  <data name="SequenceAndAutomaticScheduleSaved" xml:space="preserve"><value>Operation order confirmed and all machine bookings generated automatically.</value></data>
+  <data name="OperationAddedReconfirm" xml:space="preserve"><value>Operation added. Review the total estimated duration and reconfirm to regenerate the calendar.</value></data>
+  <data name="OperationUpdatedReconfirm" xml:space="preserve"><value>Operation updated. Reconfirm the sequence to regenerate the machine bookings.</value></data>
+  <data name="OperationRemovedReconfirm" xml:space="preserve"><value>Operation removed. Reconfirm the revised sequence to regenerate the machine bookings.</value></data>
+  <data name="OperationUpdateFailed" xml:space="preserve"><value>Could not update the operation. No partial stage changes were committed.</value></data>
+  <data name="RestoreSalesSuggestions" xml:space="preserve"><value>Restore suggested stages from Sales</value></data>
+  <data name="CannotRestoreEditedRoute" xml:space="preserve"><value>Existing stages must be removed before reimporting Sales suggestions.</value></data>
+  <data name="SalesSuggestionsRestored" xml:space="preserve"><value>Sales job specifications were re-read and suggested operations restored where available.</value></data>
+  <data name="SaveStageEditsBeforeConfirmation" xml:space="preserve"><value>Save changes to operation durations, names or machines before confirming and automatically generating the schedule.</value></data>
+  <data name="Access denied" xml:space="preserve"><value>Access denied</value></data>
+  <data name="You do not have access to this resource." xml:space="preserve"><value>You do not have access to this resource.</value></data>
+  <data name="Confirm email" xml:space="preserve"><value>Confirm email</value></data>
+  <data name="Confirm email change" xml:space="preserve"><value>Confirm email change</value></data>
+  <data name="Register" xml:space="preserve"><value>Register</value></data>
+  <data name="Please enter your email." xml:space="preserve"><value>Please enter your email.</value></data>
+  <data name="Forgot your password?" xml:space="preserve"><value>Forgot your password?</value></data>
+  <data name="Enter your email." xml:space="preserve"><value>Enter your email.</value></data>
+  <data name="Reset password" xml:space="preserve"><value>Reset password</value></data>
+  <data name="Forgot password confirmation" xml:space="preserve"><value>Forgot password confirmation</value></data>
+  <data name="Please check your email to reset your password." xml:space="preserve"><value>Please check your email to reset your password.</value></data>
+  <data name="Invalid password reset" xml:space="preserve"><value>Invalid password reset</value></data>
+  <data name="The password reset link is invalid." xml:space="preserve"><value>The password reset link is invalid.</value></data>
+  <data name="Invalid user" xml:space="preserve"><value>Invalid user</value></data>
+  <data name="Locked out" xml:space="preserve"><value>Locked out</value></data>
+  <data name="This account has been locked out, please try again later." xml:space="preserve"><value>This account has been locked out, please try again later.</value></data>
+  <data name="Two-factor authentication" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="Your login is protected with an authenticator app. Enter your authenticator code below." xml:space="preserve"><value>Your login is protected with an authenticator app. Enter your authenticator code below.</value></data>
+  <data name="Authenticator code" xml:space="preserve"><value>Authenticator code</value></data>
+  <data name="Remember this machine" xml:space="preserve"><value>Remember this machine</value></data>
+  <data name="Log in" xml:space="preserve"><value>Log in</value></data>
+  <data name="log in with a recovery code" xml:space="preserve"><value>log in with a recovery code</value></data>
+  <data name="Recovery code verification" xml:space="preserve"><value>Recovery code verification</value></data>
+  <data name="You have requested to log in with a recovery code. This login will not be remembered until you provide an authenticator app code at log in or disable 2FA and log in again." xml:space="preserve"><value>You have requested to log in with a recovery code. This login will not be remembered until you provide an authenticator app code at log in or disable 2FA and log in again.</value></data>
+  <data name="Recovery Code" xml:space="preserve"><value>Recovery Code</value></data>
+  <data name="Change password" xml:space="preserve"><value>Change password</value></data>
+  <data name="Old password" xml:space="preserve"><value>Old password</value></data>
+  <data name="New password" xml:space="preserve"><value>New password</value></data>
+  <data name="Confirm password" xml:space="preserve"><value>Confirm password</value></data>
+  <data name="Confirm Password" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="Update password" xml:space="preserve"><value>Update password</value></data>
+  <data name="Enter the old password" xml:space="preserve"><value>Enter the old password</value></data>
+  <data name="Enter the new password" xml:space="preserve"><value>Enter the new password</value></data>
+  <data name="Delete Personal Data" xml:space="preserve"><value>Delete Personal Data</value></data>
+  <data name="Deleting this data will permanently remove your account, and this cannot be recovered." xml:space="preserve"><value>Deleting this data will permanently remove your account, and this cannot be recovered.</value></data>
+  <data name="Delete data and close my account" xml:space="preserve"><value>Delete data and close my account</value></data>
+  <data name="Please enter your password." xml:space="preserve"><value>Please enter your password.</value></data>
+  <data name="Disable two-factor authentication (2FA)" xml:space="preserve"><value>Disable two-factor authentication (2FA)</value></data>
+  <data name="This action only disables 2FA." xml:space="preserve"><value>This action only disables 2FA.</value></data>
+  <data name="Disable 2FA" xml:space="preserve"><value>Disable 2FA</value></data>
+  <data name="reset your authenticator keys." xml:space="preserve"><value>reset your authenticator keys.</value></data>
+  <data name="Manage email" xml:space="preserve"><value>Manage email</value></data>
+  <data name="Send verification email" xml:space="preserve"><value>Send verification email</value></data>
+  <data name="New email" xml:space="preserve"><value>New email</value></data>
+  <data name="Change email" xml:space="preserve"><value>Change email</value></data>
+  <data name="Enter your email" xml:space="preserve"><value>Enter your email</value></data>
+  <data name="Enter a new email" xml:space="preserve"><value>Enter a new email</value></data>
+  <data name="Configure authenticator app" xml:space="preserve"><value>Configure authenticator app</value></data>
+  <data name="To use an authenticator app go through the following steps:" xml:space="preserve"><value>To use an authenticator app go through the following steps:</value></data>
+  <data name="Android" xml:space="preserve"><value>Android</value></data>
+  <data name="iOS" xml:space="preserve"><value>iOS</value></data>
+  <data name="and" xml:space="preserve"><value>and</value></data>
+  <data name="Verification Code" xml:space="preserve"><value>Verification Code</value></data>
+  <data name="Verify" xml:space="preserve"><value>Verify</value></data>
+  <data name="Enter the code" xml:space="preserve"><value>Enter the code</value></data>
+  <data name="Manage your external logins" xml:space="preserve"><value>Manage your external logins</value></data>
+  <data name="Registered Logins" xml:space="preserve"><value>Registered Logins</value></data>
+  <data name="Add another service to log in." xml:space="preserve"><value>Add another service to log in.</value></data>
+  <data name="Generate two-factor authentication (2FA) recovery codes" xml:space="preserve"><value>Generate two-factor authentication (2FA) recovery codes</value></data>
+  <data name="Put these codes in a safe place." xml:space="preserve"><value>Put these codes in a safe place.</value></data>
+  <data name="Generate Recovery Codes" xml:space="preserve"><value>Generate Recovery Codes</value></data>
+  <data name="Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Phone number" xml:space="preserve"><value>Phone number</value></data>
+  <data name="Choose your username." xml:space="preserve"><value>Choose your username.</value></data>
+  <data name="Enter your phone number" xml:space="preserve"><value>Enter your phone number</value></data>
+  <data name="Manage your passkeys" xml:space="preserve"><value>Manage your passkeys</value></data>
+  <data name="Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="No passkeys are registered." xml:space="preserve"><value>No passkeys are registered.</value></data>
+  <data name="You have reached the maximum number of allowed passkeys. Please delete one before adding a new one." xml:space="preserve"><value>You have reached the maximum number of allowed passkeys. Please delete one before adding a new one.</value></data>
+  <data name="Add a new passkey" xml:space="preserve"><value>Add a new passkey</value></data>
+  <data name="Rename this passkey" xml:space="preserve"><value>Rename this passkey</value></data>
+  <data name="Remove this passkey from your account" xml:space="preserve"><value>Remove this passkey from your account</value></data>
+  <data name="Personal Data" xml:space="preserve"><value>Personal Data</value></data>
+  <data name="Your account contains personal data that you have given us. This page allows you to download or delete that data." xml:space="preserve"><value>Your account contains personal data that you have given us. This page allows you to download or delete that data.</value></data>
+  <data name="Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Enter a name for your passkey" xml:space="preserve"><value>Enter a name for your passkey</value></data>
+  <data name="Passkey name" xml:space="preserve"><value>Passkey name</value></data>
+  <data name="Continue" xml:space="preserve"><value>Continue</value></data>
+  <data name="My passkey" xml:space="preserve"><value>My passkey</value></data>
+  <data name="Reset authenticator key" xml:space="preserve"><value>Reset authenticator key</value></data>
+  <data name="If you reset your authenticator key your authenticator app will not work until you reconfigure it." xml:space="preserve"><value>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</value></data>
+  <data name="Set password" xml:space="preserve"><value>Set password</value></data>
+  <data name="Set your password" xml:space="preserve"><value>Set your password</value></data>
+  <data name="Two-factor authentication (2FA)" xml:space="preserve"><value>Two-factor authentication (2FA)</value></data>
+  <data name="You have no recovery codes left." xml:space="preserve"><value>You have no recovery codes left.</value></data>
+  <data name="You must" xml:space="preserve"><value>You must</value></data>
+  <data name="generate a new set of recovery codes" xml:space="preserve"><value>generate a new set of recovery codes</value></data>
+  <data name="before you can log in with a recovery code." xml:space="preserve"><value>before you can log in with a recovery code.</value></data>
+  <data name="You have 1 recovery code left." xml:space="preserve"><value>You have 1 recovery code left.</value></data>
+  <data name="You can" xml:space="preserve"><value>You can</value></data>
+  <data name="You should" xml:space="preserve"><value>You should</value></data>
+  <data name="Forget this browser" xml:space="preserve"><value>Forget this browser</value></data>
+  <data name="Reset recovery codes" xml:space="preserve"><value>Reset recovery codes</value></data>
+  <data name="Authenticator app" xml:space="preserve"><value>Authenticator app</value></data>
+  <data name="Add authenticator app" xml:space="preserve"><value>Add authenticator app</value></data>
+  <data name="Set up authenticator app" xml:space="preserve"><value>Set up authenticator app</value></data>
+  <data name="Reset authenticator app" xml:space="preserve"><value>Reset authenticator app</value></data>
+  <data name="Privacy and cookie policy have not been accepted." xml:space="preserve"><value>Privacy and cookie policy have not been accepted.</value></data>
+  <data name="You must accept the policy before you can enable two factor authentication." xml:space="preserve"><value>You must accept the policy before you can enable two factor authentication.</value></data>
+  <data name="Create a new account." xml:space="preserve"><value>Create a new account.</value></data>
+  <data name="Use another service to register." xml:space="preserve"><value>Use another service to register.</value></data>
+  <data name="Register confirmation" xml:space="preserve"><value>Register confirmation</value></data>
+  <data name="these docs" xml:space="preserve"><value>these docs</value></data>
+  <data name="Click here to confirm your account" xml:space="preserve"><value>Click here to confirm your account</value></data>
+  <data name="Please check your email to confirm your account." xml:space="preserve"><value>Please check your email to confirm your account.</value></data>
+  <data name="Resend email confirmation" xml:space="preserve"><value>Resend email confirmation</value></data>
+  <data name="Resend" xml:space="preserve"><value>Resend</value></data>
+  <data name="Reset your password." xml:space="preserve"><value>Reset your password.</value></data>
+  <data name="Please confirm your password." xml:space="preserve"><value>Please confirm your password.</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Reset password confirmation" xml:space="preserve"><value>Reset password confirmation</value></data>
+  <data name="Your password has been reset. Please" xml:space="preserve"><value>Your password has been reset. Please</value></data>
+  <data name="click here to log in" xml:space="preserve"><value>click here to log in</value></data>
+  <data name="Manage your account" xml:space="preserve"><value>Manage your account</value></data>
+  <data name="Change your account settings" xml:space="preserve"><value>Change your account settings</value></data>
+  <data name="External logins" xml:space="preserve"><value>External logins</value></data>
+  <data name="Passkeys" xml:space="preserve"><value>Passkeys</value></data>
+  <data name="Personal data" xml:space="preserve"><value>Personal data</value></data>
+  <data name="Recovery codes" xml:space="preserve"><value>Recovery codes</value></data>
+  <data name="Manage employees and user accounts." xml:space="preserve"><value>Manage employees and user accounts.</value></data>
+  <data name="Manage Users" xml:space="preserve"><value>Manage Users</value></data>
+  <data name="Manage access levels." xml:space="preserve"><value>Manage access levels.</value></data>
+  <data name="Manage Roles" xml:space="preserve"><value>Manage Roles</value></data>
+  <data name="Control access to system features." xml:space="preserve"><value>Control access to system features.</value></data>
+  <data name="Permission Management" xml:space="preserve"><value>Permission Management</value></data>
+  <data name="You are not authorized to manage permissions for any roles." xml:space="preserve"><value>You are not authorized to manage permissions for any roles.</value></data>
+  <data name="Roles You Can Manage" xml:space="preserve"><value>Roles You Can Manage</value></data>
+  <data name="Select a role to manage its permissions." xml:space="preserve"><value>Select a role to manage its permissions.</value></data>
+  <data name="Select the permissions that this role is allowed to use." xml:space="preserve"><value>Select the permissions that this role is allowed to use.</value></data>
+  <data name="You are not authorized to delegate any permissions to this role." xml:space="preserve"><value>You are not authorized to delegate any permissions to this role.</value></data>
+  <data name="Permission" xml:space="preserve"><value>Permission</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="You can manage permissions only for roles that you are authorized to manage." xml:space="preserve"><value>You can manage permissions only for roles that you are authorized to manage.</value></data>
+  <data name="You are not authorized to manage permissions for any role." xml:space="preserve"><value>You are not authorized to manage permissions for any role.</value></data>
+  <data name="-- Select Role --" xml:space="preserve"><value>-- Select Role --</value></data>
+  <data name="Select the permissions that you are allowed to manage for this role." xml:space="preserve"><value>Select the permissions that you are allowed to manage for this role.</value></data>
+  <data name="You have no delegated permissions for this role." xml:space="preserve"><value>You have no delegated permissions for this role.</value></data>
+  <data name="Role Permissions" xml:space="preserve"><value>Role Permissions</value></data>
+  <data name="Role not found." xml:space="preserve"><value>Role not found.</value></data>
+  <data name="You are not authorized to manage any permissions for this role." xml:space="preserve"><value>You are not authorized to manage any permissions for this role.</value></data>
+  <data name="You are not authorized to view roles." xml:space="preserve"><value>You are not authorized to view roles.</value></data>
+  <data name="Loading roles..." xml:space="preserve"><value>Loading roles...</value></data>
+  <data name="No roles have been created yet." xml:space="preserve"><value>No roles have been created yet.</value></data>
+  <data name="e.g. Warehouse Manager" xml:space="preserve"><value>e.g. Warehouse Manager</value></data>
+  <data name="Remove all users from this role before deleting it." xml:space="preserve"><value>Remove all users from this role before deleting it.</value></data>
+  <data name="Users Management" xml:space="preserve"><value>Users Management</value></data>
+  <data name="Add Employee" xml:space="preserve"><value>Add Employee</value></data>
+  <data name="You are not authenticated." xml:space="preserve"><value>You are not authenticated.</value></data>
+  <data name="Current user could not be found." xml:space="preserve"><value>Current user could not be found.</value></data>
+  <data name="You are not authorized to manage this role." xml:space="preserve"><value>You are not authorized to manage this role.</value></data>
+  <data name="You are not authorized to modify this role." xml:space="preserve"><value>You are not authorized to modify this role.</value></data>
+  <data name="You must be logged in to manage permissions." xml:space="preserve"><value>You must be logged in to manage permissions.</value></data>
+  <data name="No permissions available." xml:space="preserve"><value>No permissions available.</value></data>
+  <data name="Create an employee account" xml:space="preserve"><value>Create an employee account</value></data>
+  <data name="Choose a role" xml:space="preserve"><value>Choose a role</value></data>
+  <data name="Unable to load permissions:" xml:space="preserve"><value>Unable to load permissions:</value></data>
+  <data name="Unable to save permissions:" xml:space="preserve"><value>Unable to save permissions:</value></data>
+  <data name="Permission changes saved successfully." xml:space="preserve"><value>Permission changes saved successfully.</value></data>
+  <data name="Production Planning" xml:space="preserve"><value>Production Planning</value></data>
+  <data name="Select an order from the queue, then click a calendar slot or drag it onto the calendar." xml:space="preserve"><value>Select an order from the queue, then click a calendar slot or drag it onto the calendar.</value></data>
+  <data name="Production orders" xml:space="preserve"><value>Production orders</value></data>
+  <data name="Select an order, then click a calendar slot, or drag it onto the calendar. Scheduled orders can also be dragged to a new start." xml:space="preserve"><value>Select an order, then click a calendar slot, or drag it onto the calendar. Scheduled orders can also be dragged to a new start.</value></data>
+  <data name="There are no active production orders." xml:space="preserve"><value>There are no active production orders.</value></data>
+  <data name="Order settings" xml:space="preserve"><value>Order settings</value></data>
+  <data name="Select an order first." xml:space="preserve"><value>Select an order first.</value></data>
+  <data name="Estimated duration (hours)" xml:space="preserve"><value>Estimated duration (hours)</value></data>
+  <data name="Avoid overtime (17:00–22:00)" xml:space="preserve"><value>Avoid overtime (17:00–22:00)</value></data>
+  <data name="Avoid night shift (22:00–08:00)" xml:space="preserve"><value>Avoid night shift (22:00–08:00)</value></data>
+  <data name="Save settings" xml:space="preserve"><value>Save settings</value></data>
+  <data name="The lunch break is always excluded. Prohibited shifts are skipped and are not shown as active production time." xml:space="preserve"><value>The lunch break is always excluded. Prohibited shifts are skipped and are not shown as active production time.</value></data>
+  <data name="Regular work 08:00–13:00 / 14:00–17:00" xml:space="preserve"><value>Regular work 08:00–13:00 / 14:00–17:00</value></data>
+  <data name="Break 13:00–14:00" xml:space="preserve"><value>Break 13:00–14:00</value></data>
+  <data name="Overtime 17:00–22:00" xml:space="preserve"><value>Overtime 17:00–22:00</value></data>
+  <data name="Night 22:00–08:00" xml:space="preserve"><value>Night 22:00–08:00</value></data>
+  <data name="In Month view, click or drop an order on a date to schedule it from 08:00. Use Week or Day view to choose a specific start time." xml:space="preserve"><value>In Month view, click or drop an order on a date to schedule it from 08:00. Use Week or Day view to choose a specific start time.</value></data>
+  <data name="Click a time slot or drop an order onto it to set the start time. Multiple orders may occupy the same time slot." xml:space="preserve"><value>Click a time slot or drop an order onto it to set the start time. Multiple orders may occupy the same time slot.</value></data>
+  <data name="This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions." xml:space="preserve"><value>This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions.</value></data>
+  <data name="The CEO duration must allow at least one minute for each machine operation." xml:space="preserve"><value>The CEO duration must allow at least one minute for each machine operation.</value></data>
+  <data name="CEO duration, machine-step allocations and permitted shifts are consistent." xml:space="preserve"><value>CEO duration, machine-step allocations and permitted shifts are consistent.</value></data>
+  <data name="This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar." xml:space="preserve"><value>This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar.</value></data>
+  <data name="No production operations have been defined for this production order yet." xml:space="preserve"><value>No production operations have been defined for this production order yet.</value></data>
+  <data name="No production schedule has been created for this production order yet." xml:space="preserve"><value>No production schedule has been created for this production order yet.</value></data>
+  <data name="Material Request" xml:space="preserve"><value>Material Request</value></data>
+  <data name="Operator entered" xml:space="preserve"><value>Operator entered</value></data>
+  <data name="Select the materials needed for this production order and enter the requested quantities. Submitting this request does not reserve or issue inventory." xml:space="preserve"><value>Select the materials needed for this production order and enter the requested quantities. Submitting this request does not reserve or issue inventory.</value></data>
+  <data name="Requested quantity" xml:space="preserve"><value>Requested quantity</value></data>
+  <data name="Choose an item from the suggestions." xml:space="preserve"><value>Choose an item from the suggestions.</value></data>
+  <data name="+ Add material line" xml:space="preserve"><value>+ Add material line</value></data>
+  <data name="Submitted Material Requests" xml:space="preserve"><value>Submitted Material Requests</value></data>
+  <data name="No material requests have been submitted for this production order." xml:space="preserve"><value>No material requests have been submitted for this production order.</value></data>
+  <data name="No material reservations have been created for this production order." xml:space="preserve"><value>No material reservations have been created for this production order.</value></data>
+  <data name="Search by item name or code" xml:space="preserve"><value>Search by item name or code</value></data>
+  <data name="Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="Remove line" xml:space="preserve"><value>Remove line</value></data>
+  <data name="Add at least one material before submitting the request." xml:space="preserve"><value>Add at least one material before submitting the request.</value></data>
+  <data name="Select a valid material and enter a quantity greater than zero for every request line." xml:space="preserve"><value>Select a valid material and enter a quantity greater than zero for every request line.</value></data>
+  <data name="Sorry, the content you are looking for does not exist." xml:space="preserve"><value>Sorry, the content you are looking for does not exist.</value></data>
+  <data name="Not Found" xml:space="preserve"><value>Not Found</value></data>
+  <data name="Loading PDF pages..." xml:space="preserve"><value>Loading PDF pages...</value></data>
+  <data name="Production Orders" xml:space="preserve"><value>Production Orders</value></data>
+  <data name="Order Number" xml:space="preserve"><value>Order Number</value></data>
+  <data name="Sales Order" xml:space="preserve"><value>Sales Order</value></data>
+  <data name="Planned Start" xml:space="preserve"><value>Planned Start</value></data>
+  <data name="Planned End" xml:space="preserve"><value>Planned End</value></data>
+  <data name="Material waste" xml:space="preserve"><value>Material waste</value></data>
+  <data name="Area utilization" xml:space="preserve"><value>Area utilization</value></data>
+  <data name="· Total planned output:" xml:space="preserve"><value>· Total planned output:</value></data>
+  <data name="Solver:" xml:space="preserve"><value>Solver:</value></data>
+  <data name="Sheets required:" xml:space="preserve"><value>Sheets required:</value></data>
+  <data name="Total roll length:" xml:space="preserve"><value>Total roll length:</value></data>
+  <data name="The preview shows one repeat; this pattern is repeated for the full run." xml:space="preserve"><value>The preview shows one repeat; this pattern is repeated for the full run.</value></data>
+  <data name="Export SVG preview" xml:space="preserve"><value>Export SVG preview</value></data>
+  <data name="Rectangular imposition preview" xml:space="preserve"><value>Rectangular imposition preview</value></data>
+  <data name="Imposition Optimizer" xml:space="preserve"><value>Imposition Optimizer</value></data>
+  <data name="Sheet format" xml:space="preserve"><value>Sheet format</value></data>
+  <data name="Parts on sheet" xml:space="preserve"><value>Parts on sheet</value></data>
+  <data name="Sheet copies" xml:space="preserve"><value>Sheet copies</value></data>
+  <data name="Fill / waste" xml:space="preserve"><value>Fill / waste</value></data>
+  <data name="Total sheets" xml:space="preserve"><value>Total sheets</value></data>
+  <data name="Paper weight required" xml:space="preserve"><value>Paper weight required</value></data>
+  <data name="Total placed" xml:space="preserve"><value>Total placed</value></data>
+  <data name="Material type" xml:space="preserve"><value>Material type</value></data>
+  <data name="Format" xml:space="preserve"><value>Format</value></data>
+  <data name="Custom" xml:space="preserve"><value>Custom</value></data>
+  <data name="Width (mm)" xml:space="preserve"><value>Width (mm)</value></data>
+  <data name="Paper weight (gsm)" xml:space="preserve"><value>Paper weight (gsm)</value></data>
+  <data name="Material area" xml:space="preserve"><value>Material area</value></data>
+  <data name="Estimated paper weight" xml:space="preserve"><value>Estimated paper weight</value></data>
+  <data name="Parts / Required quantities" xml:space="preserve"><value>Parts / Required quantities</value></data>
+  <data name="＋ Add part" xml:space="preserve"><value>＋ Add part</value></data>
+  <data name="Height (mm)" xml:space="preserve"><value>Height (mm)</value></data>
+  <data name="Required quantity (pieces)" xml:space="preserve"><value>Required quantity (pieces)</value></data>
+  <data name="How many finished pieces of this part are needed?" xml:space="preserve"><value>How many finished pieces of this part are needed?</value></data>
+  <data name="Allow 90° rotation" xml:space="preserve"><value>Allow 90° rotation</value></data>
+  <data name="Required pieces" xml:space="preserve"><value>Required pieces</value></data>
+  <data name="Total required pieces" xml:space="preserve"><value>Total required pieces</value></data>
+  <data name="Sheets / repeats needed" xml:space="preserve"><value>Sheets / repeats needed</value></data>
+  <data name="Pieces planned" xml:space="preserve"><value>Pieces planned</value></data>
+  <data name="Extra pieces" xml:space="preserve"><value>Extra pieces</value></data>
+  <data name="All sizes are given in them." xml:space="preserve"><value>All sizes are given in them.</value></data>
+  <data name="Sheet margin" xml:space="preserve"><value>Sheet margin</value></data>
+  <data name="Top" xml:space="preserve"><value>Top</value></data>
+  <data name="Right" xml:space="preserve"><value>Right</value></data>
+  <data name="Bottom" xml:space="preserve"><value>Bottom</value></data>
+  <data name="Left" xml:space="preserve"><value>Left</value></data>
+  <data name="Cutting" xml:space="preserve"><value>Cutting</value></data>
+  <data name="Identical sheets" xml:space="preserve"><value>Identical sheets</value></data>
+  <data name="Center on sheet" xml:space="preserve"><value>Center on sheet</value></data>
+  <data name="Part spacing" xml:space="preserve"><value>Part spacing</value></data>
+  <data name="Gap between parts" xml:space="preserve"><value>Gap between parts</value></data>
+  <data name="Optimization" xml:space="preserve"><value>Optimization</value></data>
+  <data name="Find best layout" xml:space="preserve"><value>Find best layout</value></data>
+  <data name="Clear results" xml:space="preserve"><value>Clear results</value></data>
+  <data name="Layout" xml:space="preserve"><value>Layout</value></data>
+  <data name="⇩ Save / Calculate" xml:space="preserve"><value>⇩ Save / Calculate</value></data>
+  <data name="Best 3 layouts — ranked by waste (lowest first)" xml:space="preserve"><value>Best 3 layouts — ranked by waste (lowest first)</value></data>
+  <data name="Part name" xml:space="preserve"><value>Part name</value></data>
+  <data name="Remove part" xml:space="preserve"><value>Remove part</value></data>
+  <data name="Sheet imposition preview" xml:space="preserve"><value>Sheet imposition preview</value></data>
+  <data name="RollWorkflowInfo" xml:space="preserve"><value>Workflow and production information</value></data>
+  <data name="LoadingJob" xml:space="preserve"><value>Loading job…</value></data>
+  <data name="Error." xml:space="preserve"><value>Error.</value></data>
+  <data name="An error occurred while processing your request." xml:space="preserve"><value>An error occurred while processing your request.</value></data>
+  <data name="Request ID:" xml:space="preserve"><value>Request ID:</value></data>
+  <data name="Development Mode" xml:space="preserve"><value>Development Mode</value></data>
+  <data name="Swapping to" xml:space="preserve"><value>Swapping to</value></data>
+  <data name="environment will display more detailed information about the error that occurred." xml:space="preserve"><value>environment will display more detailed information about the error that occurred.</value></data>
+  <data name="The Development environment shouldn't be enabled for deployed applications." xml:space="preserve"><value>The Development environment shouldn't be enabled for deployed applications.</value></data>
+  <data name="It can result in displaying sensitive information from exceptions to end users." xml:space="preserve"><value>It can result in displaying sensitive information from exceptions to end users.</value></data>
+  <data name="For local debugging, enable the" xml:space="preserve"><value>For local debugging, enable the</value></data>
+  <data name="environment by setting the" xml:space="preserve"><value>environment by setting the</value></data>
+  <data name="environment variable to" xml:space="preserve"><value>environment variable to</value></data>
+  <data name="and restarting the app." xml:space="preserve"><value>and restarting the app.</value></data>
+  <data name="This app does not currently have a real email sender registered, see" xml:space="preserve"><value>This app does not currently have a real email sender registered, see</value></data>
+  <data name="for how to configure a real email sender. Normally this would be emailed:" xml:space="preserve"><value>for how to configure a real email sender. Normally this would be emailed:</value></data>
+  <data name="You do not have a local username/password for this site. Add a local account so you can log in without an external login." xml:space="preserve"><value>You do not have a local username/password for this site. Add a local account so you can log in without an external login.</value></data>
+  <data name="This process disables 2FA until you verify your authenticator app. If you do not complete your authenticator app configuration you may lose access to your account." xml:space="preserve"><value>This process disables 2FA until you verify your authenticator app. If you do not complete your authenticator app configuration you may lose access to your account.</value></data>
+  <data name="If you lose your device and don't have the recovery codes you will lose access to your account." xml:space="preserve"><value>If you lose your device and don't have the recovery codes you will lose access to your account.</value></data>
+  <data name="Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should" xml:space="preserve"><value>Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should</value></data>
+  <data name="Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should" xml:space="preserve"><value>Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should</value></data>
+  <data name="Download a two-factor authenticator app like Microsoft Authenticator for" xml:space="preserve"><value>Download a two-factor authenticator app like Microsoft Authenticator for</value></data>
+  <data name="or Google Authenticator for" xml:space="preserve"><value>or Google Authenticator for</value></data>
+  <data name="into your two factor authenticator app. Spaces and casing do not matter." xml:space="preserve"><value>into your two factor authenticator app. Spaces and casing do not matter.</value></data>
+  <data name="Scan the QR Code or enter this key" xml:space="preserve"><value>Scan the QR Code or enter this key</value></data>
+  <data name="Learn how to" xml:space="preserve"><value>Learn how to</value></data>
+  <data name="enable QR code generation" xml:space="preserve"><value>enable QR code generation</value></data>
+  <data name="Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below." xml:space="preserve"><value>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</value></data>
+  <data name="You’ve successfully authenticated with" xml:space="preserve"><value>You’ve successfully authenticated with</value></data>
+  <data name="You’ve successfully authenticated with your external provider." xml:space="preserve"><value>You’ve successfully authenticated with your external provider.</value></data>
+  <data name="Don't have access to your authenticator device? You can" xml:space="preserve"><value>Don't have access to your authenticator device? You can</value></data>
+  <data name="You've successfully authenticated with" xml:space="preserve"><value>You've successfully authenticated with</value></data>
+  <data name="Associate your {0} account." xml:space="preserve"><value>Associate your {0} account.</value></data>
+  <data name="Please enter an email address for this site below and click the Register button to finish logging in." xml:space="preserve"><value>Please enter an email address for this site below and click the Register button to finish logging in.</value></data>
+  <data name="No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation." xml:space="preserve"><value>No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation.</value></data>
+  <data name="Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage." xml:space="preserve"><value>Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage.</value></data>
+  <data name="Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed." xml:space="preserve"><value>Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed.</value></data>
+  <data name="Generate layouts using the selected sheet, parts, and setup." xml:space="preserve"><value>Generate layouts using the selected sheet, parts, and setup.</value></data>
+  <data name="No valid layout was found." xml:space="preserve"><value>No valid layout was found.</value></data>
+  <data name="You must be logged in." xml:space="preserve"><value>You must be logged in.</value></data>
+  <data name="Unable to load permission management:" xml:space="preserve"><value>Unable to load permission management:</value></data>
+  <data name="Please select a role." xml:space="preserve"><value>Please select a role.</value></data>
+  <data name="You are not assigned to a role that can manage permissions." xml:space="preserve"><value>You are not assigned to a role that can manage permissions.</value></data>
+  <data name="You are not authorized to manage permissions for this role." xml:space="preserve"><value>You are not authorized to manage permissions for this role.</value></data>
+  <data name="You are not authorized to modify permissions for this role." xml:space="preserve"><value>You are not authorized to modify permissions for this role.</value></data>
+  <data name="You are not authorized to create roles." xml:space="preserve"><value>You are not authorized to create roles.</value></data>
+  <data name="Please enter a role name." xml:space="preserve"><value>Please enter a role name.</value></data>
+  <data name="That role already exists." xml:space="preserve"><value>That role already exists.</value></data>
+  <data name="You are not authorized to delete roles." xml:space="preserve"><value>You are not authorized to delete roles.</value></data>
+  <data name="The Administrator role cannot be deleted." xml:space="preserve"><value>The Administrator role cannot be deleted.</value></data>
+  <data name="Invalid role." xml:space="preserve"><value>Invalid role.</value></data>
+  <data name="Unable to load roles:" xml:space="preserve"><value>Unable to load roles:</value></data>
+  <data name="Role '{0}' created successfully." xml:space="preserve"><value>Role '{0}' created successfully.</value></data>
+  <data name="Role '{0}' deleted successfully." xml:space="preserve"><value>Role '{0}' deleted successfully.</value></data>
+  <data name="Role '{0}' is assigned to {1} user(s) and cannot be deleted." xml:space="preserve"><value>Role '{0}' is assigned to {1} user(s) and cannot be deleted.</value></data>
+  <data name="Permissions for '{0}' saved successfully." xml:space="preserve"><value>Permissions for '{0}' saved successfully.</value></data>
+  <data name="Role '{0}' could not be deleted." xml:space="preserve"><value>Role '{0}' could not be deleted.</value></data>
+  <data name="Failed to save permissions." xml:space="preserve"><value>Failed to save permissions.</value></data>
+  <data name="Unexpected error while loading roles." xml:space="preserve"><value>Unexpected error while loading roles.</value></data>
+  <data name="Unable to load permission management." xml:space="preserve"><value>Unable to load permission management.</value></data>
+  <data name="Location" xml:space="preserve"><value>Location</value></data>
+  <data name="ViewAllCustomerInventory" xml:space="preserve"><value>View all customer inventory</value></data>
+  <data name="NoCustomerInventory" xml:space="preserve"><value>No customer inventory records found.</value></data>
+  <data name="SavePreviewAndContinueSalesWorkflow" xml:space="preserve">
+    <value>Save, preview approval proof, and continue sales workflow</value>
+  </data>
+  <data name="ContinueSalesWorkflow" xml:space="preserve">
+    <value>Continue sales workflow</value>
+  </data>
+  <data name="ContinueToQuotation" xml:space="preserve"><value>Continue to quotation</value></data>
+  <data name="JobsOnQuotation" xml:space="preserve"><value>Jobs in this quotation</value></data>
+  <data name="OpenJob" xml:space="preserve"><value>Open job</value></data>
+  <data name="OpenApprovalProof" xml:space="preserve"><value>View approval proof</value></data>
+  <data name="AddSavedJobToQuotation" xml:space="preserve"><value>Add another saved Roll or Sheet job</value></data>
+  <data name="SelectSavedJob" xml:space="preserve"><value>Select a saved job from this customer</value></data>
+  <data name="AddJobToQuotation" xml:space="preserve"><value>Add job to quotation</value></data>
+  <data name="CreateAnotherJob" xml:space="preserve"><value>Create another job</value></data>
+  <data name="JobAddedToQuotation" xml:space="preserve"><value>Job added to quotation.</value></data>
+  <data name="QuotationNotEditable" xml:space="preserve"><value>This quotation is no longer editable.</value></data>
+  <data name="QuotationCustomerMustMatch" xml:space="preserve"><value>Only jobs for the quotation's customer can be attached.</value></data>
+  <data name="StartNewJobQuotation" xml:space="preserve"><value>Start new job and quotation</value></data>
+  <data name="MatchingExistingJobFound" xml:space="preserve"><value>An existing job has this title.</value></data>
+  <data name="OpenExistingJobInsteadOfDuplicate" xml:space="preserve"><value>Load the matching job to see its saved specifications and artwork. Unsaved edits on this form will not be transferred.</value></data>
+  <data name="LoadExistingJob" xml:space="preserve"><value>Load existing job</value></data>
+  <data name="MatchingExistingJobSaveBlocked" xml:space="preserve"><value>A job with this title already exists for this customer and job type. Load the existing job instead of creating a duplicate.</value></data>
+  <data name="SelectReplacementArtwork" xml:space="preserve"><value>Choose one replacement artwork file</value></data>
+  <data name="ReplacingArtwork" xml:space="preserve"><value>Replacing</value></data>
+  <data name="ArtworkMarkedForRemoval" xml:space="preserve"><value>Marked for removal when saved</value></data>
+  <data name="ReplaceArtwork" xml:space="preserve"><value>Replace artwork</value></data>
+  <data name="Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="SelectOneReplacementArtwork" xml:space="preserve"><value>Select exactly one replacement file.</value></data>
+  <data name="ReplacementArtwork" xml:space="preserve"><value>Replacement file</value></data>
+  <data name="ArtworkChangesSavedOnSave" xml:space="preserve"><value>Artwork changes are saved when you select Save and preview approval proof.</value></data>
+  <data name="ArtworkMissingWarning" xml:space="preserve"><value>No artwork is attached. The approval proof will have no artwork until you upload a new file.</value></data>
+  <data name="ArtworkLockedAfterApproval" xml:space="preserve"><value>Artwork cannot be changed after the quotation has been approved. Request a revision before replacing the proof.</value></data>
+  <data name="ConfirmOpenExistingJob" xml:space="preserve"><value>An existing job with this title was found. Open it now? Unsaved changes on this form will be lost.</value></data>
+  <data name="ExistingJobLookupFailed" xml:space="preserve"><value>Could not look up the existing job. Please try again.</value></data>
 </root>

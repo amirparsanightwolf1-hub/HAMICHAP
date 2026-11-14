@@ -28,7 +28,7 @@
             <div class="erp-page-subtitle">@LocalizationService["RollJobSubtitle"]</div>
         </div>
         <button class="btn btn-outline-secondary" @onclick="BackToRequest">
-            <i class="bi bi-arrow-left"></i> @LocalizationService["BackToRequest"]
+            <i class="bi bi-arrow-left"></i> @LocalizationService["SalesRequests"]
         </button>
     </div>
 
@@ -46,6 +46,7 @@
     }
     else if (request is not null)
     {
+        <fieldset class="border-0 p-0 m-0 w-100" disabled="@(request.Status != SalesRequestStatus.Draft)">
         <div class="card job-section mb-4">
             <div class="card-header"><strong>@LocalizationService["OrderInformation"]</strong></div>
             <div class="card-body">
@@ -60,14 +61,14 @@
                     <div>
                         @if (!isCreatingCustomer)
                         {
-                            <select class="form-select" @bind="selectedCustomerId">
+                            <select class="form-select" @bind="selectedCustomerId" disabled="@TargetQuotationId.HasValue">
                                 <option value="0">@LocalizationService["SelectExistingCustomerPrompt"]</option>
                                 @foreach (var customer in customers)
                                 {
                                     <option value="@customer.Id">@customer.Code - @customer.Name</option>
                                 }
                             </select>
-                            <button type="button" class="btn btn-link px-0" @onclick="StartNewCustomer">
+                            <button type="button" class="btn btn-link px-0" disabled="@TargetQuotationId.HasValue" @onclick="StartNewCustomer">
                                 @LocalizationService["CreateNewCustomer"]
                             </button>
                         }
@@ -102,57 +103,57 @@
 
                     <label class="form-label">@LocalizationService["JobTitle"]</label>
                     <InputText class="form-control" @bind-Value="spec.JobTitle" />
-
-                    <label class="form-label">@LocalizationService["ArtworkFilesRequired"]</label>
-                    <div>
-                        <InputFile OnChange="ArtworkSelected" multiple accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp" class="form-control" />
-                        <div class="form-text">@LocalizationService["ArtworkUploadInstructions"]</div>
-                        @if (!string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
-                        {
-                            <div class="mt-2 d-flex align-items-center gap-3 flex-wrap">
-                                @if (IsPreviewableImage(spec.ArtworkRelativePath))
-                                {
-                                    <img class="erp-job-preview-image" src="@spec.ArtworkRelativePath" alt="Uploaded artwork preview"  />
-                                }
-                                <span class="small text-muted">@LocalizationService["SavedFile"]: @spec.ArtworkOriginalFileName</span>
-                            </div>
-                        }
-                        @if (pendingArtworks.Count > 0)
-                        {
-                            <div class="small text-primary mt-1">
-                                Selected: @string.Join(", ", pendingArtworks.Select(file => file.Name))
-                                — will be saved when you save specifications.
-                            </div>
-                        }
+                    <div style="grid-column: 1 / -1;">
+                        <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
+                                                CustomerId="@(isCreatingCustomer ? 0 : selectedCustomerId)"
+                                                JobType="SalesJobType.Roll"
+                                                JobTitle="@spec.JobTitle"
+                                                TargetQuotationId="@TargetQuotationId" />
                     </div>
+
                 </div>
             </div>
         </div>
+
+        </fieldset>
+
+        <div class="card job-section mb-4">
+            <div class="card-header"><strong>@LocalizationService["ArtworkFiles"]</strong></div>
+            <div class="card-body">
+                <JobArtworkEditor @ref="artworkEditor"
+                                  SavedFiles="@spec.ArtworkFiles"
+                                  LegacyPath="@spec.ArtworkRelativePath"
+                                  LegacyName="@spec.ArtworkOriginalFileName"
+                                  CanEdit="@canEditArtwork" />
+            </div>
+        </div>
+
+        <fieldset class="border-0 p-0 m-0 w-100" disabled="@(request.Status != SalesRequestStatus.Draft)">
 
         <div class="card job-section mb-4">
             <div class="card-header"><strong>@LocalizationService["LabelSpecifications"]</strong></div>
             <div class="card-body">
                 <div class="label-specifications-grid">
                     <div class="label-specification-field">
-                        <label>کشش لیبل</label>
+                        <label>@LocalizationService["LabelPull"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelPull" />
                     </div>
                     <div class="label-specification-field">
-                        <label>عرض لیبل</label>
+                        <label>@LocalizationService["LabelWidth"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelWidth" />
                     </div>
                     <div class="label-specification-field">
-                        <label>فاصله بین دو لیبل</label>
+                        <label>@LocalizationService["GapBetweenLabels"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.GapBetweenLabels" />
                     </div>
                     <div class="label-specification-field">
-                        <label>تعداد لیبل</label>
+                        <label>@LocalizationService["LabelQuantity"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelQuantity" />
                     </div>
                     <div class="label-specification-field">
-                        <label>نوع کاغذ / متریال</label>
+                        <label>@LocalizationService["PaperTypeMaterial"]</label>
                         <div>
-                            <input class="form-control" list="roll-paper-types" @bind="spec.PaperType" placeholder="انتخاب کنید یا تایپ کنید" />
+                            <input class="form-control" list="roll-paper-types" @bind="spec.PaperType" placeholder="@LocalizationService["SelectOrEnterMaterial"]" />
                             <datalist id="roll-paper-types">
                                 <option value="گلاسه"></option>
                                 <option value="نیمه گلاسه"></option>
@@ -163,11 +164,11 @@
                                 <option value="شفاف"></option>
                                 <option value="صدفی"></option>
                             </datalist>
-                            <small class="text-muted">گزینه استاندارد را انتخاب کنید یا متریال دلخواه را وارد کنید.</small>
+                            <small class="text-muted">@LocalizationService["SelectStandardOrEnterMaterial"]</small>
                         </div>
                     </div>
                     <div class="label-specification-field">
-                        <label>تعداد رنگ</label>
+                        <label>@LocalizationService["ColorCount"]</label>
                         <InputSelect class="form-select" @bind-Value="spec.ColorCount">
                             <option value="">@LocalizationService["SelectColorCount"]</option>
                             @for (var color = 1; color <= 10; color++)
@@ -177,8 +178,8 @@
                         </InputSelect>
                     </div>
                     <div class="label-specification-field">
-                        <label>توضیحات چاپ / رنگ اختصاصی</label>
-                        <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="جزئیات سفارشی، رنگ پنتون و ..." />
+                        <label>@LocalizationService["PrintingNotes"]</label>
+                        <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="@LocalizationService["CustomDetailsPantone"]" />
                     </div>
                     <div class="col-12">
                         <div class="row g-3">
@@ -217,7 +218,7 @@
                         </div>
                     </div>
                     <div class="label-specification-field">
-                        <label>قطر بوبین</label>
+                        <label>@LocalizationService["RollDiameter"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.RollDiameter" />
                     </div>
                     <div class="col-12">
@@ -248,13 +249,13 @@
                     <div class="col-md-4 d-flex align-items-end">
                         <div class="form-check">
                             <InputCheckbox class="form-check-input" @bind-Value="spec.HandGluing" />
-                            <label class="form-check-label">دست چسبان</label>
+                            <label class="form-check-label">@LocalizationService["HandGluing"]</label>
                         </div>
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
                         <div class="form-check">
                             <InputCheckbox class="form-check-input" @bind-Value="spec.MachineGluing" />
-                            <label class="form-check-label">ماشین چسبان</label>
+                            <label class="form-check-label">@LocalizationService["MachineGluing"]</label>
                         </div>
                     </div>
                 </div>
@@ -300,7 +301,7 @@
 
         <div class="card job-section mb-4">
             <div class="card-header">
-                <strong>اطلاعات گردش کار و تولید</strong>
+                <strong>@LocalizationService["RollWorkflowInfo"]</strong>
             </div>
             <div class="card-body">
                 <div class="workflow-fields-grid">
@@ -333,19 +334,17 @@
             </div>
         </div>
 
+        </fieldset>
+
+        <SalesRequestWorkflowPanel Request="request" />
+
         <div class="d-flex flex-wrap gap-2 mb-4">
-            <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isSaving">
-                @if (isSaving)
-                {
-                    <span class="spinner-border spinner-border-sm me-1"></span>
-                }
-                @LocalizationService["SaveSpecifications"]
-            </button>
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
-                <i class="bi bi-file-earmark-pdf"></i> @LocalizationService["SaveAndPreviewApprovalProof"]
-            </button>
-            <button class="btn btn-outline-primary" @onclick="SaveAndContinueAsync" disabled="@isSaving">
-                @LocalizationService["SaveAndContinueSalesWorkflow"]
+                <i class="bi bi-file-earmark-pdf"></i> @(request.Status == SalesRequestStatus.Draft
+                    ? LocalizationService["SavePreviewAndContinueSalesWorkflow"]
+                    : (canEditArtwork
+                        ? LocalizationService["SaveAndPreviewApprovalProof"]
+                        : LocalizationService["CustomerApprovalProof"]))
             </button>
         </div>
     }
@@ -353,6 +352,9 @@
 
 @code {
     [Parameter] public long RequestId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "quotationId")]
+    public long? TargetQuotationId { get; set; }
 
     private HamiChap_MES_ERP.Models.Sales.SalesRequest? request;
     private List<Customer> customers = new();
@@ -397,7 +399,8 @@
         workflowFields[key] = args.Value is bool value && value ? "true" : "false";
     }
 
-    private List<IBrowserFile> pendingArtworks = new();
+    private JobArtworkEditor? artworkEditor;
+    private bool canEditArtwork;
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private static readonly (string Key, string Name, string Css)[] CmykColors =
@@ -424,6 +427,7 @@
         errorMessage = null;
         successMessage = null;
 
+
         customers = await Db.Customers
             .Where(x => x.IsActive)
             .OrderBy(x => x.Name)
@@ -431,10 +435,22 @@
 
         request = await Db.SalesRequests
             .Include(x => x.Customer)
+            .Include(x => x.CreatedByUser)
+            .Include(x => x.AssignedToUser)
+            .Include(x => x.Lines).ThenInclude(x => x.Item)
+            .Include(x => x.Lines).ThenInclude(x => x.Unit)
             .FirstOrDefaultAsync(x => x.Id == RequestId);
 
         if (request is not null)
+        {
             selectedCustomerId = request.CustomerId;
+            canEditArtwork = request.Status != SalesRequestStatus.Cancelled &&
+                !await Db.Quotations.AsNoTracking().AnyAsync(q =>
+                    (q.SalesRequestId == RequestId ||
+                     q.Lines.Any(line => line.SourceRequestId == RequestId)) &&
+                    q.Status != QuotationStatus.Draft &&
+                    q.Status != QuotationStatus.RevisionRequired);
+        }
 
         if (request is null)
         {
@@ -486,6 +502,7 @@
 
     private void StartNewCustomer()
     {
+
         isCreatingCustomer = true;
         newCustomerCode = "";
         newCustomerName = "";
@@ -510,68 +527,141 @@
             spec.SelectedServices.Remove(service);
     }
 
-    private void ArtworkSelected(InputFileChangeEventArgs args)
-    {
-        pendingArtworks = args.GetMultipleFiles(20).ToList();
-        errorMessage = null;
-    }
-
-    private static bool IsPreviewableImage(string path) =>
-        path.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-        path.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
-
     private async Task SaveArtworkFileAsync()
     {
-        if (request is null || pendingArtworks.Count == 0) return;
-        const long maxBytes = 25 * 1024 * 1024;
-        var allowed = new[] { ".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp" };
-        var uploadFolder = Path.Combine(HostEnvironment.WebRootPath, "uploads", "job-artwork");
-        Directory.CreateDirectory(uploadFolder);
-        spec.ArtworkFiles ??= new List<JobArtworkFile>();
-        foreach (var file in pendingArtworks)
-        {
-            if (file.Size > maxBytes) throw new InvalidOperationException(string.Format(LocalizationService["ArtworkMaxSize"], file.Name));
-            var extension = Path.GetExtension(file.Name).ToLowerInvariant();
-            if (!allowed.Contains(extension)) throw new InvalidOperationException(string.Format(LocalizationService["UnsupportedArtworkFormat"], file.Name));
-            var safeName = $"request-{request.Id}-{Guid.NewGuid():N}{extension}";
-            var fullPath = Path.Combine(uploadFolder, safeName);
-            await using (var source = file.OpenReadStream(maxBytes))
-            await using (var destination = File.Create(fullPath))
-                await source.CopyToAsync(destination);
-            spec.ArtworkFiles.Add(new JobArtworkFile { RelativePath = $"/uploads/job-artwork/{safeName}", OriginalFileName = Path.GetFileName(file.Name) });
-        }
+        if (request is null || artworkEditor is null) return;
+
+        spec.ArtworkFiles = await artworkEditor.StageForSaveAsync(
+            request.Id, HostEnvironment.WebRootPath);
         var first = spec.ArtworkFiles.FirstOrDefault();
-        if (first is not null) { spec.ArtworkRelativePath = first.RelativePath; spec.ArtworkOriginalFileName = first.OriginalFileName; }
-        pendingArtworks.Clear();
+        spec.ArtworkRelativePath = first?.RelativePath ?? string.Empty;
+        spec.ArtworkOriginalFileName = first?.OriginalFileName ?? string.Empty;
+    }
+
+    private async Task SaveArtworkOnlyAsync()
+    {
+        if (request is null || artworkEditor is null ||
+            !artworkEditor.HasPendingChanges || !canEditArtwork)
+            return;
+
+        var originalFiles = spec.ArtworkFiles?.ToList() ?? new();
+        var originalPath = spec.ArtworkRelativePath;
+        var originalName = spec.ArtworkOriginalFileName;
+        var originalJson = request.JobSpecificationJson;
+
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+
+            // Recheck approval state immediately before writing: a quotation
+            // could have become approved since the job editor was opened.
+            var locked = await Db.Quotations.AsNoTracking().AnyAsync(q =>
+                (q.SalesRequestId == RequestId ||
+                 q.Lines.Any(line => line.SourceRequestId == RequestId)) &&
+                q.Status != QuotationStatus.Draft &&
+                q.Status != QuotationStatus.RevisionRequired);
+            if (locked)
+                throw new InvalidOperationException(LocalizationService["ArtworkLockedAfterApproval"]);
+
+            await using var transaction = await Db.Database.BeginTransactionAsync();
+            await SaveArtworkFileAsync();
+            var json = JsonNode.Parse(originalJson) as JsonObject ?? new();
+            json["ArtworkFiles"] = JsonSerializer.SerializeToNode(spec.ArtworkFiles);
+            json["ArtworkRelativePath"] = spec.ArtworkRelativePath;
+            json["ArtworkOriginalFileName"] = spec.ArtworkOriginalFileName;
+            request.JobSpecificationJson = json.ToJsonString();
+            await Db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            artworkEditor.CompleteSave();
+        }
+        catch (Exception ex)
+        {
+            artworkEditor.RollbackNewFiles();
+            spec.ArtworkFiles = originalFiles;
+            spec.ArtworkRelativePath = originalPath;
+            spec.ArtworkOriginalFileName = originalName;
+            request.JobSpecificationJson = originalJson;
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
     private async Task SaveAndOpenProofAsync()
     {
-        await SaveAsync();
-        if (string.IsNullOrWhiteSpace(errorMessage))
-            Navigation.NavigateTo($"/sales/requests/proof/{RequestId}");
+        if (request is null)
+            return;
+
+        if (request.Status == SalesRequestStatus.Draft)
+            await SaveAsync();
+        else
+            await SaveArtworkOnlyAsync();
+
+        if (!string.IsNullOrWhiteSpace(errorMessage))
+            return;
+
+        // The single button saves the job and opens its approval proof.
+        // Submission/quotation actions remain on the job editor.
+        Navigation.NavigateTo(TargetQuotationId.HasValue
+            ? $"/sales/requests/proof/{RequestId}?quotationId={TargetQuotationId.Value}"
+            : $"/sales/requests/proof/{RequestId}");
     }
 
     private async Task SaveAsync()
     {
-        if (request is null) return;
+        if (request is null || request.Status != SalesRequestStatus.Draft) return;
+
+        if (TargetQuotationId.HasValue)
+        {
+            var target = await Db.Quotations.AsNoTracking()
+                .Where(q => q.Id == TargetQuotationId.Value)
+                .Select(q => new { q.CustomerId, q.Status })
+                .FirstOrDefaultAsync();
+            if (target is null ||
+                target.Status is not (QuotationStatus.Draft or QuotationStatus.RevisionRequired))
+            {
+                errorMessage = LocalizationService["QuotationNotEditable"];
+                return;
+            }
+            if (isCreatingCustomer || selectedCustomerId != target.CustomerId)
+            {
+                errorMessage = LocalizationService["QuotationCustomerMustMatch"];
+                return;
+            }
+        }
 
         if (string.IsNullOrWhiteSpace(spec.JobTitle))
         {
             errorMessage = LocalizationService["JobTitleRequired"];
             return;
         }
-        if (pendingArtworks.Count == 0 && (spec.ArtworkFiles?.Count ?? 0) == 0 && string.IsNullOrWhiteSpace(spec.ArtworkRelativePath))
+        var orderedQuantity = spec.LabelQuantity;
+        if (orderedQuantity.GetValueOrDefault() <= 0)
         {
-            errorMessage = LocalizationService["UploadArtworkBeforeSaving"];
+            errorMessage = LocalizationService["QuantityMustBeGreaterThanZero"];
             return;
+        }
+        // Correcting an artwork mistake may temporarily leave the job without artwork.
+        if (!isCreatingCustomer)
+        {
+            var duplicates = await ExistingSalesJobLookup.FindAsync(
+                Db, selectedCustomerId, SalesJobType.Roll, spec.JobTitle, RequestId);
+            if (duplicates.Count > 0)
+            {
+                errorMessage = LocalizationService["MatchingExistingJobSaveBlocked"];
+                return;
+            }
         }
 
         Customer? customerCreatedThisAttempt = null;
         var originalCustomerId = request.CustomerId;
         var originalCustomer = request.Customer;
+        var originalFiles = spec.ArtworkFiles?.ToList() ?? new();
+        var originalArtworkPath = spec.ArtworkRelativePath;
+        var originalArtworkName = spec.ArtworkOriginalFileName;
 
         try
         {
@@ -625,7 +715,10 @@
             var item = await JobProductItemHelper.GetOrCreateAsync(
                 Db, request, spec.JobTitle, "products-roll");
 
+            var previousFinishedProductItemId = spec.FinishedProductItemId;
             spec.FinishedProductItemId = item.Id;
+            SalesRequestFinishedLineSync.Apply(
+                Db, request, item, orderedQuantity, previousFinishedProductItemId);
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(frontCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
             savedSpec["BackCmykColors"] = new JsonArray(backCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
@@ -636,6 +729,7 @@
             request.JobSpecificationJson = savedSpec.ToJsonString();
             await Db.SaveChangesAsync();
             await transaction.CommitAsync();
+            artworkEditor?.CompleteSave();
 
             if (customerCreatedThisAttempt is not null)
             {
@@ -648,6 +742,10 @@
         }
         catch (Exception ex)
         {
+            artworkEditor?.RollbackNewFiles();
+            spec.ArtworkFiles = originalFiles;
+            spec.ArtworkRelativePath = originalArtworkPath;
+            spec.ArtworkOriginalFileName = originalArtworkName;
             if (customerCreatedThisAttempt is not null)
             {
                 Db.Entry(customerCreatedThisAttempt).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
@@ -664,13 +762,6 @@
         }
     }
 
-    private async Task SaveAndContinueAsync()
-    {
-        await SaveAsync();
-        if (string.IsNullOrWhiteSpace(errorMessage))
-            BackToRequest();
-    }
-
     private void BackToRequest() =>
-        Navigation.NavigateTo($"/sales/requests/edit/{RequestId}");
+        Navigation.NavigateTo("/sales/requests");
 }

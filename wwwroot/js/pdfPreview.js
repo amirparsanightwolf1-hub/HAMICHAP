@@ -1,37 +1,72 @@
-﻿
-import * as pdfjsLib from
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
-
+// PDF pages are rendered to PNG by HAMICHAP itself, using Docnet.Core.
+// No externally hosted JavaScript, worker or PDF conversion API is required.
 export async function renderPdf(container, url) {
     container.__proofPdfCleanup?.();
     container.innerHTML = "";
 
+    const controller = new AbortController();
+    let disposed = false;
+    let resizeObserver;
+
+    container.__proofPdfCleanup = () => {
+        disposed = true;
+        controller.abort();
+        resizeObserver?.disconnect();
+    };
+
     try {
-        const pdf = await pdfjsLib.getDocument(url).promise;
-        const pages = [];
-
-        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-            const page = await pdf.getPage(pageNumber);
-
-            pages.push({
-                page,
-                pageNumber,
-                viewport: page.getViewport({ scale: 1 })
-            });
+        const source = new URL(url, window.location.href);
+        if (source.origin !== window.location.origin ||
+            !source.pathname.startsWith("/uploads/") ||
+            !source.pathname.toLowerCase().endsWith(".pdf")) {
+            throw new Error("PDF previews only support locally uploaded PDF files.");
         }
 
-        let renderVersion = 0;
-        let resizeObserver;
+        const file = encodeURIComponent(source.pathname);
+        const response = await fetch(`/api/pdf-preview/info?file=${file}`, {
+            credentials: "same-origin",
+            signal: controller.signal
+        });
 
-        const renderAllPages = async () => {
-            const version = ++renderVersion;
+        if (!response.ok) {
+            throw new Error(`Could not open local PDF (HTTP ${response.status}).`);
+        }
 
+        const metadata = await response.json();
+        if (!Array.isArray(metadata.pages) || metadata.pages.length === 0) {
+            throw new Error("The PDF has no previewable pages.");
+        }
+
+        const pages = metadata.pages.map((page, index) => ({
+            width: page.width,
+            height: page.height,
+            pageNumber: index + 1,
+            image: null
+        }));
+
+        // Limit simultaneous PDFium page renders so large documents do not
+        // overload the local application server.
+        let nextPage = 0;
+        await Promise.all(Array.from(
+            { length: Math.min(3, pages.length) },
+            async () => {
+                while (nextPage < pages.length && !disposed) {
+                    const item = pages[nextPage++];
+                    const image = new Image();
+                    image.decoding = "async";
+                    image.src = `/api/pdf-preview/page?file=${file}&page=${item.pageNumber}`;
+                    await image.decode();
+                    item.image = image;
+                }
+            }
+        ));
+
+        if (disposed) return;
+
+        const renderAllPages = () => {
+            if (disposed) return;
             const width = container.clientWidth;
             const height = container.clientHeight;
-
             if (!width || !height) return;
 
             const count = pages.length;
@@ -39,34 +74,19 @@ export async function renderPdf(container, url) {
             const labelHeight = 14;
             const padding = 8;
 
-            let best = {
-                columns: 1,
-                rows: count,
-                scale: 0
-            };
+            let best = { columns: 1, rows: count, scale: 0 };
 
-            // Find the grid arrangement that gives all pages
-            // the largest common scale.
             for (let columns = 1; columns <= count; columns++) {
                 const rows = Math.ceil(count / columns);
-
-                const cellWidth =
-                    (width - gap * (columns - 1)) / columns - padding;
-
-                const cellHeight =
-                    (height - gap * (rows - 1)) / rows -
-                    padding -
-                    labelHeight;
+                const cellWidth = (width - gap * (columns - 1)) / columns - padding;
+                const cellHeight = (height - gap * (rows - 1)) / rows -
+                    padding - labelHeight;
 
                 if (cellWidth <= 0 || cellHeight <= 0) continue;
 
                 const commonScale = Math.min(
-                    ...pages.map(({ viewport }) =>
-                        Math.min(
-                            cellWidth / viewport.width,
-                            cellHeight / viewport.height
-                        )
-                    )
+                    ...pages.map(({ width: pageWidth, height: pageHeight }) =>
+                        Math.min(cellWidth / pageWidth, cellHeight / pageHeight))
                 );
 
                 if (commonScale > best.scale) {
@@ -88,67 +108,53 @@ export async function renderPdf(container, url) {
             const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 
             for (const item of pages) {
-                if (version !== renderVersion) return;
-
                 const wrapper = document.createElement("div");
                 wrapper.className = "proof-pdf-page";
 
                 const canvas = document.createElement("canvas");
                 const context = canvas.getContext("2d");
+                const cssWidth = item.width * best.scale;
+                const cssHeight = item.height * best.scale;
 
-                const cssWidth = item.viewport.width * best.scale;
-                const cssHeight = item.viewport.height * best.scale;
-
-                const renderViewport = item.page.getViewport({
-                    scale: best.scale * pixelRatio
-                });
-
-                canvas.width = Math.ceil(renderViewport.width);
-                canvas.height = Math.ceil(renderViewport.height);
-
+                canvas.width = Math.ceil(cssWidth * pixelRatio);
+                canvas.height = Math.ceil(cssHeight * pixelRatio);
                 canvas.style.width = `${cssWidth}px`;
                 canvas.style.height = `${cssHeight}px`;
+
+                if (context && item.image) {
+                    context.drawImage(item.image, 0, 0, canvas.width, canvas.height);
+                }
 
                 wrapper.appendChild(canvas);
 
                 const pageLabel = document.createElement("div");
                 pageLabel.className = "proof-pdf-page-number";
-                pageLabel.textContent =
-                    `Page ${item.pageNumber} of ${pdf.numPages}`;
-
+                pageLabel.textContent = `Page ${item.pageNumber} of ${count}`;
                 wrapper.appendChild(pageLabel);
                 container.appendChild(wrapper);
-
-                await item.page.render({
-                    canvasContext: context,
-                    viewport: renderViewport
-                }).promise;
             }
         };
 
-        await renderAllPages();
+        renderAllPages();
 
         if (typeof ResizeObserver !== "undefined") {
-            resizeObserver = new ResizeObserver(() => {
-                renderAllPages();
-            });
-
+            resizeObserver = new ResizeObserver(renderAllPages);
             resizeObserver.observe(container);
         }
-
-        container.__proofPdfCleanup = () => {
-            renderVersion++;
-            resizeObserver?.disconnect();
-        };
-    }
-    catch (error) {
+    } catch (error) {
+        if (disposed) return;
         console.error("PDF preview error:", error);
-
-        container.innerHTML =
-            '<div class="text-danger small text-center py-3">' +
-            'Unable to display PDF preview. ' +
-            '<a href="' + encodeURI(url) +
-            '" target="_blank" rel="noopener">Open PDF</a></div>';
+        container.innerHTML = "";
+        const message = document.createElement("div");
+        message.className = "text-danger small text-center py-3";
+        message.append("Unable to display PDF preview. ");
+        const link = document.createElement("a");
+        link.textContent = "Open PDF";
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        message.appendChild(link);
+        container.appendChild(message);
     }
 }
 

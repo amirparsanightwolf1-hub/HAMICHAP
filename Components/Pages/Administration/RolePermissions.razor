@@ -1,4 +1,6 @@
 ﻿@page "/administration/role-permissions/{RoleId}"
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -14,13 +16,13 @@
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 
-<PageTitle>Role Permissions</PageTitle>
+<PageTitle>@L["Role Permissions"]</PageTitle>
 
-<h3>Role Permissions</h3>
+<h3>@L["Role Permissions"]</h3>
 
 @if (loading)
 {
-    <p>Loading...</p>
+    <p>@L["Loading"]</p>
 }
 else if (!string.IsNullOrWhiteSpace(message))
 {
@@ -31,7 +33,7 @@ else if (!string.IsNullOrWhiteSpace(message))
 else if (role == null)
 {
     <div class="alert alert-danger">
-        Role not found.
+        @L["Role not found."]
     </div>
 }
 else
@@ -45,7 +47,7 @@ else
             </h5>
 
             <p class="text-muted mb-0">
-                Select the permissions that this role is allowed to use.
+                @L["Select the permissions that this role is allowed to use."]
             </p>
 
         </div>
@@ -56,7 +58,7 @@ else
     @if (!permissions.Any())
     {
         <div class="alert alert-warning">
-            You are not authorized to manage any permissions for this role.
+            @L["You are not authorized to manage any permissions for this role."]
         </div>
     }
     else
@@ -70,11 +72,11 @@ else
                     <tr>
 
                         <th>
-                            Permission
+                            @L["Permission"]
                         </th>
 
                         <th class="erp-width-120" >
-                            Enabled
+                            @L["Enabled"]
                         </th>
 
                     </tr>
@@ -113,7 +115,7 @@ else
         <button class="btn btn-primary"
                 @onclick="Save">
 
-            Save Changes
+            @L["SaveChanges"]
 
         </button>
     }
@@ -156,7 +158,7 @@ else
 
             if (principal.Identity?.IsAuthenticated != true)
             {
-                SetError("You must be logged in to manage permissions.");
+                SetError(L["You must be logged in to manage permissions."]);
                 return;
             }
 
@@ -166,7 +168,7 @@ else
 
             if (currentUser == null)
             {
-                SetError("Current user could not be found.");
+                SetError(L["Current user could not be found."]);
                 return;
             }
 
@@ -180,7 +182,7 @@ else
 
             if (role == null)
             {
-                SetError("Role not found.");
+                SetError(L["Role not found."]);
                 return;
             }
 
@@ -211,7 +213,7 @@ else
                 if (!managerRoles.Any())
                 {
                     SetError(
-                        "You are not assigned to a role that can manage permissions.");
+                        L["You are not assigned to a role that can manage permissions."]);
 
                     return;
                 }
@@ -229,7 +231,7 @@ else
                 if (!canManageTargetRole)
                 {
                     SetError(
-                        "You are not authorized to manage permissions for this role.");
+                        L["You are not authorized to manage permissions for this role."]);
 
                     return;
                 }
@@ -295,7 +297,7 @@ else
         catch (Exception ex)
         {
             SetError(
-                $"Unable to load permissions: {ex.Message}");
+                L["Unable to load permissions:"] + " " + ex.Message);
         }
     }
 
@@ -354,7 +356,7 @@ else
         if (currentUser == null)
         {
             SetError(
-                "Current user could not be found.");
+                L["Current user could not be found."]);
 
             return;
         }
@@ -385,7 +387,7 @@ else
             if (!canManageTargetRole)
             {
                 SetError(
-                    "You are not authorized to modify permissions for this role.");
+                    L["You are not authorized to modify permissions for this role."]);
 
                 return;
             }
@@ -507,7 +509,7 @@ else
 
 
         message =
-            $"Permissions for '{role.Name}' saved successfully.";
+            String.Format(L["Permissions for '{0}' saved successfully."], role.Name);
 
         messageClass =
             "alert-success";

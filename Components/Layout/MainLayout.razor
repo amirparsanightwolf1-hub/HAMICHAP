@@ -215,7 +215,7 @@
         
                         <button class="menu-button"
                                 @onclick='() => GoTo("/production/imposition-optimizer")'>
-                            📐 PDF Imposition Optimizer
+                            📐 @LocalizationService["Imposition Optimizer"]
                         </button>
         
                         <button class="menu-button"
@@ -301,7 +301,7 @@
         <button type="button"
                 class="language-button @(LocalizationService.CurrentLanguage == "en" ? "active" : "")"
                 @onclick='() => ChangeLanguage("en-US")'>
-            🇬🇧 English
+            🇬🇧 @LocalizationService["English"]
         </button>
 
         <button type="button"

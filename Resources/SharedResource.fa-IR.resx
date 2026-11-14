@@ -2208,13 +2208,13 @@
     <value>ایجاد کار</value>
   </data>
 	<data name="SelectExisting" xml:space="preserve">
-    <value>Select existing</value>
+    <value>انتخاب مشتری موجود</value>
   </data>
 	<data name="SelectExistingOrCreateCustomer" xml:space="preserve">
-    <value>Select an existing customer or create a new one.</value>
+    <value>یک مشتری موجود را انتخاب کنید یا مشتری جدید بسازید.</value>
   </data>
 	<data name="CustomerCodeAndNameRequired" xml:space="preserve">
-    <value>Customer code and customer name are required.</value>
+    <value>کد و نام مشتری الزامی است.</value>
   </data>
 	<data name="RollJobSpecifications" xml:space="preserve">
     <value>مشخصات سفارش رول</value>
@@ -2426,4 +2426,554 @@
 	<data name="ViewUploadedArtwork" xml:space="preserve">
     <value>مشاهده فایل طرح بارگذاری‌شده</value>
   </data>
+  <data name="CeoDeadlineCalendar" xml:space="preserve">
+    <value>تقویم مهلت سفارش‌ها برای مدیرعامل</value>
+  </data>
+  <data name="CeoDeadlineHelp" xml:space="preserve">
+    <value>تاریخ تکمیل موردنیاز هر سفارش تولید را تعیین کنید. تخصیص دستگاه‌ها جداگانه انجام می‌شود.</value>
+  </data>
+  <data name="MachineSchedule" xml:space="preserve">
+    <value>برنامه تولید دستگاه‌ها</value>
+  </data>
+  <data name="MachineScheduleHelp" xml:space="preserve">
+    <value>عملیات سفارش‌ها را در تاریخ‌های مجاز تعیین‌شده توسط مدیرعامل روی تقویم دستگاه‌ها قرار دهید. عملیات را بین دستگاه‌ها جابه‌جا کنید یا به لیست بازگردانید.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>شما به این صفحه دسترسی ندارید.</value>
+  </data>
+  <data name="SaveDeadline" xml:space="preserve">
+    <value>ذخیره مهلت</value>
+  </data>
+  <data name="SelectDueDate" xml:space="preserve">
+    <value>تاریخ سررسید معتبر انتخاب کنید.</value>
+  </data>
+  <data name="DeadlineSaved" xml:space="preserve">
+    <value>مهلت تولید ذخیره شد.</value>
+  </data>
+  <data name="AllMachines" xml:space="preserve">
+    <value>همه دستگاه‌ها</value>
+  </data>
+  <data name="UnscheduledOperations" xml:space="preserve">
+    <value>عملیات زمان‌بندی‌نشده</value>
+  </data>
+  <data name="SelectMachine" xml:space="preserve">
+    <value>انتخاب دستگاه</value>
+  </data>
+  <data name="ScheduleOperation" xml:space="preserve">
+    <value>زمان‌بندی</value>
+  </data>
+  <data name="GenerateOperations" xml:space="preserve">
+    <value>ایجاد عملیات باقی‌مانده</value>
+  </data>
+  <data name="OperationsGenerated" xml:space="preserve">
+    <value>عملیات تولید ایجاد شد. پیش از زمان‌بندی ترتیب و مدت آن‌ها را بررسی کنید.</value>
+  </data>
+  <data name="NoRoutingFound" xml:space="preserve">
+    <value>عملیات جدیدی ایجاد نشد. مشخصات سفارش را بررسی کرده و مراحل لازم را دستی اضافه کنید.</value>
+  </data>
+  <data name="AddOperation" xml:space="preserve">
+    <value>افزودن عملیات</value>
+  </data>
+  <data name="SelectOrder" xml:space="preserve">
+    <value>انتخاب سفارش</value>
+  </data>
+  <data name="SelectMachineAndTime" xml:space="preserve">
+    <value>دستگاه و زمان شروع را انتخاب کنید.</value>
+  </data>
+  <data name="MachineConflict" xml:space="preserve">
+    <value>دستگاه در این زمان کار دیگری دارد.</value>
+  </data>
+  <data name="OperationSequenceConflict" xml:space="preserve">
+    <value>یکی از مراحل قبلی با این زمان شروع تداخل دارد.</value>
+  </data>
+  <data name="DeadlineWarning" xml:space="preserve">
+    <value>این عملیات پس از مهلت مدیرعامل تمام می‌شود. زمان زودتری انتخاب کنید.</value>
+  </data>
+  <data name="OperationScheduled" xml:space="preserve">
+    <value>عملیات با موفقیت زمان‌بندی شد.</value>
+  </data>
+  <data name="ScheduleDay" xml:space="preserve"><value>روز برنامه‌ریزی</value></data>
+  <data name="EstimatedHours" xml:space="preserve"><value>ساعت تخمینی</value></data>
+  <data name="RegularShift" xml:space="preserve"><value>شیفت عادی (۰۸:۰۰ تا ۱۷:۰۰)</value></data>
+  <data name="OvertimeShift" xml:space="preserve"><value>اضافه‌کاری (۱۷:۰۰ تا ۲۲:۰۰)</value></data>
+  <data name="NightShift" xml:space="preserve"><value>شیفت شب (۲۲:۰۰ تا ۰۸:۰۰)</value></data>
+  <data name="DragOperationHelp" xml:space="preserve"><value>سفارش یا مرحله بدون زمان‌بندی را روی تاریخ دستگاه سازگار بکشید. برای حذف تخصیص، عملیات ثبت‌شده را به پنل سمت راست برگردانید. با کلیک روی دکمه ثبت نیز می‌توانید آن را قرار دهید.</value></data>
+  <data name="Sat" xml:space="preserve"><value>شنبه</value></data>
+  <data name="Sun" xml:space="preserve"><value>یکشنبه</value></data>
+  <data name="Mon" xml:space="preserve"><value>دوشنبه</value></data>
+  <data name="Tue" xml:space="preserve"><value>سه‌شنبه</value></data>
+  <data name="Wed" xml:space="preserve"><value>چهارشنبه</value></data>
+  <data name="Thu" xml:space="preserve"><value>پنجشنبه</value></data>
+  <data name="Fri" xml:space="preserve"><value>جمعه</value></data>
+  <data name="NoActiveMachines" xml:space="preserve"><value>هیچ دستگاه فعالی یافت نشد. برای زمان‌بندی عملیات تولید، دستگاه‌ها را اضافه یا فعال کنید.</value></data>
+  <data name="MachineMismatch" xml:space="preserve"><value>این عملیات با دستگاه انتخاب‌شده سازگار نیست. یک دستگاه پیشنهادی انتخاب کنید یا مسیر تولید را بررسی کنید.</value></data>
+  <data name="DropScheduledStepHere" xml:space="preserve"><value>عملیات زمان‌بندی‌شده را اینجا رها کنید تا به همراه مراحل برنامه‌ریزی‌شده وابسته به لیست عملیات بدون زمان‌بندی برگردد.</value></data>
+  <data name="NoUnscheduledSteps" xml:space="preserve"><value>عملیات بدون زمان‌بندی وجود ندارد. یک عملیات را از تقویم به این قسمت بکشید.</value></data>
+  <data name="CeoDuration" xml:space="preserve"><value>مجموع زمان برنامه مدیرعامل</value></data>
+  <data name="MachineDuration" xml:space="preserve"><value>مجموع زمان مراحل دستگاه‌ها</value></data>
+  <data name="MachineStepCount" xml:space="preserve"><value>مرحله</value></data>
+  <data name="ReturnWholeOrder" xml:space="preserve"><value>بازگرداندن تمام مراحل سفارش به لیست</value></data>
+  <data name="ReturnToQueue" xml:space="preserve"><value>بازگشت به لیست</value></data>
+  <data name="CannotUnscheduleActive" xml:space="preserve"><value>عملیات آزادشده، در حال اجرا یا تکمیل‌شده را نمی‌توان از تقویم حذف کرد.</value></data>
+  <data name="OperationsReturnedToQueue" xml:space="preserve"><value>عملیات زمان‌بندی‌شده به لیست بدون زمان‌بندی بازگردانده شدند.</value></data>
+  <data name="DurationTooShortForSteps" xml:space="preserve"><value>زمان تولید تعیین‌شده توسط مدیرعامل برای تعداد مراحل عملیات کافی نیست.</value></data>
+  <data name="UnscheduleBeforeAdding" xml:space="preserve"><value>برای افزودن عملیات و تنظیم مجدد زمان‌ها ابتدا تمام مراحل زمان‌بندی‌شده سفارش را به لیست بازگردانید.</value></data>
+  <data name="OperationsRebalanced" xml:space="preserve"><value>زمان مراحل دستگاه‌ها مطابق زمان تولید برنامه مدیرعامل دوباره تقسیم شد.</value></data>
+  <data name="CeoPlanRequired" xml:space="preserve"><value>قبل از زمان‌بندی عملیات دستگاه، زمان شروع و پایان سفارش را در تقویم تولید مدیرعامل تعیین کنید.</value></data>
+  <data name="MachineDurationMismatch" xml:space="preserve"><value>مجموع زمان مراحل دستگاه‌ها با زمان برنامه مدیرعامل برابر نیست. برای هماهنگ‌سازی مراحل بدون زمان‌بندی از ایجاد عملیات استفاده کنید.</value></data>
+  <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>تاریخ انتخاب‌شده خارج از تاریخ شروع و پایان تأییدشده توسط مدیرعامل است. یک تاریخ در بازه مجاز انتخاب کنید.</value></data>
+  <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>زمان‌بندی دستگاه‌های آزادشده، در حال اجرا و تکمیل‌شده قابل جابه‌جایی نیست.</value></data>
+  <data name="AdjustStepHours" xml:space="preserve"><value>زمان مرحله (ساعت)</value></data>
+  <data name="ApplyStepDuration" xml:space="preserve"><value>ثبت و تنظیم مجدد زمان مراحل دیگر</value></data>
+  <data name="InvalidStepDuration" xml:space="preserve"><value>لطفاً تعداد ساعت مثبت و معتبر وارد کنید.</value></data>
+  <data name="UnscheduleBeforeAdjusting" xml:space="preserve"><value>قبل از تغییر زمان مراحل، تمام عملیات زمان‌بندی‌شده سفارش را به لیست بازگردانید.</value></data>
+  <data name="StepDurationBudget" xml:space="preserve"><value>زمان این مرحله از بودجه زمانی مدیرعامل بیشتر است یا برای مراحل دیگر زمان کافی باقی نمی‌گذارد.</value></data>
+  <data name="Today" xml:space="preserve"><value>امروز</value></data>
+  <data name="Month" xml:space="preserve"><value>ماه</value></data>
+  <data name="Week" xml:space="preserve"><value>هفته</value></data>
+  <data name="Day" xml:space="preserve"><value>روز</value></data>
+  <data name="NewStepRelativeHours" xml:space="preserve"><value>وزن نسبی زمان مرحله (ساعت)</value></data>
+  <data name="NewStepWeightHelp" xml:space="preserve"><value>مجموع زمان مدیرعامل ثابت است. این مقدار سهم مرحله جدید را مشخص می‌کند و زمان همه مراحل تنظیم می‌شود.</value></data>
+  <data name="CeoProductionOrders" xml:space="preserve"><value>سفارش‌های تولید مدیرعامل</value></data>
+  <data name="CeoWindow" xml:space="preserve"><value>بازه تاریخی مدیرعامل</value></data>
+  <data name="NoOperationsGenerated" xml:space="preserve"><value>هنوز عملیات دستگاه برای این سفارش ایجاد نشده است. از ایجاد عملیات استفاده کنید یا مرحله‌ای دستی اضافه کنید.</value></data>
+  <data name="ShowCeoWindow" xml:space="preserve"><value>نمایش بازه مدیرعامل</value></data>
+  <data name="NoProductionOrders" xml:space="preserve"><value>هنوز سفارش تولیدی ثبت نشده است.</value></data>
+  <data name="DateBasedSchedulingHelp" xml:space="preserve"><value>یک عملیات انتخاب کنید یا سفارش را از پنل کناری روی تاریخ دستگاه سازگار بکشید. فقط تاریخ‌های داخل بازه مدیرعامل مجازند و تعیین ساعت دقیق لازم نیست.</value></data>
+  <data name="PlaceOnDate" xml:space="preserve"><value>ثبت در این تاریخ</value></data>
+  <data name="SelectMachineAndDate" xml:space="preserve"><value>دستگاه و تاریخ تقویم را انتخاب کنید.</value></data>
+  <data name="SelectOperationBeforeDrop" xml:space="preserve"><value>برای تخصیص دستگاه و تاریخ، ابتدا یکی از عملیات سفارش را از لیست انتخاب کنید.</value></data>
+  <data name="SelectCompatibleOperation" xml:space="preserve"><value>این سفارش عملیات زمان‌بندی‌نشده سازگار با دستگاه انتخابی ندارد. عملیات را ایجاد کنید یا دستگاه سازگار انتخاب کنید.</value></data>
+  <data name="RoutingGenerationFailed" xml:space="preserve"><value>ایجاد خودکار مسیر تولید انجام نشد. از دکمه ایجاد عملیات استفاده کنید یا مراحل را دستی اضافه کنید.</value></data>
+  <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>برای تخصیص مرحله بعد، سفارش را روی تاریخ دستگاه سازگار در تقویم بکشید.</value></data>
+  <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>زمان‌بندی قبلی خارج از بازه تاریخ تأییدشده مدیرعامل است؛ آن را جابه‌جا کرده یا به لیست بازگردانید.</value></data>
+  <data name="AdvancedDurationSettings" xml:space="preserve"><value>جزئیات پیشرفته زمان (اختیاری)</value></data>
+  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>همان تقویم برنامه مدیرعامل. مشخصات فروش مراحل و دستگاه‌ها را پیشنهاد می‌کند؛ مدیر تولید زمان‌ها و ترتیب را تعیین کرده و برای زمان‌بندی خودکار همه مراحل تأیید می‌کند.</value></data>
+  <data name="SelectOrderToSplit" xml:space="preserve"><value>برای بررسی و تقسیم به مراحل دستگاه‌ها، یک سفارش تولید را انتخاب کنید.</value></data>
+  <data name="Scheduled" xml:space="preserve"><value>زمان‌بندی‌شده</value></data>
+  <data name="SplitOrderIntoOperations" xml:space="preserve"><value>تقسیم سفارش به عملیات</value></data>
+  <data name="RemainingDuration" xml:space="preserve"><value>زمان تخصیص‌نیافته</value></data>
+  <data name="OperationTotalMatchesCeo" xml:space="preserve"><value>مجموع زمان تخمینی عملیات با مدت زمان سفارش مدیرعامل برابر است.</value></data>
+  <data name="OperationNamePlaceholder" xml:space="preserve"><value>مثلاً چاپ، سلفون‌کشی، قالب‌زنی</value></data>
+  <data name="OrderOperations" xml:space="preserve"><value>عملیات سفارش</value></data>
+  <data name="EditOperation" xml:space="preserve"><value>ویرایش عملیات</value></data>
+  <data name="SaveOperation" xml:space="preserve"><value>ذخیره عملیات</value></data>
+  <data name="DeleteOperation" xml:space="preserve"><value>حذف عملیات</value></data>
+  <data name="Break" xml:space="preserve"><value>استراحت ناهار</value></data>
+  <data name="ManagerMonthHelp" xml:space="preserve"><value>یک عملیات را انتخاب کنید و روی تاریخ موردنظر کلیک کنید تا از اولین زمان مجاز کار زمان‌بندی شود. عملیات دستگاه و سفارش‌های مدیرعامل در یک تقویم دیده می‌شوند.</value></data>
+  <data name="ManagerTimelineHelp" xml:space="preserve"><value>یک عملیات را انتخاب کرده و روی بازه ساعتی کلیک کنید. پیش از ثبت عملیات جدید، زمان‌بندی‌های موجود دستگاه بررسی می‌شوند.</value></data>
+  <data name="EnterOperationDetails" xml:space="preserve"><value>نام عملیات، دستگاه و زمان تخمینی مثبت را وارد کنید.</value></data>
+  <data name="OperationAdded" xml:space="preserve"><value>عملیات دستگاه به سفارش اضافه شد.</value></data>
+  <data name="OperationSaved" xml:space="preserve"><value>عملیات دستگاه ذخیره شد.</value></data>
+  <data name="OperationRemoved" xml:space="preserve"><value>عملیات دستگاه حذف شد.</value></data>
+  <data name="SelectMachineBeforeScheduling" xml:space="preserve"><value>پیش از قرار دادن عملیات در تقویم، دستگاه آن را انتخاب و ذخیره کنید.</value></data>
+  <data name="ClickSchedulingInstructions" xml:space="preserve"><value>یک عملیات را انتخاب کنید، سپس روی روز یا ساعت دلخواه در تقویم کلیک کنید. برای حذف زمان‌بندی از «بازگشت به لیست» استفاده کنید.</value></data>
+  <data name="SelectedOperation" xml:space="preserve"><value>عملیات انتخاب‌شده</value></data>
+  <data name="SelectOperationToSchedule" xml:space="preserve"><value>برای ثبت در تقویم، یک عملیات را از لیست انتخاب کنید.</value></data>
+  <data name="MachineWorkload" xml:space="preserve"><value>بار کاری دستگاه‌ها</value></data>
+  <data name="MachineWorkloadDescription" xml:space="preserve"><value>عملیات گروه‌بندی‌شده بر اساس دستگاه در روزها و ساعت‌های قابل مشاهده</value></data>
+  <data name="ExistingMachineOverlap" xml:space="preserve"><value>هم‌پوشانی در زمان‌بندی دستگاه شناسایی شد</value></data>
+  <data name="MachineWorkloadLegend" xml:space="preserve"><value>آبی = دستگاه مشغول؛ خانه خالی = دستگاه آزاد. قرمز = هم‌پوشانی موجود که باید اصلاح شود. هر دستگاه نمی‌تواند همزمان دو عملیات انجام دهد.</value></data>
+  <data name="MachineSchedulingFailed" xml:space="preserve"><value>ثبت زمان‌بندی دستگاه انجام نشد. ممکن است زمان‌بندی دیگری همزمان تغییر کرده باشد؛ صفحه را تازه کنید و بازه آزاد دیگری انتخاب کنید.</value></data>
+  <data name="BookedTasks" xml:space="preserve"><value>عملیات رزروشده</value></data>
+  <data name="SequenceConfirmed" xml:space="preserve"><value>ترتیب عملیات توسط مدیر تولید تأیید شد</value></data>
+  <data name="SequencePendingConfirmation" xml:space="preserve"><value>ترتیب عملیات در انتظار تأیید</value></data>
+  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>ترتیب مراحل، دستگاه‌های پیشنهادی و زمان‌های تخمینی را بررسی و برای ایجاد خودکار زمان‌بندی در بازه مدیرعامل تأیید کنید.</value></data>
+  <data name="ConfirmOperationSequence" xml:space="preserve"><value>تأیید ترتیب عملیات</value></data>
+  <data name="SequenceChangeNeedsReconfirmation" xml:space="preserve"><value>هر تغییر در مرحله یا ترتیب آن، تأیید قبلی را باطل می‌کند؛ ترتیب جدید را دوباره تأیید کنید.</value></data>
+  <data name="MoveOperationUp" xml:space="preserve"><value>انتقال به بالا</value></data>
+  <data name="MoveOperationDown" xml:space="preserve"><value>انتقال به پایین</value></data>
+  <data name="SequenceUpdatedReconfirm" xml:space="preserve"><value>ترتیب مراحل تغییر کرد. مدیر تولید باید ترتیب جدید را تأیید کند.</value></data>
+  <data name="SequenceUpdateFailed" xml:space="preserve"><value>تغییر ترتیب مراحل انجام نشد. دوباره تلاش کنید.</value></data>
+  <data name="UnscheduleBeforeReordering" xml:space="preserve"><value>پیش از تغییر ترتیب، همه مراحل زمان‌بندی‌شده این سفارش را به فهرست بازگردانید.</value></data>
+  <data name="ApprovalIdentityMissing" xml:space="preserve"><value>برای تأیید ترتیب، حساب کاربری واردشده مدیر تولید لازم است.</value></data>
+  <data name="InvalidOperationSequence" xml:space="preserve"><value>برای تأیید، شماره مراحل باید پیوسته و بدون تکرار، نام‌ها معتبر و مدت زمان‌ها مثبت باشند.</value></data>
+  <data name="StageDurationTotalMismatch" xml:space="preserve"><value>پیش از تأیید ترتیب، مجموع زمان مراحل باید با زمان کل تعیین‌شده توسط مدیرعامل برابر باشد.</value></data>
+  <data name="MachineAssignmentsRequired" xml:space="preserve"><value>پیش از تأیید ترتیب، برای هر مرحله یک دستگاه فعال انتخاب و ذخیره کنید.</value></data>
+  <data name="ExistingOrderSequenceConflict" xml:space="preserve"><value>زمان‌بندی‌های موجود هم‌پوشانی دارند یا مطابق ترتیب مراحل نیستند. پیش از تأیید، آن‌ها را اصلاح کرده یا به فهرست بازگردانید.</value></data>
+  <data name="SequenceConfirmationSaved" xml:space="preserve"><value>تأیید ترتیب مراحل توسط مدیر تولید ذخیره شد.</value></data>
+  <data name="SequenceConfirmationFailed" xml:space="preserve"><value>ثبت تأیید ترتیب مراحل انجام نشد. دوباره تلاش کنید.</value></data>
+  <data name="SequenceMustBeConfirmed" xml:space="preserve"><value>مدیر تولید باید پیش از زمان‌بندی، ترتیب فعلی عملیات را تأیید کند. سفارش را انتخاب و دکمه تأیید ترتیب عملیات را بزنید.</value></data>
+  <data name="OrderOperationOverlap" xml:space="preserve"><value>این سفارش در آن بازه زمانی عملیات دیگری دارد</value></data>
+  <data name="SaveAndReconfirmMachineChange" xml:space="preserve"><value>تغییر دستگاه را ذخیره کنید و پیش از زمان‌بندی، از مدیر تولید بخواهید ترتیب مراحل را دوباره تأیید کند.</value></data>
+  <data name="ExistingOrderOverlap" xml:space="preserve"><value>عملیات موجود این سفارش با هم هم‌پوشانی دارند؛ پیش از تأیید ترتیب جدید، زمان‌بندی را بررسی کنید.</value></data>
+  <data name="SalesRoutingImportFailed" xml:space="preserve"><value>پیشنهاد عملیات از مشخصات شغل فروش بارگذاری نشد. اطلاعات ذخیره‌شده سفارش را بررسی کرده و دوباره تلاش کنید.</value></data>
+  <data name="ConfirmAndAutoSchedule" xml:space="preserve"><value>تأیید ترتیب و ایجاد خودکار زمان‌بندی</value></data>
+  <data name="AutoScheduleAfterReconfirmation" xml:space="preserve"><value>تغییر یک مرحله یا ترتیب آن، زمان‌بندی‌های برنامه‌ریزی‌شده را پاک می‌کند. برای زمان‌بندی مجدد خودکار همه دستگاه‌ها دوباره تأیید کنید.</value></data>
+  <data name="AutoRoutingOperationInstructions" xml:space="preserve"><value>مراحل از مشخصات سفارش فروش به صورت خودکار پیشنهاد می‌شوند. مدت تخمینی و ترتیب را تنظیم کنید و سپس برای نمایش خودکار در تقویم تأیید کنید.</value></data>
+  <data name="MachineSuggestions" xml:space="preserve"><value>دستگاه‌های سازگار پیشنهادی</value></data>
+  <data name="OperationsAutomaticallyShownAfterConfirmation" xml:space="preserve"><value>پس از تأیید مراحل و زمان آن‌ها توسط مدیر تولید، زمان‌بندی دستگاه‌ها به‌طور خودکار در تقویم نمایش داده می‌شود.</value></data>
+  <data name="AutomaticManagerMonthHelp" xml:space="preserve"><value>پس از تأیید مسیر تولید، عملیات دستگاه‌ها به صورت خودکار در تقویم ماهانه مشابه مدیرعامل نمایش داده می‌شوند. تاریخ‌ها و رنگ شیفت‌ها مطابق برنامه‌ریزی تولید است.</value></data>
+  <data name="AutomaticManagerTimelineHelp" xml:space="preserve"><value>تقویم هفتگی و روزانه زمان‌بندی خودکار دستگاه‌ها را نشان می‌دهد. برای محاسبه مجدد، زمان مراحل را تغییر داده و دوباره تأیید کنید.</value></data>
+  <data name="AddOperationOnlyIfNeeded" xml:space="preserve"><value>افزودن مرحله جدید (فقط در صورت نیاز)</value></data>
+  <data name="ChooseMachineForUnmappedStep" xml:space="preserve"><value>انتخاب دستگاه به‌صورت دستی لازم است</value></data>
+  <data name="AutoMachineChoice" xml:space="preserve"><value>انتخاب خودکار از دستگاه‌های سازگار</value></data>
+  <data name="AutoScheduleCannotFit" xml:space="preserve"><value>امکان زمان‌بندی خودکار این سفارش وجود ندارد:</value></data>
+  <data name="AutoScheduleFailed" xml:space="preserve"><value>زمان‌بندی خودکار انجام نشد. هیچ برنامه ناقصی ثبت نشد. دوباره تلاش کنید.</value></data>
+  <data name="SequenceAndAutomaticScheduleSaved" xml:space="preserve"><value>ترتیب عملیات تأیید و زمان‌بندی همه دستگاه‌ها به صورت خودکار ایجاد شد.</value></data>
+  <data name="OperationAddedReconfirm" xml:space="preserve"><value>مرحله اضافه شد. مجموع زمان تخمینی را بررسی و برای ایجاد مجدد تقویم تأیید کنید.</value></data>
+  <data name="OperationUpdatedReconfirm" xml:space="preserve"><value>مرحله ویرایش شد. برای ایجاد مجدد زمان‌بندی دستگاه‌ها ترتیب را تأیید کنید.</value></data>
+  <data name="OperationRemovedReconfirm" xml:space="preserve"><value>مرحله حذف شد. برای ایجاد مجدد زمان‌بندی دستگاه‌ها ترتیب اصلاح‌شده را تأیید کنید.</value></data>
+  <data name="OperationUpdateFailed" xml:space="preserve"><value>ویرایش عملیات انجام نشد. هیچ تغییر ناقصی ثبت نشد.</value></data>
+  <data name="RestoreSalesSuggestions" xml:space="preserve"><value>بازیابی مراحل پیشنهادی از اطلاعات فروش</value></data>
+  <data name="CannotRestoreEditedRoute" xml:space="preserve"><value>برای بارگذاری مجدد پیشنهادهای فروش باید ابتدا مراحل موجود حذف شوند.</value></data>
+  <data name="SalesSuggestionsRestored" xml:space="preserve"><value>مشخصات سفارش فروش دوباره خوانده شد و مراحل پیشنهادی در صورت موجود بودن بازیابی شدند.</value></data>
+  <data name="SaveStageEditsBeforeConfirmation" xml:space="preserve"><value>پیش از تأیید و ایجاد زمان‌بندی خودکار، تغییرات نام، دستگاه یا مدت هر مرحله را ذخیره کنید.</value></data>
+  <data name="Access denied" xml:space="preserve"><value>دسترسی غیرمجاز</value></data>
+  <data name="You do not have access to this resource." xml:space="preserve"><value>شما به این بخش دسترسی ندارید.</value></data>
+  <data name="Confirm email" xml:space="preserve"><value>تأیید ایمیل</value></data>
+  <data name="Confirm email change" xml:space="preserve"><value>تأیید تغییر ایمیل</value></data>
+  <data name="Register" xml:space="preserve"><value>ثبت‌نام</value></data>
+  <data name="Please enter your email." xml:space="preserve"><value>لطفاً ایمیل خود را وارد کنید.</value></data>
+  <data name="Forgot your password?" xml:space="preserve"><value>رمز عبور خود را فراموش کرده‌اید؟</value></data>
+  <data name="Enter your email." xml:space="preserve"><value>ایمیل خود را وارد کنید.</value></data>
+  <data name="Reset password" xml:space="preserve"><value>بازنشانی رمز عبور</value></data>
+  <data name="Forgot password confirmation" xml:space="preserve"><value>تأیید درخواست فراموشی رمز عبور</value></data>
+  <data name="Please check your email to reset your password." xml:space="preserve"><value>برای بازنشانی رمز عبور، ایمیل خود را بررسی کنید.</value></data>
+  <data name="Invalid password reset" xml:space="preserve"><value>لینک بازنشانی رمز عبور نامعتبر است</value></data>
+  <data name="The password reset link is invalid." xml:space="preserve"><value>لینک بازنشانی رمز عبور معتبر نیست.</value></data>
+  <data name="Invalid user" xml:space="preserve"><value>کاربر نامعتبر</value></data>
+  <data name="Locked out" xml:space="preserve"><value>حساب قفل شده است</value></data>
+  <data name="This account has been locked out, please try again later." xml:space="preserve"><value>این حساب قفل شده است. لطفاً بعداً دوباره تلاش کنید.</value></data>
+  <data name="Two-factor authentication" xml:space="preserve"><value>احراز هویت دومرحله‌ای</value></data>
+  <data name="Your login is protected with an authenticator app. Enter your authenticator code below." xml:space="preserve"><value>ورود شما با برنامه احراز هویت محافظت می‌شود. کد برنامه را در زیر وارد کنید.</value></data>
+  <data name="Authenticator code" xml:space="preserve"><value>کد برنامه احراز هویت</value></data>
+  <data name="Remember this machine" xml:space="preserve"><value>این دستگاه را به خاطر بسپار</value></data>
+  <data name="Log in" xml:space="preserve"><value>ورود</value></data>
+  <data name="log in with a recovery code" xml:space="preserve"><value>با کد بازیابی وارد شوید</value></data>
+  <data name="Recovery code verification" xml:space="preserve"><value>تأیید کد بازیابی</value></data>
+  <data name="You have requested to log in with a recovery code. This login will not be remembered until you provide an authenticator app code at log in or disable 2FA and log in again." xml:space="preserve"><value>درخواست ورود با کد بازیابی داده‌اید. تا زمانی که با کد برنامه احراز هویت وارد نشوید یا احراز هویت دومرحله‌ای را غیرفعال نکنید، این ورود ذخیره نمی‌شود.</value></data>
+  <data name="Recovery Code" xml:space="preserve"><value>کد بازیابی</value></data>
+  <data name="Change password" xml:space="preserve"><value>تغییر رمز عبور</value></data>
+  <data name="Old password" xml:space="preserve"><value>رمز عبور فعلی</value></data>
+  <data name="New password" xml:space="preserve"><value>رمز عبور جدید</value></data>
+  <data name="Confirm password" xml:space="preserve"><value>تکرار رمز عبور</value></data>
+  <data name="Confirm Password" xml:space="preserve"><value>تکرار رمز عبور</value></data>
+  <data name="Update password" xml:space="preserve"><value>به‌روزرسانی رمز عبور</value></data>
+  <data name="Enter the old password" xml:space="preserve"><value>رمز عبور فعلی را وارد کنید</value></data>
+  <data name="Enter the new password" xml:space="preserve"><value>رمز عبور جدید را وارد کنید</value></data>
+  <data name="Delete Personal Data" xml:space="preserve"><value>حذف اطلاعات شخصی</value></data>
+  <data name="Deleting this data will permanently remove your account, and this cannot be recovered." xml:space="preserve"><value>با حذف این اطلاعات، حساب شما برای همیشه حذف می‌شود و قابل بازیابی نیست.</value></data>
+  <data name="Delete data and close my account" xml:space="preserve"><value>حذف اطلاعات و بستن حساب من</value></data>
+  <data name="Please enter your password." xml:space="preserve"><value>لطفاً رمز عبور را وارد کنید.</value></data>
+  <data name="Disable two-factor authentication (2FA)" xml:space="preserve"><value>غیرفعال‌سازی احراز هویت دومرحله‌ای</value></data>
+  <data name="This action only disables 2FA." xml:space="preserve"><value>این کار فقط احراز هویت دومرحله‌ای را غیرفعال می‌کند.</value></data>
+  <data name="Disable 2FA" xml:space="preserve"><value>غیرفعال کردن احراز هویت دومرحله‌ای</value></data>
+  <data name="reset your authenticator keys." xml:space="preserve"><value>کلیدهای احراز هویت خود را بازنشانی کنید.</value></data>
+  <data name="Manage email" xml:space="preserve"><value>مدیریت ایمیل</value></data>
+  <data name="Send verification email" xml:space="preserve"><value>ارسال ایمیل تأیید</value></data>
+  <data name="New email" xml:space="preserve"><value>ایمیل جدید</value></data>
+  <data name="Change email" xml:space="preserve"><value>تغییر ایمیل</value></data>
+  <data name="Enter your email" xml:space="preserve"><value>ایمیل خود را وارد کنید</value></data>
+  <data name="Enter a new email" xml:space="preserve"><value>ایمیل جدید را وارد کنید</value></data>
+  <data name="Configure authenticator app" xml:space="preserve"><value>پیکربندی برنامه احراز هویت</value></data>
+  <data name="To use an authenticator app go through the following steps:" xml:space="preserve"><value>برای استفاده از برنامه احراز هویت، مراحل زیر را انجام دهید:</value></data>
+  <data name="Android" xml:space="preserve"><value>اندروید</value></data>
+  <data name="iOS" xml:space="preserve"><value>آی‌او‌اس</value></data>
+  <data name="and" xml:space="preserve"><value>و</value></data>
+  <data name="Verification Code" xml:space="preserve"><value>کد تأیید</value></data>
+  <data name="Verify" xml:space="preserve"><value>تأیید</value></data>
+  <data name="Enter the code" xml:space="preserve"><value>کد را وارد کنید</value></data>
+  <data name="Manage your external logins" xml:space="preserve"><value>مدیریت ورود با حساب‌های خارجی</value></data>
+  <data name="Registered Logins" xml:space="preserve"><value>حساب‌های خارجی ثبت‌شده</value></data>
+  <data name="Add another service to log in." xml:space="preserve"><value>افزودن سرویس دیگری برای ورود.</value></data>
+  <data name="Generate two-factor authentication (2FA) recovery codes" xml:space="preserve"><value>ایجاد کدهای بازیابی احراز هویت دومرحله‌ای</value></data>
+  <data name="Put these codes in a safe place." xml:space="preserve"><value>این کدها را در محلی امن نگهداری کنید.</value></data>
+  <data name="Generate Recovery Codes" xml:space="preserve"><value>ایجاد کدهای بازیابی</value></data>
+  <data name="Profile" xml:space="preserve"><value>پروفایل</value></data>
+  <data name="Username" xml:space="preserve"><value>نام کاربری</value></data>
+  <data name="Phone number" xml:space="preserve"><value>شماره تلفن</value></data>
+  <data name="Choose your username." xml:space="preserve"><value>نام کاربری خود را انتخاب کنید.</value></data>
+  <data name="Enter your phone number" xml:space="preserve"><value>شماره تلفن را وارد کنید</value></data>
+  <data name="Manage your passkeys" xml:space="preserve"><value>مدیریت کلیدهای عبور</value></data>
+  <data name="Rename" xml:space="preserve"><value>تغییر نام</value></data>
+  <data name="No passkeys are registered." xml:space="preserve"><value>هیچ کلید عبوری ثبت نشده است.</value></data>
+  <data name="You have reached the maximum number of allowed passkeys. Please delete one before adding a new one." xml:space="preserve"><value>به حداکثر تعداد کلید عبور رسیده‌اید. پیش از افزودن کلید جدید، یکی را حذف کنید.</value></data>
+  <data name="Add a new passkey" xml:space="preserve"><value>افزودن کلید عبور جدید</value></data>
+  <data name="Rename this passkey" xml:space="preserve"><value>تغییر نام این کلید عبور</value></data>
+  <data name="Remove this passkey from your account" xml:space="preserve"><value>حذف این کلید عبور از حساب شما</value></data>
+  <data name="Personal Data" xml:space="preserve"><value>اطلاعات شخصی</value></data>
+  <data name="Your account contains personal data that you have given us. This page allows you to download or delete that data." xml:space="preserve"><value>حساب شما شامل اطلاعات شخصی ارائه‌شده توسط شماست. در این صفحه می‌توانید آن‌ها را دریافت یا حذف کنید.</value></data>
+  <data name="Download" xml:space="preserve"><value>دریافت</value></data>
+  <data name="Enter a name for your passkey" xml:space="preserve"><value>نامی برای کلید عبور خود وارد کنید</value></data>
+  <data name="Passkey name" xml:space="preserve"><value>نام کلید عبور</value></data>
+  <data name="Continue" xml:space="preserve"><value>ادامه</value></data>
+  <data name="My passkey" xml:space="preserve"><value>کلید عبور من</value></data>
+  <data name="Reset authenticator key" xml:space="preserve"><value>بازنشانی کلید احراز هویت</value></data>
+  <data name="If you reset your authenticator key your authenticator app will not work until you reconfigure it." xml:space="preserve"><value>در صورت بازنشانی کلید، برنامه احراز هویت تا زمان پیکربندی مجدد کار نخواهد کرد.</value></data>
+  <data name="Set password" xml:space="preserve"><value>تنظیم رمز عبور</value></data>
+  <data name="Set your password" xml:space="preserve"><value>رمز عبور خود را تنظیم کنید</value></data>
+  <data name="Two-factor authentication (2FA)" xml:space="preserve"><value>احراز هویت دومرحله‌ای</value></data>
+  <data name="You have no recovery codes left." xml:space="preserve"><value>هیچ کد بازیابی باقی نمانده است.</value></data>
+  <data name="You must" xml:space="preserve"><value>باید</value></data>
+  <data name="generate a new set of recovery codes" xml:space="preserve"><value>مجموعه جدیدی از کدهای بازیابی ایجاد کنید</value></data>
+  <data name="before you can log in with a recovery code." xml:space="preserve"><value>تا بتوانید با کد بازیابی وارد شوید.</value></data>
+  <data name="You have 1 recovery code left." xml:space="preserve"><value>یک کد بازیابی باقی مانده است.</value></data>
+  <data name="You can" xml:space="preserve"><value>می‌توانید</value></data>
+  <data name="You should" xml:space="preserve"><value>بهتر است</value></data>
+  <data name="Forget this browser" xml:space="preserve"><value>فراموش کردن این مرورگر</value></data>
+  <data name="Reset recovery codes" xml:space="preserve"><value>بازنشانی کدهای بازیابی</value></data>
+  <data name="Authenticator app" xml:space="preserve"><value>برنامه احراز هویت</value></data>
+  <data name="Add authenticator app" xml:space="preserve"><value>افزودن برنامه احراز هویت</value></data>
+  <data name="Set up authenticator app" xml:space="preserve"><value>راه‌اندازی برنامه احراز هویت</value></data>
+  <data name="Reset authenticator app" xml:space="preserve"><value>بازنشانی برنامه احراز هویت</value></data>
+  <data name="Privacy and cookie policy have not been accepted." xml:space="preserve"><value>سیاست حریم خصوصی و کوکی‌ها پذیرفته نشده است.</value></data>
+  <data name="You must accept the policy before you can enable two factor authentication." xml:space="preserve"><value>پیش از فعال‌سازی احراز هویت دومرحله‌ای باید سیاست را بپذیرید.</value></data>
+  <data name="Create a new account." xml:space="preserve"><value>ساخت حساب کاربری جدید.</value></data>
+  <data name="Use another service to register." xml:space="preserve"><value>ثبت‌نام با سرویس دیگری.</value></data>
+  <data name="Register confirmation" xml:space="preserve"><value>تأیید ثبت‌نام</value></data>
+  <data name="these docs" xml:space="preserve"><value>مستندات</value></data>
+  <data name="Click here to confirm your account" xml:space="preserve"><value>برای تأیید حساب کلیک کنید</value></data>
+  <data name="Please check your email to confirm your account." xml:space="preserve"><value>برای تأیید حساب، ایمیل خود را بررسی کنید.</value></data>
+  <data name="Resend email confirmation" xml:space="preserve"><value>ارسال مجدد ایمیل تأیید</value></data>
+  <data name="Resend" xml:space="preserve"><value>ارسال مجدد</value></data>
+  <data name="Reset your password." xml:space="preserve"><value>رمز عبور خود را بازنشانی کنید.</value></data>
+  <data name="Please confirm your password." xml:space="preserve"><value>لطفاً رمز عبور را تکرار کنید.</value></data>
+  <data name="Reset" xml:space="preserve"><value>بازنشانی</value></data>
+  <data name="Reset password confirmation" xml:space="preserve"><value>تأیید بازنشانی رمز عبور</value></data>
+  <data name="Your password has been reset. Please" xml:space="preserve"><value>رمز عبور شما بازنشانی شد. لطفاً</value></data>
+  <data name="click here to log in" xml:space="preserve"><value>برای ورود اینجا کلیک کنید</value></data>
+  <data name="Manage your account" xml:space="preserve"><value>مدیریت حساب کاربری</value></data>
+  <data name="Change your account settings" xml:space="preserve"><value>تغییر تنظیمات حساب</value></data>
+  <data name="External logins" xml:space="preserve"><value>ورود با حساب‌های خارجی</value></data>
+  <data name="Passkeys" xml:space="preserve"><value>کلیدهای عبور</value></data>
+  <data name="Personal data" xml:space="preserve"><value>اطلاعات شخصی</value></data>
+  <data name="Recovery codes" xml:space="preserve"><value>کدهای بازیابی</value></data>
+  <data name="Manage employees and user accounts." xml:space="preserve"><value>مدیریت کارکنان و حساب‌های کاربری.</value></data>
+  <data name="Manage Users" xml:space="preserve"><value>مدیریت کاربران</value></data>
+  <data name="Manage access levels." xml:space="preserve"><value>مدیریت سطح دسترسی‌ها.</value></data>
+  <data name="Manage Roles" xml:space="preserve"><value>مدیریت نقش‌ها</value></data>
+  <data name="Control access to system features." xml:space="preserve"><value>کنترل دسترسی به امکانات سامانه.</value></data>
+  <data name="Permission Management" xml:space="preserve"><value>مدیریت مجوزها</value></data>
+  <data name="You are not authorized to manage permissions for any roles." xml:space="preserve"><value>شما مجوز مدیریت دسترسی هیچ نقشی را ندارید.</value></data>
+  <data name="Roles You Can Manage" xml:space="preserve"><value>نقش‌های قابل مدیریت</value></data>
+  <data name="Select a role to manage its permissions." xml:space="preserve"><value>برای مدیریت مجوزها یک نقش را انتخاب کنید.</value></data>
+  <data name="Select the permissions that this role is allowed to use." xml:space="preserve"><value>مجوزهای مجاز برای استفاده این نقش را انتخاب کنید.</value></data>
+  <data name="You are not authorized to delegate any permissions to this role." xml:space="preserve"><value>شما مجوز واگذاری دسترسی به این نقش را ندارید.</value></data>
+  <data name="Permission" xml:space="preserve"><value>مجوز</value></data>
+  <data name="Enabled" xml:space="preserve"><value>فعال</value></data>
+  <data name="You can manage permissions only for roles that you are authorized to manage." xml:space="preserve"><value>فقط می‌توانید مجوز نقش‌هایی را مدیریت کنید که اجازه مدیریت آن‌ها را دارید.</value></data>
+  <data name="You are not authorized to manage permissions for any role." xml:space="preserve"><value>شما مجاز به مدیریت مجوز هیچ نقشی نیستید.</value></data>
+  <data name="-- Select Role --" xml:space="preserve"><value>-- انتخاب نقش --</value></data>
+  <data name="Select the permissions that you are allowed to manage for this role." xml:space="preserve"><value>مجوزهایی را که اجازه مدیریت آن‌ها برای این نقش را دارید انتخاب کنید.</value></data>
+  <data name="You have no delegated permissions for this role." xml:space="preserve"><value>هیچ مجوز قابل واگذاری برای این نقش ندارید.</value></data>
+  <data name="Role Permissions" xml:space="preserve"><value>مجوزهای نقش</value></data>
+  <data name="Role not found." xml:space="preserve"><value>نقش یافت نشد.</value></data>
+  <data name="You are not authorized to manage any permissions for this role." xml:space="preserve"><value>شما اجازه مدیریت هیچ مجوزی برای این نقش ندارید.</value></data>
+  <data name="You are not authorized to view roles." xml:space="preserve"><value>شما مجوز مشاهده نقش‌ها را ندارید.</value></data>
+  <data name="Loading roles..." xml:space="preserve"><value>در حال بارگذاری نقش‌ها...</value></data>
+  <data name="No roles have been created yet." xml:space="preserve"><value>هنوز نقشی ایجاد نشده است.</value></data>
+  <data name="e.g. Warehouse Manager" xml:space="preserve"><value>مثلاً مدیر انبار</value></data>
+  <data name="Remove all users from this role before deleting it." xml:space="preserve"><value>پیش از حذف این نقش، تمام کاربران آن را حذف کنید.</value></data>
+  <data name="Users Management" xml:space="preserve"><value>مدیریت کاربران</value></data>
+  <data name="Add Employee" xml:space="preserve"><value>افزودن کارمند</value></data>
+  <data name="You are not authenticated." xml:space="preserve"><value>وارد حساب کاربری نشده‌اید.</value></data>
+  <data name="Current user could not be found." xml:space="preserve"><value>کاربر فعلی یافت نشد.</value></data>
+  <data name="You are not authorized to manage this role." xml:space="preserve"><value>شما مجاز به مدیریت این نقش نیستید.</value></data>
+  <data name="You are not authorized to modify this role." xml:space="preserve"><value>شما مجاز به تغییر این نقش نیستید.</value></data>
+  <data name="You must be logged in to manage permissions." xml:space="preserve"><value>برای مدیریت مجوزها باید وارد سامانه شوید.</value></data>
+  <data name="No permissions available." xml:space="preserve"><value>هیچ مجوزی در دسترس نیست.</value></data>
+  <data name="Create an employee account" xml:space="preserve"><value>ایجاد حساب کاربری کارمند</value></data>
+  <data name="Choose a role" xml:space="preserve"><value>انتخاب نقش</value></data>
+  <data name="Unable to load permissions:" xml:space="preserve"><value>بارگذاری مجوزها انجام نشد:</value></data>
+  <data name="Unable to save permissions:" xml:space="preserve"><value>ذخیره مجوزها انجام نشد:</value></data>
+  <data name="Permission changes saved successfully." xml:space="preserve"><value>تغییرات مجوزها با موفقیت ذخیره شد.</value></data>
+  <data name="Production Planning" xml:space="preserve"><value>برنامه‌ریزی تولید</value></data>
+  <data name="Select an order from the queue, then click a calendar slot or drag it onto the calendar." xml:space="preserve"><value>یک سفارش را از صف انتخاب و سپس روی بازه تقویم کلیک کنید یا سفارش را به تقویم بکشید.</value></data>
+  <data name="Production orders" xml:space="preserve"><value>سفارش‌های تولید</value></data>
+  <data name="Select an order, then click a calendar slot, or drag it onto the calendar. Scheduled orders can also be dragged to a new start." xml:space="preserve"><value>یک سفارش را انتخاب کنید و روی بازه تقویم کلیک کنید یا آن را به تقویم بکشید. سفارش‌های زمان‌بندی‌شده را نیز می‌توان جابه‌جا کرد.</value></data>
+  <data name="There are no active production orders." xml:space="preserve"><value>سفارش تولید فعالی وجود ندارد.</value></data>
+  <data name="Order settings" xml:space="preserve"><value>تنظیمات سفارش</value></data>
+  <data name="Select an order first." xml:space="preserve"><value>ابتدا یک سفارش انتخاب کنید.</value></data>
+  <data name="Estimated duration (hours)" xml:space="preserve"><value>مدت زمان تخمینی (ساعت)</value></data>
+  <data name="Avoid overtime (17:00–22:00)" xml:space="preserve"><value>عدم استفاده از اضافه‌کاری (۱۷ تا ۲۲)</value></data>
+  <data name="Avoid night shift (22:00–08:00)" xml:space="preserve"><value>عدم استفاده از شیفت شب (۲۲ تا ۸)</value></data>
+  <data name="Save settings" xml:space="preserve"><value>ذخیره تنظیمات</value></data>
+  <data name="The lunch break is always excluded. Prohibited shifts are skipped and are not shown as active production time." xml:space="preserve"><value>زمان استراحت ناهار همیشه مستثناست. شیفت‌های ممنوع محاسبه نمی‌شوند و به‌عنوان زمان تولید فعال نمایش داده نمی‌شوند.</value></data>
+  <data name="Regular work 08:00–13:00 / 14:00–17:00" xml:space="preserve"><value>شیفت عادی ۸ تا ۱۳ / ۱۴ تا ۱۷</value></data>
+  <data name="Break 13:00–14:00" xml:space="preserve"><value>استراحت ۱۳ تا ۱۴</value></data>
+  <data name="Overtime 17:00–22:00" xml:space="preserve"><value>اضافه‌کاری ۱۷ تا ۲۲</value></data>
+  <data name="Night 22:00–08:00" xml:space="preserve"><value>شیفت شب ۲۲ تا ۸</value></data>
+  <data name="In Month view, click or drop an order on a date to schedule it from 08:00. Use Week or Day view to choose a specific start time." xml:space="preserve"><value>در نمای ماهانه، روی یک روز کلیک کنید یا سفارش را روی آن رها کنید تا از ساعت ۸ زمان‌بندی شود. در نمای هفتگی یا روزانه می‌توانید زمان دقیق را انتخاب کنید.</value></data>
+  <data name="Click a time slot or drop an order onto it to set the start time. Multiple orders may occupy the same time slot." xml:space="preserve"><value>برای تعیین زمان شروع، روی یک بازه کلیک کنید یا سفارش را روی آن رها کنید. ممکن است چند سفارش در یک بازه قرار داشته باشند.</value></data>
+  <data name="This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions." xml:space="preserve"><value>برای این سفارش عملیات دستگاه زمان‌بندی شده است. پیش از تغییر مدت زمان یا محدودیت شیفت مدیرعامل، آن‌ها را در برنامه دستگاه‌ها لغو زمان‌بندی کنید.</value></data>
+  <data name="The CEO duration must allow at least one minute for each machine operation." xml:space="preserve"><value>مدت تعیین‌شده توسط مدیرعامل باید برای هر مرحله دستگاه دست‌کم یک دقیقه باشد.</value></data>
+  <data name="CEO duration, machine-step allocations and permitted shifts are consistent." xml:space="preserve"><value>مدت سفارش مدیرعامل، زمان مراحل دستگاه‌ها و شیفت‌های مجاز هماهنگ هستند.</value></data>
+  <data name="This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar." xml:space="preserve"><value>این سفارش دارای عملیات دستگاه زمان‌بندی‌شده است. پیش از جابه‌جایی آن در تقویم مدیرعامل، زمان‌بندی مراحل دستگاه را لغو کنید.</value></data>
+  <data name="No production operations have been defined for this production order yet." xml:space="preserve"><value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value></data>
+  <data name="No production schedule has been created for this production order yet." xml:space="preserve"><value>هنوز برنامه زمان‌بندی تولید برای این سفارش ایجاد نشده است.</value></data>
+  <data name="Material Request" xml:space="preserve"><value>درخواست مواد</value></data>
+  <data name="Operator entered" xml:space="preserve"><value>واردشده توسط اپراتور</value></data>
+  <data name="Select the materials needed for this production order and enter the requested quantities. Submitting this request does not reserve or issue inventory." xml:space="preserve"><value>مواد موردنیاز این سفارش تولید را انتخاب و مقدار درخواست‌شده را وارد کنید. ثبت این درخواست به‌منزله رزرو یا خروج کالا از موجودی نیست.</value></data>
+  <data name="Requested quantity" xml:space="preserve"><value>مقدار درخواستی</value></data>
+  <data name="Choose an item from the suggestions." xml:space="preserve"><value>یک کالا را از پیشنهادها انتخاب کنید.</value></data>
+  <data name="+ Add material line" xml:space="preserve"><value>+ افزودن ردیف مواد</value></data>
+  <data name="Submitted Material Requests" xml:space="preserve"><value>درخواست‌های مواد ثبت‌شده</value></data>
+  <data name="No material requests have been submitted for this production order." xml:space="preserve"><value>هنوز درخواست مواد برای این سفارش تولید ثبت نشده است.</value></data>
+  <data name="No material reservations have been created for this production order." xml:space="preserve"><value>هنوز رزرو مواد برای این سفارش تولید ایجاد نشده است.</value></data>
+  <data name="Search by item name or code" xml:space="preserve"><value>جست‌وجو با نام یا کد کالا</value></data>
+  <data name="Optional" xml:space="preserve"><value>اختیاری</value></data>
+  <data name="Remove line" xml:space="preserve"><value>حذف ردیف</value></data>
+  <data name="Add at least one material before submitting the request." xml:space="preserve"><value>پیش از ثبت درخواست، دست‌کم یک قلم مواد اضافه کنید.</value></data>
+  <data name="Select a valid material and enter a quantity greater than zero for every request line." xml:space="preserve"><value>برای هر ردیف، یک ماده معتبر و مقداری بیشتر از صفر وارد کنید.</value></data>
+  <data name="Sorry, the content you are looking for does not exist." xml:space="preserve"><value>متأسفانه محتوای موردنظر وجود ندارد.</value></data>
+  <data name="Not Found" xml:space="preserve"><value>یافت نشد</value></data>
+  <data name="Loading PDF pages..." xml:space="preserve"><value>در حال بارگذاری صفحات PDF...</value></data>
+  <data name="Production Orders" xml:space="preserve"><value>سفارش‌های تولید</value></data>
+  <data name="Order Number" xml:space="preserve"><value>شماره سفارش</value></data>
+  <data name="Sales Order" xml:space="preserve"><value>سفارش فروش</value></data>
+  <data name="Planned Start" xml:space="preserve"><value>شروع برنامه‌ریزی‌شده</value></data>
+  <data name="Planned End" xml:space="preserve"><value>پایان برنامه‌ریزی‌شده</value></data>
+  <data name="Material waste" xml:space="preserve"><value>پرت مواد</value></data>
+  <data name="Area utilization" xml:space="preserve"><value>بهره‌برداری از مساحت</value></data>
+  <data name="· Total planned output:" xml:space="preserve"><value>· مجموع تولید برنامه‌ریزی‌شده:</value></data>
+  <data name="Solver:" xml:space="preserve"><value>حل‌گر:</value></data>
+  <data name="Sheets required:" xml:space="preserve"><value>تعداد ورق موردنیاز:</value></data>
+  <data name="Total roll length:" xml:space="preserve"><value>طول کل رول:</value></data>
+  <data name="The preview shows one repeat; this pattern is repeated for the full run." xml:space="preserve"><value>پیش‌نمایش یک تکرار را نشان می‌دهد؛ این الگو در کل تیراژ تکرار می‌شود.</value></data>
+  <data name="Export SVG preview" xml:space="preserve"><value>خروجی پیش‌نمایش SVG</value></data>
+  <data name="Rectangular imposition preview" xml:space="preserve"><value>پیش‌نمایش چیدمان مستطیلی</value></data>
+  <data name="Imposition Optimizer" xml:space="preserve"><value>بهینه‌ساز چیدمان چاپ</value></data>
+  <data name="Sheet format" xml:space="preserve"><value>قطع ورق</value></data>
+  <data name="Parts on sheet" xml:space="preserve"><value>قطعات روی ورق</value></data>
+  <data name="Sheet copies" xml:space="preserve"><value>تعداد نسخه‌های ورق</value></data>
+  <data name="Fill / waste" xml:space="preserve"><value>پرشدگی / پرت</value></data>
+  <data name="Total sheets" xml:space="preserve"><value>تعداد کل ورق‌ها</value></data>
+  <data name="Paper weight required" xml:space="preserve"><value>وزن کاغذ موردنیاز</value></data>
+  <data name="Total placed" xml:space="preserve"><value>مجموع قطعات چیده‌شده</value></data>
+  <data name="Material type" xml:space="preserve"><value>نوع مواد</value></data>
+  <data name="Format" xml:space="preserve"><value>قالب</value></data>
+  <data name="Custom" xml:space="preserve"><value>سفارشی</value></data>
+  <data name="Width (mm)" xml:space="preserve"><value>عرض (میلی‌متر)</value></data>
+  <data name="Paper weight (gsm)" xml:space="preserve"><value>گرماژ کاغذ</value></data>
+  <data name="Material area" xml:space="preserve"><value>مساحت مواد</value></data>
+  <data name="Estimated paper weight" xml:space="preserve"><value>وزن تخمینی کاغذ</value></data>
+  <data name="Parts / Required quantities" xml:space="preserve"><value>قطعات / مقدار موردنیاز</value></data>
+  <data name="＋ Add part" xml:space="preserve"><value>＋ افزودن قطعه</value></data>
+  <data name="Height (mm)" xml:space="preserve"><value>ارتفاع (میلی‌متر)</value></data>
+  <data name="Required quantity (pieces)" xml:space="preserve"><value>تعداد موردنیاز (عدد)</value></data>
+  <data name="How many finished pieces of this part are needed?" xml:space="preserve"><value>چند قطعه نهایی از این بخش موردنیاز است؟</value></data>
+  <data name="Allow 90° rotation" xml:space="preserve"><value>اجازه چرخش ۹۰ درجه</value></data>
+  <data name="Required pieces" xml:space="preserve"><value>قطعات موردنیاز</value></data>
+  <data name="Total required pieces" xml:space="preserve"><value>مجموع قطعات موردنیاز</value></data>
+  <data name="Sheets / repeats needed" xml:space="preserve"><value>تعداد ورق / تکرار موردنیاز</value></data>
+  <data name="Pieces planned" xml:space="preserve"><value>قطعات برنامه‌ریزی‌شده</value></data>
+  <data name="Extra pieces" xml:space="preserve"><value>قطعات اضافی</value></data>
+  <data name="All sizes are given in them." xml:space="preserve"><value>تمام اندازه‌ها با این واحد بیان می‌شوند.</value></data>
+  <data name="Sheet margin" xml:space="preserve"><value>حاشیه ورق</value></data>
+  <data name="Top" xml:space="preserve"><value>بالا</value></data>
+  <data name="Right" xml:space="preserve"><value>راست</value></data>
+  <data name="Bottom" xml:space="preserve"><value>پایین</value></data>
+  <data name="Left" xml:space="preserve"><value>چپ</value></data>
+  <data name="Cutting" xml:space="preserve"><value>برش</value></data>
+  <data name="Identical sheets" xml:space="preserve"><value>ورق‌های یکسان</value></data>
+  <data name="Center on sheet" xml:space="preserve"><value>تراز در مرکز ورق</value></data>
+  <data name="Part spacing" xml:space="preserve"><value>فاصله بین قطعات</value></data>
+  <data name="Gap between parts" xml:space="preserve"><value>فاصله بین قطعات</value></data>
+  <data name="Optimization" xml:space="preserve"><value>بهینه‌سازی</value></data>
+  <data name="Find best layout" xml:space="preserve"><value>یافتن بهترین چیدمان</value></data>
+  <data name="Clear results" xml:space="preserve"><value>پاک کردن نتایج</value></data>
+  <data name="Layout" xml:space="preserve"><value>چیدمان</value></data>
+  <data name="⇩ Save / Calculate" xml:space="preserve"><value>⇩ ذخیره / محاسبه</value></data>
+  <data name="Best 3 layouts — ranked by waste (lowest first)" xml:space="preserve"><value>سه چیدمان برتر — به ترتیب کمترین پرت</value></data>
+  <data name="Part name" xml:space="preserve"><value>نام قطعه</value></data>
+  <data name="Remove part" xml:space="preserve"><value>حذف قطعه</value></data>
+  <data name="Sheet imposition preview" xml:space="preserve"><value>پیش‌نمایش چیدمان ورق</value></data>
+  <data name="RollWorkflowInfo" xml:space="preserve"><value>اطلاعات گردش کار و تولید</value></data>
+  <data name="LoadingJob" xml:space="preserve"><value>در حال بارگذاری مشخصات سفارش…</value></data>
+  <data name="Error." xml:space="preserve"><value>خطا.</value></data>
+  <data name="An error occurred while processing your request." xml:space="preserve"><value>هنگام پردازش درخواست شما خطایی رخ داد.</value></data>
+  <data name="Request ID:" xml:space="preserve"><value>شناسه درخواست:</value></data>
+  <data name="Development Mode" xml:space="preserve"><value>حالت توسعه</value></data>
+  <data name="Swapping to" xml:space="preserve"><value>تغییر به</value></data>
+  <data name="environment will display more detailed information about the error that occurred." xml:space="preserve"><value>محیط، اطلاعات بیشتری درباره خطای رخ‌داده نمایش می‌دهد.</value></data>
+  <data name="The Development environment shouldn't be enabled for deployed applications." xml:space="preserve"><value>محیط توسعه نباید برای نسخه عملیاتی فعال باشد.</value></data>
+  <data name="It can result in displaying sensitive information from exceptions to end users." xml:space="preserve"><value>ممکن است اطلاعات حساس خطاها را به کاربران نهایی نمایش دهد.</value></data>
+  <data name="For local debugging, enable the" xml:space="preserve"><value>برای عیب‌یابی محلی، محیط</value></data>
+  <data name="environment by setting the" xml:space="preserve"><value>را با تنظیم متغیر</value></data>
+  <data name="environment variable to" xml:space="preserve"><value>محیطی روی</value></data>
+  <data name="and restarting the app." xml:space="preserve"><value>و راه‌اندازی مجدد برنامه فعال کنید.</value></data>
+  <data name="This app does not currently have a real email sender registered, see" xml:space="preserve"><value>در حال حاضر ارسال‌کننده ایمیل برای این برنامه تنظیم نشده است؛ به</value></data>
+  <data name="for how to configure a real email sender. Normally this would be emailed:" xml:space="preserve"><value>برای تنظیم ارسال ایمیل مراجعه کنید. معمولاً این پیام از طریق ایمیل ارسال می‌شود:</value></data>
+  <data name="You do not have a local username/password for this site. Add a local account so you can log in without an external login." xml:space="preserve"><value>برای این سامانه نام کاربری و رمز عبور محلی ندارید. برای ورود بدون حساب خارجی، یک حساب محلی بسازید.</value></data>
+  <data name="This process disables 2FA until you verify your authenticator app. If you do not complete your authenticator app configuration you may lose access to your account." xml:space="preserve"><value>این فرایند تا زمان تأیید برنامه احراز هویت، ورود دومرحله‌ای را غیرفعال می‌کند. اگر تنظیمات را کامل نکنید، ممکن است به حساب خود دسترسی نداشته باشید.</value></data>
+  <data name="If you lose your device and don't have the recovery codes you will lose access to your account." xml:space="preserve"><value>اگر دستگاه خود را از دست بدهید و کد بازیابی نداشته باشید، دسترسی به حساب خود را از دست خواهید داد.</value></data>
+  <data name="Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should" xml:space="preserve"><value>ایجاد کد بازیابی جدید، کلید برنامه احراز هویت را تغییر نمی‌دهد. برای تغییر کلید باید</value></data>
+  <data name="Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key used in an authenticator app you should" xml:space="preserve"><value>غیرفعال کردن ورود دومرحله‌ای، کلید برنامه احراز هویت را تغییر نمی‌دهد. برای تغییر کلید باید</value></data>
+  <data name="Download a two-factor authenticator app like Microsoft Authenticator for" xml:space="preserve"><value>برنامه احراز هویت دومرحله‌ای مانند Microsoft Authenticator را برای</value></data>
+  <data name="or Google Authenticator for" xml:space="preserve"><value>یا Google Authenticator را برای</value></data>
+  <data name="into your two factor authenticator app. Spaces and casing do not matter." xml:space="preserve"><value>در برنامه احراز هویت دومرحله‌ای وارد کنید. فاصله و بزرگی حروف اهمیتی ندارد.</value></data>
+  <data name="Scan the QR Code or enter this key" xml:space="preserve"><value>کد QR را اسکن کنید یا این کلید را وارد کنید</value></data>
+  <data name="Learn how to" xml:space="preserve"><value>راهنمای</value></data>
+  <data name="enable QR code generation" xml:space="preserve"><value>فعال‌سازی ایجاد کد QR</value></data>
+  <data name="Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below." xml:space="preserve"><value>پس از اسکن کد QR یا وارد کردن کلید بالا، برنامه احراز هویت کدی ایجاد می‌کند. آن را در کادر تأیید وارد کنید.</value></data>
+  <data name="You’ve successfully authenticated with" xml:space="preserve"><value>با موفقیت از طریق حساب خارجی وارد شده‌اید:</value></data>
+  <data name="You’ve successfully authenticated with your external provider." xml:space="preserve"><value>با موفقیت از طریق حساب خارجی وارد شده‌اید.</value></data>
+  <data name="Don't have access to your authenticator device? You can" xml:space="preserve"><value>به دستگاه احراز هویت خود دسترسی ندارید؟ می‌توانید</value></data>
+  <data name="You've successfully authenticated with" xml:space="preserve"><value>با موفقیت از طریق حساب خارجی وارد شده‌اید:</value></data>
+  <data name="Associate your {0} account." xml:space="preserve"><value>اتصال حساب {0} شما</value></data>
+  <data name="Please enter an email address for this site below and click the Register button to finish logging in." xml:space="preserve"><value>برای تکمیل ورود، ایمیل خود را وارد کرده و روی دکمه ثبت‌نام کلیک کنید.</value></data>
+  <data name="No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation." xml:space="preserve"><value>برای اندازه‌های پیش‌فرض ورق، چیدمان معتبری یافت نشد. ابعاد قطعات، تعداد، حاشیه‌ها، فاصله و چرخش را بررسی کنید.</value></data>
+  <data name="Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage." xml:space="preserve"><value>وزن از مساحت کل ورق یا تکرار، گرماژ کاغذ و تعداد موردنیاز محاسبه می‌شود. این مقدار تخمینی است و اضافه مصرف آماده‌سازی یا ضایعات را در بر نمی‌گیرد.</value></data>
+  <data name="Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed." xml:space="preserve"><value>تعداد موردنیاز تولید برای هر قطعه را وارد کنید. بهینه‌ساز بر اساس این مقادیر، تعداد ورق یا تکرار رول را محاسبه می‌کند.</value></data>
+  <data name="Generate layouts using the selected sheet, parts, and setup." xml:space="preserve"><value>با استفاده از ورق، قطعات و تنظیمات انتخاب‌شده چیدمان ایجاد کنید.</value></data>
+  <data name="No valid layout was found." xml:space="preserve"><value>چیدمان معتبری یافت نشد.</value></data>
+  <data name="You must be logged in." xml:space="preserve"><value>برای ادامه باید وارد حساب کاربری شوید.</value></data>
+  <data name="Unable to load permission management:" xml:space="preserve"><value>بارگذاری مدیریت مجوزها انجام نشد:</value></data>
+  <data name="Please select a role." xml:space="preserve"><value>لطفاً یک نقش انتخاب کنید.</value></data>
+  <data name="You are not assigned to a role that can manage permissions." xml:space="preserve"><value>هیچ نقش دارای مجوز مدیریت دسترسی به شما اختصاص داده نشده است.</value></data>
+  <data name="You are not authorized to manage permissions for this role." xml:space="preserve"><value>اجازه مدیریت مجوزهای این نقش را ندارید.</value></data>
+  <data name="You are not authorized to modify permissions for this role." xml:space="preserve"><value>اجازه تغییر مجوزهای این نقش را ندارید.</value></data>
+  <data name="You are not authorized to create roles." xml:space="preserve"><value>شما مجاز به ایجاد نقش نیستید.</value></data>
+  <data name="Please enter a role name." xml:space="preserve"><value>نام نقش را وارد کنید.</value></data>
+  <data name="That role already exists." xml:space="preserve"><value>این نقش از قبل وجود دارد.</value></data>
+  <data name="You are not authorized to delete roles." xml:space="preserve"><value>شما مجاز به حذف نقش نیستید.</value></data>
+  <data name="The Administrator role cannot be deleted." xml:space="preserve"><value>نقش مدیر سامانه قابل حذف نیست.</value></data>
+  <data name="Invalid role." xml:space="preserve"><value>نقش نامعتبر است.</value></data>
+  <data name="Unable to load roles:" xml:space="preserve"><value>بارگذاری نقش‌ها انجام نشد:</value></data>
+  <data name="Role '{0}' created successfully." xml:space="preserve"><value>نقش «{0}» با موفقیت ایجاد شد.</value></data>
+  <data name="Role '{0}' deleted successfully." xml:space="preserve"><value>نقش «{0}» با موفقیت حذف شد.</value></data>
+  <data name="Role '{0}' is assigned to {1} user(s) and cannot be deleted." xml:space="preserve"><value>نقش «{0}» به {1} کاربر اختصاص داده شده و قابل حذف نیست.</value></data>
+  <data name="Permissions for '{0}' saved successfully." xml:space="preserve"><value>مجوزهای «{0}» با موفقیت ذخیره شد.</value></data>
+  <data name="Role '{0}' could not be deleted." xml:space="preserve"><value>حذف نقش «{0}» انجام نشد.</value></data>
+  <data name="Failed to save permissions." xml:space="preserve"><value>ذخیره مجوزها انجام نشد.</value></data>
+  <data name="Unexpected error while loading roles." xml:space="preserve"><value>هنگام بارگذاری نقش‌ها خطایی غیرمنتظره رخ داد.</value></data>
+  <data name="Unable to load permission management." xml:space="preserve"><value>بارگذاری مدیریت مجوزها انجام نشد.</value></data>
+  <data name="Location" xml:space="preserve"><value>مکان</value></data>
+  <data name="ViewAllCustomerInventory" xml:space="preserve"><value>نمایش موجودی تمام مشتریان</value></data>
+  <data name="NoCustomerInventory" xml:space="preserve"><value>موجودی ثبت‌شده‌ای برای مشتریان یافت نشد.</value></data>
+  <data name="SavePreviewAndContinueSalesWorkflow" xml:space="preserve">
+    <value>ذخیره، پیش‌نمایش تأییدیه و ادامه فرایند فروش</value>
+  </data>
+  <data name="ContinueSalesWorkflow" xml:space="preserve">
+    <value>ادامه فرایند فروش</value>
+  </data>
+  <data name="ContinueToQuotation" xml:space="preserve"><value>ادامه به پیش‌فاکتور</value></data>
+  <data name="JobsOnQuotation" xml:space="preserve"><value>سفارش‌های این پیش‌فاکتور</value></data>
+  <data name="OpenJob" xml:space="preserve"><value>نمایش سفارش</value></data>
+  <data name="OpenApprovalProof" xml:space="preserve"><value>مشاهده برگه تأیید</value></data>
+  <data name="AddSavedJobToQuotation" xml:space="preserve"><value>افزودن سفارش رول یا شیت ذخیره‌شده</value></data>
+  <data name="SelectSavedJob" xml:space="preserve"><value>انتخاب سفارش ذخیره‌شده این مشتری</value></data>
+  <data name="AddJobToQuotation" xml:space="preserve"><value>افزودن سفارش به پیش‌فاکتور</value></data>
+  <data name="CreateAnotherJob" xml:space="preserve"><value>ایجاد سفارش دیگر</value></data>
+  <data name="JobAddedToQuotation" xml:space="preserve"><value>سفارش به پیش‌فاکتور اضافه شد.</value></data>
+  <data name="QuotationNotEditable" xml:space="preserve"><value>این پیش‌فاکتور دیگر قابل ویرایش نیست.</value></data>
+  <data name="QuotationCustomerMustMatch" xml:space="preserve"><value>فقط سفارش‌های مربوط به مشتری این پیش‌فاکتور قابل افزودن هستند.</value></data>
+  <data name="StartNewJobQuotation" xml:space="preserve"><value>ایجاد سفارش و پیش‌فاکتور جدید</value></data>
+  <data name="MatchingExistingJobFound" xml:space="preserve"><value>سفارشی با این عنوان از قبل وجود دارد.</value></data>
+  <data name="OpenExistingJobInsteadOfDuplicate" xml:space="preserve"><value>برای مشاهده مشخصات و فایل‌های طرح ذخیره‌شده، سفارش موجود را باز کنید. تغییرات ذخیره‌نشده این فرم منتقل نمی‌شوند.</value></data>
+  <data name="LoadExistingJob" xml:space="preserve"><value>بارگذاری سفارش موجود</value></data>
+  <data name="MatchingExistingJobSaveBlocked" xml:space="preserve"><value>سفارشی با این عنوان، برای همین مشتری و نوع کار وجود دارد. به‌جای ایجاد سفارش تکراری، سفارش موجود را باز کنید.</value></data>
+  <data name="SelectReplacementArtwork" xml:space="preserve"><value>یک فایل طرح جایگزین انتخاب کنید</value></data>
+  <data name="ReplacingArtwork" xml:space="preserve"><value>در حال جایگزینی</value></data>
+  <data name="ArtworkMarkedForRemoval" xml:space="preserve"><value>پس از ذخیره از سفارش حذف می‌شود</value></data>
+  <data name="ReplaceArtwork" xml:space="preserve"><value>جایگزینی طرح</value></data>
+  <data name="Undo" xml:space="preserve"><value>بازگردانی</value></data>
+  <data name="SelectOneReplacementArtwork" xml:space="preserve"><value>برای جایگزینی، دقیقاً یک فایل انتخاب کنید.</value></data>
+  <data name="ReplacementArtwork" xml:space="preserve"><value>فایل جایگزین</value></data>
+  <data name="ArtworkChangesSavedOnSave" xml:space="preserve"><value>تغییرات فایل‌های طرح پس از انتخاب «ذخیره و پیش‌نمایش تأییدیه» اعمال می‌شوند.</value></data>
+  <data name="ArtworkMissingWarning" xml:space="preserve"><value>هیچ فایل طرحی به این سفارش پیوست نشده است. تا زمان بارگذاری طرح جدید، تأییدیه بدون طرح نمایش داده می‌شود.</value></data>
+  <data name="ArtworkLockedAfterApproval" xml:space="preserve"><value>پس از تأیید پیش‌فاکتور، فایل طرح قابل تغییر نیست. پیش از جایگزینی طرح، درخواست اصلاح ثبت کنید.</value></data>
+  <data name="ConfirmOpenExistingJob" xml:space="preserve"><value>سفارشی با این عنوان وجود دارد. آیا می‌خواهید آن را باز کنید؟ تغییرات ذخیره‌نشده این فرم از بین می‌روند.</value></data>
+  <data name="ExistingJobLookupFailed" xml:space="preserve"><value>جستجوی سفارش موجود انجام نشد. لطفاً دوباره تلاش کنید.</value></data>
 </root>

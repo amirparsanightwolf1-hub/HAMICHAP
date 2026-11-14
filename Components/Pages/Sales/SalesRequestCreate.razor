@@ -72,7 +72,7 @@
 
                     @if (!isCreatingCustomer)
                     {
-                        <select class="form-select" @bind="customerId">
+                        <select class="form-select" @bind="customerId" disabled="@TargetQuotationId.HasValue">
 
                             <option value="0">
                                 @LocalizationService["SelectCustomer"]
@@ -87,6 +87,8 @@
 
                         </select>
 
+                        @if (!TargetQuotationId.HasValue)
+                        {
                         <div class="customer-action-wrapper">
 
                             <button type="button"
@@ -99,6 +101,7 @@
                             </button>
 
                         </div>
+                        }
                     }
                     else
                     {
@@ -233,6 +236,9 @@
 
 @code {
 
+    [SupplyParameterFromQuery(Name = "quotationId")]
+    public long? TargetQuotationId { get; set; }
+
     private List<Customer> customers = new();
 
     private int customerId;
@@ -257,6 +263,21 @@
             .Where(x => x.IsActive)
             .OrderBy(x => x.Name)
             .ToListAsync();
+
+        if (TargetQuotationId.HasValue)
+        {
+            // Reuse the quotation's customer for every newly attached job.
+            var quote = await Db.Quotations.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == TargetQuotationId.Value);
+            if (quote is null ||
+                quote.Status is not (QuotationStatus.Draft or QuotationStatus.RevisionRequired))
+            {
+                errorMessage = LocalizationService["QuotationNotEditable"];
+                return;
+            }
+
+            customerId = quote.CustomerId;
+        }
     }
 
 
@@ -290,6 +311,12 @@
             errorMessage =
                 LocalizationService["SelectExistingOrCreateCustomer"];
 
+            return;
+        }
+
+        if (TargetQuotationId.HasValue && isCreatingCustomer)
+        {
+            errorMessage = LocalizationService["QuotationCustomerMustMatch"];
             return;
         }
 
@@ -358,7 +385,9 @@
                 ? $"/sales/requests/roll/edit/{request.Id}"
                 : $"/sales/requests/sheet/edit/{request.Id}";
 
-            Navigation.NavigateTo(route);
+            Navigation.NavigateTo(TargetQuotationId.HasValue
+                ? $"{route}?quotationId={TargetQuotationId.Value}"
+                : route);
         }
         catch (Exception ex)
         {

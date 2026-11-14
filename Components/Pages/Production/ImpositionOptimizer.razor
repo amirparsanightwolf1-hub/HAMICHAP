@@ -1,24 +1,25 @@
 @page "/production/imposition-optimizer"
+@inject LocalizationService L
 @using HamiChap_MES_ERP.Services.Imposition
 @inject ImpositionOptimizerService Optimizer
 
-<PageTitle>Imposition Optimizer</PageTitle>
+<PageTitle>@L["Imposition Optimizer"]</PageTitle>
 <div class="imp-shell">
     <div class="imp-topline">
         <div class="imp-tabs">
-            <button class="imp-tab @(tab == 0 ? "active" : "")" @onclick="() => GoTo(0)"><span>▤</span>Sheet</button>
+            <button class="imp-tab @(tab == 0 ? "active" : "")" @onclick="() => GoTo(0)"><span>▤</span>@L["Sheet"]</button>
             <button class="imp-tab @(tab == 1 ? "active" : "")" @onclick="() => GoTo(1)"><span>▦</span>Parts</button>
             <button class="imp-tab @(tab == 2 ? "active" : "")" @onclick="() => GoTo(2)"><span>⚙</span>Setup</button>
             <button class="imp-tab @(tab == 3 ? "active" : "")" @onclick="() => GoTo(3)"><span>◉</span>View</button>
         </div>
         <div class="imp-stats">
-            <div class="imp-stat"><b>@D(PreviewStockW) × @D(PreviewStockH) @unit</b><small>Sheet format</small></div>
-            <div class="imp-stat"><b>@(ActiveResult?.PiecesPerSheet ?? 0)</b><small>Parts on sheet</small></div>
-            <div class="imp-stat"><b>@(ActiveResult?.SheetsRequired ?? 0)</b><small>Sheet copies</small></div>
-            <div class="imp-stat"><b>@(results.Count > 0 ? $"{ActiveResult!.UtilizationPercent:0}% / {ActiveResult!.WastePercent:0}%" : "—")</b><small>Fill / waste</small></div>
-            <div class="imp-stat"><b>@(ActiveResult?.SheetsRequired ?? 0)</b><small>Total sheets</small></div>
-            <div class="imp-stat"><b>@(EstimatedPaperKg.HasValue ? EstimatedPaperKg.Value.ToString("0.##") + " kg" : "—")</b><small>Paper weight required</small></div>
-            <div class="imp-stat"><b>@(ActiveResult?.ProducedQuantity ?? 0) / @TotalQty</b><small>Total placed</small></div>
+            <div class="imp-stat"><b>@D(PreviewStockW) × @D(PreviewStockH) @unit</b><small>@L["Sheet format"]</small></div>
+            <div class="imp-stat"><b>@(ActiveResult?.PiecesPerSheet ?? 0)</b><small>@L["Parts on sheet"]</small></div>
+            <div class="imp-stat"><b>@(ActiveResult?.SheetsRequired ?? 0)</b><small>@L["Sheet copies"]</small></div>
+            <div class="imp-stat"><b>@(results.Count > 0 ? $"{ActiveResult!.UtilizationPercent:0}% / {ActiveResult!.WastePercent:0}%" : "—")</b><small>@L["Fill / waste"]</small></div>
+            <div class="imp-stat"><b>@(ActiveResult?.SheetsRequired ?? 0)</b><small>@L["Total sheets"]</small></div>
+            <div class="imp-stat"><b>@(EstimatedPaperKg.HasValue ? EstimatedPaperKg.Value.ToString("0.##") + " kg" : "—")</b><small>@L["Paper weight required"]</small></div>
+            <div class="imp-stat"><b>@(ActiveResult?.ProducedQuantity ?? 0) / @TotalQty</b><small>@L["Total placed"]</small></div>
         </div>
     </div>
 
@@ -27,79 +28,79 @@
             @if (tab == 0)
             {
                 <section class="imp-section">
-                    <h3>Material</h3>
-                    <label>Material type</label><select class="form-select" @bind="mode" @bind:after="ModeChanged"><option>Sheet</option><option>Roll</option></select>
-                    <label>Format</label><select class="form-select" @bind="formatName" @bind:after="ApplyFormat"><option value="Custom">Custom</option>@foreach (var f in Formats){
+                    <h3>@L["Material"]</h3>
+                    <label>@L["Material type"]</label><select class="form-select" @bind="mode" @bind:after="ModeChanged"><option>@L["Sheet"]</option><option>@L["Roll"]</option></select>
+                    <label>@L["Format"]</label><select class="form-select" @bind="formatName" @bind:after="ApplyFormat"><option value="Custom">@L["Custom"]</option>@foreach (var f in Formats){
                     <option value="@f.Name">@f.Name — @f.W × @f.H mm</option>
                 }
             </select>
-            <div class="imp-grid2"><div><label>Width (mm)</label><InputNumber class="form-control" @bind-Value="stockW" @bind-Value:after="RefreshPreview" /></div><div><label>@(mode == "Sheet" ? "Height" : "Repeat") (mm)</label><InputNumber class="form-control" @bind-Value="stockH" @bind-Value:after="RefreshPreview" /></div></div>
+            <div class="imp-grid2"><div><label>@L["Width (mm)"]</label><InputNumber class="form-control" @bind-Value="stockW" @bind-Value:after="RefreshPreview" /></div><div><label>@(mode == "Sheet" ? "Height" : "Repeat") (mm)</label><InputNumber class="form-control" @bind-Value="stockH" @bind-Value:after="RefreshPreview" /></div></div>
             <div class="imp-grid2 mt-2">
-                <div><label>Paper weight (gsm)</label><InputNumber class="form-control" min="1" step="1" @bind-Value="paperGsm" @bind-Value:after="RefreshPreview" /></div>
+                <div><label>@L["Paper weight (gsm)"]</label><InputNumber class="form-control" min="1" step="1" @bind-Value="paperGsm" @bind-Value:after="RefreshPreview" /></div>
                 <div><label>@(mode == "Sheet" ? "Sheets available" : "Repeats available")</label><InputNumber class="form-control" min="0" step="1" @bind-Value="availableStockUnits" @bind-Value:after="RefreshPreview" /></div>
             </div>
             <div class="imp-material-summary">
                 <div><span>Required @(mode == "Sheet" ? "sheets" : "repeats")</span><b>@RequiredStockUnits.ToString("N0")</b></div>
-                <div><span>Available</span><b>@(availableStockUnits.HasValue ? availableStockUnits.Value.ToString("N0") : "—")</b></div>
-                <div><span>Shortage</span><b class="@(StockShortage.GetValueOrDefault() > 0 ? "text-danger" : "text-success")">@(StockShortage.HasValue ? StockShortage.Value.ToString("N0") : "—")</b></div>
-                <div><span>Remaining</span><b class="text-success">@(StockRemaining.HasValue ? StockRemaining.Value.ToString("N0") : "—")</b></div>
-                <div><span>Material area</span><b>@RequiredMaterialAreaM2.ToString("0.##") m²</b></div>
-                <div><span>Estimated paper weight</span><b>@(EstimatedPaperKg.HasValue ? EstimatedPaperKg.Value.ToString("N2") + " kg" : "—")</b></div>
+                <div><span>@L["Available"]</span><b>@(availableStockUnits.HasValue ? availableStockUnits.Value.ToString("N0") : "—")</b></div>
+                <div><span>@L["Shortage"]</span><b class="@(StockShortage.GetValueOrDefault() > 0 ? "text-danger" : "text-success")">@(StockShortage.HasValue ? StockShortage.Value.ToString("N0") : "—")</b></div>
+                <div><span>@L["Remaining"]</span><b class="text-success">@(StockRemaining.HasValue ? StockRemaining.Value.ToString("N0") : "—")</b></div>
+                <div><span>@L["Material area"]</span><b>@RequiredMaterialAreaM2.ToString("0.##") m²</b></div>
+                <div><span>@L["Estimated paper weight"]</span><b>@(EstimatedPaperKg.HasValue ? EstimatedPaperKg.Value.ToString("N2") + " kg" : "—")</b></div>
             </div>
-            <p class="imp-hint mb-0">Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage.</p>
+            <p class="imp-hint mb-0">@L["Weight is calculated from the full sheet/repeat area × paper grammage × required quantity. It is an estimate and excludes any extra allowance for makeready or spoilage."]</p>
         </section>
     }
             else if (tab == 1)
     {
         <section class="imp-section">
-            <div class="imp-section-head"><h3>Parts / Required quantities</h3><button class="imp-add" @onclick="AddPart">＋ Add part</button></div>
-            <p class="imp-hint">Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed.</p>
+            <div class="imp-section-head"><h3>@L["Parts / Required quantities"]</h3><button class="imp-add" @onclick="AddPart">@L["＋ Add part"]</button></div>
+            <p class="imp-hint">@L["Enter the required production quantity for each part. The optimizer uses these quantities together to calculate the number of sheets or roll repeats needed."]</p>
             @foreach (var part in parts)
             {
                 <div class="imp-part-row" @key="part.Id">
                     <div class="imp-part-title">
                         <span class="imp-dot" style="background:@PartStroke(parts.IndexOf(part))"></span>
-                        <InputText class="form-control" @bind-Value="part.Name" @bind-Value:after="RefreshPreview" placeholder="Part name" />
-                        <button class="imp-remove" title="Remove part" disabled="@(parts.Count == 1)" @onclick="() => RemovePart(parts.IndexOf(part))">×</button>
+                        <InputText class="form-control" @bind-Value="part.Name" @bind-Value:after="RefreshPreview" placeholder="@L["Part name"]" />
+                        <button class="imp-remove" title="@L["Remove part"]" disabled="@(parts.Count == 1)" @onclick="() => RemovePart(parts.IndexOf(part))">×</button>
                     </div>
                     <div class="imp-grid2">
-                        <div><label>Width (mm)</label><InputNumber class="form-control" min="0.1" step="0.1" @bind-Value="part.W" @bind-Value:after="RefreshPreview" /></div>
-                        <div><label>Height (mm)</label><InputNumber class="form-control" min="0.1" step="0.1" @bind-Value="part.H" @bind-Value:after="RefreshPreview" /></div>
+                        <div><label>@L["Width (mm)"]</label><InputNumber class="form-control" min="0.1" step="0.1" @bind-Value="part.W" @bind-Value:after="RefreshPreview" /></div>
+                        <div><label>@L["Height (mm)"]</label><InputNumber class="form-control" min="0.1" step="0.1" @bind-Value="part.H" @bind-Value:after="RefreshPreview" /></div>
                     </div>
                     <div class="imp-quantity-field">
-                        <label>Required quantity (pieces)</label>
+                        <label>@L["Required quantity (pieces)"]</label>
                         <InputNumber class="form-control" min="1" step="1" @bind-Value="part.Qty" @bind-Value:after="RefreshPreview" />
-                        <small>How many finished pieces of this part are needed?</small>
+                        <small>@L["How many finished pieces of this part are needed?"]</small>
                     </div>
-                    <label class="imp-check"><InputCheckbox @bind-Value="part.Rotate" @bind-Value:after="RefreshPreview" /> Allow 90° rotation</label>
-                    <div class="imp-part-demand"><span>Required pieces</span><b>@Math.Max(0, part.Qty).ToString("N0")</b></div>
+                    <label class="imp-check"><InputCheckbox @bind-Value="part.Rotate" @bind-Value:after="RefreshPreview" /> @L["Allow 90° rotation"]</label>
+                    <div class="imp-part-demand"><span>@L["Required pieces"]</span><b>@Math.Max(0, part.Qty).ToString("N0")</b></div>
                 </div>
             }
             <div class="imp-demand-summary">
-                <div><span>Total required pieces</span><b>@TotalQty.ToString("N0")</b></div>
-                <div><span>Sheets / repeats needed</span><b>@(ActiveResult?.SheetsRequired.ToString("N0") ?? "—")</b></div>
-                <div><span>Pieces planned</span><b>@(ActiveResult?.ProducedQuantity.ToString("N0") ?? "—")</b></div>
-                <div><span>Extra pieces</span><b>@(results.FirstOrDefault() is { } r ? Math.Max(0, r.ProducedQuantity - TotalQty).ToString("N0") : "—")</b></div>
+                <div><span>@L["Total required pieces"]</span><b>@TotalQty.ToString("N0")</b></div>
+                <div><span>@L["Sheets / repeats needed"]</span><b>@(ActiveResult?.SheetsRequired.ToString("N0") ?? "—")</b></div>
+                <div><span>@L["Pieces planned"]</span><b>@(ActiveResult?.ProducedQuantity.ToString("N0") ?? "—")</b></div>
+                <div><span>@L["Extra pieces"]</span><b>@(results.FirstOrDefault() is { } r ? Math.Max(0, r.ProducedQuantity - TotalQty).ToString("N0") : "—")</b></div>
             </div>
         </section>
     }
     else if (tab == 2)
     {
         <section class="imp-section">
-            <div class="imp-section-head"><h3>Units</h3><span class="imp-help">ⓘ</span></div><p class="imp-hint">All sizes are given in them.</p>
-            <div class="imp-setting-line"><label>Unit</label><div class="imp-segment"><button class="@(unit == "mm" ? "selected" : "")" @onclick='() => SetUnit("mm")'>mm</button><button class="@(unit == "in" ? "selected" : "")" @onclick='() => SetUnit("in")'>in</button></div></div>
+            <div class="imp-section-head"><h3>@L["Units"]</h3><span class="imp-help">ⓘ</span></div><p class="imp-hint">@L["All sizes are given in them."]</p>
+            <div class="imp-setting-line"><label>@L["Unit"]</label><div class="imp-segment"><button class="@(unit == "mm" ? "selected" : "")" @onclick='() => SetUnit("mm")'>mm</button><button class="@(unit == "in" ? "selected" : "")" @onclick='() => SetUnit("in")'>in</button></div></div>
         </section>
         <section class="imp-section">
-            <div class="imp-section-head"><h3>Sheet margin</h3><span class="imp-help">ⓘ</span></div>
-            <div class="imp-grid2"><div><label>Top</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginTop" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>Right</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginRight" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>Bottom</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginBottom" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>Left</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginLeft" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div></div>
+            <div class="imp-section-head"><h3>@L["Sheet margin"]</h3><span class="imp-help">ⓘ</span></div>
+            <div class="imp-grid2"><div><label>@L["Top"]</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginTop" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>@L["Right"]</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginRight" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>@L["Bottom"]</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginBottom" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div><div><label>@L["Left"]</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="marginLeft" @bind-Value:after="RefreshPreview" /><small>@unit</small></div></div></div>
         </section>
         <section class="imp-section">
-            <div class="imp-section-head"><h3>Cutting</h3></div>
-            <label class="imp-toggle"><span>Identical sheets</span><InputCheckbox @bind-Value="identicalSheets" /></label>
-            <label class="imp-toggle"><span>Center on sheet</span><InputCheckbox @bind-Value="centerOnSheet" @bind-Value:after="RefreshPreview" /></label>
+            <div class="imp-section-head"><h3>@L["Cutting"]</h3></div>
+            <label class="imp-toggle"><span>@L["Identical sheets"]</span><InputCheckbox @bind-Value="identicalSheets" /></label>
+            <label class="imp-toggle"><span>@L["Center on sheet"]</span><InputCheckbox @bind-Value="centerOnSheet" @bind-Value:after="RefreshPreview" /></label>
         </section>
         <section class="imp-section">
-            <div class="imp-section-head"><h3>Part spacing</h3></div><div><label>Gap between parts</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="gap" @bind-Value:after="RefreshPreview" /><small>mm</small></div></div>
+            <div class="imp-section-head"><h3>@L["Part spacing"]</h3></div><div><label>@L["Gap between parts"]</label><div class="imp-unit-input"><InputNumber class="form-control" @bind-Value="gap" @bind-Value:after="RefreshPreview" /><small>mm</small></div></div>
             <label class="imp-hint">Minimum copies per @(mode == "Sheet" ? "sheet" : "repeat")</label>
             @foreach (var a in parts)
             {
@@ -109,25 +110,25 @@
     }
     else
     {
-        <section class="imp-section"><h3>Optimization</h3><p class="imp-hint">Generate layouts using the selected sheet, parts, and setup.</p><button class="imp-primary" @onclick="Calculate">Find best layout</button><button class="imp-secondary" @onclick="ResetResults">Clear results</button>@if(!string.IsNullOrWhiteSpace(error)){
+        <section class="imp-section"><h3>@L["Optimization"]</h3><p class="imp-hint">@L["Generate layouts using the selected sheet, parts, and setup."]</p><button class="imp-primary" @onclick="Calculate">@L["Find best layout"]</button><button class="imp-secondary" @onclick="ResetResults">@L["Clear results"]</button>@if(!string.IsNullOrWhiteSpace(error)){
             <div class="imp-error">@error</div>
         }
     </section>
 }
 <div class="imp-sidebar-bottom"><span>Step @(tab + 1) of 4</span><div>@if(tab > 0){
-    <button class="imp-secondary" @onclick="() => GoTo(tab - 1)">Back</button>
+    <button class="imp-secondary" @onclick="() => GoTo(tab - 1)">@L["Back"]</button>
 }
 @if (tab < 3)
 {
-    <button class="imp-primary small" @onclick="() => GoTo(tab + 1)">Next</button>
+    <button class="imp-primary small" @onclick="() => GoTo(tab + 1)">@L["Next"]</button>
 }
 </div></div>
 </aside>
 
 <main class="imp-preview-card">
-    <div class="imp-preview-toolbar"><div class="imp-layout-label">Layout <button type="button" @onclick="PreviousLayout" disabled="@(results.Count == 0 || selectedLayoutIndex == 0)">‹</button><b>@(results.Count == 0 ? "0 of 0" : $"{selectedLayoutIndex + 1} of {results.Count}")</b><button type="button" @onclick="NextLayout" disabled="@(results.Count == 0 || selectedLayoutIndex >= results.Count - 1)">›</button></div><div class="imp-zoom">−　⌕ 100%　＋　▣</div><div class="imp-actions"><button class="imp-primary" @onclick="Calculate">⇩ Save / Calculate</button></div></div>
+    <div class="imp-preview-toolbar"><div class="imp-layout-label">@L["Layout"] <button type="button" @onclick="PreviousLayout" disabled="@(results.Count == 0 || selectedLayoutIndex == 0)">‹</button><b>@(results.Count == 0 ? "0 of 0" : $"{selectedLayoutIndex + 1} of {results.Count}")</b><button type="button" @onclick="NextLayout" disabled="@(results.Count == 0 || selectedLayoutIndex >= results.Count - 1)">›</button></div><div class="imp-zoom">−　⌕ 100%　＋　▣</div><div class="imp-actions"><button class="imp-primary" @onclick="Calculate">@L["⇩ Save / Calculate"]</button></div></div>
     <div class="imp-canvas">
-        <svg viewBox="-35 -35 @S(PreviewStockW + 100) @S(PreviewStockH + 95)" role="img" aria-label="Sheet imposition preview">
+        <svg viewBox="-35 -35 @S(PreviewStockW + 100) @S(PreviewStockH + 95)" role="img" aria-label="@L["Sheet imposition preview"]">
             <defs><pattern id="impHatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#d5d9e0" stroke-width="2" /></pattern></defs>
             <rect x="0" y="0" width="@S(PreviewStockW)" height="@S(PreviewStockH)" fill="#fff" stroke="#64748b" stroke-width="1.5" />
             <rect x="0" y="0" width="@S(PreviewStockW)" height="@S(MTop)" fill="url(#impHatch)" />
@@ -153,7 +154,7 @@
 </div>
     @if (results.Count > 0)
 {
-    <div class="imp-results"><h3>Best 3 layouts — ranked by waste (lowest first)</h3><div class="row g-3">@foreach(var item in results){
+    <div class="imp-results"><h3>@L["Best 3 layouts — ranked by waste (lowest first)"]</h3><div class="row g-3">@foreach(var item in results){
         <div class="col-xl-6"><ImpositionAlternativeCard Item="item" RequestedQuantity="TotalQty" RequestedQuantities="RequestedQtyByName" /></div>
     }
 </div></div>
@@ -260,7 +261,7 @@
                     .ToList();
             }
             if (results.Count == 0 || results.All(x => x.ProducedQuantity < TotalQty))
-                error = "No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation.";
+                error = L["No valid layout was found for the default sheet sizes. Check part dimensions, quantities, margins, spacing and rotation."];
         }
         catch (Exception ex) { error = ex.Message; results.Clear(); }
     }
