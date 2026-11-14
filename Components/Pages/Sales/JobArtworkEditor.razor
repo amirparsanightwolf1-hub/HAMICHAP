@@ -105,6 +105,11 @@
         </div>
     }
 
+    @if (CanEdit && !HasArtworkAfterChanges)
+    {
+        <div class="alert alert-warning py-2 mt-2">@LocalizationService["ArtworkMissingWarning"]</div>
+    }
+
     @if (CanEdit && HasPendingChanges)
     {
         <p class="form-text mt-2">@LocalizationService["ArtworkChangesSavedOnSave"]</p>
