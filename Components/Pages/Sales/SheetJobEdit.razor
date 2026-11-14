@@ -11,13 +11,12 @@
 @using Microsoft.AspNetCore.Hosting
 @using System.IO
 @using HamiChap_MES_ERP.Services
-@using Microsoft.JSInterop
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject IWebHostEnvironment HostEnvironment
 @inject LocalizationService LocalizationService
-@inject IJSRuntime JS
+@inject IServiceScopeFactory ScopeFactory
 
 <PageTitle>@LocalizationService["SheetJobSpecification"]</PageTitle>
 
@@ -63,7 +62,7 @@
                     <div>
                         @if (!isCreatingCustomer)
                         {
-                            <select class="form-select" @bind="selectedCustomerId" disabled="@TargetQuotationId.HasValue">
+                            <select class="form-select" @bind="selectedCustomerId" @bind:after="LookupExistingJobAsync" disabled="@TargetQuotationId.HasValue">
                                 <option value="0">-- @LocalizationService["SelectExistingCustomer"] --</option>
                                 @foreach (var customer in customers)
                                 {
@@ -106,8 +105,8 @@
                     <label class="form-label">@LocalizationService["JobTitle"]</label>
                     <InputText class="form-control" @bind-Value="spec.JobTitle" @bind-Value:after="LookupExistingJobAsync" />
                     <div style="grid-column: 1 / -1;">
-                        <ExistingJobTitlePrompt CurrentRequestId="@RequestId" CustomerId="@selectedCustomerId"
-                                                JobType="SalesJobType.Sheet" JobTitle="@spec.JobTitle"
+                        <ExistingJobTitlePrompt Matches="@existingJobMatches"
+                                                JobType="SalesJobType.Sheet"
                                                 TargetQuotationId="@TargetQuotationId" />
                     </div>
 
@@ -366,6 +365,7 @@
     private string? successMessage;
     private JobArtworkEditor? artworkEditor;
     private bool canEditArtwork;
+    private List<ExistingSalesJobLookup.Match> existingJobMatches = new();
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private string frontPantoneColors = string.Empty;
@@ -419,6 +419,7 @@
         isLoading = true;
         errorMessage = null;
         successMessage = null;
+        existingJobMatches.Clear();
 
         customers = await Db.Customers
             .Where(x => x.IsActive)
@@ -481,31 +482,34 @@
 
     private async Task LookupExistingJobAsync()
     {
+        existingJobMatches.Clear();
         if (request?.Status != SalesRequestStatus.Draft || isCreatingCustomer)
             return;
 
-        var matches = await ExistingSalesJobLookup.FindAsync(
-            Db, selectedCustomerId, SalesJobType.Sheet, spec.JobTitle, RequestId);
+        try
+        {
+            errorMessage = null;
 
-        // A single unambiguous match can be loaded immediately, but ask before
-        // navigating so other unsaved values are never silently discarded.
-        if (matches.Count != 1)
-            return;
-
-        var confirmed = await JS.InvokeAsync<bool>(
-            "confirm", LocalizationService["ConfirmOpenExistingJob"]);
-        if (!confirmed)
-            return;
-
-        var kind = "sheet";
-        var route = $"/sales/requests/{kind}/edit/{matches[0].Id}";
-        if (TargetQuotationId.HasValue)
-            route += $"?quotationId={TargetQuotationId.Value}";
-        Navigation.NavigateTo(route);
+            // Query in an independent DI scope: a scoped DbContext cannot be
+            // used by simultaneous Blazor events or child render callbacks.
+            // The result is passed to a presentation-only child component.
+            using var scope = ScopeFactory.CreateScope();
+            var lookupDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            existingJobMatches = await ExistingSalesJobLookup.FindAsync(
+                lookupDb, selectedCustomerId, SalesJobType.Sheet,
+                spec.JobTitle, RequestId);
+        }
+        catch (Exception)
+        {
+            // Do not tear down the Blazor Server circuit for lookup failures.
+            existingJobMatches.Clear();
+            errorMessage = LocalizationService["ExistingJobLookupFailed"];
+        }
     }
 
     private void StartNewCustomer()
     {
+        existingJobMatches.Clear();
         isCreatingCustomer = true;
         newCustomerCode = "";
         newCustomerName = "";
