@@ -2942,4 +2942,7 @@
   <data name="Location" xml:space="preserve"><value>مکان</value></data>
   <data name="ViewAllCustomerInventory" xml:space="preserve"><value>نمایش موجودی تمام مشتریان</value></data>
   <data name="NoCustomerInventory" xml:space="preserve"><value>موجودی ثبت‌شده‌ای برای مشتریان یافت نشد.</value></data>
+  <data name="SavePreviewAndContinueSalesWorkflow" xml:space="preserve">
+    <value>ذخیره، پیش‌نمایش تأییدیه و ادامه فرایند فروش</value>
+  </data>
 </root>
