@@ -5,12 +5,14 @@
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Services
+@using HamiChap_MES_ERP.Models.Shared.Services
 @using Microsoft.JSInterop
 @implements IAsyncDisposable
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
+@inject QuotationService QuotationService
 @inject IJSRuntime JS
 
 
@@ -28,14 +30,19 @@
             <button class="btn btn-outline-secondary" @onclick="BackToJob">
                 @LocalizationService["BackToJob"]
             </button>
-            <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow">
-                @LocalizationService["ContinueSalesWorkflow"]
+            <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow" disabled="@isOpeningQuotation">
+                @LocalizationService["ContinueToQuotation"]
             </button>
             <button class="btn btn-primary" @onclick="PrintProof">
                 <i class="bi bi-printer"></i> @LocalizationService["PrintSaveAsPdf"]
             </button>
         </div>
     </div>
+
+    @if (!string.IsNullOrWhiteSpace(quotationError))
+    {
+        <div class="alert alert-danger no-print">@quotationError</div>
+    }
 
     @if (isLoading)
     {
@@ -584,10 +591,30 @@
     private static string Fmt(decimal? d) => d.HasValue ? d.Value.ToString("0.##") : "—";
     private static bool IsImage(string path) => new[] { ".png", ".jpg", ".jpeg", ".webp" }.Any(x => path.EndsWith(x, StringComparison.OrdinalIgnoreCase));
     private void BackToJob() => Navigation.NavigateTo(request?.JobType == SalesJobType.Roll ? $"/sales/requests/roll/edit/{RequestId}" : $"/sales/requests/sheet/edit/{RequestId}");
-    private void ContinueSalesWorkflow()
+    private bool isOpeningQuotation;
+    private string? quotationError;
+
+    private async Task ContinueSalesWorkflow()
     {
-        var job = request?.JobType == SalesJobType.Roll ? "roll" : "sheet";
-        Navigation.NavigateTo($"/sales/requests/{job}/edit/{RequestId}#sales-workflow");
+        if (request is null) return;
+
+        quotationError = null;
+        try
+        {
+            isOpeningQuotation = true;
+            // Reuses an existing quote when the job has already been attached.
+            // Draft requests go straight to quoting (no duplicate Submit step).
+            var quotation = await QuotationService.CreateFromRequestAsync(RequestId);
+            Navigation.NavigateTo($"/sales/quotations/edit/{quotation.Id}");
+        }
+        catch (Exception ex)
+        {
+            quotationError = ex.Message;
+        }
+        finally
+        {
+            isOpeningQuotation = false;
+        }
     }
     private IJSObjectReference? _proofPrintModule;
 
