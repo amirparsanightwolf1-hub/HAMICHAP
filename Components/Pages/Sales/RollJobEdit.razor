@@ -11,12 +11,15 @@
 @using Microsoft.AspNetCore.Hosting
 @using System.IO
 @using HamiChap_MES_ERP.Services
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Logging
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject IWebHostEnvironment HostEnvironment
 @inject LocalizationService LocalizationService
 @inject IServiceScopeFactory ScopeFactory
+@inject ILogger<RollJobEdit> Logger
 
 <PageTitle>@LocalizationService["RollJobSpecification"]</PageTitle>
 
@@ -519,8 +522,9 @@
                 lookupDb, selectedCustomerId, SalesJobType.Roll,
                 spec.JobTitle, RequestId);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Existing job title lookup failed for request {RequestId}", RequestId);
             // Do not tear down the Blazor Server circuit for lookup failures.
             existingJobMatches.Clear();
             errorMessage = LocalizationService["ExistingJobLookupFailed"];
