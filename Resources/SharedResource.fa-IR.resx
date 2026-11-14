@@ -2975,4 +2975,5 @@
   <data name="ArtworkMissingWarning" xml:space="preserve"><value>هیچ فایل طرحی به این سفارش پیوست نشده است. تا زمان بارگذاری طرح جدید، تأییدیه بدون طرح نمایش داده می‌شود.</value></data>
   <data name="ArtworkLockedAfterApproval" xml:space="preserve"><value>پس از تأیید پیش‌فاکتور، فایل طرح قابل تغییر نیست. پیش از جایگزینی طرح، درخواست اصلاح ثبت کنید.</value></data>
   <data name="ConfirmOpenExistingJob" xml:space="preserve"><value>سفارشی با این عنوان وجود دارد. آیا می‌خواهید آن را باز کنید؟ تغییرات ذخیره‌نشده این فرم از بین می‌روند.</value></data>
+  <data name="ExistingJobLookupFailed" xml:space="preserve"><value>جستجوی سفارش موجود انجام نشد. لطفاً دوباره تلاش کنید.</value></data>
 </root>
