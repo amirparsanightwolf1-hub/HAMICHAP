@@ -2942,4 +2942,7 @@
   <data name="Location" xml:space="preserve"><value>Location</value></data>
   <data name="ViewAllCustomerInventory" xml:space="preserve"><value>View all customer inventory</value></data>
   <data name="NoCustomerInventory" xml:space="preserve"><value>No customer inventory records found.</value></data>
+  <data name="SavePreviewAndContinueSalesWorkflow" xml:space="preserve">
+    <value>Save, preview approval proof, and continue sales workflow</value>
+  </data>
 </root>
