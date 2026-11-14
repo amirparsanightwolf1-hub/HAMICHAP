@@ -2959,4 +2959,5 @@
   <data name="JobAddedToQuotation" xml:space="preserve"><value>سفارش به پیش‌فاکتور اضافه شد.</value></data>
   <data name="QuotationNotEditable" xml:space="preserve"><value>این پیش‌فاکتور دیگر قابل ویرایش نیست.</value></data>
   <data name="QuotationCustomerMustMatch" xml:space="preserve"><value>فقط سفارش‌های مربوط به مشتری این پیش‌فاکتور قابل افزودن هستند.</value></data>
+  <data name="StartNewJobQuotation" xml:space="preserve"><value>ایجاد سفارش و پیش‌فاکتور جدید</value></data>
 </root>
