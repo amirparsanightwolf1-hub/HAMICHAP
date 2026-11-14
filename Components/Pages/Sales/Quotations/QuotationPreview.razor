@@ -1,30 +1,31 @@
-﻿@page "/sales/quotations/preview/{Id:long}"
+@page "/sales/quotations/preview/{Id:long}"
 
+@using System.Globalization
+@using System.Text.Json
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Models.Sales
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Services
 @using HamiChap_MES_ERP.Models.Sales.Enums
 
-
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
-
 @inject IJSRuntime JS
 
-<PageTitle>@T("QuotationPreview") - @quotation?.QuotationNumber</PageTitle>
+<HeadContent>
+    <link rel="stylesheet" href="css/quotationPrint.css" />
+</HeadContent>
 
-<div class="container-fluid py-3 quotation-page">
-    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
-        <button class="btn btn-outline-secondary"
-                @onclick="BackToEditor">
-            &larr; @T("BackToQuotation")
+<PageTitle>@T("Quotation") - @quotation?.QuotationNumber</PageTitle>
+
+<div class="hc-quote-page">
+    <div class="hc-quote-toolbar no-print">
+        <button type="button" class="btn btn-outline-secondary" @onclick="BackToEditor">
+            <i class="bi bi-arrow-left"></i> @T("BackToQuotation")
         </button>
-
-        <button class="btn btn-primary"
-                @onclick="PrintQuotation">
-            @T("PrintSavePdf")
+        <button type="button" class="btn btn-primary" @onclick="PrintQuotation" disabled="@(quotation is null)">
+            <i class="bi bi-printer"></i> @T("PrintSavePdf")
         </button>
     </div>
 
@@ -37,179 +38,172 @@
     }
     else if (quotation is null)
     {
-        <div class="alert alert-warning no-print">
-            @T("QuotationNotFound")
-        </div>
+        <div class="alert alert-warning no-print">@T("QuotationNotFound")</div>
     }
     else
     {
-        <article class="quotation-document">
-            <header class="document-header">
-                <div>
-                    <h1>@T("Quotation")</h1>
-                    <p class="document-subtitle">
-                        @T("QuotationPreview")
-                    </p>
+        <article class="hc-quote-document" dir="@(LocalizationService.IsPersian ? "rtl" : "ltr")">
+            <header class="hc-quote-header">
+                <div class="hc-quote-brand">
+                    <img class="hc-quote-logo"
+                         src="images/Logo%20Wings%20navy%20blue.png"
+                         alt="HamiChap" />
+                    <div>
+                        <div class="hc-quote-brand-name">@T("AppTitle")</div>
+                        <div class="hc-quote-brand-caption">@T("Quotation")</div>
+                    </div>
                 </div>
 
-                <div class="text-end quotation-number">
-                    <div class="muted-label">@T("QuotationNumber")</div>
-                    <strong>@quotation.QuotationNumber</strong>
-
-                    <div class="mt-2">
-                        <span class="status-label">
-                            @T(quotation.Status.ToString())
-                        </span>
+                <div class="hc-quote-heading">
+                    <h1>@T("Quotation")</h1>
+                    <div class="hc-quote-meta-label">@T("QuotationNumber")</div>
+                    <div class="hc-quote-serial">@quotation.QuotationNumber</div>
+                    <div class="hc-quote-issued">
+                        <span class="hc-quote-meta-label">@T("QuotationDate")</span>
+                        <strong>@FormatDate(quotation.QuotationDate)</strong>
                     </div>
                 </div>
             </header>
 
-            <hr />
-
-            <section class="info-grid">
-                <div>
-                    <h2>@T("Customer")</h2>
-                    <p class="info-value">
-                        @quotation.Customer?.Name
-                    </p>
+            <section class="hc-quote-parties" aria-label="@T("QuotationInformation")">
+                <div class="hc-quote-bill-to">
+                    <h2 class="hc-quote-block-title">@T("Customer")</h2>
+                    <strong class="hc-quote-customer-name">@GetCustomerName()</strong>
+                    @if (!string.IsNullOrWhiteSpace(quotation.Customer?.Address))
+                    {
+                        <p class="hc-quote-contact-line">@T("Address"): @quotation.Customer.Address</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(quotation.Customer?.Phone))
+                    {
+                        <p class="hc-quote-contact-line">@T("Phone"): @quotation.Customer.Phone</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(quotation.Customer?.Email))
+                    {
+                        <p class="hc-quote-contact-line">@T("Email"): @quotation.Customer.Email</p>
+                    }
                 </div>
 
-                <div>
-                    <h2>@T("QuotationDate")</h2>
-                    <p class="info-value">
-                        @FormatDate(quotation.QuotationDate)
-                    </p>
-                </div>
-
-                <div>
-                    <h2>@T("ValidUntil")</h2>
-                    <p class="info-value">
-                        @(quotation.ValidUntil.HasValue
-                            ? FormatDate(quotation.ValidUntil.Value)
-                            : "—")
-                    </p>
-                </div>
-
-                <div>
-                    <h2>@T("EstimatedDeliveryDays")</h2>
-                    <p class="info-value">
-                        @(quotation.EstimatedDeliveryDays > 0
-                            ? quotation.EstimatedDeliveryDays.ToString()
-                            : "—")
-                    </p>
+                <div class="hc-quote-details">
+                    <h2 class="hc-quote-block-title">@T("QuotationInformation")</h2>
+                    <div class="hc-quote-fact">
+                        <span class="hc-quote-meta-label">@T("QuotationDate")</span>
+                        <strong>@FormatDate(quotation.QuotationDate)</strong>
+                    </div>
+                    <div class="hc-quote-fact">
+                        <span class="hc-quote-meta-label">@T("ValidUntil")</span>
+                        <strong>@(quotation.ValidUntil.HasValue ? FormatDate(quotation.ValidUntil.Value) : "—")</strong>
+                    </div>
+                    <div class="hc-quote-fact">
+                        <span class="hc-quote-meta-label">@T("EstimatedDeliveryDays")</span>
+                        <strong>@(quotation.EstimatedDeliveryDays > 0 ? quotation.EstimatedDeliveryDays.ToString("N0") : "—")</strong>
+                    </div>
                 </div>
             </section>
 
-            <section class="mt-4">
-                <h2 class="section-heading">@T("QuotationItems")</h2>
-
-                <div class="table-responsive">
-                    <table class="table quotation-table">
+            <section>
+                <h2 class="hc-quote-section-title">@T("QuotationItems")</h2>
+                <div class="hc-quote-table-scroll">
+                    <table class="hc-quote-items">
+                        <colgroup>
+                            <col style="width:5%" />
+                            <col style="width:28%" />
+                            <col style="width:21%" />
+                            <col style="width:11%" />
+                            <col style="width:9%" />
+                            <col style="width:13%" />
+                            <col style="width:13%" />
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th class="text-center">#</th>
+                                <th class="hc-quote-center">#</th>
                                 <th>@T("Item")</th>
                                 <th>@T("Description")</th>
-                                <th class="text-end">@T("Quantity")</th>
-                                <th class="text-end">@T("UnitPrice")</th>
-                                <th class="text-end">@T("TotalAmount")</th>
+                                <th class="hc-quote-num">@T("Quantity")</th>
+                                <th>@T("Unit")</th>
+                                <th class="hc-quote-num">@T("UnitPrice")</th>
+                                <th class="hc-quote-num">@T("TotalAmount")</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (quotation.Lines.Count == 0)
                             {
                                 <tr>
-                                    <td colspan="6" class="text-center py-4">
-                                        @T("NoQuotationLines")
-                                    </td>
+                                    <td colspan="7" class="text-center py-4">@T("NoQuotationLines")</td>
                                 </tr>
                             }
-
                             else
                             {
                                 var rowNumber = 0;
-
-                                foreach (var line in quotation.Lines)
+                                @foreach (var line in quotation.Lines.OrderBy(l => l.Id))
                                 {
                                     rowNumber++;
-
-                                    <tr>
-                                        <td class="text-center">@rowNumber</td>
+                                    <tr @key="line.Id">
+                                        <td class="hc-quote-center">@rowNumber</td>
                                         <td>
-                                            @(line.Item?.Name ?? $"#{line.ItemId}")
-                                            @if (line.SourceRequestId is long requestId)
+                                            <span class="hc-quote-item-title">@(line.Item?.Name ?? $"#{line.ItemId}")</span>
+                                            @if (!string.IsNullOrWhiteSpace(line.Item?.Code))
                                             {
-                                                <div class="small text-muted">@GetRequestNumber(requestId)</div>
+                                                <span class="hc-quote-item-code">@line.Item.Code</span>
+                                            }
+                                            @if (line.SourceRequestId is long sourceId)
+                                            {
+                                                <span class="hc-quote-item-code">@GetRequestNumber(sourceId)</span>
                                             }
                                         </td>
-                                        <td>@line.Notes</td>
-                                        <td class="text-end">
-                                            @line.Quantity.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @FormatAmount(line.UnitPrice)
-                                        </td>
-                                        <td class="text-end">
-                                            @FormatAmount(line.TotalPrice)
-                                        </td>
+                                        <td class="hc-quote-description">@(string.IsNullOrWhiteSpace(line.Notes) ? "—" : line.Notes)</td>
+                                        <td class="hc-quote-num">@FormatAmount(line.Quantity)</td>
+                                        <td class="hc-quote-unit">@(line.Item?.Unit?.Name ?? "عدد")</td>
+                                        <td class="hc-quote-num">@FormatAmount(line.UnitPrice)</td>
+                                        <td class="hc-quote-num"><strong>@FormatAmount(line.TotalPrice)</strong></td>
                                     </tr>
                                 }
                             }
-
                         </tbody>
                     </table>
                 </div>
             </section>
 
-            <section class="mt-4">
-                <h2 class="section-heading">@T("JobsOnQuotation")</h2>
-                @foreach (var job in linkedRequests)
-                {
-                    <div class="d-flex justify-content-between align-items-center gap-3 border-bottom py-2">
-                        <div>
-                            <strong>@job.RequestNumber</strong>
-                            <span class="ms-2">@LocalizationService.TranslateEnum(job.JobType)</span>
-                        </div>
-                        <a href="@($"/sales/requests/proof/{job.Id}")" target="_blank" rel="noopener">
-                            @T("OpenApprovalProof")
-                        </a>
-                    </div>
-                }
-            </section>
-
-            <section class="totals-section">
-                <div class="total-row">
-                    <span>@T("MaterialCost")</span>
-                    <span>@FormatAmount(quotation.MaterialCost)</span>
-                </div>
-
-                <div class="total-row">
-                    <span>@T("ProductionCost")</span>
-                    <span>@FormatAmount(quotation.ProductionCost)</span>
-                </div>
-
-                <div class="total-row grand-total">
-                    <span>@T("TotalAmount")</span>
-                    <span>@FormatAmount(quotation.FinalAmount)</span>
+            <section class="hc-quote-total-area">
+                <div class="hc-quote-total">
+                    <span class="hc-quote-total-label">@T("TotalAmount")</span>
+                    <strong class="hc-quote-total-amount">@FormatAmount(quotation.FinalAmount)</strong>
                 </div>
             </section>
 
-            @if (!string.IsNullOrWhiteSpace(quotation.Notes))
+            @if (linkedRequests.Count > 0)
             {
-                <section class="notes-section">
-                    <h2 class="section-heading">@T("Notes")</h2>
-                    <p class="notes-text">@quotation.Notes</p>
+                <section class="hc-quote-jobs">
+                    <h2 class="hc-quote-jobs-title">@T("JobsOnQuotation")</h2>
+                    @foreach (var job in linkedRequests)
+                    {
+                        <div class="hc-quote-job" @key="job.Id">
+                            <div>
+                                <span class="hc-quote-job-title">@GetJobTitle(job)</span>
+                                <span class="hc-quote-job-meta">@job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)</span>
+                            </div>
+                            <a href="@($"/sales/requests/proof/{job.Id}")" target="_blank" rel="noopener">
+                                @T("OpenApprovalProof")
+                            </a>
+                        </div>
+                    }
                 </section>
             }
 
-            <footer class="document-footer">
+            @if (!string.IsNullOrWhiteSpace(quotation.Notes))
+            {
+                <section class="hc-quote-note-card">
+                    <h2 class="hc-quote-block-title">@T("Notes")</h2>
+                    <p class="hc-quote-note-text">@quotation.Notes</p>
+                </section>
+            }
+
+            <footer class="hc-quote-footer">
                 <p>@T("QuotationFooterMessage")</p>
+                <span class="hc-quote-footer-ref">@T("QuotationNumber"): @quotation.QuotationNumber</span>
             </footer>
         </article>
     }
 </div>
-
-
 
 @code {
     [Parameter]
@@ -223,6 +217,7 @@
     {
         isLoading = true;
         quotation = null;
+        linkedRequests.Clear();
 
         try
         {
@@ -231,14 +226,16 @@
                 .Include(x => x.Customer)
                 .Include(x => x.Lines)
                     .ThenInclude(x => x.Item)
+                        .ThenInclude(x => x.Unit)
                 .FirstOrDefaultAsync(x => x.Id == Id);
 
-            if (result == null)
+            if (result is null)
             {
                 Navigation.NavigateTo("/sales/quotations");
                 return;
             }
 
+            // Preserve the existing quotation approval/visibility workflow.
             var previewAllowed =
                 result.Status == QuotationStatus.Approved ||
                 result.Status == QuotationStatus.ReadyToSend ||
@@ -260,7 +257,9 @@
                 .Append(quotation.SalesRequestId)
                 .Distinct()
                 .ToArray();
-            linkedRequests = await Db.SalesRequests.AsNoTracking()
+
+            linkedRequests = await Db.SalesRequests
+                .AsNoTracking()
                 .Where(job => requestIds.Contains(job.Id))
                 .OrderBy(job => job.RequestDate)
                 .ToListAsync();
@@ -274,26 +273,48 @@
     private string GetRequestNumber(long id) =>
         linkedRequests.FirstOrDefault(x => x.Id == id)?.RequestNumber ?? $"#{id}";
 
-    private string T(string key)
-        => LocalizationService[key];
-
-    private string GetCustomerName()
+    private static string GetJobTitle(SalesRequest job)
     {
-        if (quotation?.Customer is null)
-            return "—";
+        if (string.IsNullOrWhiteSpace(job.JobSpecificationJson))
+            return job.RequestNumber;
 
-        return quotation.Customer.ToString() ?? $"#{quotation.CustomerId}";
+        try
+        {
+            using var document = JsonDocument.Parse(job.JobSpecificationJson);
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("JobTitle", out var title) &&
+                title.ValueKind == JsonValueKind.String &&
+                !string.IsNullOrWhiteSpace(title.GetString()))
+                return title.GetString()!;
+        }
+        catch (JsonException)
+        {
+            // Older or malformed specification JSON must not break the quotation.
+        }
+
+        return job.RequestNumber;
     }
 
-    private static string FormatDate(DateTime date)
-        => date.ToString("yyyy-MM-dd");
+    private string T(string key) => LocalizationService[key];
 
-    private static string FormatAmount(decimal amount)
-        => amount.ToString("N2");
+    private string GetCustomerName() => quotation?.Customer?.Name ?? "—";
 
-    private void BackToEditor()
-        => Navigation.NavigateTo($"/sales/quotations/edit/{Id}");
+    private string FormatDate(DateTime value)
+    {
+        if (LocalizationService.IsPersian)
+        {
+            var calendar = new PersianCalendar();
+            return $"{calendar.GetYear(value):0000}/{calendar.GetMonth(value):00}/{calendar.GetDayOfMonth(value):00}";
+        }
 
-    private void PrintQuotation()
-        => JS.InvokeVoidAsync("window.print");
+        return value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatAmount(decimal value) => value.ToString("N2", CultureInfo.CurrentCulture);
+
+    private void BackToEditor() =>
+        Navigation.NavigateTo($"/sales/quotations/edit/{Id}");
+
+    private async Task PrintQuotation() =>
+        await JS.InvokeVoidAsync("window.print");
 }
