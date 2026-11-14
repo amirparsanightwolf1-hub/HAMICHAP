@@ -28,6 +28,9 @@
             <button class="btn btn-outline-secondary" @onclick="BackToJob">
                 @LocalizationService["BackToJob"]
             </button>
+            <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow">
+                @LocalizationService["ContinueSalesWorkflow"]
+            </button>
             <button class="btn btn-primary" @onclick="PrintProof">
                 <i class="bi bi-printer"></i> @LocalizationService["PrintSaveAsPdf"]
             </button>
@@ -581,6 +584,11 @@
     private static string Fmt(decimal? d) => d.HasValue ? d.Value.ToString("0.##") : "—";
     private static bool IsImage(string path) => new[] { ".png", ".jpg", ".jpeg", ".webp" }.Any(x => path.EndsWith(x, StringComparison.OrdinalIgnoreCase));
     private void BackToJob() => Navigation.NavigateTo(request?.JobType == SalesJobType.Roll ? $"/sales/requests/roll/edit/{RequestId}" : $"/sales/requests/sheet/edit/{RequestId}");
+    private void ContinueSalesWorkflow()
+    {
+        var job = request?.JobType == SalesJobType.Roll ? "roll" : "sheet";
+        Navigation.NavigateTo($"/sales/requests/{job}/edit/{RequestId}#sales-workflow");
+    }
     private IJSObjectReference? _proofPrintModule;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
