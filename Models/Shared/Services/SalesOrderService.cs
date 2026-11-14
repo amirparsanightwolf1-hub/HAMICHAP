@@ -87,6 +87,8 @@ public class SalesOrderService
                 new SalesOrderLine
                 {
                     ItemId = line.ItemId,
+                    // Preserve the source request/proof through QuotationLine.
+                    QuotationLineId = line.Id,
                     Quantity = line.Quantity,
                     UnitId = item.UnitId,
                     UnitPrice = line.UnitPrice,
