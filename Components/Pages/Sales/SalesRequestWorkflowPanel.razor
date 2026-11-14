@@ -1,17 +1,14 @@
-@using HamiChap_MES_ERP.Data
-@using HamiChap_MES_ERP.Models.Inventory
 @using HamiChap_MES_ERP.Models.Sales
 @using HamiChap_MES_ERP.Models.Sales.Enums
-@using HamiChap_MES_ERP.Models.Shared
 @using HamiChap_MES_ERP.Services
-@using Microsoft.EntityFrameworkCore
 
-@inject ApplicationDbContext Db
 @inject SalesRequestService SalesRequestService
 @inject LocalizationService LocalizationService
 @inject NavigationManager Navigation
 
-<div class="card shadow-sm mb-4">
+@* The finished-product request line is generated from RollJobEdit/SheetJobEdit.
+   It must not be entered independently: quotations still read that saved line. *@
+<div class="card shadow-sm mb-4" id="sales-workflow">
     <div class="card-header">
         <strong>@LocalizationService["SalesRequestInformation"]</strong>
     </div>
@@ -55,129 +52,14 @@
     </div>
 </div>
 
-<div class="card shadow-sm mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <strong>@LocalizationService["RequestLines"]</strong>
-        @if (IsDraft)
-        {
-            <button type="button" class="btn btn-sm btn-primary" @onclick="AddLine">
-                <i class="bi bi-plus-circle"></i> @LocalizationService["AddLine"]
-            </button>
-        }
-    </div>
-    <div class="card-body p-0">
-        @if (isLoading)
-        {
-            <div class="p-3 text-muted">@LocalizationService["Loading"]</div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th class="erp-min-width-260">@LocalizationService["Item"]</th>
-                            <th class="text-end erp-min-width-140">@LocalizationService["Quantity"]</th>
-                            <th class="erp-min-width-140">@LocalizationService["Unit"]</th>
-                            <th class="erp-min-width-250">@LocalizationService["Notes"]</th>
-                            @if (IsDraft)
-                            {
-                                <th class="erp-width-80"></th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var line in Request.Lines)
-                        {
-                            <tr @key="line">
-                                <td>
-                                    @if (IsDraft && !IsFinishedProductLine(line))
-                                    {
-                                        <SearchableSelect TItem="Item"
-                                                          Items="items"
-                                                          Value="line.ItemId"
-                                                          ValueChanged="@(v => ItemChanged(line, v))"
-                                                          TextSelector="@(i => $"{i.Code} - {i.Name}")"
-                                                          ValueSelector="@(i => i.Id)"
-                                                          Placeholder="@LocalizationService["SelectItem"]" />
-                                    }
-                                    else
-                                    {
-                                        <div class="fw-semibold">@GetItemName(line)</div>
-                                        <small class="text-muted">@line.Item?.Code</small>
-                                    }
-                                </td>
-                                <td>
-                                    @if (IsDraft && !IsFinishedProductLine(line))
-                                    {
-                                        <input type="number" class="form-control text-end"
-                                               min="0" step="0.0001" @bind="line.Quantity" />
-                                    }
-                                    else
-                                    {
-                                        <div class="text-end">@line.Quantity.ToString("N2")</div>
-                                    }
-                                </td>
-                                <td>
-                                    @if (IsDraft && !IsFinishedProductLine(line))
-                                    {
-                                        <select class="form-select" @bind="line.UnitId">
-                                            <option value="0">--</option>
-                                            @foreach (var unit in units)
-                                            {
-                                                <option value="@unit.Id">@unit.Name (@unit.Symbol)</option>
-                                            }
-                                        </select>
-                                    }
-                                    else
-                                    {
-                                        @GetUnitName(line)
-                                    }
-                                </td>
-                                <td>
-                                    @if (IsDraft)
-                                    {
-                                        <input class="form-control" type="text" @bind="line.Notes" />
-                                    }
-                                    else
-                                    {
-                                        @line.Notes
-                                    }
-                                </td>
-                                @if (IsDraft)
-                                {
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                                disabled="@IsFinishedProductLine(line)"
-                                                @onclick="() => RemoveLine(line)">
-                                            @LocalizationService["Delete"]
-                                        </button>
-                                    </td>
-                                }
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
-</div>
-
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
     <div class="alert alert-danger mb-3">@errorMessage</div>
-}
-@if (!string.IsNullOrWhiteSpace(successMessage))
-{
-    <div class="alert alert-success mb-3">@successMessage</div>
 }
 
 <div class="d-flex flex-wrap gap-2 mb-4">
     @if (IsDraft)
     {
-        <button type="button" class="btn btn-outline-primary" disabled="@isBusy" @onclick="SaveRequestAsync">
-            @LocalizationService["Save"]
-        </button>
         <button type="button" class="btn btn-success" disabled="@isBusy" @onclick="SubmitAsync">
             @LocalizationService["Submit"]
         </button>
@@ -195,81 +77,14 @@
     [Parameter, EditorRequired]
     public SalesRequest Request { get; set; } = default!;
 
-    // The parent Roll/Sheet editor saves customer, artwork, specifications
-    // and the tracked request/lines before any workflow transition.
+    // Saves job title, artwork, automatically derived finished-product line,
+    // requested delivery date, and request notes before a workflow transition.
     [Parameter, EditorRequired]
     public Func<Task<bool>> SaveJobAsync { get; set; } = default!;
 
-    [Parameter]
-    public int? FinishedProductItemId { get; set; }
-
-    private List<Item> items = new();
-    private List<Unit> units = new();
-    private long loadedRequestId;
-    private bool isLoading = true;
     private bool isBusy;
     private string? errorMessage;
-    private string? successMessage;
     private bool IsDraft => Request.Status == SalesRequestStatus.Draft;
-    private bool IsFinishedProductLine(SalesRequestLine line) =>
-        FinishedProductItemId.HasValue && line.ItemId == FinishedProductItemId.Value;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (loadedRequestId == Request.Id)
-            return;
-
-        isLoading = true;
-        loadedRequestId = Request.Id;
-        items = await Db.Items.Include(x => x.Unit)
-            .Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
-        units = await Db.Units.Where(x => x.IsActive)
-            .OrderBy(x => x.Name).ToListAsync();
-        isLoading = false;
-    }
-
-    private void AddLine()
-    {
-        if (!IsDraft) return;
-        Request.Lines.Add(new SalesRequestLine
-        {
-            SalesRequestId = Request.Id,
-            Quantity = 0,
-            UnitId = 0,
-            Notes = ""
-        });
-    }
-
-    private void RemoveLine(SalesRequestLine line)
-    {
-        if (!IsDraft || IsFinishedProductLine(line)) return;
-        if (line.Id != 0)
-            Db.SalesRequestLines.Remove(line);
-        Request.Lines.Remove(line);
-    }
-
-    private async Task ItemChanged(SalesRequestLine line, int itemId)
-    {
-        if (!IsDraft || itemId <= 0) return;
-        var item = items.FirstOrDefault(x => x.Id == itemId);
-        if (item is null) return;
-        line.ItemId = item.Id;
-        line.Item = item;
-        line.UnitId = item.UnitId;
-        line.Unit = item.Unit;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private string GetItemName(SalesRequestLine line) =>
-        line.Item?.Name ?? items.FirstOrDefault(x => x.Id == line.ItemId)?.Name
-        ?? line.ItemId.ToString();
-
-    private string GetUnitName(SalesRequestLine line)
-    {
-        var unit = line.Unit ?? units.FirstOrDefault(x => x.Id == line.UnitId);
-        return unit is null ? "-" :
-            string.IsNullOrWhiteSpace(unit.Symbol) ? unit.Name : $"{unit.Name} ({unit.Symbol})";
-    }
 
     private static string UserDisplayName(ApplicationUser? user)
     {
@@ -278,61 +93,24 @@
         return fullName.Length > 0 ? fullName : user.UserName ?? "-";
     }
 
-    private void ValidateRequest()
-    {
-        if (Request.CustomerId <= 0)
-            throw new InvalidOperationException(LocalizationService["CustomerRequired"]);
-        if (Request.Lines.Count == 0)
-            throw new InvalidOperationException(LocalizationService["AtLeastOneRequestLineRequired"]);
-
-        foreach (var line in Request.Lines)
-        {
-            if (line.ItemId <= 0)
-                throw new InvalidOperationException(LocalizationService["ItemRequired"]);
-            if (line.Quantity <= 0)
-                throw new InvalidOperationException(LocalizationService["QuantityMustBeGreaterThanZero"]);
-            if (line.UnitId <= 0)
-                throw new InvalidOperationException(LocalizationService["UnitRequired"]);
-        }
-    }
-
-    private async Task SaveRequestAsync()
-    {
-        if (!IsDraft) return;
-        errorMessage = null;
-        successMessage = null;
-        try
-        {
-            isBusy = true;
-            if (!await SaveJobAsync())
-                return;
-
-            ValidateRequest();
-            await Db.SaveChangesAsync();
-            successMessage = LocalizationService["SalesRequestSavedSuccessfully"];
-        }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
-        }
-        finally
-        {
-            isBusy = false;
-        }
-    }
-
     private async Task SubmitAsync()
     {
         if (!IsDraft) return;
         errorMessage = null;
-        successMessage = null;
         try
         {
             isBusy = true;
             if (!await SaveJobAsync())
                 return;
 
-            ValidateRequest();
+            // A quotation requires one positive-quantity finished-product line.
+            if (Request.Lines.Count != 1 ||
+                Request.Lines.First().ItemId <= 0 ||
+                Request.Lines.First().UnitId <= 0 ||
+                Request.Lines.First().Quantity <= 0)
+                throw new InvalidOperationException(
+                    LocalizationService["QuantityMustBeGreaterThanZero"]);
+
             await SalesRequestService.SubmitAsync(Request.Id);
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
@@ -353,7 +131,6 @@
             return;
 
         errorMessage = null;
-        successMessage = null;
         try
         {
             isBusy = true;
