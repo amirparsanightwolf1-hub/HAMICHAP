@@ -1,0 +1,291 @@
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using System.IO
+
+@inject LocalizationService LocalizationService
+
+<div class="job-artwork-editor">
+    @if (CanEdit)
+    {
+        <label class="form-label fw-semibold">@LocalizationService["ArtworkFiles"]</label>
+        <div class="artwork-upload-box w-100">
+            <i class="bi bi-cloud-arrow-up fs-3"></i>
+            <strong>@(replacingPath is null ? LocalizationService["UploadArtworkFiles"] : LocalizationService["SelectReplacementArtwork"])</strong>
+            <div class="small text-muted">@LocalizationService["ArtworkFileLimits"]</div>
+            @if (replacingPath is not null)
+            {
+                <div class="small text-primary">@LocalizationService["ReplacingArtwork"]: @GetName(replacingPath)</div>
+                <button class="btn btn-sm btn-outline-secondary" type="button"
+                        @onclick="() => replacingPath = null">@LocalizationService["Cancel"]</button>
+            }
+            <InputFile OnChange="ArtworkSelected" multiple="@(replacingPath is null)"
+                       accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp"
+                       class="form-control mt-2" />
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(localError))
+    {
+        <div class="alert alert-danger py-2 my-2">@localError</div>
+    }
+
+    @if (ExistingFiles.Count > 0)
+    {
+        <div class="mt-3">
+            <div class="fw-semibold mb-2">@LocalizationService["PreviouslyUploadedArtwork"]</div>
+            @foreach (var file in ExistingFiles)
+            {
+                var removed = removedPaths.Contains(file.RelativePath);
+                var replacement = pendingArtworks.FirstOrDefault(x => x.ReplacesPath == file.RelativePath);
+                <div class="artwork-file-row mb-2" @key="file.RelativePath">
+                    <div class="text-truncate">
+                        <i class="bi bi-paperclip me-2"></i>
+                        <a href="@file.RelativePath" target="_blank" rel="noopener"
+                           class="@(removed ? "text-decoration-line-through text-muted" : "")">
+                            @file.OriginalFileName
+                        </a>
+                        @if (removed)
+                        {
+                            <div class="small text-warning">@LocalizationService["ArtworkMarkedForRemoval"]</div>
+                        }
+                        else if (replacement is not null)
+                        {
+                            <div class="small text-primary">@LocalizationService["ReplacingArtwork"]: @replacement.File.Name</div>
+                        }
+                    </div>
+                    @if (CanEdit)
+                    {
+                        <div class="d-flex flex-wrap gap-1">
+                            @if (removed)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        @onclick="() => UndoRemove(file.RelativePath)">
+                                    @LocalizationService["Undo"]
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        @onclick="() => BeginReplace(file.RelativePath)">
+                                    @LocalizationService["ReplaceArtwork"]
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => MarkRemove(file.RelativePath)">
+                                    @LocalizationService["Remove"]
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    @if (pendingArtworks.Count > 0)
+    {
+        <div class="mt-3">
+            <div class="fw-semibold mb-2">@LocalizationService["SelectedForUpload"]</div>
+            @foreach (var pending in pendingArtworks)
+            {
+                <div class="artwork-file-row mb-2" @key="pending">
+                    <div class="text-truncate">
+                        <i class="bi bi-file-earmark me-2"></i>
+                        @pending.File.Name
+                        <small class="text-muted">(@(Math.Ceiling(pending.File.Size / 1024d).ToString("N0")) KB)</small>
+                        @if (pending.ReplacesPath is not null)
+                        {
+                            <span class="small text-primary">— @LocalizationService["ReplacementArtwork"]</span>
+                        }
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            @onclick="() => RemovePending(pending)">@LocalizationService["Remove"]</button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (CanEdit && HasPendingChanges)
+    {
+        <p class="form-text mt-2">@LocalizationService["ArtworkChangesSavedOnSave"]</p>
+    }
+</div>
+
+@code {
+    [Parameter] public List<JobArtworkFile>? SavedFiles { get; set; }
+    [Parameter] public string? LegacyPath { get; set; }
+    [Parameter] public string? LegacyName { get; set; }
+    [Parameter] public bool CanEdit { get; set; } = true;
+
+    private sealed record PendingArtwork(IBrowserFile File, string? ReplacesPath);
+
+    private readonly List<PendingArtwork> pendingArtworks = new();
+    private readonly HashSet<string> removedPaths = new(StringComparer.Ordinal);
+    private readonly List<string> freshlyWrittenPaths = new();
+    private string? replacingPath;
+    private string? localError;
+
+    private List<JobArtworkFile> ExistingFiles
+    {
+        get
+        {
+            var files = (SavedFiles ?? new()).Where(x => !string.IsNullOrWhiteSpace(x.RelativePath))
+                .GroupBy(x => x.RelativePath, StringComparer.Ordinal)
+                .Select(x => x.First())
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(LegacyPath) &&
+                files.All(x => x.RelativePath != LegacyPath))
+            {
+                files.Insert(0, new JobArtworkFile
+                {
+                    RelativePath = LegacyPath,
+                    OriginalFileName = string.IsNullOrWhiteSpace(LegacyName)
+                        ? Path.GetFileName(LegacyPath) : LegacyName
+                });
+            }
+            return files;
+        }
+    }
+
+    public bool HasPendingChanges => pendingArtworks.Count > 0 || removedPaths.Count > 0;
+
+    public bool HasArtworkAfterChanges =>
+        ExistingFiles.Count(x => !removedPaths.Contains(x.RelativePath) &&
+            pendingArtworks.All(p => p.ReplacesPath != x.RelativePath)) +
+        pendingArtworks.Count > 0;
+
+    private string GetName(string path) =>
+        ExistingFiles.FirstOrDefault(x => x.RelativePath == path)?.OriginalFileName ?? path;
+
+    private void BeginReplace(string path)
+    {
+        replacingPath = path;
+        localError = null;
+    }
+
+    private void MarkRemove(string path)
+    {
+        removedPaths.Add(path);
+        pendingArtworks.RemoveAll(x => x.ReplacesPath == path);
+        if (replacingPath == path)
+            replacingPath = null;
+        localError = null;
+    }
+
+    private void UndoRemove(string path) => removedPaths.Remove(path);
+
+    private void RemovePending(PendingArtwork pending) => pendingArtworks.Remove(pending);
+
+    private void ArtworkSelected(InputFileChangeEventArgs args)
+    {
+        localError = null;
+        try
+        {
+            var files = args.GetMultipleFiles(20);
+            if (replacingPath is not null)
+            {
+                if (files.Count != 1)
+                {
+                    localError = LocalizationService["SelectOneReplacementArtwork"];
+                    return;
+                }
+                pendingArtworks.RemoveAll(x => x.ReplacesPath == replacingPath);
+                pendingArtworks.Add(new PendingArtwork(files[0], replacingPath));
+                removedPaths.Remove(replacingPath);
+                replacingPath = null;
+            }
+            else
+            {
+                foreach (var file in files)
+                    pendingArtworks.Add(new PendingArtwork(file, null));
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            localError = ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// Stage uploads using unique filenames; only the calling editor persists the
+    /// returned references. Old files are DETACHED, not deleted, to preserve
+    /// previously issued approval proofs and historical document links.
+    /// </summary>
+    public async Task<List<JobArtworkFile>> StageForSaveAsync(long requestId, string webRoot)
+    {
+        if (!CanEdit)
+            throw new InvalidOperationException("Artwork is locked for this job.");
+
+        const long maxBytes = 25L * 1024 * 1024;
+        var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { ".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp" };
+
+        foreach (var pending in pendingArtworks)
+        {
+            var extension = Path.GetExtension(pending.File.Name);
+            if (pending.File.Size > maxBytes)
+                throw new InvalidOperationException(
+                    string.Format(LocalizationService["ArtworkMaxSize"], pending.File.Name));
+            if (!allowed.Contains(extension))
+                throw new InvalidOperationException(
+                    string.Format(LocalizationService["UnsupportedArtworkFormat"], pending.File.Name));
+        }
+
+        var updated = ExistingFiles
+            .Where(x => !removedPaths.Contains(x.RelativePath) &&
+                pendingArtworks.All(p => p.ReplacesPath != x.RelativePath))
+            .ToList();
+
+        var folder = Path.Combine(webRoot, "uploads", "job-artwork");
+        if (pendingArtworks.Count > 0)
+            Directory.CreateDirectory(folder);
+
+        try
+        {
+            foreach (var pending in pendingArtworks)
+            {
+                var extension = Path.GetExtension(pending.File.Name).ToLowerInvariant();
+                var safeName = $"request-{requestId}-{Guid.NewGuid():N}{extension}";
+                var fullPath = Path.Combine(folder, safeName);
+                freshlyWrittenPaths.Add(fullPath);
+
+                await using (var source = pending.File.OpenReadStream(maxBytes))
+                await using (var target = File.Create(fullPath))
+                    await source.CopyToAsync(target);
+
+                updated.Add(new JobArtworkFile
+                {
+                    RelativePath = $"/uploads/job-artwork/{safeName}",
+                    OriginalFileName = Path.GetFileName(pending.File.Name)
+                });
+            }
+            return updated;
+        }
+        catch
+        {
+            RollbackNewFiles();
+            throw;
+        }
+    }
+
+    public void CompleteSave()
+    {
+        freshlyWrittenPaths.Clear();
+        pendingArtworks.Clear();
+        removedPaths.Clear();
+        replacingPath = null;
+        localError = null;
+    }
+
+    public void RollbackNewFiles()
+    {
+        foreach (var file in freshlyWrittenPaths)
+        {
+            try { if (File.Exists(file)) File.Delete(file); }
+            catch (IOException) { /* Best effort cleanup */ }
+            catch (UnauthorizedAccessException) { /* Best effort cleanup */ }
+        }
+        freshlyWrittenPaths.Clear();
+    }
+}
