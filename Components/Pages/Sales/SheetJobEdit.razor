@@ -61,14 +61,14 @@
                     <div>
                         @if (!isCreatingCustomer)
                         {
-                            <select class="form-select" @bind="selectedCustomerId">
+                            <select class="form-select" @bind="selectedCustomerId" disabled="@TargetQuotationId.HasValue">
                                 <option value="0">-- @LocalizationService["SelectExistingCustomer"] --</option>
                                 @foreach (var customer in customers)
                                 {
                                     <option value="@customer.Id">@customer.Code - @customer.Name</option>
                                 }
                             </select>
-                            <button type="button" class="btn btn-link px-0" @onclick="StartNewCustomer">
+                            <button type="button" class="btn btn-link px-0" disabled="@TargetQuotationId.HasValue" @onclick="StartNewCustomer">
                                 + @LocalizationService["CreateNewCustomer"]
                             </button>
                         }
@@ -609,6 +609,25 @@
     private async Task SaveAsync()
     {
         if (request is null || request.Status != SalesRequestStatus.Draft) return;
+
+        if (TargetQuotationId.HasValue)
+        {
+            var target = await Db.Quotations.AsNoTracking()
+                .Where(q => q.Id == TargetQuotationId.Value)
+                .Select(q => new { q.CustomerId, q.Status })
+                .FirstOrDefaultAsync();
+            if (target is null ||
+                target.Status is not (QuotationStatus.Draft or QuotationStatus.RevisionRequired))
+            {
+                errorMessage = LocalizationService["QuotationNotEditable"];
+                return;
+            }
+            if (isCreatingCustomer || selectedCustomerId != target.CustomerId)
+            {
+                errorMessage = LocalizationService["QuotationCustomerMustMatch"];
+                return;
+            }
+        }
 
         if (string.IsNullOrWhiteSpace(spec.JobTitle))
         {
