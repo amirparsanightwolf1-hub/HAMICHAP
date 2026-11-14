@@ -2974,4 +2974,5 @@
   <data name="ArtworkChangesSavedOnSave" xml:space="preserve"><value>Artwork changes are saved when you select Save and preview approval proof.</value></data>
   <data name="ArtworkMissingWarning" xml:space="preserve"><value>No artwork is attached. The approval proof will have no artwork until you upload a new file.</value></data>
   <data name="ArtworkLockedAfterApproval" xml:space="preserve"><value>Artwork cannot be changed after the quotation has been approved. Request a revision before replacing the proof.</value></data>
+  <data name="ConfirmOpenExistingJob" xml:space="preserve"><value>An existing job with this title was found. Open it now? Unsaved changes on this form will be lost.</value></data>
 </root>
