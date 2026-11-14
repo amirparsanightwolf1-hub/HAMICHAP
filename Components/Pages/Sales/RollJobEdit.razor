@@ -11,15 +11,11 @@
 @using Microsoft.AspNetCore.Hosting
 @using System.IO
 @using HamiChap_MES_ERP.Services
-@using Microsoft.Extensions.DependencyInjection
-@using Microsoft.Extensions.Logging
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject IWebHostEnvironment HostEnvironment
 @inject LocalizationService LocalizationService
-@inject IServiceScopeFactory ScopeFactory
-@inject ILogger<RollJobEdit> Logger
 
 <PageTitle>@LocalizationService["RollJobSpecification"]</PageTitle>
 
@@ -65,7 +61,7 @@
                     <div>
                         @if (!isCreatingCustomer)
                         {
-                            <select class="form-select" @bind="selectedCustomerId" @bind:after="LookupExistingJobAsync" disabled="@TargetQuotationId.HasValue">
+                            <select class="form-select" @bind="selectedCustomerId" disabled="@TargetQuotationId.HasValue">
                                 <option value="0">@LocalizationService["SelectExistingCustomerPrompt"]</option>
                                 @foreach (var customer in customers)
                                 {
@@ -106,10 +102,12 @@
                     }
 
                     <label class="form-label">@LocalizationService["JobTitle"]</label>
-                    <InputText class="form-control" @bind-Value="spec.JobTitle" @bind-Value:after="LookupExistingJobAsync" />
+                    <InputText class="form-control" @bind-Value="spec.JobTitle" />
                     <div style="grid-column: 1 / -1;">
-                        <ExistingJobTitlePrompt Matches="@existingJobMatches"
+                        <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
+                                                CustomerId="@selectedCustomerId"
                                                 JobType="SalesJobType.Roll"
+                                                JobTitle="@spec.JobTitle"
                                                 TargetQuotationId="@TargetQuotationId" />
                     </div>
 
@@ -403,7 +401,6 @@
 
     private JobArtworkEditor? artworkEditor;
     private bool canEditArtwork;
-    private List<ExistingSalesJobLookup.Match> existingJobMatches = new();
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private static readonly (string Key, string Name, string Css)[] CmykColors =
@@ -429,7 +426,7 @@
         isLoading = true;
         errorMessage = null;
         successMessage = null;
-        existingJobMatches.Clear();
+
 
         customers = await Db.Customers
             .Where(x => x.IsActive)
@@ -503,37 +500,9 @@
         return result;
     }
 
-    private async Task LookupExistingJobAsync()
-    {
-        existingJobMatches.Clear();
-        if (request?.Status != SalesRequestStatus.Draft || isCreatingCustomer)
-            return;
-
-        try
-        {
-            errorMessage = null;
-
-            // Query in an independent DI scope: a scoped DbContext cannot be
-            // used by simultaneous Blazor events or child render callbacks.
-            // The result is passed to a presentation-only child component.
-            using var scope = ScopeFactory.CreateScope();
-            var lookupDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            existingJobMatches = await ExistingSalesJobLookup.FindAsync(
-                lookupDb, selectedCustomerId, SalesJobType.Roll,
-                spec.JobTitle, RequestId);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Existing job title lookup failed for request {RequestId}", RequestId);
-            // Do not tear down the Blazor Server circuit for lookup failures.
-            existingJobMatches.Clear();
-            errorMessage = LocalizationService["ExistingJobLookupFailed"];
-        }
-    }
-
     private void StartNewCustomer()
     {
-        existingJobMatches.Clear();
+
         isCreatingCustomer = true;
         newCustomerCode = "";
         newCustomerName = "";
