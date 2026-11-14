@@ -2960,4 +2960,16 @@
   <data name="QuotationNotEditable" xml:space="preserve"><value>این پیش‌فاکتور دیگر قابل ویرایش نیست.</value></data>
   <data name="QuotationCustomerMustMatch" xml:space="preserve"><value>فقط سفارش‌های مربوط به مشتری این پیش‌فاکتور قابل افزودن هستند.</value></data>
   <data name="StartNewJobQuotation" xml:space="preserve"><value>ایجاد سفارش و پیش‌فاکتور جدید</value></data>
+  <data name="MatchingExistingJobFound" xml:space="preserve"><value>سفارشی با این عنوان از قبل وجود دارد.</value></data>
+  <data name="OpenExistingJobInsteadOfDuplicate" xml:space="preserve"><value>برای مشاهده مشخصات و فایل‌های طرح ذخیره‌شده، سفارش موجود را باز کنید. تغییرات ذخیره‌نشده این فرم منتقل نمی‌شوند.</value></data>
+  <data name="LoadExistingJob" xml:space="preserve"><value>بارگذاری سفارش موجود</value></data>
+  <data name="MatchingExistingJobSaveBlocked" xml:space="preserve"><value>سفارشی با این عنوان، برای همین مشتری و نوع کار وجود دارد. به‌جای ایجاد سفارش تکراری، سفارش موجود را باز کنید.</value></data>
+  <data name="SelectReplacementArtwork" xml:space="preserve"><value>یک فایل طرح جایگزین انتخاب کنید</value></data>
+  <data name="ReplacingArtwork" xml:space="preserve"><value>در حال جایگزینی</value></data>
+  <data name="ArtworkMarkedForRemoval" xml:space="preserve"><value>پس از ذخیره از سفارش حذف می‌شود</value></data>
+  <data name="ReplaceArtwork" xml:space="preserve"><value>جایگزینی طرح</value></data>
+  <data name="Undo" xml:space="preserve"><value>بازگردانی</value></data>
+  <data name="SelectOneReplacementArtwork" xml:space="preserve"><value>برای جایگزینی، دقیقاً یک فایل انتخاب کنید.</value></data>
+  <data name="ReplacementArtwork" xml:space="preserve"><value>فایل جایگزین</value></data>
+  <data name="ArtworkChangesSavedOnSave" xml:space="preserve"><value>تغییرات فایل‌های طرح پس از انتخاب «ذخیره و پیش‌نمایش تأییدیه» اعمال می‌شوند.</value></data>
 </root>
