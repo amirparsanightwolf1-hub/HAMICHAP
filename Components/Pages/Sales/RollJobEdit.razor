@@ -351,6 +351,9 @@
 @code {
     [Parameter] public long RequestId { get; set; }
 
+    [SupplyParameterFromQuery(Name = "quotationId")]
+    public long? TargetQuotationId { get; set; }
+
     private HamiChap_MES_ERP.Models.Sales.SalesRequest? request;
     private List<Customer> customers = new();
     private int selectedCustomerId;
@@ -562,7 +565,9 @@
 
         // The single button saves the job and opens its approval proof.
         // Submission/quotation actions remain on the job editor.
-        Navigation.NavigateTo($"/sales/requests/proof/{RequestId}");
+        Navigation.NavigateTo(TargetQuotationId.HasValue
+            ? $"/sales/requests/proof/{RequestId}?quotationId={TargetQuotationId.Value}"
+            : $"/sales/requests/proof/{RequestId}");
     }
 
     private async Task SaveAsync()
