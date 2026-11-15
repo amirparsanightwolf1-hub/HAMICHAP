@@ -415,11 +415,11 @@
     {
         if (isCreatingCustomer)
             return string.IsNullOrWhiteSpace(newCustomerName)
-                ? LocalizationService["NewCustomer"].Value
+                ? LocalizationService["NewCustomer"]
                 : newCustomerName.Trim();
 
         return customers.FirstOrDefault(x => x.Id == customerId)?.Name
-            ?? LocalizationService["SelectCustomer"].Value;
+            ?? LocalizationService["SelectCustomer"];
     }
 
     private void GoBack()
