@@ -2976,4 +2976,37 @@
   <data name="ArtworkLockedAfterApproval" xml:space="preserve"><value>Artwork cannot be changed after the quotation has been approved. Request a revision before replacing the proof.</value></data>
   <data name="ConfirmOpenExistingJob" xml:space="preserve"><value>An existing job with this title was found. Open it now? Unsaved changes on this form will be lost.</value></data>
   <data name="ExistingJobLookupFailed" xml:space="preserve"><value>Could not look up the existing job. Please try again.</value></data>
+  <data name="JobSetupProgress" xml:space="preserve">
+    <value>Job setup progress</value>
+  </data>
+  <data name="JobDetailsNext" xml:space="preserve">
+    <value>Job details</value>
+  </data>
+  <data name="JobSetupStepOne" xml:space="preserve">
+    <value>Step 1 · Customer</value>
+  </data>
+  <data name="JobSetupStepTwo" xml:space="preserve">
+    <value>Step 2 · Production type</value>
+  </data>
+  <data name="JobTypeSelectionHelp" xml:space="preserve">
+    <value>Choose the printing format. You will enter the specifications in the next step.</value>
+  </data>
+  <data name="JobSetupSummary" xml:space="preserve">
+    <value>Job overview</value>
+  </data>
+  <data name="JobSetupSummaryHelp" xml:space="preserve">
+    <value>Review your selection before continuing.</value>
+  </data>
+  <data name="QuotationCustomerLocked" xml:space="preserve">
+    <value>This customer is set by the quotation you are adding a job to.</value>
+  </data>
+  <data name="JobSetupNextStepHelp" xml:space="preserve">
+    <value>Next, add the job title, quantity, specifications, and artwork.</value>
+  </data>
+  <data name="ContinueToJobDetails" xml:space="preserve">
+    <value>Continue to job details</value>
+  </data>
+  <data name="JobSetupSubmitHelp" xml:space="preserve">
+    <value>This creates a draft job; no quotation is sent yet.</value>
+  </data>
 </root>
