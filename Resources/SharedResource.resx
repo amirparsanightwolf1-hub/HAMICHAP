@@ -3584,4 +3584,34 @@
   <data name="ManagerMoreAdministration" xml:space="preserve">
     <value>More administration</value>
   </data>
+  <data name="OperationalSearchOrders" xml:space="preserve">
+    <value>Search production or sales order number</value>
+  </data>
+  <data name="OperationalResults" xml:space="preserve">
+    <value>results</value>
+  </data>
+  <data name="OperationalTotalOrders" xml:space="preserve">
+    <value>Total orders</value>
+  </data>
+  <data name="OperationalPage" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="OperationalShowing" xml:space="preserve">
+    <value>Showing</value>
+  </data>
+  <data name="OperationalSearchSales" xml:space="preserve">
+    <value>Search order number or customer</value>
+  </data>
+  <data name="OperationalApplyFilters" xml:space="preserve">
+    <value>Apply filters</value>
+  </data>
+  <data name="OperationalTotalInspections" xml:space="preserve">
+    <value>Total inspections</value>
+  </data>
+  <data name="OperationalOpenInspections" xml:space="preserve">
+    <value>Open inspections</value>
+  </data>
+  <data name="OperationalCompletedInspections" xml:space="preserve">
+    <value>Completed inspections</value>
+  </data>
 </root>
