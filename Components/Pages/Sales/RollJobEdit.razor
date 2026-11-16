@@ -346,9 +346,11 @@
 
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
-                <i class="bi bi-file-earmark-pdf"></i> @((canEditSpecifications || canEditArtwork)
-                    ? LocalizationService["SaveAndPreviewApprovalProof"]
-                    : LocalizationService["CustomerApprovalProof"])
+                <i class="bi bi-file-earmark-pdf"></i> @(canEditSpecifications
+                    ? LocalizationService["SavePreviewAndContinueSalesWorkflow"]
+                    : (canEditArtwork
+                        ? LocalizationService["SaveAndPreviewApprovalProof"]
+                        : LocalizationService["CustomerApprovalProof"]))
             </button>
         </div>
     }
