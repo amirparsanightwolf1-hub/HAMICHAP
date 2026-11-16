@@ -3070,4 +3070,88 @@
   <data name="ValidityDaysHelp" xml:space="preserve"><value>Counted from the quotation date. Leave blank for no expiration date.</value></data>
   <data name="ValidityDaysRange" xml:space="preserve"><value>The validity period must be between 0 and 3,650 days.</value></data>
   <data name="WholeNumberPriceRequired" xml:space="preserve"><value>Enter a non-negative whole-number unit price (without decimals).</value></data>
+  <data name="All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Jobs" xml:space="preserve">
+    <value>Jobs</value>
+  </data>
+  <data name="JobOverview" xml:space="preserve">
+    <value>Job process overview</value>
+  </data>
+  <data name="JobOverviewDescription" xml:space="preserve">
+    <value>See the required production steps for each Roll or Sheet item and follow recorded progress.</value>
+  </data>
+  <data name="JobOverviewAccessDenied" xml:space="preserve">
+    <value>You do not have permission to view sales jobs or production orders.</value>
+  </data>
+  <data name="JobOverviewActiveProduction" xml:space="preserve">
+    <value>Orders in production</value>
+  </data>
+  <data name="JobOverviewCompletedJobs" xml:space="preserve">
+    <value>Jobs with completed routes</value>
+  </data>
+  <data name="JobOverviewSharedRoutes" xml:space="preserve">
+    <value>Shared production routes</value>
+  </data>
+  <data name="JobOverviewSearchPlaceholder" xml:space="preserve">
+    <value>Search job title, request number or customer</value>
+  </data>
+  <data name="JobOverviewProductionActive" xml:space="preserve">
+    <value>In production / ready / QC</value>
+  </data>
+  <data name="JobOverviewNotScheduled" xml:space="preserve">
+    <value>Not scheduled</value>
+  </data>
+  <data name="JobOverviewUntracked" xml:space="preserve">
+    <value>Not tracked per item</value>
+  </data>
+  <data name="JobOverviewAwaitingOperations" xml:space="preserve">
+    <value>Required stages are planned from the job specifications; no operation completion recorded.</value>
+  </data>
+  <data name="JobOverviewSharedNoItemProgress" xml:space="preserve">
+    <value>Individual stage completion is not recorded for this item.</value>
+  </data>
+  <data name="JobOverviewSharedRouteExplanation" xml:space="preserve">
+    <value>This production order contains multiple jobs. Current operation statuses apply to the whole production order, not to this specific job.</value>
+  </data>
+  <data name="JobOverviewOrderWideProgress" xml:space="preserve">
+    <value>Shared production order progress</value>
+  </data>
+  <data name="JobOverviewProcessProgress" xml:space="preserve">
+    <value>Process progress</value>
+  </data>
+  <data name="JobOverviewRequiredProcesses" xml:space="preserve">
+    <value>Required processes</value>
+  </data>
+  <data name="JobOverviewProcesses" xml:space="preserve">
+    <value>processes</value>
+  </data>
+  <data name="JobOverviewStepsComplete" xml:space="preserve">
+    <value>processes completed</value>
+  </data>
+  <data name="JobOverviewInvalidSpecs" xml:space="preserve">
+    <value>The saved specifications could not be read. Review this job.</value>
+  </data>
+  <data name="JobOverviewRequiresRoutingReview" xml:space="preserve">
+    <value>Machine or process assignment needs production manager review.</value>
+  </data>
+  <data name="JobOverviewRecentResults" xml:space="preserve">
+    <value>Showing up to 150 recent matching jobs. Search by title or number to find older jobs.</value>
+  </data>
+  <data name="JobOverviewNoJobs" xml:space="preserve">
+    <value>No matching jobs</value>
+  </data>
+  <data name="JobOverviewSearchHint" xml:space="preserve">
+    <value>Try another name or job number, or clear the filters.</value>
+  </data>
+  <data name="JobOverviewLoadingError" xml:space="preserve">
+    <value>Could not load the job overview. Try refreshing.</value>
+  </data>
+  <data name="JobOverviewFocusedJob" xml:space="preserve">
+    <value>Showing a single job.</value>
+  </data>
+  <data name="JobOverviewViewAllJobs" xml:space="preserve">
+    <value>View all jobs</value>
+  </data>
 </root>
