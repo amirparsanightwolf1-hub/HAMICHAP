@@ -3159,4 +3159,6 @@
   <data name="JobOverviewShowMore" xml:space="preserve"><value>نمایش کارهای بیشتر</value></data>
   <data name="JobOverviewProducedQuantity" xml:space="preserve"><value>تعداد تولید ثبت‌شده</value></data>
   <data name="JobOverviewProducedQuantityHint" xml:space="preserve"><value>بر اساس تعداد تولید ثبت‌شده برای ردیف قابل ردیابی این سفارش فروش؛ این شاخص با تکمیل مراحل فرایند متفاوت است.</value></data>
+  <data name="OutsourceOperation" xml:space="preserve"><value>برون‌سپاری این مرحله (پیمانکار خارجی)</value></data>
+  <data name="OutsourcedOperation" xml:space="preserve"><value>برون‌سپاری‌شده</value></data>
 </root>
