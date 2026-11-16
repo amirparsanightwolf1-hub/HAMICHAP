@@ -33,8 +33,17 @@
             <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow" disabled="@isOpeningQuotation">
                 @LocalizationService["ContinueToQuotation"]
             </button>
-            <button class="btn btn-primary" @onclick="PrintProof">
-                <i class="bi bi-printer"></i> @LocalizationService["PrintSaveAsPdf"]
+            <button class="btn btn-primary" disabled="@isPreparingPrint" @onclick="PrintProof">
+                @if (isPreparingPrint)
+                {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    @LocalizationService["ProofPreparingHighQualityPdf"]
+                }
+                else
+                {
+                    <i class="bi bi-printer" aria-hidden="true"></i>
+                    @LocalizationService["PrintSaveAsPdf"]
+                }
             </button>
         </div>
     </div>
@@ -676,6 +685,7 @@
             isOpeningQuotation = false;
         }
     }
+    private bool isPreparingPrint;
     private IJSObjectReference? _proofPrintModule;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -697,10 +707,20 @@
 
     private async Task PrintProof()
     {
-        if (_proofPrintModule is not null)
-            await _proofPrintModule.InvokeVoidAsync("printProof");
-        else
-            await JS.InvokeVoidAsync("window.print");
+        if (isPreparingPrint) return;
+        isPreparingPrint = true;
+        try
+        {
+            // The JS module preloads lossless, print-resolution PDF page images.
+            if (_proofPrintModule is not null)
+                await _proofPrintModule.InvokeVoidAsync("printProof");
+            else
+                await JS.InvokeVoidAsync("window.print");
+        }
+        finally
+        {
+            isPreparingPrint = false;
+        }
     }
 
     public async ValueTask DisposeAsync()
