@@ -3614,4 +3614,19 @@
   <data name="OperationalCompletedInspections" xml:space="preserve">
     <value>بازرسی‌های تکمیل‌شده</value>
   </data>
+  <data name="RollOrientationHorizontalLeft" xml:space="preserve">
+    <value>نوشته افقی — رول در سمت چپ</value>
+  </data>
+  <data name="RollOrientationHorizontalRight" xml:space="preserve">
+    <value>نوشته افقی — رول در سمت راست</value>
+  </data>
+  <data name="RollOrientationVerticalLeft" xml:space="preserve">
+    <value>نوشته عمودی — رول در سمت چپ</value>
+  </data>
+  <data name="RollOrientationVerticalRight" xml:space="preserve">
+    <value>نوشته عمودی — رول در سمت راست</value>
+  </data>
+  <data name="RollOrientationLegacyNotice" xml:space="preserve">
+    <value>این سفارش از قالب قبلی جهت رول استفاده می‌کند. برای به‌روزرسانی یکی از چهار حالت جدید را انتخاب کنید. انتخاب قبلی تا زمان انتخاب حالت جدید بدون تغییر باقی می‌ماند.</value>
+  </data>
 </root>
