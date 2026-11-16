@@ -56,13 +56,13 @@
                     }
                     @if (previousDone && step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready)
                     {
-                        <button class="btn btn-primary me-2" disabled="@busy" @onclick="() => RecordAsync(step.Id, "Started")">Start / شروع</button>
+                        <button class="btn btn-primary me-2" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Started")'>Start / شروع</button>
                     }
                     @if (step.Status == ProductionOperationStatus.Running)
                     {
                         @if (paused)
                         {
-                            <button class="btn btn-primary me-2" disabled="@busy" @onclick="() => RecordAsync(step.Id, "Resumed")">Resume / ادامه</button>
+                            <button class="btn btn-primary me-2" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Resumed")'>Resume / ادامه</button>
                         }
                         else
                         {
@@ -71,10 +71,10 @@
                                     <input class="form-control" @bind="pauseReasons[step.Id]" placeholder="Pause reason / علت توقف" />
                                 </div>
                                 <div class="col-md-4">
-                                    <button class="btn btn-warning w-100" disabled="@busy" @onclick="() => RecordAsync(step.Id, "Paused")">Pause / توقف</button>
+                                    <button class="btn btn-warning w-100" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Paused")'>Pause / توقف</button>
                                 </div>
                             </div>
-                            <button class="btn btn-success" disabled="@busy" @onclick="() => RecordAsync(step.Id, "Finished")">Finish / پایان عملیات</button>
+                            <button class="btn btn-success" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Finished")'>Finish / پایان عملیات</button>
                         }
                     }
                     @if (step.Status != ProductionOperationStatus.Completed)
@@ -307,6 +307,7 @@
                 ProductionOperationId = step.Id,
                 RequestedDate = DateTime.Now,
                 Status = "Requested",
+                RequestedByUserId = userId,
                 Lines = new List<ProductionMaterialRequestLine>
                 {
                     new() { ItemId = item.Id, UnitId = item.UnitId, Quantity = quantity, Notes = notes }
