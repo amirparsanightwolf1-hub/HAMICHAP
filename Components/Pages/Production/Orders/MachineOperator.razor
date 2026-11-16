@@ -179,6 +179,30 @@
                 </div>
             </div>
         }
+        <div class="card mt-3">
+            <div class="card-header"><strong>Recently completed / عملیات تکمیل‌شده</strong></div>
+            <div class="table-responsive"><table class="table table-sm mb-0">
+                <thead><tr><th>Order</th><th>Operation</th><th>Finish time</th><th>Delay reports</th></tr></thead>
+                <tbody>
+                    @foreach (var completed in VisibleOperations.Where(x =>
+                        x.Status == ProductionOperationStatus.Completed).Take(10))
+                    {
+                        var log = eventsByOperation.GetValueOrDefault(completed.Id) ?? new();
+                        <tr>
+                            <td>@completed.ProductionOrder.OrderNumber</td>
+                            <td>#@completed.Sequence @completed.Name</td>
+                            <td>@(log.FirstOrDefault(x => x.EventType == "Finished")?.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+                            <td>
+                                @foreach (var report in log.Where(x => x.EventType == "Overrun"))
+                                {
+                                    <div class="small">@report.Reason</div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table></div>
+        </div>
     }
 </div>
 
