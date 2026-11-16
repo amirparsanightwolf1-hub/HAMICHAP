@@ -3449,4 +3449,7 @@
   <data name="OperatorErrNotesTooLong" xml:space="preserve">
     <value>متن توضیحات بیش از حد طولانی است.</value>
   </data>
+  <data name="OperatorOrder" xml:space="preserve">
+    <value>سفارش</value>
+  </data>
 </root>
