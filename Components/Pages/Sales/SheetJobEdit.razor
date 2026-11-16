@@ -23,16 +23,30 @@
 
 
 
-<div class="page-container">
-    <div class="erp-page-header mb-4">
-        <div>
-            <div class="erp-page-title">@LocalizationService["SheetJob"]</div>
-            <div class="erp-page-subtitle">@LocalizationService["SheetJobSubtitle"]</div>
+<HeadContent>
+    <link rel="stylesheet" href="css/jobEdit.css" />
+</HeadContent>
+
+<div class="page-container job-edit-page job-edit-sheet">
+    <header class="job-edit-hero">
+        <div class="job-edit-hero-intro">
+            <div class="job-edit-hero-icon" aria-hidden="true">
+                <i class="bi bi-file-earmark-richtext"></i>
+            </div>
+            <div>
+                <div class="job-edit-eyebrow">
+                    <i class="bi bi-printer" aria-hidden="true"></i>
+                    @LocalizationService["JobEditorEyebrow"]
+                </div>
+                <h1>@LocalizationService["SheetJob"]</h1>
+                <p>@LocalizationService["SheetJobSubtitle"]</p>
+            </div>
         </div>
-        <button class="btn btn-outline-secondary" @onclick="BackToRequest">
-            <i class="bi bi-arrow-left"></i> @LocalizationService["SalesRequests"]
+        <button type="button" class="job-edit-back" @onclick="BackToRequest">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            @LocalizationService["SalesRequests"]
         </button>
-    </div>
+    </header>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
@@ -48,12 +62,44 @@
     }
     else if (request is not null)
     {
-        <SalesJobOrderPanel RequestId="@RequestId" TargetQuotationId="@TargetQuotationId"
-                            SaveCurrentAsync="@SaveCurrentForOrderAsync" />
+        <div class="job-edit-context" aria-label="@LocalizationService["JobEditorOverview"]">
+            <div class="job-edit-context-field">
+                <span>@LocalizationService["OrderNumber"]</span>
+                <strong>@request.RequestNumber</strong>
+            </div>
+            <div class="job-edit-context-field">
+                <span>@LocalizationService["Customer"]</span>
+                <strong>@(isCreatingCustomer ? newCustomerName : customers.FirstOrDefault(c => c.Id == selectedCustomerId)?.Name ?? request.Customer?.Name ?? "—")</strong>
+            </div>
+            <div class="job-edit-context-field">
+                <span>@LocalizationService["JobTitle"]</span>
+                <strong>@(string.IsNullOrWhiteSpace(spec.JobTitle) ? "—" : spec.JobTitle)</strong>
+            </div>
+            <div class="job-edit-context-status">
+                <span>@LocalizationService["Status"]</span>
+                <strong>@LocalizationService.TranslateEnum(request.Status)</strong>
+            </div>
+        </div>
+
+        <nav class="job-edit-jump-nav" aria-label="@LocalizationService["JobEditorSections"]">
+            <a href="#job-edit-items"><i class="bi bi-layers" aria-hidden="true"></i> @LocalizationService["ItemsInThisOrder"]</a>
+            <a href="#job-edit-information"><i class="bi bi-person-vcard" aria-hidden="true"></i> @LocalizationService["OrderInformation"]</a>
+            <a href="#job-edit-specifications"><i class="bi bi-sliders" aria-hidden="true"></i> @LocalizationService["SheetJobSpecification"]</a>
+            <a href="#job-edit-artwork"><i class="bi bi-images" aria-hidden="true"></i> @LocalizationService["ArtworkFiles"]</a>
+            <a href="#job-edit-services"><i class="bi bi-list-check" aria-hidden="true"></i> @LocalizationService["AdditionalServices"]</a>
+        </nav>
+
+        <div id="job-edit-items" class="job-edit-anchor">
+            <SalesJobOrderPanel RequestId="@RequestId" TargetQuotationId="@TargetQuotationId"
+                                SaveCurrentAsync="@SaveCurrentForOrderAsync" />
+        </div>
 
         <fieldset class="border-0 p-0 m-0 w-100" disabled="@(!canEditSpecifications)">
-        <div class="card job-section mb-4">
-            <div class="card-header"><strong>@LocalizationService["OrderInformation"]</strong></div>
+        <div class="card job-section mb-4" id="job-edit-information">
+            <div class="card-header">
+                <span class="job-edit-section-icon"><i class="bi bi-person-lines-fill" aria-hidden="true"></i></span>
+                <strong>@LocalizationService["OrderInformation"]</strong>
+            </div>
             <div class="card-body">
                 <div class="order-info-grid">
                     <label class="form-label">@LocalizationService["Date"]</label>
@@ -126,8 +172,11 @@
             </div>
         </div>
 
-        <div class="card job-section mb-4">
-            <div class="card-header"><strong>@LocalizationService["SheetJobSpecification"]</strong></div>
+        <div class="card job-section mb-4" id="job-edit-specifications">
+            <div class="card-header">
+                <span class="job-edit-section-icon"><i class="bi bi-sliders" aria-hidden="true"></i></span>
+                <strong>@LocalizationService["SheetJobSpecification"]</strong>
+            </div>
             <div class="card-body">
                 <div class="order-info-grid">
                     <label class="form-label">@LocalizationService["PaperType"]</label>
@@ -155,8 +204,8 @@
                     <label class="form-label">@LocalizationService["Cliche"]</label>
                     <InputText class="form-control" @bind-Value="spec.Cliche" />
 
-                    <label class="form-label">@LocalizationService["PrintRunSheets"]</label>
-                    <InputNumber class="form-control" @bind-Value="spec.PrintRunSheets" />
+                    <label class="form-label job-edit-quantity-label">@LocalizationService["PrintRunSheets"]</label>
+                    <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.PrintRunSheets" />
 
                     <label class="form-label">@LocalizationService["BeforeCutLengthCm"]</label>
                     <InputNumber class="form-control" @bind-Value="spec.BeforeCutLengthCm" />
@@ -174,8 +223,8 @@
                     <label class="form-label">@LocalizationService["Grammage"]</label>
                     <InputNumber class="form-control" @bind-Value="spec.Grammage" />
 
-                    <label class="form-label">@LocalizationService["SheetCount"]</label>
-                    <InputNumber class="form-control" @bind-Value="spec.SheetCount" />
+                    <label class="form-label job-edit-quantity-label">@LocalizationService["SheetCount"]</label>
+                    <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.SheetCount" />
 
                     <label class="form-label">@LocalizationService["ProductionLocation"]</label>
                     <div>
@@ -289,8 +338,12 @@
 
         </fieldset>
 
-        <div class="card job-section mb-4">
-            <div class="card-header"><strong>@LocalizationService["ArtworkFiles"]</strong></div>
+        <div class="card job-section mb-4" id="job-edit-artwork">
+            <div class="card-header">
+                <span class="job-edit-section-icon"><i class="bi bi-images" aria-hidden="true"></i></span>
+                <strong>@LocalizationService["ArtworkFiles"]</strong>
+                <span class="job-edit-section-hint">@LocalizationService["JobEditorArtworkHint"]</span>
+            </div>
             <div class="card-body">
                 <JobArtworkEditor @ref="artworkEditor"
                                   SavedFiles="@spec.ArtworkFiles"
@@ -301,8 +354,9 @@
         </div>
 
         <fieldset class="border-0 p-0 m-0 w-100" disabled="@(!canEditSpecifications)">
-        <div class="card job-section mb-4">
+        <div class="card job-section mb-4" id="job-edit-services">
             <div class="card-header">
+                <span class="job-edit-section-icon"><i class="bi bi-list-check" aria-hidden="true"></i></span>
                 <strong>@LocalizationService["AdditionalServicesAndColorSelection"]</strong>
                 <span class="text-muted ms-2">(@LocalizationService["ExpandEachGroup"])</span>
             </div>
@@ -338,13 +392,29 @@
         <SalesRequestWorkflowPanel Request="request" />
 
 
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
-                <i class="bi bi-file-earmark-pdf"></i> @(canEditSpecifications
+        <div class="job-edit-save-bar" id="job-edit-save">
+            <div class="job-edit-save-message">
+                <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
+                <div>
+                    <strong>@LocalizationService["JobEditorSaveHeading"]</strong>
+                    <span>@LocalizationService["JobEditorSaveHint"]</span>
+                </div>
+            </div>
+            <button type="button" class="job-edit-save-button" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
+                @if (isSaving)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                }
+                @(canEditSpecifications
                     ? LocalizationService["SavePreviewAndContinueSalesWorkflow"]
                     : (canEditArtwork
                         ? LocalizationService["SaveAndPreviewApprovalProof"]
                         : LocalizationService["CustomerApprovalProof"]))
+                <i class="bi bi-arrow-right-short job-edit-save-arrow" aria-hidden="true"></i>
             </button>
         </div>
     }
