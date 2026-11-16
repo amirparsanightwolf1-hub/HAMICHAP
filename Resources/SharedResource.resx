@@ -2553,6 +2553,7 @@
   <data name="Scheduled" xml:space="preserve"><value>Scheduled</value></data>
   <data name="SplitOrderIntoOperations" xml:space="preserve"><value>Split order into operations</value></data>
   <data name="RemainingDuration" xml:space="preserve"><value>Unallocated duration</value></data>
+  <data name="OperationTotalWithinCeo" xml:space="preserve"><value>Operation durations are within the CEO-approved total; unused time is permitted.</value></data>
   <data name="OperationTotalMatchesCeo" xml:space="preserve"><value>Total estimated operation time matches the CEO's order duration.</value></data>
   <data name="OperationNamePlaceholder" xml:space="preserve"><value>e.g. Printing, lamination, die cutting</value></data>
   <data name="OrderOperations" xml:space="preserve"><value>Order operations</value></data>
@@ -2588,7 +2589,7 @@
   <data name="UnscheduleBeforeReordering" xml:space="preserve"><value>Return all scheduled stages of this order to the list before changing their sequence.</value></data>
   <data name="ApprovalIdentityMissing" xml:space="preserve"><value>A signed-in Production Manager account is required to confirm the sequence.</value></data>
   <data name="InvalidOperationSequence" xml:space="preserve"><value>Operations must have unique sequential numbers, valid names and positive durations before confirmation.</value></data>
-  <data name="StageDurationTotalMismatch" xml:space="preserve"><value>The sum of stage durations must equal the CEO's total duration before confirming the sequence.</value></data>
+  <data name="StageDurationTotalMismatch" xml:space="preserve"><value>The sum of stage durations must not exceed the CEO-approved total. Unallocated time is allowed.</value></data>
   <data name="MachineAssignmentsRequired" xml:space="preserve"><value>Select and save an active machine for every operation before confirming the sequence.</value></data>
   <data name="ExistingOrderSequenceConflict" xml:space="preserve"><value>Existing bookings overlap or are out of the requested order. Return or correct these bookings before confirming.</value></data>
   <data name="SequenceConfirmationSaved" xml:space="preserve"><value>The Production Manager's operation sequence confirmation has been saved.</value></data>
