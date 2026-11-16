@@ -117,6 +117,9 @@
                                     <summary>@L["AddOperationOnlyIfNeeded"]</summary>
                                     <label class="form-label mt-2">@L["Operation"]</label>
                                     <input class="form-control mb-2" @bind="newOperationName" placeholder="@L["OperationNamePlaceholder"]" />
+                                    <label class="form-check mb-2"><input class="form-check-input" type="checkbox" @bind="newOperationOutsourced" /> @L["OutsourceOperation"]</label>
+                                    @if (!newOperationOutsourced)
+                                    {
                                     <label class="form-label">@L["Machine"]</label>
                                     <select class="form-select mb-2" @bind="newMachineId">
                                         <option value="0">@L["SelectMachine"]</option>
@@ -125,6 +128,7 @@
                                             <option value="@machine.Id">@machine.Name</option>
                                         }
                                     </select>
+                                    }
                                     <label class="form-label">@L["EstimatedHours"]</label>
                                     <input class="form-control mb-2" type="number" min="0.016667" step="any" @bind="newOperationHours" />
                                     <button type="button" class="btn btn-primary w-100" @onclick="AddOperation">@L["AddOperation"]</button>
@@ -156,7 +160,7 @@
                                      @onclick="() => SelectOperation(step.Id)">
                                     <div class="d-flex justify-content-between gap-2">
                                         <strong>#@step.Sequence @step.Name</strong>
-                                        <small>@(booking == null ? L["UnscheduledOperations"] : L["Scheduled"])</small>
+                                        <small>@(step.IsOutsourced ? L["OutsourcedOperation"] : booking == null ? L["UnscheduledOperations"] : L["Scheduled"])</small>
                                     </div>
                                     @if (canEdit)
                                     {
@@ -171,8 +175,15 @@
                                                     @onclick="() => MoveOperation(step.Id, 1)">@L["MoveOperationDown"]</button>
                                         </div>
                                     }
-                                    <div class="small text-muted">@L["Machine"]: @MachineName(step)</div>
-                                    <div class="small text-muted">@L["MachineSuggestions"]: @SuggestedMachineNames(step)</div>
+                                    @if (!step.IsOutsourced)
+                                    {
+                                        <div class="small text-muted">@L["Machine"]: @MachineName(step)</div>
+                                        <div class="small text-muted">@L["MachineSuggestions"]: @SuggestedMachineNames(step)</div>
+                                    }
+                                    else if (step.OutsourcedPlannedStart.HasValue && step.OutsourcedPlannedEnd.HasValue)
+                                    {
+                                        <div class="small text-muted">@FormatDateTime(step.OutsourcedPlannedStart) – @FormatDateTime(step.OutsourcedPlannedEnd)</div>
+                                    }
                                     <div class="small text-muted">@L["EstimatedHours"]: @DurationLabel(OperationMinutes(step))</div>
                                     @if (booking != null)
                                     {
@@ -186,6 +197,12 @@
                                             <input class="form-control form-control-sm mb-2"
                                                    value="@OperationNameChoice(step)"
                                                    @onchange="e => SetOperationName(step.Id, e.Value?.ToString())" />
+                                            <label class="form-check mt-2 mb-2" @onclick:stopPropagation="true">
+                                                <input class="form-check-input" type="checkbox" checked="@OutsourcingChoice(step)"
+                                                       @onchange="e => SetOutsourcingChoice(step.Id, e.Value is true)" /> @L["OutsourceOperation"]
+                                            </label>
+                                            @if (!OutsourcingChoice(step))
+                                            {
                                             <label class="form-label">@L["Machine"]</label>
                                             <select class="form-select form-select-sm mb-2"
                                                     value="@MachineChoice(step)"
@@ -196,6 +213,7 @@
                                                     <option value="@machine.Id">@machine.Name</option>
                                                 }
                                             </select>
+                                            }
                                             <label class="form-label">@L["EstimatedHours"]</label>
                                             <input class="form-control form-control-sm mb-2" type="number"
                                                    min="0.25" step="0.25"
@@ -435,6 +453,7 @@
 
     private string newOperationName = "";
     private int newMachineId;
+    private bool newOperationOutsourced;
     private decimal newOperationHours = 1m;
 
     private List<ProductionOrder> orders = new();
@@ -444,6 +463,7 @@
     private Dictionary<long, string> editedNames = new();
     private Dictionary<long, string> editedHours = new();
     private Dictionary<long, int> editedMachines = new();
+    private Dictionary<long, bool> editedOutsourcing = new();
 
     private ProductionOrder? SelectedOrder => orders.FirstOrDefault(x => x.Id == selectedOrderId);
     private List<ProductionOperation> SelectedOperations => operations
@@ -472,7 +492,8 @@
                     x.Sequence.ToString(CultureInfo.InvariantCulture),
                     Convert.ToBase64String(Encoding.UTF8.GetBytes(x.Name.Trim())),
                     x.WorkCenterId?.ToString(CultureInfo.InvariantCulture) ?? "",
-                    x.PlannedHours.ToString("G29", CultureInfo.InvariantCulture))));
+                    x.PlannedHours.ToString("G29", CultureInfo.InvariantCulture),
+                    x.IsOutsourced ? "External" : "Internal"))));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
     }
 
@@ -827,6 +848,9 @@
         editedHours.GetValueOrDefault(step.Id, step.PlannedHours.ToString("0.##", CultureInfo.InvariantCulture));
     private void SetOperationName(long id, string? value) => editedNames[id] = value ?? "";
     private void SetOperationHours(long id, string? value) => editedHours[id] = value ?? "";
+    private bool OutsourcingChoice(ProductionOperation step) =>
+        editedOutsourcing.GetValueOrDefault(step.Id, step.IsOutsourced);
+    private void SetOutsourcingChoice(long id, bool value) => editedOutsourcing[id] = value;
     private void SetMachineChoice(long id, string? value) =>
         editedMachines[id] = int.TryParse(value, out var result) ? result : 0;
 
@@ -957,6 +981,7 @@
             }
             if (steps.Any(x => editedHours.ContainsKey(x.Id) ||
                                editedMachines.ContainsKey(x.Id) ||
+                               editedOutsourcing.ContainsKey(x.Id) ||
                                editedNames.ContainsKey(x.Id)))
             {
                 ShowError(L["SaveStageEditsBeforeConfirmation"]);
@@ -992,7 +1017,7 @@
             }
 
             var availableMachines = await db.Machines.Where(x => x.IsActive).ToListAsync();
-            if (steps.Any(x => !availableMachines.Any(m => CompatibleWithStage(x, m))))
+            if (steps.Any(x => !x.IsOutsourced && !availableMachines.Any(m => CompatibleWithStage(x, m))))
             {
                 ShowError(L["MachineAssignmentsRequired"]);
                 return;
@@ -1018,13 +1043,21 @@
             foreach (var booking in current) booking.Status = ScheduleStatus.Cancelled;
             foreach (var placement in plan)
             {
-                var machine = availableMachines.First(x => x.Id == placement.MachineId);
                 var step = steps.First(x => x.Id == placement.OperationId);
+                if (step.IsOutsourced)
+                {
+                    step.OutsourcedPlannedStart = placement.Start;
+                    step.OutsourcedPlannedEnd = placement.End;
+                    continue;
+                }
+                step.OutsourcedPlannedStart = null;
+                step.OutsourcedPlannedEnd = null;
+                var machine = availableMachines.First(x => x.Id == placement.MachineId!.Value);
                 step.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
                 db.ProductionSchedules.Add(new ProductionSchedule
                 {
                     ProductionOperationId = step.Id,
-                    MachineId = placement.MachineId,
+                    MachineId = placement.MachineId.Value,
                     PlannedStart = placement.Start,
                     PlannedEnd = placement.End,
                     Status = ScheduleStatus.Planned
@@ -1051,7 +1084,7 @@
     private async Task AddOperation()
     {
         if (!canEdit || SelectedOrder is not ProductionOrder order) return;
-        if (String.IsNullOrWhiteSpace(newOperationName) || newMachineId == 0 ||
+        if (String.IsNullOrWhiteSpace(newOperationName) || (!newOperationOutsourced && newMachineId == 0) ||
             newOperationHours <= 0)
         {
             ShowError(L["EnterOperationDetails"]);
@@ -1062,9 +1095,9 @@
             await using var db = await DbFactory.CreateDbContextAsync();
             await using var transaction = await db.Database.BeginTransactionAsync(
                 System.Data.IsolationLevel.Serializable);
-            var machine = await db.Machines.FirstOrDefaultAsync(x =>
+            var machine = newOperationOutsourced ? null : await db.Machines.FirstOrDefaultAsync(x =>
                 x.Id == newMachineId && x.IsActive);
-            if (machine == null) { ShowError(L["SelectMachine"]); return; }
+            if (!newOperationOutsourced && machine == null) { ShowError(L["SelectMachine"]); return; }
             if (!await CancelPlannedOrderBookingsAsync(db, order.Id))
             {
                 ShowError(L["CannotChangeActiveSchedule"]);
@@ -1074,7 +1107,7 @@
             var steps = await db.ProductionOperations
                 .Where(x => x.ProductionOrderId == order.Id).OrderBy(x => x.Sequence)
                 .ToListAsync();
-            var centerId = await EnsureMachineWorkCenterAsync(db, machine);
+            int? centerId = machine == null ? null : await EnsureMachineWorkCenterAsync(db, machine);
             var created = new ProductionOperation
             {
                 ProductionOrderId = order.Id,
@@ -1082,6 +1115,7 @@
                 Name = newOperationName.Trim(),
                 PlannedHours = newOperationHours,
                 WorkCenterId = centerId,
+                IsOutsourced = newOperationOutsourced,
                 Status = ProductionOperationStatus.Pending
             };
             db.ProductionOperations.Add(created);
@@ -1092,6 +1126,7 @@
             selectedOperationId = created.Id;
             newOperationName = "";
             newOperationHours = 1m;
+            newOperationOutsourced = false;
             ShowSuccess(L["OperationAddedReconfirm"]);
             await ReloadAsync();
         }
@@ -1119,7 +1154,7 @@
         var machineId = MachineChoice(step);
         // 0 is allowed for Sales-derived multi-machine routes; the auto
         // scheduler chooses among the suggested active machines later.
-        if (machineId == 0 && ProductionJobRouting.Candidates(name).Length == 0)
+        if (!OutsourcingChoice(step) && machineId == 0 && ProductionJobRouting.Candidates(name).Length == 0)
         {
             ShowError(L["SelectMachine"]); return;
         }
@@ -1138,7 +1173,11 @@
 
             entity.Name = name;
             entity.PlannedHours = hours;
-            if (machineId != 0)
+            entity.IsOutsourced = OutsourcingChoice(step);
+            entity.OutsourcedPlannedStart = null;
+            entity.OutsourcedPlannedEnd = null;
+            if (entity.IsOutsourced) entity.WorkCenterId = null;
+            else if (machineId != 0)
             {
                 var machine = await db.Machines.FirstOrDefaultAsync(x => x.Id == machineId && x.IsActive);
                 if (machine == null) { ShowError(L["SelectMachine"]); return; }
@@ -1152,6 +1191,7 @@
             editedNames.Remove(id);
             editedHours.Remove(id);
             editedMachines.Remove(id);
+            editedOutsourcing.Remove(id);
             ShowSuccess(L["OperationUpdatedReconfirm"]);
             await ReloadAsync();
         }
