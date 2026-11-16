@@ -305,15 +305,14 @@
 
                     <div class="col-md-4">
 
-                        <label class="form-label">
-                            @LocalizationService["ValidUntil"]
+                        <label class="form-label" for="quotation-validity-days">
+                            @(IsEditable
+                                ? LocalizationService["ValidityDays"]
+                                : LocalizationService["ValidUntil"])
                         </label>
 
                         @if (IsEditable)
                         {
-                            <label class="form-label" for="quotation-validity-days">
-                                @LocalizationService["ValidityDays"]
-                            </label>
                             <InputNumber TValue="int?" id="quotation-validity-days"
                                          class="form-control"
                                          min="0" max="3650" step="1"
@@ -327,7 +326,7 @@
                         }
                         else
                         {
-                            <input class="form-control"
+                            <input id="quotation-validity-days" class="form-control"
                                    value="@FormatJalaliDate(quotation.ValidUntil)"
                                    readonly />
                         }
