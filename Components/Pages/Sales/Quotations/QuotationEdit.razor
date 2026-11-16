@@ -481,7 +481,8 @@
                                         @if (IsEditable)
                                         {
                                             <input type="number" min="0" step="1" inputmode="numeric"
-                                                   class="form-control text-end quotation-workspace-price-input"
+                                                   class="form-control text-end quotation-workspace-price-input @(invalidPriceLineIds.Contains(line.Id) ? "is-invalid" : "")"
+                                                   aria-invalid="@invalidPriceLineIds.Contains(line.Id)"
                                                    value="@FormatWholePriceInput(line.UnitPrice)"
                                                    @onchange="args => UpdateWholeUnitPrice(line, args)" />
                                         }
@@ -612,6 +613,7 @@
 
     private string? errorMessage;
     private string? successMessage;
+    private readonly HashSet<long> invalidPriceLineIds = new();
 
     private bool IsEditable =>
         quotation != null &&
@@ -689,6 +691,8 @@
                     .Append(quotation.SalesRequestId)
                     .Distinct()
                     .ToArray();
+
+                invalidPriceLineIds.Clear();
 
                 linkedRequests = await Db.SalesRequests.AsNoTracking()
                     .Where(job => requestIds.Contains(job.Id))
@@ -939,6 +943,10 @@
         if (quotation == null)
             return;
 
+        if (invalidPriceLineIds.Count > 0)
+            throw new InvalidOperationException(
+                LocalizationService["WholeNumberPriceRequired"]);
+
         if (!quotation.Lines.Any())
         {
             throw new InvalidOperationException(
@@ -1080,10 +1088,12 @@
         if (!decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ||
             price < 0 || decimal.Truncate(price) != price)
         {
+            invalidPriceLineIds.Add(line.Id);
             errorMessage = LocalizationService["WholeNumberPriceRequired"];
             return;
         }
 
+        invalidPriceLineIds.Remove(line.Id);
         line.UnitPrice = price;
         errorMessage = null;
     }
