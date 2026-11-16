@@ -69,7 +69,9 @@ export async function printProof() {
         const module = await pdfModule();
         await module.preparePdfForPrint(document.querySelector(".proof-page"));
     } catch (error) {
-        console.warn("Printing with available PDF previews:", error);
+        // Do not print reduced-resolution artwork without warning the user.
+        finishProof();
+        throw error;
     }
     window.print();
 }
