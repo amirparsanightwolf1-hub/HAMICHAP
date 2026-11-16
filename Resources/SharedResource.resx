@@ -3046,4 +3046,10 @@
     <value>Manage items and proofs in Roll/Sheet editor</value>
   </data>
   <data name="RepeatThisItem" xml:space="preserve"><value>Repeat this item</value></data>
+  <data name="JobEditorEyebrow" xml:space="preserve"><value>Job workspace</value></data>
+  <data name="JobEditorOverview" xml:space="preserve"><value>Current job overview</value></data>
+  <data name="JobEditorSections" xml:space="preserve"><value>Jump to a section</value></data>
+  <data name="JobEditorArtworkHint" xml:space="preserve"><value>Upload, replace or remove artwork for this item</value></data>
+  <data name="JobEditorSaveHeading" xml:space="preserve"><value>Ready to review this item?</value></data>
+  <data name="JobEditorSaveHint" xml:space="preserve"><value>Save your changes and open this item's approval proof.</value></data>
 </root>
