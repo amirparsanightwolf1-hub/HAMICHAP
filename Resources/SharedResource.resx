@@ -3052,4 +3052,7 @@
   <data name="JobEditorArtworkHint" xml:space="preserve"><value>Upload, replace or remove artwork for this item</value></data>
   <data name="JobEditorSaveHeading" xml:space="preserve"><value>Ready to review this item?</value></data>
   <data name="JobEditorSaveHint" xml:space="preserve"><value>Save your changes and open this item's approval proof.</value></data>
+  <data name="JobEditorReadOnlyHint" xml:space="preserve"><value>This item is locked. Open its saved customer approval proof.</value></data>
+  <data name="RollJobSpecification" xml:space="preserve"><value>Roll job specifications</value></data>
+  <data name="SelectExistingCustomerPrompt" xml:space="preserve"><value>Select an existing customer</value></data>
 </root>
