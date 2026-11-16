@@ -39,7 +39,7 @@
         <div class="row g-3 mb-3">
             <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
                 <div class="small text-muted">Available now / آماده اجرا</div>
-                <div class="fs-3 fw-semibold">@AvailableOperations.Count</div>
+                <div class="fs-3 fw-semibold">@AvailableOperations.Count(x => x.Status != ProductionOperationStatus.Running)</div>
             </div></div></div>
             <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
                 <div class="small text-muted">Running / در حال اجرا</div>
@@ -202,7 +202,7 @@
     private List<ProductionOperation> AvailableOperations =>
         VisibleOperations.Where(x => x.Status == ProductionOperationStatus.Running ||
             ((x.Status is ProductionOperationStatus.Ready or ProductionOperationStatus.Pending) &&
-             PreviousCompleted(x))).ToList();
+             PreviousCompleted(x) && BookingFor(x.Id)?.PlannedStart <= DateTime.Now)).ToList();
     private List<ProductionOperation> UpcomingOperations =>
         VisibleOperations.Where(x => (x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready) &&
             !AvailableOperations.Any(a => a.Id == x.Id)).ToList();
@@ -211,12 +211,27 @@
     private bool HasOverrun(ProductionOperation step)
     {
         var booking = BookingFor(step.Id);
-        var start = eventsByOperation.GetValueOrDefault(step.Id)?
-            .LastOrDefault(e => e.EventType == "Started")?.OccurredAtUtc;
         return step.Status == ProductionOperationStatus.Running &&
             (booking != null && DateTime.Now > booking.PlannedEnd ||
-             start.HasValue && (DateTime.UtcNow - start.Value).TotalMinutes >
-                 ProductionPlanningTime.OperationMinutes(step.PlannedHours));
+             ActiveMinutes(eventsByOperation.GetValueOrDefault(step.Id) ?? new(),
+                 DateTime.UtcNow) > ProductionPlanningTime.OperationMinutes(step.PlannedHours));
+    }
+    private static double ActiveMinutes(IEnumerable<ProductionOperationEvent> events, DateTime nowUtc)
+    {
+        DateTime? activeFrom = null;
+        double minutes = 0;
+        foreach (var entry in events.OrderBy(x => x.OccurredAtUtc).ThenBy(x => x.Id))
+        {
+            if (entry.EventType is "Started" or "Resumed") activeFrom = entry.OccurredAtUtc;
+            else if (entry.EventType is "Paused" or "Finished")
+            {
+                if (activeFrom.HasValue)
+                    minutes += Math.Max(0, (entry.OccurredAtUtc - activeFrom.Value).TotalMinutes);
+                activeFrom = null;
+            }
+        }
+        if (activeFrom.HasValue) minutes += Math.Max(0, (nowUtc - activeFrom.Value).TotalMinutes);
+        return minutes;
     }
 
     protected override async Task OnInitializedAsync()
@@ -332,21 +347,21 @@
             {
                 if (step.Status != ProductionOperationStatus.Running || paused)
                     throw new InvalidOperationException("Resume the operation before finishing.");
-                var startedAtUtc = await db.ProductionOperationEvents
-                    .Where(x => x.ProductionOperationId == operationId && x.EventType == "Started")
-                    .OrderBy(x => x.Id).Select(x => (DateTime?)x.OccurredAtUtc).FirstOrDefaultAsync();
-                var durationExceeded = startedAtUtc.HasValue &&
-                    (DateTime.UtcNow - startedAtUtc.Value).TotalMinutes >
+                var events = await db.ProductionOperationEvents
+                    .Where(x => x.ProductionOperationId == operationId)
+                    .OrderBy(x => x.Id).ToListAsync();
+                var durationExceeded = ActiveMinutes(events, DateTime.UtcNow) >
                     ProductionPlanningTime.OperationMinutes(step.PlannedHours);
-                if (DateTime.Now > booking.PlannedEnd || durationExceeded)
+                var needsExtension = DateTime.Now > booking.PlannedEnd;
+                var alreadyReported = events.Any(x => x.EventType == "Overrun");
+                if (needsExtension || (durationExceeded && !alreadyReported))
                 {
                     reason = overrunReasons.GetValueOrDefault(operationId, "").Trim();
                     if (string.IsNullOrWhiteSpace(reason) || reason.Length > 1000)
                         throw new InvalidOperationException("Explain why the operation exceeded its estimated duration before finishing.");
-                    var extendedEnd = DateTime.Now > booking.PlannedEnd
-                        ? DateTime.Now : booking.PlannedEnd;
-                    await ProductionOperationOverrunScheduler.ExtendAsync(
-                        db, step, booking, extendedEnd);
+                    if (needsExtension)
+                        await ProductionOperationOverrunScheduler.ExtendAsync(
+                            db, step, booking, DateTime.Now);
                     db.ProductionOperationEvents.Add(new ProductionOperationEvent
                     {
                         ProductionOperationId = operationId, EventType = "Overrun",
