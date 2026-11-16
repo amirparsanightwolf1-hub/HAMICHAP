@@ -955,6 +955,10 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<long>("ProductionOrderId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("RequestedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("RequestedDate")
                         .HasColumnType("datetime2");
 
