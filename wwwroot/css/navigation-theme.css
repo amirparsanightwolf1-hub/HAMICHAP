@@ -8,13 +8,20 @@
 .app-layout .sidebar-header h3 { color: #fff; letter-spacing: .015em; }
 .app-layout .side-menu .menu-group-label { color: #abc7d2; margin-block-start: 9px; }
 .app-layout .side-menu .menu-button {
-    color: #ebf6fa;
+    background: #1b719c;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.18);
     border-inline-start: 3px solid transparent;
     border-radius: 10px;
-    transition: background .15s ease, border-color .15s ease;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
-.app-layout .side-menu .menu-button i { color: #a1cfdf; }
-.app-layout .side-menu .menu-button:hover { background: rgba(255,255,255,.105); }
+.app-layout .side-menu .menu-button i { color: #d6f2ff; }
+.app-layout .side-menu .menu-button:hover {
+    background: #d7edf8;
+    color: #123a54;
+    border-color: #b4dbe9;
+}
+.app-layout .side-menu .menu-button:hover i { color: #165c80; }
 .app-layout .side-menu .menu-button.active {
     background: #eef8fc;
     color: #123a54;
@@ -28,8 +35,14 @@
     outline-offset: 2px;
 }
 .app-layout .nav-more-group { margin-block: 2px 7px; }
-.app-layout .nav-more-group summary { color: #c4dbe4; border-radius: 9px; }
-.app-layout .nav-more-group[open] summary { color: #fff; background: rgba(255,255,255,.09); }
+.app-layout .nav-more-group summary {
+    background: #1b719c;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 9px;
+}
+.app-layout .nav-more-group summary:hover { background: #d7edf8; color: #123a54; }
+.app-layout .nav-more-group[open] summary { color: #123a54; background: #d7edf8; border-color: #b4dbe9; }
 .app-layout .nav-more-group a { color: #d9eaf0; border-inline-start-color: rgba(159,216,232,.45); }
 .app-layout .nav-more-group a:hover { color: #fff; }
 .app-layout .mobile-menu-btn { background: #154d66; border: 1px solid rgba(255,255,255,.15); }
