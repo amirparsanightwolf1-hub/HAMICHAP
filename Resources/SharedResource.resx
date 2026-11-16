@@ -3066,4 +3066,8 @@
   <data name="QuotationEditClosedHint" xml:space="preserve"><value>This quotation is no longer editable. Open the preview to review the finalized document and its items.</value></data>
   <data name="Approve" xml:space="preserve"><value>Approve</value></data>
   <data name="Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="ValidityDays" xml:space="preserve"><value>Validity period (days)</value></data>
+  <data name="ValidityDaysHelp" xml:space="preserve"><value>Counted from the quotation date. Leave blank for no expiration date.</value></data>
+  <data name="ValidityDaysRange" xml:space="preserve"><value>The validity period must be between 0 and 3,650 days.</value></data>
+  <data name="WholeNumberPriceRequired" xml:space="preserve"><value>Enter a non-negative whole-number unit price (without decimals).</value></data>
 </root>
