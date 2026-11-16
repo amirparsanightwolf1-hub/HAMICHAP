@@ -493,7 +493,7 @@
                     Convert.ToBase64String(Encoding.UTF8.GetBytes(x.Name.Trim())),
                     x.WorkCenterId?.ToString(CultureInfo.InvariantCulture) ?? "",
                     x.PlannedHours.ToString("G29", CultureInfo.InvariantCulture),
-                    x.IsOutsourced ? "External" : "Internal"))));
+                    x.IsOutsourced ? "External" : "Internal")));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
     }
 
