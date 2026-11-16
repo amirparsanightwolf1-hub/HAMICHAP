@@ -175,7 +175,7 @@
                                         <td><span class="quotation-job-title-cell">@GetJobTitle(quotation)</span></td>
                                         <td>@quotation.QuotationDate.ToString("yyyy-MM-dd")</td>
                                         <td>@(quotation.ValidUntil?.ToString("yyyy-MM-dd") ?? "-")</td>
-                                        <td class="text-end fw-semibold">@quotation.FinalAmount.ToString("N2")</td>
+                                        <td class="text-end fw-semibold">@decimal.Round(quotation.FinalAmount, 0, MidpointRounding.AwayFromZero).ToString("N0")</td>
                                         <td>
                                             <span class="quotation-status-badge @GetStatusCssClass(quotation.Status)">
                                                 <span class="quotation-status-dot"></span>
@@ -255,8 +255,8 @@
                                                                                     }
                                                                                 </td>
                                                                                 <td class="text-end">@line.Quantity.ToString("N2")</td>
-                                                                                <td class="text-end">@line.UnitPrice.ToString("N2")</td>
-                                                                                <td class="text-end fw-semibold">@line.TotalPrice.ToString("N2")</td>
+                                                                                <td class="text-end">@decimal.Round(line.UnitPrice, 0, MidpointRounding.AwayFromZero).ToString("N0")</td>
+                                                                                <td class="text-end fw-semibold">@decimal.Round(line.TotalPrice, 0, MidpointRounding.AwayFromZero).ToString("N0")</td>
                                                                                 <td>@(string.IsNullOrWhiteSpace(line.Notes) ? "-" : line.Notes)</td>
                                                                             </tr>
                                                                         }
