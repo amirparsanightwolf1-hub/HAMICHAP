@@ -136,6 +136,64 @@ html.proof-print-layout .proof-roll-orientation {
 html.proof-print-layout .proof-roll-orientation img {
     height: 24mm !important;
 }
+/* Four roll options must all remain visible and vector-sharp on the printed proof. */
+html.proof-print-layout .proof-roll-orientation-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    gap: 1mm !important;
+    align-items: stretch !important;
+}
+html.proof-print-layout .proof-roll-choice {
+    padding: .7mm !important;
+    gap: .4mm !important;
+    border-radius: 1mm !important;
+    break-inside: avoid !important;
+}
+html.proof-print-layout .proof-roll-choice.is-selected {
+    border-width: .5mm !important;
+    border-color: #188461 !important;
+    background: #e9f7ef !important;
+}
+html.proof-print-layout .proof-roll-choice img {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 22mm !important;
+    object-fit: contain !important;
+}
+html.proof-print-layout .proof-roll-choice-caption {
+    font-size: 4.9pt !important;
+    line-height: 1.1 !important;
+    gap: 0 !important;
+}
+html.proof-print-layout .proof-roll-selected { font-size: 4.8pt !important; }
+html.proof-print-layout .proof-roll-legacy {
+    gap: 1mm !important;
+    margin-top: .8mm !important;
+    padding: .6mm !important;
+    font-size: 5pt !important;
+}
+html.proof-print-layout .proof-roll-legacy img {
+    position: static !important;
+    width: 9mm !important;
+    height: 9mm !important;
+}
+/* Print the original server-rendered high-resolution image, not a small canvas.
+   The browser is free to scale its CSS size without throwing source pixels away. */
+html.proof-print-layout .proof-artwork-card .proof-pdf-page img.proof-pdf-image {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: calc(100% - 3mm) !important;
+    object-fit: contain !important;
+}
+html.proof-print-layout .proof-original-pdf-link { display: none !important; }
+
 html.proof-print-layout .proof-service-groups {
     gap: 1mm !important;
 }

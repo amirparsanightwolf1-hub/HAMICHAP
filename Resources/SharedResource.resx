@@ -3680,4 +3680,19 @@
   <data name="RollPantoneProofDisclaimer" xml:space="preserve">
     <value>Swatch previews are approximate; match printing ink to the Pantone reference.</value>
   </data>
+  <data name="RollOrientationProofAllChoices" xml:space="preserve">
+    <value>Roll orientations — selected option highlighted</value>
+  </data>
+  <data name="RollOrientationLegacyProofNotice" xml:space="preserve">
+    <value>Previously selected orientation (old format)</value>
+  </data>
+  <data name="ProofOpenOriginalPdf" xml:space="preserve">
+    <value>Open original PDF (full quality)</value>
+  </data>
+  <data name="ProofPreparingHighQualityPdf" xml:space="preserve">
+    <value>Preparing high-quality proof...</value>
+  </data>
+  <data name="ProofPrintQualityFailed" xml:space="preserve">
+    <value>Could not prepare the original PDF artwork at print quality. Please retry, or open the original PDF using its link.</value>
+  </data>
 </root>

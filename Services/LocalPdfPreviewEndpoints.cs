@@ -14,6 +14,10 @@ public static class LocalPdfPreviewEndpoints
     private const int MaxPages = 64;
     private const long MaxPdfBytes = 100L * 1024 * 1024;
     private const int RenderDimension = 1600;
+    // The normal preview stays light. Proof printing requests a higher-resolution,
+    // lossless PNG so small artwork isn't first downsampled onto a screen canvas.
+    private const int PrintRenderDimension = 3600;
+    private static readonly SemaphoreSlim PrintRenderSlots = new(2, 2);
 
     public static void MapLocalPdfPreview(this WebApplication app)
     {
@@ -46,7 +50,7 @@ public static class LocalPdfPreviewEndpoints
             }
         });
 
-        group.MapGet("/page", (string file, int page, IWebHostEnvironment env) =>
+        group.MapGet("/page", async (string file, int page, string? quality, IWebHostEnvironment env, CancellationToken cancellationToken) =>
         {
             if (!TryFindPdf(file, env, out var path))
                 return Results.NotFound();
@@ -54,9 +58,12 @@ public static class LocalPdfPreviewEndpoints
             if (page < 1 || page > MaxPages)
                 return Results.BadRequest("Invalid PDF page number.");
 
+            var printQuality = string.Equals(quality, "print", StringComparison.OrdinalIgnoreCase);
+            if (printQuality) await PrintRenderSlots.WaitAsync(cancellationToken);
             try
             {
-                using var reader = DocLib.Instance.GetDocReader(path, new PageDimensions(RenderDimension, RenderDimension));
+                var dimension = printQuality ? PrintRenderDimension : RenderDimension;
+                using var reader = DocLib.Instance.GetDocReader(path, new PageDimensions(dimension, dimension));
                 if (page > reader.GetPageCount())
                     return Results.NotFound();
 
@@ -67,6 +74,10 @@ public static class LocalPdfPreviewEndpoints
             catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException)
             {
                 return Results.BadRequest("Unable to render this PDF page.");
+            }
+            finally
+            {
+                if (printQuality) PrintRenderSlots.Release();
             }
         });
     }

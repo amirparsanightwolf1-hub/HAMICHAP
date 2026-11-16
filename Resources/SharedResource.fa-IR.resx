@@ -4782,4 +4782,19 @@
   <data name="RollPantoneProofDisclaimer" xml:space="preserve">
     <value>پیش‌نمایش رنگ تقریبی است؛ رنگ مرکب چاپ باید با کد پنتون تطبیق داده شود.</value>
   </data>
+  <data name="RollOrientationProofAllChoices" xml:space="preserve">
+    <value>جهت‌های رول — گزینه انتخاب‌شده مشخص است</value>
+  </data>
+  <data name="RollOrientationLegacyProofNotice" xml:space="preserve">
+    <value>جهت رول انتخاب‌شده در قالب قبلی</value>
+  </data>
+  <data name="ProofOpenOriginalPdf" xml:space="preserve">
+    <value>مشاهده PDF اصلی (کیفیت کامل)</value>
+  </data>
+  <data name="ProofPreparingHighQualityPdf" xml:space="preserve">
+    <value>آماده‌سازی نمونه چاپ با کیفیت بالا...</value>
+  </data>
+  <data name="ProofPrintQualityFailed" xml:space="preserve">
+    <value>آماده‌سازی فایل PDF با کیفیت مناسب چاپ انجام نشد. دوباره تلاش کنید یا فایل PDF اصلی را از پیوند آن باز کنید.</value>
+  </data>
 </root>

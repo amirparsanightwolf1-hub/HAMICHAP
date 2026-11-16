@@ -2998,3 +2998,103 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+
+/* All four roll unwind possibilities appear on every proof, regardless of selection.
+   SVG artwork stays vector-sharp when the proof is printed to PDF. */
+.proof-page .proof-roll-orientation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    min-height: 0;
+    padding: 0;
+    align-items: stretch;
+}
+.proof-page .proof-roll-choice {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border: 1px solid #d7e2e9;
+    border-radius: 7px;
+    padding: 5px;
+    background: #fff;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+.proof-page .proof-roll-choice.is-selected {
+    border: 2px solid #188461;
+    background: #e9f7ef;
+}
+.proof-page .proof-roll-choice img {
+    display: block;
+    position: static;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    aspect-ratio: 480 / 242;
+    object-fit: contain;
+}
+.proof-page .proof-roll-choice-caption {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    justify-content: center;
+    align-items: center;
+    color: #30445c;
+    text-align: center;
+    font-size: .73rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.proof-page .proof-roll-selected {
+    color: #166e50;
+    font-weight: 750;
+    font-size: .72rem;
+}
+.proof-page .proof-roll-legacy {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 9px;
+    font-size: .76rem;
+    color: #81551b;
+    background: #fff7e7;
+    padding: 5px;
+    border-radius: 7px;
+}
+.proof-page .proof-roll-legacy img {
+    position: static;
+    display: block;
+    height: 45px;
+    width: 45px;
+    object-fit: contain;
+}
+.proof-page .proof-original-pdf-link {
+    position: absolute;
+    z-index: 2;
+    inset-inline-end: 7px;
+    bottom: 7px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #c8d6df;
+    font-size: .7rem;
+    color: #194d73;
+    text-decoration: none;
+}
+.proof-page .proof-pdf-page img.proof-pdf-image {
+    position: static;
+    display: block;
+    inset: auto;
+    max-width: 100%;
+    max-height: calc(100% - 14px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    margin: 0 auto;
+}
+@media (max-width: 480px) {
+    .proof-page .proof-roll-orientation-grid { grid-template-columns: 1fr; }
+}
