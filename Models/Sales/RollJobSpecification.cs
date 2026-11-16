@@ -39,6 +39,7 @@ public sealed class RollPantoneColor
     public string Code { get; set; } = "";
     public string Hex { get; set; } = "#DB2635";
 
+    [System.Text.Json.Serialization.JsonIgnore]
     public string SafeHex => IsValidHex(Hex) ? Hex : "#808080";
 
     public static bool IsValidHex(string? value) =>
