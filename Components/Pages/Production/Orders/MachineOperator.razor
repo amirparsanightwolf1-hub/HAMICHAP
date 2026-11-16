@@ -452,31 +452,31 @@
              StartBlockedReason(x) == null)).ToList();
     private string? StartBlockedReason(ProductionOperation step)
     {
-        if (!executionSchemaReady) return "Database migration required before recording work / نیاز به به‌روزرسانی پایگاه داده";
+        if (!executionSchemaReady) return L["OperatorBlockedSchema"];
         if (!isAdministrator && (!assignedMachineId.HasValue || BookingFor(step.Id)?.MachineId != assignedMachineId.Value))
-            return "This operation belongs to another machine / این عملیات متعلق به دستگاه شما نیست";
-        if (!PreviousCompleted(step)) return "Waiting for earlier operation to finish / در انتظار اتمام مرحله قبل";
+            return L["OperatorBlockedOtherMachine"];
+        if (!PreviousCompleted(step)) return L["OperatorWaitingPrevious"];
         var booking = BookingFor(step.Id);
-        if (booking == null) return "No confirmed machine booking. Production manager must schedule this operation / نیازمند برنامه‌ریزی مدیر تولید";
-        if (booking.Status != ScheduleStatus.Planned) return "Machine booking is not available for starting / برنامه دستگاه آماده شروع نیست";
-        if (step.ProductionOrder.OperationsSequenceConfirmedAt == null) return "Production manager must confirm the sequence / نیازمند تأیید ترتیب مراحل";
+        if (booking == null) return L["OperatorBlockedBooking"];
+        if (booking.Status != ScheduleStatus.Planned) return L["OperatorBlockedBookingStatus"];
+        if (step.ProductionOrder.OperationsSequenceConfirmedAt == null) return L["OperatorBlockedSequence"];
         var now = DateTime.Now;
         if (!step.ProductionOrder.PlannedStartDate.HasValue || !step.ProductionOrder.PlannedEndDate.HasValue)
-            return "CEO must approve the production window / نیازمند برنامه مدیرعامل";
-        if (now < step.ProductionOrder.PlannedStartDate.Value) return "CEO-approved start time has not arrived / زمان شروع تعیین‌شده فرا نرسیده";
-        if (now >= step.ProductionOrder.PlannedEndDate.Value) return "CEO-approved production window has ended / مهلت برنامه مدیرعامل پایان یافته";
+            return L["OperatorBlockedCeoPlan"];
+        if (now < step.ProductionOrder.PlannedStartDate.Value) return L["OperatorBlockedBeforeStart"];
+        if (now >= step.ProductionOrder.PlannedEndDate.Value) return L["OperatorBlockedAfterEnd"];
         if (ProductionPlanningTime.NextAllowedProductionMinute(
                 now, step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) > now)
-            return "Outside an approved production shift / خارج از شیفت مجاز";
+            return L["OperatorBlockedShift"];
         if (bookingsByOperation.Values.Any(x =>
                 x.MachineId == booking.MachineId && x.ProductionOperationId != step.Id &&
                 x.Status == ScheduleStatus.Running))
-            return "Machine is currently running another operation / دستگاه مشغول است";
+            return L["OperatorBlockedMachineBusy"];
         if (now < booking.PlannedStart && bookingsByOperation.Values.Any(x =>
                 x.Id != booking.Id && x.MachineId == booking.MachineId &&
                 x.Status != ScheduleStatus.Cancelled &&
                 x.PlannedStart < booking.PlannedStart && x.PlannedEnd > now))
-            return "Another booking occupies this machine before the planned start / رزرو دیگر دستگاه";
+            return L["OperatorBlockedReservation"];
         return null;
     }
 
@@ -673,13 +673,13 @@
         var principal = (await Auth.GetAuthenticationStateAsync()).User;
         if (principal.Identity?.IsAuthenticated != true ||
             principal.FindFirstValue(ClaimTypes.NameIdentifier) != userId)
-            throw new UnauthorizedAccessException("Authentication is required.");
+            throw new UnauthorizedAccessException(L["OperatorErrAuthentication"]);
 
         var account = await db.Users.AsNoTracking()
             .Where(x => x.Id == userId && x.IsActive)
             .Select(x => new { x.AssignedMachineId }).FirstOrDefaultAsync();
         if (account == null)
-            throw new UnauthorizedAccessException("Operator account is disabled or unavailable.");
+            throw new UnauthorizedAccessException(L["OperatorErrInactive"]);
 
         if (principal.IsInRole("Administrator")) return;
         if (!(principal.IsInRole("ProductionManager") ||
@@ -689,11 +689,11 @@
               principal.IsInRole("Floor Manager") ||
               principal.IsInRole("Production") ||
               principal.IsInRole("Operator")))
-            throw new UnauthorizedAccessException("Production operator role is required.");
+            throw new UnauthorizedAccessException(L["OperatorErrRole"]);
         if (!account.AssignedMachineId.HasValue ||
             account.AssignedMachineId.Value != actualMachineId)
             throw new UnauthorizedAccessException(
-                "You may only execute operations on your assigned machine.");
+                L["OperatorErrOtherMachine"]);
     }
 
     private async Task RecordAsync(long operationId, string action)
@@ -712,16 +712,16 @@
                 (machineId == 0 || x.MachineId == machineId) &&
                 x.Status != ScheduleStatus.Cancelled);
             if (step == null || booking == null)
-                throw new InvalidOperationException("Operation is not scheduled for this machine.");
+                throw new InvalidOperationException(L["OperatorErrNoBooking"]);
             await AssertMachinePermissionAsync(db, booking.MachineId);
             if (step.ProductionOrder.Status is ProductionOrderStatus.Cancelled or ProductionOrderStatus.Completed)
-                throw new InvalidOperationException("Production order is closed.");
+                throw new InvalidOperationException(L["OperatorErrClosedOrder"]);
             if (step.ProductionOrder.OperationsSequenceConfirmedAt == null)
-                throw new InvalidOperationException("Manager sequence confirmation is required.");
+                throw new InvalidOperationException(L["OperatorErrSequence"]);
             var previous = await db.ProductionOperations.AnyAsync(x =>
                 x.ProductionOrderId == step.ProductionOrderId && x.Sequence < step.Sequence &&
                 x.Status != ProductionOperationStatus.Completed);
-            if (previous) throw new InvalidOperationException("The preceding operation must finish first.");
+            if (previous) throw new InvalidOperationException(L["OperatorErrPrevious"]);
             var last = await db.ProductionOperationEvents
                 .Where(x => x.ProductionOperationId == operationId)
                 .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
@@ -730,21 +730,21 @@
             if (action == "Started")
             {
                 if (step.Status is not (ProductionOperationStatus.Pending or ProductionOperationStatus.Ready))
-                    throw new InvalidOperationException("Operation has already started.");
+                    throw new InvalidOperationException(L["OperatorErrAlreadyStarted"]);
                 var now = DateTime.Now;
                 if (step.ProductionOrder.PlannedStartDate is not DateTime approvedStart ||
                     step.ProductionOrder.PlannedEndDate is not DateTime approvedEnd ||
                     now < approvedStart || now >= approvedEnd ||
                     ProductionPlanningTime.NextAllowedProductionMinute(now,
                         step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) > now)
-                    throw new InvalidOperationException("The CEO has not approved this time or shift.");
+                    throw new InvalidOperationException(L["OperatorErrCeoWindow"]);
                 if (booking.Status != ScheduleStatus.Planned)
-                    throw new InvalidOperationException("The machine booking is not available to start.");
+                    throw new InvalidOperationException(L["OperatorErrBookingNotReady"]);
                 if (await db.ProductionSchedules.AnyAsync(x =>
                     x.Id != booking.Id && x.MachineId == booking.MachineId &&
                     x.Status == ScheduleStatus.Running))
                     throw new InvalidOperationException(
-                        "Another operation is still running on this machine.");
+                        L["OperatorErrMachineBusy"]);
 
                 // An early start is permitted as soon as the preceding operation has
                 // finished, but it must not overlap any other reservation on this machine.
@@ -756,7 +756,7 @@
                         x.PlannedStart < booking.PlannedStart && x.PlannedEnd > now);
                     if (collision)
                         throw new InvalidOperationException(
-                            "The machine is reserved for another operation. Early start is not yet possible.");
+                            L["OperatorErrReserved"]);
                     booking.PlannedStart = now;
                 }
                 step.Status = ProductionOperationStatus.Running;
@@ -768,18 +768,18 @@
             {
                 reason = pauseReasons.GetValueOrDefault(operationId, "").Trim();
                 if (step.Status != ProductionOperationStatus.Running || paused || reason.Length == 0)
-                    throw new InvalidOperationException("A pause reason is required for a running operation.");
-                if (reason.Length > 1000) throw new InvalidOperationException("Pause reason is too long.");
+                    throw new InvalidOperationException(L["OperatorErrPauseReason"]);
+                if (reason.Length > 1000) throw new InvalidOperationException(L["OperatorErrReasonTooLong"]);
             }
             else if (action == "Resumed")
             {
                 if (step.Status != ProductionOperationStatus.Running || !paused)
-                    throw new InvalidOperationException("Operation is not paused.");
+                    throw new InvalidOperationException(L["OperatorErrNotPaused"]);
             }
             else if (action == "Finished")
             {
                 if (step.Status != ProductionOperationStatus.Running || paused)
-                    throw new InvalidOperationException("Resume the operation before finishing.");
+                    throw new InvalidOperationException(L["OperatorErrResumeFirst"]);
                 var events = await db.ProductionOperationEvents
                     .Where(x => x.ProductionOperationId == operationId)
                     .OrderBy(x => x.Id).ToListAsync();
@@ -791,7 +791,7 @@
                 {
                     reason = overrunReasons.GetValueOrDefault(operationId, "").Trim();
                     if (string.IsNullOrWhiteSpace(reason) || reason.Length > 1000)
-                        throw new InvalidOperationException("Explain why the operation exceeded its estimated duration before finishing.");
+                        throw new InvalidOperationException(L["OperatorErrDelayReasonRequired"]);
                     if (needsExtension)
                         await ProductionOperationOverrunScheduler.ExtendAsync(
                             db, step, booking, DateTime.Now);
@@ -827,7 +827,7 @@
             });
             await db.SaveChangesAsync();
             await transaction.CommitAsync();
-            message = action + " recorded.";
+            message = L["OperatorActionRecorded"];
             isError = false;
             pauseReasons[operationId] = "";
             await ReloadAsync();
@@ -850,7 +850,7 @@
             var reason = overrunReasons.GetValueOrDefault(operationId, "").Trim();
             var minutes = overrunMinutes.GetValueOrDefault(operationId);
             if (reason.Length == 0 || reason.Length > 1000 || minutes <= 0 || minutes > 10080)
-                throw new InvalidOperationException("Enter an overtime reason and 1–10080 additional minutes.");
+                throw new InvalidOperationException(L["OperatorErrDelayInput"]);
             await using var db = await DbFactory.CreateDbContextAsync();
             await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             var step = await db.ProductionOperations.Include(x => x.ProductionOrder)
@@ -860,13 +860,13 @@
                 (machineId == 0 || x.MachineId == machineId) &&
                 x.Status == ScheduleStatus.Running);
             if (step == null || booking == null)
-                throw new InvalidOperationException("The operation is not running on your selected machine.");
+                throw new InvalidOperationException(L["OperatorErrNotRunning"]);
             await AssertMachinePermissionAsync(db, booking.MachineId);
             var last = await db.ProductionOperationEvents
                 .Where(x => x.ProductionOperationId == operationId)
                 .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
             if (last?.EventType == "Paused")
-                throw new InvalidOperationException("Resume the operation before extending its schedule.");
+                throw new InvalidOperationException(L["OperatorErrResumeBeforeExtend"]);
             var requestedEnd = booking.PlannedEnd.AddMinutes(minutes);
             if (DateTime.Now > requestedEnd) requestedEnd = DateTime.Now.AddMinutes(minutes);
             await ProductionOperationOverrunScheduler.ExtendAsync(db, step, booking, requestedEnd);
@@ -880,7 +880,7 @@
             });
             await db.SaveChangesAsync();
             await transaction.CommitAsync();
-            message = "Overrun recorded. Later planned operations have been moved to feasible machine slots.";
+            message = L["OperatorOverrunSaved"];
             isError = false;
             overrunReasons[operationId] = "";
             await ReloadAsync();
@@ -902,7 +902,7 @@
             var itemId = requestItemIds.GetValueOrDefault(operationId);
             var quantity = requestQuantities.GetValueOrDefault(operationId);
             if (itemId == 0 || quantity <= 0 || quantity > 100000000)
-                throw new InvalidOperationException("Select an item and enter a positive quantity.");
+                throw new InvalidOperationException(L["OperatorErrItemQuantity"]);
             await using var db = await DbFactory.CreateDbContextAsync();
             var step = await db.ProductionOperations.AsNoTracking().Include(x => x.ProductionOrder)
                 .FirstOrDefaultAsync(x => x.Id == operationId);
@@ -911,15 +911,15 @@
                 (machineId == 0 || x.MachineId == machineId) &&
                 x.Status != ScheduleStatus.Cancelled);
             if (step == null || step.IsOutsourced || booking == null)
-                throw new InvalidOperationException("Operation is not scheduled on the selected machine.");
+                throw new InvalidOperationException(L["OperatorErrNoSelectedBooking"]);
             await AssertMachinePermissionAsync(db, booking.MachineId);
             if (step.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled ||
                 step.ProductionOrder.Status is ProductionOrderStatus.Completed or ProductionOrderStatus.Cancelled)
-                throw new InvalidOperationException("This operation or production order is closed.");
+                throw new InvalidOperationException(L["OperatorErrOperationClosed"]);
             var item = await db.Items.AsNoTracking().FirstOrDefaultAsync(x => x.Id == itemId && x.IsActive);
-            if (item == null) throw new InvalidOperationException("Item is not available.");
+            if (item == null) throw new InvalidOperationException(L["OperatorErrItemUnavailable"]);
             var notes = requestNotes.GetValueOrDefault(operationId, "").Trim();
-            if (notes.Length > 1000) throw new InvalidOperationException("Notes are too long.");
+            if (notes.Length > 1000) throw new InvalidOperationException(L["OperatorErrNotesTooLong"]);
             db.ProductionMaterialRequests.Add(new ProductionMaterialRequest
             {
                 ProductionOrderId = step.ProductionOrderId,
@@ -933,7 +933,7 @@
                 }
             });
             await db.SaveChangesAsync();
-            message = "Warehouse request submitted.";
+            message = L["OperatorWarehouseSubmitted"];
             isError = false;
             requestNotes[operationId] = "";
         }
