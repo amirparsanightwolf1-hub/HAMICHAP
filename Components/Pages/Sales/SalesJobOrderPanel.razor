@@ -52,6 +52,11 @@
                     <a class="btn btn-sm btn-outline-secondary" href="@GetEditUrl(job)">
                         @LocalizationService["OpenJob"]
                     </a>
+                    <a class="btn btn-sm btn-outline-secondary"
+                       href="@($"/production/jobs?requestId={job.Id}")">
+                        <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>
+                        @LocalizationService["JobOverview"]
+                    </a>
                     @if (!string.IsNullOrWhiteSpace(job.JobSpecificationJson) &&
                          job.Lines.Any(x => x.Quantity > 0))
                     {
