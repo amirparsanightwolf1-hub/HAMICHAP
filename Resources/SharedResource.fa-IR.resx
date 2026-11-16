@@ -3464,4 +3464,124 @@
   <data name="OperatorNoReadyJobsHint" xml:space="preserve">
     <value>عملیات بعدی در پایین نمایش داده می‌شود و پس از پایان مرحله قبلی و آزاد شدن دستگاه قابل شروع خواهد بود.</value>
   </data>
+  <data name="ManagerOverview" xml:space="preserve">
+    <value>نمای کلی مدیریت</value>
+  </data>
+  <data name="ManagerDashboardIntro" xml:space="preserve">
+    <value>شاخص‌های اصلی و اقدامات بعدی تیم شما</value>
+  </data>
+  <data name="ManagerQuickActions" xml:space="preserve">
+    <value>دسترسی سریع</value>
+  </data>
+  <data name="ManagerOpenWorkspace" xml:space="preserve">
+    <value>ورود به بخش</value>
+  </data>
+  <data name="ManagerNeedsAttention" xml:space="preserve">
+    <value>نیازمند بررسی</value>
+  </data>
+  <data name="ManagerLiveCounts" xml:space="preserve">
+    <value>اطلاعات فعلی</value>
+  </data>
+  <data name="ManagerNoOpenAlerts" xml:space="preserve">
+    <value>در حال حاضر موردی برای بررسی وجود ندارد.</value>
+  </data>
+  <data name="ManagerSalesDashboard" xml:space="preserve">
+    <value>داشبورد مدیر فروش</value>
+  </data>
+  <data name="ManagerWarehouseDashboard" xml:space="preserve">
+    <value>داشبورد مدیر انبار</value>
+  </data>
+  <data name="ManagerCeoDashboard" xml:space="preserve">
+    <value>داشبورد مدیرعامل</value>
+  </data>
+  <data name="ManagerProductionDashboard" xml:space="preserve">
+    <value>داشبورد مدیر تولید</value>
+  </data>
+  <data name="ManagerSalesRequests" xml:space="preserve">
+    <value>درخواست‌های فروش</value>
+  </data>
+  <data name="ManagerSalesActiveOrders" xml:space="preserve">
+    <value>سفارش‌های فروش فعال</value>
+  </data>
+  <data name="ManagerSalesQuotations" xml:space="preserve">
+    <value>پیش‌فاکتورها</value>
+  </data>
+  <data name="ManagerSalesInvoices" xml:space="preserve">
+    <value>فاکتورهای فروش</value>
+  </data>
+  <data name="ManagerSalesDraftRequests" xml:space="preserve">
+    <value>درخواست‌های فروش پیش‌نویس</value>
+  </data>
+  <data name="ManagerSalesUndelivered" xml:space="preserve">
+    <value>تحویل‌های فروش معوق</value>
+  </data>
+  <data name="ManagerWarehouseItems" xml:space="preserve">
+    <value>اقلام فعال</value>
+  </data>
+  <data name="ManagerWarehouseOpenRequests" xml:space="preserve">
+    <value>درخواست‌های باز مواد</value>
+  </data>
+  <data name="ManagerWarehouseDraftDocuments" xml:space="preserve">
+    <value>اسناد پیش‌نویس انبار</value>
+  </data>
+  <data name="ManagerWarehousePostedDocuments" xml:space="preserve">
+    <value>اسناد ثبت‌شده انبار</value>
+  </data>
+  <data name="ManagerWarehouseRequestsToProcess" xml:space="preserve">
+    <value>درخواست‌های مواد در انتظار رسیدگی</value>
+  </data>
+  <data name="ManagerWarehouseDocumentsToPost" xml:space="preserve">
+    <value>اسناد در انتظار ثبت</value>
+  </data>
+  <data name="ManagerCeoActiveSales" xml:space="preserve">
+    <value>سفارش‌های فروش فعال</value>
+  </data>
+  <data name="ManagerCeoProductionOrders" xml:space="preserve">
+    <value>سفارش‌های تولید فعال</value>
+  </data>
+  <data name="ManagerCeoApprovedWindows" xml:space="preserve">
+    <value>بازه‌های تعیین‌شده تولید</value>
+  </data>
+  <data name="ManagerCeoOpenWarehouse" xml:space="preserve">
+    <value>درخواست‌های باز انبار</value>
+  </data>
+  <data name="ManagerCeoUnplannedOrders" xml:space="preserve">
+    <value>سفارش‌های بدون تاریخ تأییدشده</value>
+  </data>
+  <data name="ManagerCeoOverdueProduction" xml:space="preserve">
+    <value>سفارش‌های تولید معوق</value>
+  </data>
+  <data name="ManagerProductionActiveOrders" xml:space="preserve">
+    <value>سفارش‌های تولید فعال</value>
+  </data>
+  <data name="ManagerProductionUnscheduled" xml:space="preserve">
+    <value>مسیرهای در انتظار تأیید</value>
+  </data>
+  <data name="ManagerProductionRunning" xml:space="preserve">
+    <value>عملیات در حال اجرا</value>
+  </data>
+  <data name="ManagerProductionMachineBookings" xml:space="preserve">
+    <value>رزروهای برنامه‌ریزی‌شده دستگاه</value>
+  </data>
+  <data name="ManagerProductionNeedsSequence" xml:space="preserve">
+    <value>سفارش‌های در انتظار تأیید مسیر</value>
+  </data>
+  <data name="ManagerProductionLateOrders" xml:space="preserve">
+    <value>سفارش‌های تولید تأخیردار</value>
+  </data>
+  <data name="ManagerMainNavigation" xml:space="preserve">
+    <value>منوی اصلی</value>
+  </data>
+  <data name="ManagerMoreSales" xml:space="preserve">
+    <value>موارد بیشتر فروش</value>
+  </data>
+  <data name="ManagerMoreInventory" xml:space="preserve">
+    <value>موارد بیشتر انبار</value>
+  </data>
+  <data name="ManagerMoreProduction" xml:space="preserve">
+    <value>موارد بیشتر تولید</value>
+  </data>
+  <data name="ManagerMoreAdministration" xml:space="preserve">
+    <value>موارد بیشتر مدیریت</value>
+  </data>
 </root>
