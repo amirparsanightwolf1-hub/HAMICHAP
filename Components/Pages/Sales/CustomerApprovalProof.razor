@@ -52,6 +52,10 @@
     {
         <div class="alert alert-danger no-print">@quotationError</div>
     }
+    @if (!string.IsNullOrWhiteSpace(printError))
+    {
+        <div class="alert alert-danger no-print" role="alert">@printError</div>
+    }
 
     @if (isLoading)
     {
@@ -686,6 +690,7 @@
         }
     }
     private bool isPreparingPrint;
+    private string? printError;
     private IJSObjectReference? _proofPrintModule;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -709,13 +714,20 @@
     {
         if (isPreparingPrint) return;
         isPreparingPrint = true;
+        printError = null;
         try
         {
-            // The JS module preloads lossless, print-resolution PDF page images.
-            if (_proofPrintModule is not null)
-                await _proofPrintModule.InvokeVoidAsync("printProof");
-            else
-                await JS.InvokeVoidAsync("window.print");
+            // The Print button must not silently fall back to low-resolution art.
+            if (_proofPrintModule is null)
+            {
+                printError = LocalizationService["ProofPrintQualityFailed"];
+                return;
+            }
+            await _proofPrintModule.InvokeVoidAsync("printProof");
+        }
+        catch (JSException)
+        {
+            printError = LocalizationService["ProofPrintQualityFailed"];
         }
         finally
         {
