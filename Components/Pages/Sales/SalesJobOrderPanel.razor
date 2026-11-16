@@ -58,9 +58,36 @@
                         <a class="btn btn-sm btn-outline-primary" href="@GetProofUrl(job)">
                             @LocalizationService["OpenApprovalProof"]
                         </a>
+                        <button type="button" class="btn btn-sm btn-outline-success" disabled="@busy"
+                                @onclick="() => SelectRepeatJob(job.Id)">
+                            @LocalizationService["RepeatThisItem"]
+                        </button>
                     }
                 </div>
             </div>
+            @if (repeatSourceId == job.Id)
+            {
+                <div class="rounded border p-3 my-2 bg-light">
+                    <div class="small mb-2">@LocalizationService["ReuseOldJobNewQuantityHelp"]</div>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-sm-4">
+                            <label class="form-label fw-semibold small">@LocalizationService["EnterNewOrderQuantity"]</label>
+                            <InputNumber TValue="int?" class="form-control" min="1" @bind-Value="repeatQuantity" />
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="button" class="btn btn-primary"
+                                    disabled="@(busy || repeatQuantity.GetValueOrDefault() <= 0)"
+                                    @onclick="() => RepeatItemAsync(job)">
+                                @LocalizationService["ApplySavedJobWithNewQuantity"]
+                            </button>
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="button" class="btn btn-outline-secondary"
+                                    @onclick="() => repeatSourceId = null">@LocalizationService["Cancel"]</button>
+                        </div>
+                    </div>
+                </div>
+            }
         }
 
         @if (canAdd)
@@ -101,6 +128,8 @@
     private long? linkedQuotationId;
     private bool canAdd;
     private bool busy;
+    private long? repeatSourceId;
+    private int? repeatQuantity;
     private string? panelError;
     private (long RequestId, long? QuotationId)? lastLoaded;
 
@@ -213,6 +242,55 @@
         return quote.Id;
     }
 
+    private void SelectRepeatJob(long id)
+    {
+        repeatSourceId = id;
+        repeatQuantity = null; // Never inherit the historical order quantity.
+        panelError = null;
+    }
+
+    private async Task RepeatItemAsync(SalesRequest source)
+    {
+        if (busy || repeatSourceId != source.Id ||
+            repeatQuantity.GetValueOrDefault() <= 0)
+            return;
+
+        panelError = null;
+        busy = true;
+        try
+        {
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(auth.User)
+                ?? throw new InvalidOperationException(LocalizationService["UserNotAuthenticated"]);
+
+            // Repeats of accepted/closed orders ALWAYS create a separate draft
+            // order. If this quote is still editable, repeat may join it.
+            var attachToQuote = canAdd ? linkedQuotationId : null;
+            var newJob = await SalesRequestService.CreateRequestAsync(
+                source.CustomerId, user.Id, source.JobType);
+
+            await using (var db = await DbFactory.CreateDbContextAsync())
+            {
+                await ExistingSalesJobLookup.CopySpecificationsIntoDraftAsync(
+                    db, source.Id, newJob.Id, repeatQuantity!.Value);
+            }
+
+            var segment = source.JobType == SalesJobType.Roll ? "roll" : "sheet";
+            var url = $"/sales/requests/{segment}/edit/{newJob.Id}";
+            if (attachToQuote.HasValue)
+                url += $"?quotationId={attachToQuote.Value}";
+            Navigation.NavigateTo(url);
+        }
+        catch (Exception ex)
+        {
+            panelError = ex.Message;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
     private async Task AddItemAsync(SalesJobType type)
     {
         if (busy || !canAdd)
@@ -299,6 +377,9 @@
         return job.RequestNumber;
     }
 
-    private static string GetQuantity(SalesRequest job) =>
-        job.Lines.FirstOrDefault()?.Quantity.ToString("N0") ?? "—";
+    private static string GetQuantity(SalesRequest job)
+    {
+        var line = job.Lines.FirstOrDefault();
+        return line is null ? "—" : line.Quantity.ToString("N0");
+    }
 }
