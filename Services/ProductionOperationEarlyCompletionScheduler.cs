@@ -48,17 +48,10 @@ public static class ProductionOperationEarlyCompletionScheduler
                 if (!stage.OutsourcedPlannedStart.HasValue || !stage.OutsourcedPlannedEnd.HasValue)
                     break;
 
-                var originalStart = stage.OutsourcedPlannedStart.Value;
-                var originalEnd = stage.OutsourcedPlannedEnd.Value;
-                var proposedStart = ProductionPlanningTime.NextAllowedProductionMinute(
-                    cursor, order.AvoidOvertime, order.AvoidNightShift);
-                var proposedEnd = ProductionPlanningTime.CalculateEndDateTime(
-                    proposedStart, ProductionPlanningTime.OperationMinutes(stage.PlannedHours),
-                    order.AvoidOvertime, order.AvoidNightShift);
-
                 // External supplier commitments are not shortened automatically.
                 // A manager must confirm a new external delivery date.
-                cursor = originalEnd > cursor ? originalEnd : cursor;
+                var externalEnd = stage.OutsourcedPlannedEnd.Value;
+                cursor = externalEnd > cursor ? externalEnd : cursor;
                 continue;
             }
 
