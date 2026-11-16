@@ -3055,4 +3055,13 @@
   <data name="JobEditorReadOnlyHint" xml:space="preserve"><value>این قلم قفل شده است. برگه تأیید طرح ذخیره‌شده را مشاهده کنید.</value></data>
   <data name="RollJobSpecification" xml:space="preserve"><value>مشخصات سفارش رول</value></data>
   <data name="SelectExistingCustomerPrompt" xml:space="preserve"><value>مشتری موجود را انتخاب کنید</value></data>
+  <data name="QuotationEditorTitle" xml:space="preserve"><value>محیط مدیریت پیش‌فاکتور فروش</value></data>
+  <data name="QuotationPricingHelp" xml:space="preserve"><value>قیمت واحد هر قلم را وارد کنید. با تغییر قیمت‌ها، مبلغ کل به‌روز می‌شود.</value></data>
+  <data name="QuotationPricingSummary" xml:space="preserve"><value>خلاصه پیش‌فاکتور</value></data>
+  <data name="QuotationPricingSummaryHint" xml:space="preserve"><value>مبلغ کل از تعداد و قیمت واحد تمام اقلام محاسبه می‌شود.</value></data>
+  <data name="QuotationNextStep" xml:space="preserve"><value>مرحله بعد</value></data>
+  <data name="QuotationEditDraftHint" xml:space="preserve"><value>اقلام و برگه‌های تأیید طرح را بررسی کنید، قیمت واحد را وارد کرده و پس از ذخیره برای تأیید داخلی ارسال کنید.</value></data>
+  <data name="QuotationEditPendingHint" xml:space="preserve"><value>پیش‌فاکتور منتظر تأیید داخلی است. پیش از تأیید یا درخواست اصلاح، قیمت‌ها و برگه‌های تأیید هر قلم را بررسی کنید.</value></data>
+  <data name="QuotationEditApprovedHint" xml:space="preserve"><value>تصمیم مشتری را ثبت کنید. با انتخاب «پذیرش مشتری»، سفارش فروش برای تمام اقلام به‌صورت خودکار ایجاد می‌شود.</value></data>
+  <data name="QuotationEditClosedHint" xml:space="preserve"><value>این پیش‌فاکتور دیگر قابل ویرایش نیست. برای مشاهده سند نهایی و اقلام آن، پیش‌نمایش را باز کنید.</value></data>
 </root>
