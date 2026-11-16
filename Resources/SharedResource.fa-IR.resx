@@ -3045,4 +3045,5 @@
   <data name="ManageOrderItemsInJobEditor" xml:space="preserve">
     <value>مدیریت اقلام و تأییدیه‌ها در ویرایش رول/شیت</value>
   </data>
+  <data name="RepeatThisItem" xml:space="preserve"><value>سفارش مجدد این قلم</value></data>
 </root>
