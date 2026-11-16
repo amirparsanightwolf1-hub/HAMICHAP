@@ -59,6 +59,11 @@ public static class JobProcessOverviewService
         public int? JobProgressPercent { get; init; }
         /// <summary>Production-order-wide progress (never presented as per-job).</summary>
         public int? SharedOrderProgressPercent { get; init; }
+        /// <summary>Actual produced quantity for this job, only when the
+        /// quotation line is traceable and its product is unique in the order.</summary>
+        public decimal? ProducedQuantity { get; init; }
+        public decimal? OrderedQuantity { get; init; }
+        public int? QuantityProgressPercent { get; init; }
         public int CompletedStages => Stages.Count(x => x.State == StageState.Completed);
         public int ActiveStages => Stages.Count(x => x.State != StageState.Cancelled);
         public string EditUrl => $"/sales/requests/{(JobType == SalesJobType.Roll ? "roll" : "sheet")}/edit/{RequestId}";
@@ -119,15 +124,14 @@ public static class JobProcessOverviewService
 
         // Include every source job for a quote when determining whether its
         // production operations can be attributed to a single job.
-        var quoteSources = await db.QuotationLines.AsNoTracking()
-            .Where(l => quotationIds.Contains(l.QuotationId) &&
-                        l.SourceRequestId.HasValue)
-            .Select(l => new { l.QuotationId, l.SourceRequestId })
+        var quoteLines = await db.QuotationLines.AsNoTracking()
+            .Where(l => quotationIds.Contains(l.QuotationId))
+            .Select(l => new { l.Id, l.QuotationId, l.SourceRequestId, l.ItemId })
             .ToListAsync(cancellationToken);
         var sourcesPerQuote = quotations.ToDictionary(
             q => q.Id,
-            q => quoteSources
-                .Where(l => l.QuotationId == q.Id)
+            q => quoteLines
+                .Where(l => l.QuotationId == q.Id && l.SourceRequestId.HasValue)
                 .Select(l => l.SourceRequestId!.Value)
                 .Append(q.SalesRequestId).Distinct().Count());
 
@@ -135,6 +139,9 @@ public static class JobProcessOverviewService
             .Where(o => quotationIds.Contains(o.QuotationId))
             .ToListAsync(cancellationToken);
         var salesOrderIds = salesOrders.Select(x => x.Id).ToArray();
+        var salesOrderLines = await db.SalesOrderLines.AsNoTracking()
+            .Where(l => salesOrderIds.Contains(l.SalesOrderId))
+            .ToListAsync(cancellationToken);
         var productionOrders = await db.ProductionOrders.AsNoTracking()
             .Where(p => salesOrderIds.Contains(p.SalesOrderId))
             .ToListAsync(cancellationToken);
@@ -176,8 +183,55 @@ public static class JobProcessOverviewService
                 : operationsByOrder[productionOrder.Id]
                     .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToList();
 
+            // An old quotation with several lines lacking source IDs is
+            // ambiguous as well; don't assign its operation stages to a job.
+            var unlinkedMultiLineQuote = quote is not null &&
+                quoteLines.Count(l => l.QuotationId == quote.Id) > 1 &&
+                quoteLines.Any(l => l.QuotationId == quote.Id &&
+                                    !l.SourceRequestId.HasValue);
             var shared = productionOrder is not null && quote is not null &&
-                sourcesPerQuote.GetValueOrDefault(quote.Id) > 1;
+                (sourcesPerQuote.GetValueOrDefault(quote.Id) > 1 ||
+                 unlinkedMultiLineQuote);
+
+            // Separately provide per-item quantity progress, but only when
+            // every sales line traces back through a quotation line and its
+            // ItemId occurs once within this sales order. The legacy production
+            // posting service reconciles ItemId, not source job, so duplicates
+            // cannot be safely attributed to either job.
+            decimal? orderedQuantity = null;
+            decimal? producedQuantity = null;
+            int? quantityProgress = null;
+            if (quote is not null && salesOrder is not null)
+            {
+                var originatingQuoteLines = quoteLines
+                    .Where(l => l.QuotationId == quote.Id &&
+                                l.SourceRequestId == request.Id)
+                    .Select(l => l.Id).ToHashSet();
+
+                var linesOnQuote = quoteLines.Where(l => l.QuotationId == quote.Id).ToList();
+                if (originatingQuoteLines.Count == 0 &&
+                    quote.SalesRequestId == request.Id &&
+                    linesOnQuote.Count == 1 &&
+                    !linesOnQuote[0].SourceRequestId.HasValue)
+                    originatingQuoteLines.Add(linesOnQuote[0].Id);
+
+                var linesOnOrder = salesOrderLines
+                    .Where(l => l.SalesOrderId == salesOrder.Id).ToList();
+                var matching = linesOnOrder.Where(l =>
+                    l.QuotationLineId.HasValue &&
+                    originatingQuoteLines.Contains(l.QuotationLineId.Value)).ToList();
+
+                if (originatingQuoteLines.Count > 0 &&
+                    matching.Count == originatingQuoteLines.Count &&
+                    matching.All(l => l.Quantity > 0 &&
+                        linesOnOrder.Count(other => other.ItemId == l.ItemId) == 1))
+                {
+                    orderedQuantity = matching.Sum(l => l.Quantity);
+                    producedQuantity = matching.Sum(l => Math.Max(0m, l.ProducedQuantity));
+                    quantityProgress = (int)decimal.Round(Math.Min(
+                        100m, producedQuantity.Value * 100m / orderedQuantity.Value), 0);
+                }
+            }
 
             IReadOnlyList<ProductionJobRouting.SuggestedStage> proposed;
             var invalidSpec = false;
@@ -254,7 +308,10 @@ public static class JobProcessOverviewService
                 InvalidSpecifications = invalidSpec,
                 UsingRecordedOperations = hasVerifiedRoute,
                 JobProgressPercent = jobProgress,
-                SharedOrderProgressPercent = sharedProgress
+                SharedOrderProgressPercent = sharedProgress,
+                OrderedQuantity = orderedQuantity,
+                ProducedQuantity = producedQuantity,
+                QuantityProgressPercent = quantityProgress
             });
         }
 
