@@ -3692,4 +3692,7 @@
   <data name="ProofPreparingHighQualityPdf" xml:space="preserve">
     <value>Preparing high-quality proof...</value>
   </data>
+  <data name="ProofPrintQualityFailed" xml:space="preserve">
+    <value>Could not prepare the original PDF artwork at print quality. Please retry, or open the original PDF using its link.</value>
+  </data>
 </root>
