@@ -9,7 +9,7 @@ namespace HamiChap_MES_ERP.Models.Sales;
 /// entered separately. A draft Roll/Sheet job produces exactly one request line:
 /// Item = the finished product created for JobTitle, Quantity = the quantity
 /// entered in that job's editor, Unit = the finished-product unit (عدد).
-/// Already-submitted requests are never rewritten.
+/// Quoted jobs are updated only when their quotation is editable (enforced by the editor).
 /// </summary>
 public static class SalesRequestFinishedLineSync
 {
@@ -20,7 +20,8 @@ public static class SalesRequestFinishedLineSync
         decimal? quantity,
         int? previousFinishedProductItemId)
     {
-        if (request.Status != SalesRequestStatus.Draft)
+        if (request.Status is not (SalesRequestStatus.Draft or
+            SalesRequestStatus.QuotationCreated))
             return;
 
         if (!quantity.HasValue || quantity.Value <= 0)
