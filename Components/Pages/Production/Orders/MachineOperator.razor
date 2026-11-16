@@ -503,6 +503,26 @@
     private ProductionOperationEvent? LastEvent(long id) =>
         eventsByOperation.GetValueOrDefault(id)?.FirstOrDefault();
 
+    private async Task AssertMachinePermissionAsync(ApplicationDbContext db, int actualMachineId)
+    {
+        var principal = (await Auth.GetAuthenticationStateAsync()).User;
+        if (principal.Identity?.IsAuthenticated != true ||
+            principal.FindFirstValue(ClaimTypes.NameIdentifier) != userId)
+            throw new UnauthorizedAccessException("Authentication is required.");
+
+        var account = await db.Users.AsNoTracking()
+            .Where(x => x.Id == userId && x.IsActive)
+            .Select(x => new { x.AssignedMachineId }).FirstOrDefaultAsync();
+        if (account == null)
+            throw new UnauthorizedAccessException("Operator account is disabled or unavailable.");
+
+        if (principal.IsInRole("Administrator")) return;
+        if (!account.AssignedMachineId.HasValue ||
+            account.AssignedMachineId.Value != actualMachineId)
+            throw new UnauthorizedAccessException(
+                "You may only execute operations on your assigned machine.");
+    }
+
     private async Task RecordAsync(long operationId, string action)
     {
         if (!canOperate || !executionSchemaReady || busy || !new[] { "Started", "Paused", "Resumed", "Finished" }.Contains(action)) return;
@@ -520,6 +540,7 @@
                 x.Status != ScheduleStatus.Cancelled);
             if (step == null || booking == null)
                 throw new InvalidOperationException("Operation is not scheduled for this machine.");
+            await AssertMachinePermissionAsync(db, booking.MachineId);
             if (step.ProductionOrder.Status is ProductionOrderStatus.Cancelled or ProductionOrderStatus.Completed)
                 throw new InvalidOperationException("Production order is closed.");
             if (step.ProductionOrder.OperationsSequenceConfirmedAt == null)
@@ -667,6 +688,7 @@
                 x.Status == ScheduleStatus.Running);
             if (step == null || booking == null)
                 throw new InvalidOperationException("The operation is not running on your selected machine.");
+            await AssertMachinePermissionAsync(db, booking.MachineId);
             var last = await db.ProductionOperationEvents
                 .Where(x => x.ProductionOperationId == operationId)
                 .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
@@ -711,11 +733,13 @@
             await using var db = await DbFactory.CreateDbContextAsync();
             var step = await db.ProductionOperations.AsNoTracking().Include(x => x.ProductionOrder)
                 .FirstOrDefaultAsync(x => x.Id == operationId);
-            if (step == null || step.IsOutsourced ||
-                !await db.ProductionSchedules.AnyAsync(x => x.ProductionOperationId == operationId &&
-                    (machineId == 0 || x.MachineId == machineId) &&
-                    x.Status != ScheduleStatus.Cancelled))
+            var booking = await db.ProductionSchedules.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.ProductionOperationId == operationId &&
+                (machineId == 0 || x.MachineId == machineId) &&
+                x.Status != ScheduleStatus.Cancelled);
+            if (step == null || step.IsOutsourced || booking == null)
                 throw new InvalidOperationException("Operation is not scheduled on the selected machine.");
+            await AssertMachinePermissionAsync(db, booking.MachineId);
             if (step.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled ||
                 step.ProductionOrder.Status is ProductionOrderStatus.Completed or ProductionOrderStatus.Cancelled)
                 throw new InvalidOperationException("This operation or production order is closed.");
