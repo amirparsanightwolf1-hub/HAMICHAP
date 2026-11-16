@@ -127,30 +127,45 @@
 
                     @if (request.JobType == SalesJobType.Roll)
                     {
-                        <div class="proof-panel">
-                            <div class="proof-panel-title">@LocalizationService["SelectedRollOrientation"]</div>
-                            <div class="proof-roll-orientation">
-                                @if (RollOrientationChoices.Find(rollOrientation) is { } currentOrientation)
+                        <div class="proof-panel proof-orientations-panel">
+                            <div class="proof-panel-title">@LocalizationService["RollOrientationProofAllChoices"]</div>
+                            <div class="proof-panel-body">
+                                <div class="proof-roll-orientation proof-roll-orientation-grid">
+                                    @foreach (var choice in RollOrientationChoices.All)
+                                    {
+                                        var isSelected = rollOrientation == choice.Value;
+                                        <div class="proof-roll-choice @(isSelected ? "is-selected" : "")"
+                                             @key="choice.Value">
+                                            <img src="@choice.ImagePath" alt="@LocalizationService[choice.LocalizationKey]" />
+                                            <div class="proof-roll-choice-caption">
+                                                <span>@LocalizationService[choice.LocalizationKey]</span>
+                                                @if (isSelected)
+                                                {
+                                                    <strong class="proof-roll-selected">
+                                                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                                        @LocalizationService["Selected"]
+                                                    </strong>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                @if (RollOrientationChoices.IsLegacy(rollOrientation))
                                 {
-                                    <img src="@currentOrientation.ImagePath"
-                                         alt="@LocalizationService[currentOrientation.LocalizationKey]" />
+                                    <div class="proof-roll-legacy">
+                                        <img src="@($"/images/roll-orientations/orientation-{rollOrientation}.jpg")"
+                                             alt="@RollOrientationLabel" />
+                                        <span>@LocalizationService["RollOrientationLegacyProofNotice"] (@RollOrientationLabel)</span>
+                                    </div>
                                 }
-                                else if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
+                                else if (string.IsNullOrWhiteSpace(rollOrientation))
                                 {
-                                    <img src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
-                                         alt="@RollOrientationLabel" />
-                                }
-                                else
-                                {
-                                    <span class="proof-muted">@LocalizationService["NoRollOrientationSelected"]</span>
+                                    <div class="proof-muted mt-2">@LocalizationService["NoRollOrientationSelected"]</div>
                                 }
                             </div>
-                            @if (!string.IsNullOrWhiteSpace(rollOrientation))
-                            {
-                                <div class="proof-panel-body text-center proof-muted">@RollOrientationLabel</div>
-                            }
                         </div>
                     }
+
 
                     <div class="proof-panel">
                         <div class="proof-panel-title">@LocalizationService["ProductionNotes"]</div>
