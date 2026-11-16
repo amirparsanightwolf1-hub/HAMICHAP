@@ -1,5 +1,6 @@
 @page "/production/machine-operator"
 @rendermode InteractiveServer
+@implements IAsyncDisposable
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using System.Security.Claims
 @using HamiChap_MES_ERP.Data
@@ -207,6 +208,7 @@
 </div>
 
 @code {
+    private readonly CancellationTokenSource refreshCancellation = new();
     private bool canOperate;
     private bool busy;
     private bool isError;
@@ -279,6 +281,34 @@
         items = await db.Items.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
         if (machines.Count > 0) machineId = machines[0].Id;
         await ReloadAsync();
+        _ = RefreshLoopAsync();
+    }
+
+    private async Task RefreshLoopAsync()
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+            while (await timer.WaitForNextTickAsync(refreshCancellation.Token))
+            {
+                if (busy) continue;
+                await InvokeAsync(async () =>
+                {
+                    if (busy) return;
+                    await ReloadAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        refreshCancellation.Cancel();
+        refreshCancellation.Dispose();
+        return ValueTask.CompletedTask;
     }
 
     private async Task ReloadAsync()
