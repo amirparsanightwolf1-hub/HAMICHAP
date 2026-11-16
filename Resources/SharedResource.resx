@@ -3614,4 +3614,19 @@
   <data name="OperationalCompletedInspections" xml:space="preserve">
     <value>Completed inspections</value>
   </data>
+  <data name="RollOrientationHorizontalLeft" xml:space="preserve">
+    <value>Horizontal labels — roll on the left</value>
+  </data>
+  <data name="RollOrientationHorizontalRight" xml:space="preserve">
+    <value>Horizontal labels — roll on the right</value>
+  </data>
+  <data name="RollOrientationVerticalLeft" xml:space="preserve">
+    <value>Vertical labels — roll on the left</value>
+  </data>
+  <data name="RollOrientationVerticalRight" xml:space="preserve">
+    <value>Vertical labels — roll on the right</value>
+  </data>
+  <data name="RollOrientationLegacyNotice" xml:space="preserve">
+    <value>This job uses a previous orientation format. Choose one of the four layouts to update it. The old selection remains unchanged until you choose a new one.</value>
+  </data>
 </root>
