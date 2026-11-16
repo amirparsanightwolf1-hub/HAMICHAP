@@ -146,7 +146,7 @@
                         <div class="card-body p-3 p-lg-4">
                             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
                                 <div>
-                                    <div class="small text-muted mb-1">@L["Order"] · @step.ProductionOrder.OrderNumber · @L["OperatorStep"] @step.Sequence</div>
+                                    <div class="small text-muted mb-1">@L["OperatorOrder"] · @step.ProductionOrder.OrderNumber · @L["OperatorStep"] @step.Sequence</div>
                                     <h3 class="h5 fw-bold mb-1">@step.Name</h3>
                                     <div class="small text-muted">
                                         @L["Machine"]: @(machines.FirstOrDefault(x => x.Id == booking?.MachineId)?.Name ?? L["OperatorNotScheduled"])
