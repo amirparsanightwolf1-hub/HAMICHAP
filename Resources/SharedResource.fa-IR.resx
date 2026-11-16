@@ -2553,6 +2553,7 @@
   <data name="Scheduled" xml:space="preserve"><value>زمان‌بندی‌شده</value></data>
   <data name="SplitOrderIntoOperations" xml:space="preserve"><value>تقسیم سفارش به عملیات</value></data>
   <data name="RemainingDuration" xml:space="preserve"><value>زمان تخصیص‌نیافته</value></data>
+  <data name="OperationTotalWithinCeo" xml:space="preserve"><value>مجموع زمان مراحل در محدوده زمان تعیین‌شده توسط مدیرعامل است؛ باقی ماندن زمان تخصیص‌نیافته مجاز است.</value></data>
   <data name="OperationTotalMatchesCeo" xml:space="preserve"><value>مجموع زمان تخمینی عملیات با مدت زمان سفارش مدیرعامل برابر است.</value></data>
   <data name="OperationNamePlaceholder" xml:space="preserve"><value>مثلاً چاپ، سلفون‌کشی، قالب‌زنی</value></data>
   <data name="OrderOperations" xml:space="preserve"><value>عملیات سفارش</value></data>
@@ -2588,7 +2589,7 @@
   <data name="UnscheduleBeforeReordering" xml:space="preserve"><value>پیش از تغییر ترتیب، همه مراحل زمان‌بندی‌شده این سفارش را به فهرست بازگردانید.</value></data>
   <data name="ApprovalIdentityMissing" xml:space="preserve"><value>برای تأیید ترتیب، حساب کاربری واردشده مدیر تولید لازم است.</value></data>
   <data name="InvalidOperationSequence" xml:space="preserve"><value>برای تأیید، شماره مراحل باید پیوسته و بدون تکرار، نام‌ها معتبر و مدت زمان‌ها مثبت باشند.</value></data>
-  <data name="StageDurationTotalMismatch" xml:space="preserve"><value>پیش از تأیید ترتیب، مجموع زمان مراحل باید با زمان کل تعیین‌شده توسط مدیرعامل برابر باشد.</value></data>
+  <data name="StageDurationTotalMismatch" xml:space="preserve"><value>پیش از تأیید ترتیب، مجموع زمان مراحل نباید از زمان کل تعیین‌شده توسط مدیرعامل بیشتر باشد. باقی ماندن زمان تخصیص‌نیافته مجاز است.</value></data>
   <data name="MachineAssignmentsRequired" xml:space="preserve"><value>پیش از تأیید ترتیب، برای هر مرحله یک دستگاه فعال انتخاب و ذخیره کنید.</value></data>
   <data name="ExistingOrderSequenceConflict" xml:space="preserve"><value>زمان‌بندی‌های موجود هم‌پوشانی دارند یا مطابق ترتیب مراحل نیستند. پیش از تأیید، آن‌ها را اصلاح کرده یا به فهرست بازگردانید.</value></data>
   <data name="SequenceConfirmationSaved" xml:space="preserve"><value>تأیید ترتیب مراحل توسط مدیر تولید ذخیره شد.</value></data>
