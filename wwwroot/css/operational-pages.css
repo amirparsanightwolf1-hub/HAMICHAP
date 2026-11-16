@@ -56,9 +56,38 @@
   .operational-page .operational-hero-icon { width:44px; height:44px; flex-basis:44px; font-size:1.2rem; }
   .operational-page .operational-toolbar { align-items:stretch; }
   .operational-page .operational-search,.operational-page .operational-filter,.operational-page .operational-clear { flex-basis:100%; width:100%; }
-  .operational-page .operational-table { min-width:680px; }
+  .production-workflow-page .operational-table,.quality-inspection-page .operational-table { min-width:680px; }
   .operational-page .operational-table tbody td { padding:11px 10px; }
   .operational-page .operational-stages .operational-stage-grid > div > .border { padding:15px!important; }
   .operational-page .operational-kpi { padding:13px; }
 }
 @media (prefers-reduced-motion:reduce) { .operational-stages .operational-stage-grid > div > .border { transition:none; } }
+
+/* Order lists collapse into labeled rows on narrow screens. */
+@media(max-width:650px) {
+  .sales-order-page .operational-table,
+  .production-order-page .operational-table { min-width:0; width:100%; }
+  .sales-order-page .operational-table thead,
+  .production-order-page .operational-table thead { display:none; }
+  .sales-order-page .operational-table tbody,
+  .production-order-page .operational-table tbody { display:block; }
+  .sales-order-page .operational-table tbody tr,
+  .production-order-page .operational-table tbody tr {
+    display:block; margin:10px 0; padding:8px 12px;
+    border:1px solid var(--ops-border); border-radius:11px;
+    background:var(--bs-body-bg);
+  }
+  .sales-order-page .operational-table tbody td,
+  .production-order-page .operational-table tbody td {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:9px 4px; text-align:end!important; border-bottom:1px solid var(--bs-border-color);
+  }
+  .sales-order-page .operational-table tbody td:last-child,
+  .production-order-page .operational-table tbody td:last-child { border-bottom:0; }
+  .sales-order-page .operational-table tbody td[data-label]::before,
+  .production-order-page .operational-table tbody td[data-label]::before {
+    content:attr(data-label); font-size:.77rem; font-weight:650; color:var(--bs-secondary-color); text-align:start;
+  }
+  .sales-order-page .operational-table tbody td .btn,
+  .production-order-page .operational-table tbody td .btn { flex:1; min-height:43px; }
+}
