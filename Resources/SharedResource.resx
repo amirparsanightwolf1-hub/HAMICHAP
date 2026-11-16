@@ -3452,4 +3452,16 @@
   <data name="OperatorOrder" xml:space="preserve">
     <value>Order</value>
   </data>
+  <data name="OperatorSignedInAs" xml:space="preserve">
+    <value>Signed in as</value>
+  </data>
+  <data name="OperatorReadyAndRunning" xml:space="preserve">
+    <value>Your current work</value>
+  </data>
+  <data name="OperatorNoReadyJobs" xml:space="preserve">
+    <value>No operations ready to start</value>
+  </data>
+  <data name="OperatorNoReadyJobsHint" xml:space="preserve">
+    <value>Your next operation appears below. You can start it when the previous step is complete and the machine is available.</value>
+  </data>
 </root>
