@@ -369,6 +369,41 @@
 }
 .job-overview-shared-progress strong { color: #42627d; }
 
+.job-overview-quantity-progress {
+    margin-top: 19px;
+    padding: 15px;
+    border: 1px solid #d6e5e0;
+    border-radius: 11px;
+    background: #f1f8f6;
+}
+.job-overview-quantity-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+    color: #446b61;
+    font-size: .76rem;
+    font-weight: 740;
+}
+.job-overview-quantity-heading strong {
+    color: #1d7063;
+    font-size: .77rem;
+    font-weight: 850;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+.job-overview-quantity-progress .job-overview-progress-track { height: 8px; background: #dceee7; }
+.job-overview-quantity-progress .job-overview-progress-fill { background: #2a9078; }
+.job-overview-quantity-progress p {
+    color: #779088;
+    font-size: .7rem;
+    line-height: 1.55;
+    margin: 10px 0 0;
+}
+
 .job-overview-process-panel { padding: 23px 26px; }
 .job-overview-process-heading {
     display: flex;
