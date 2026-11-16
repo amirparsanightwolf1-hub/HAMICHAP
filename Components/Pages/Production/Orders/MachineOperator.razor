@@ -296,7 +296,7 @@
                 x.MachineId == booking.MachineId && x.ProductionOperationId != step.Id &&
                 x.Status == ScheduleStatus.Running))
             return "Machine is currently running another operation / دستگاه مشغول است";
-        if (bookingsByOperation.Values.Any(x =>
+        if (now < booking.PlannedStart && bookingsByOperation.Values.Any(x =>
                 x.Id != booking.Id && x.MachineId == booking.MachineId &&
                 x.Status != ScheduleStatus.Cancelled &&
                 x.PlannedStart < booking.PlannedStart && x.PlannedEnd > now))
