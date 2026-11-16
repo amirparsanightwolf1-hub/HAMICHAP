@@ -38,6 +38,9 @@ public partial class AddOperationExecutionTracking : Migration
             table: "ProductionOperationEvents",
             columns: new[] { "ProductionOperationId", "OccurredAtUtc" });
 
+        migrationBuilder.AddColumn<string>(
+            name: "RequestedByUserId", table: "ProductionMaterialRequests",
+            type: "nvarchar(450)", maxLength: 450, nullable: true);
         migrationBuilder.AddColumn<long>(
             name: "ProductionOperationId", table: "ProductionMaterialRequests",
             type: "bigint", nullable: true);
@@ -59,6 +62,7 @@ public partial class AddOperationExecutionTracking : Migration
         migrationBuilder.DropIndex(name: "IX_ProductionMaterialRequests_ProductionOperationId",
             table: "ProductionMaterialRequests");
         migrationBuilder.DropColumn(name: "ProductionOperationId", table: "ProductionMaterialRequests");
+        migrationBuilder.DropColumn(name: "RequestedByUserId", table: "ProductionMaterialRequests");
         migrationBuilder.DropTable(name: "ProductionOperationEvents");
     }
 }
