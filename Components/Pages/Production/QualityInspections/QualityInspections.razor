@@ -17,8 +17,9 @@
 
 <PageTitle>@LocalizationService["QualityInspections"]</PageTitle>
 
-<div class="page-container">
-    <div class="erp-page-header">
+<div class="page-container operational-page quality-inspection-page">
+    <div class="erp-page-header operational-hero">
+        <div class="operational-hero-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></div>
         <div>
             <h3 class="erp-page-title">@LocalizationService["QualityInspections"]</h3>
             <p class="erp-page-subtitle">@LocalizationService["QualityInspectionsDescription"]</p>
@@ -37,9 +38,18 @@
         <div class="alert alert-success mb-3">@successMessage</div>
     }
 
+    @if (inspections != null)
+    {
+        <div class="operational-kpis operational-kpis-three">
+            <div class="operational-kpi"><span>@LocalizationService["OperationalTotalInspections"]</span><strong>@inspections.Count</strong></div>
+            <div class="operational-kpi"><span>@LocalizationService["OperationalOpenInspections"]</span><strong>@inspections.Count(x => !IsCompleted(x.Status))</strong></div>
+            <div class="operational-kpi"><span>@LocalizationService["OperationalCompletedInspections"]</span><strong>@inspections.Count(x => IsCompleted(x.Status))</strong></div>
+        </div>
+    }
+
     @if (showCreate)
     {
-        <div class="card mb-4">
+        <div class="card mb-4 operational-card">
             <div class="card-header"><strong>@LocalizationService["CreateInspection"]</strong></div>
             <div class="card-body">
                 <div class="row g-3">
@@ -77,14 +87,14 @@
         </div>
     }
 
-    <div class="card mb-4">
+    <div class="card mb-4 operational-card">
         <div class="card-body">
             <div class="row g-2">
                 <div class="col-md-8">
-                    <input class="form-control" placeholder="@LocalizationService["SearchInspectionPlaceholder"]" @bind="searchText" @bind:event="oninput" />
+                    <input aria-label="@LocalizationService["Search"]" class="form-control" placeholder="@LocalizationService["SearchInspectionPlaceholder"]" @bind="searchText" @bind:event="oninput" />
                 </div>
                 <div class="col-md-4">
-                    <InputSelect class="form-select" @bind-Value="statusFilter">
+                    <InputSelect aria-label="@LocalizationService["Status"]" class="form-select" @bind-Value="statusFilter">
                         <option value="">@LocalizationService["AllStatuses"]</option>
                         @foreach (var status in Enum.GetValues<QualityInspectionStatus>())
                         {
@@ -109,7 +119,7 @@
              x.Id.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase)) &&
             (string.IsNullOrWhiteSpace(statusFilter) || x.Status.ToString() == statusFilter)).ToList();
 
-        <div class="card mb-4">
+        <div class="card mb-4 operational-card">
             <div class="card-header"><strong>@LocalizationService["QualityInspections"]</strong></div>
             <div class="card-body">
                 @if (filtered.Count == 0)
@@ -119,7 +129,7 @@
                 else
                 {
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        <table class="table table-hover align-middle operational-table">
                             <thead>
                                 <tr>
                                     <th>@LocalizationService["InspectionNumber"]</th>
@@ -158,7 +168,8 @@
 
     @if (selected != null)
     {
-        <div class="erp-page-header">
+        <div class="erp-page-header operational-hero">
+        <div class="operational-hero-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></div>
             <div>
                 <h3 class="erp-page-title">@LocalizationService["QualityInspectionDetails"] — QC-@selected.Id</h3>
                 <p class="erp-page-subtitle">@selected.ProductionOrder?.OrderNumber · @ItemLabel(selected.ItemId)</p>
@@ -166,7 +177,7 @@
             <span class="@StatusClass(selected.Status)">@LocalizationService[selected.Status.ToString()]</span>
         </div>
 
-        <div class="card mb-4">
+        <div class="card mb-4 operational-card">
             <div class="card-header"><strong>@LocalizationService["InspectionResults"]</strong></div>
             <div class="card-body">
                 @if (selected.Results.Count == 0)
@@ -176,7 +187,7 @@
                 else
                 {
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        <table class="table table-hover align-middle operational-table">
                             <thead>
                                 <tr>
                                     <th>@LocalizationService["ParameterName"]</th>
@@ -210,7 +221,7 @@
 
         @if (CanEdit(selected.Status))
         {
-            <div class="card mb-4">
+            <div class="card mb-4 operational-card">
                 <div class="card-header"><strong>@LocalizationService["AddInspectionResult"]</strong></div>
                 <div class="card-body">
                     <div class="row g-3">
@@ -225,7 +236,7 @@
                 </div>
             </div>
 
-            <div class="card mb-4">
+            <div class="card mb-4 operational-card">
                 <div class="card-header"><strong>@LocalizationService["CompleteInspection"]</strong></div>
                 <div class="card-body">
                     <p class="text-muted">@LocalizationService["InspectionQuantityRule"]</p>
@@ -241,7 +252,7 @@
 
         @if (IsCompleted(selected.Status) && !qualityResultAlreadyPosted)
         {
-            <div class="card mb-4">
+            <div class="card mb-4 operational-card">
                 <div class="card-header"><strong>@LocalizationService["PostQualityResultToInventory"]</strong></div>
                 <div class="card-body">
                     <p class="text-muted">@LocalizationService["QualityPostingDescription"]</p>
