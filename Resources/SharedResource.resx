@@ -3701,4 +3701,7 @@
   <data name="ProofOrientationCheckboxHint" xml:space="preserve">
     <value>Tick any applicable orientation. Your checkmarks will appear on the printed proof.</value>
   </data>
+  <data name="ProofDimensionsAndSizes" xml:space="preserve">
+    <value>Label dimensions and sizes</value>
+  </data>
 </root>
