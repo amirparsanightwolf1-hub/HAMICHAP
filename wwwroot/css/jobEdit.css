@@ -437,6 +437,57 @@
     border-color: var(--je-accent);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--je-accent) 11%, transparent);
 }
+/* Four large, diagram-first orientation options (roll editor only). */
+.job-edit-page.job-edit-roll .orientation-grid-four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-option {
+    min-height: 0;
+    padding: 14px;
+    gap: 11px;
+    justify-content: flex-start;
+    color: var(--je-ink);
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-picture {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    aspect-ratio: 480 / 242;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid #e6e9ee;
+    border-radius: 8px;
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-caption {
+    font-size: .91rem;
+    font-weight: 700;
+    line-height: 1.45;
+    text-align: center;
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-check {
+    color: var(--je-accent-strong);
+    font-size: .82rem;
+    font-weight: 700;
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-option:focus-visible {
+    outline: 3px solid var(--je-accent);
+    outline-offset: 2px;
+}
+@media (max-width: 620px) {
+    .job-edit-page.job-edit-roll .orientation-grid-four {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .job-edit-page.job-edit-roll .orientation-grid-four .orientation-option {
+        transition: none;
+    }
+    .job-edit-page.job-edit-roll .orientation-grid-four .orientation-option:hover {
+        transform: none;
+    }
+}
+
 .job-edit-page .job-section details {
     background: #fafbfd;
     border-color: #e1e8f1 !important;
