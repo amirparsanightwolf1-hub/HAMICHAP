@@ -283,7 +283,7 @@ public static class JobProcessOverviewService
                 jobProgress = shared ? null : 0;
             }
 
-            var sharedProgress = shared && recorded.Count > 0
+            int? sharedProgress = shared && recorded.Count > 0
                 ? CalculateProgress(recorded) : null;
 
             rows.Add(new JobRow
