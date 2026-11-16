@@ -3629,4 +3629,46 @@
   <data name="RollOrientationLegacyNotice" xml:space="preserve">
     <value>This job uses a previous orientation format. Choose one of the four layouts to update it. The old selection remains unchanged until you choose a new one.</value>
   </data>
+  <data name="RollCmykColors" xml:space="preserve">
+    <value>Process colors (CMYK)</value>
+  </data>
+  <data name="RollPantoneColors" xml:space="preserve">
+    <value>Pantone spot colors</value>
+  </data>
+  <data name="RollPantoneMultipleHint" xml:space="preserve">
+    <value>Add each required spot color separately</value>
+  </data>
+  <data name="RollPantoneReference" xml:space="preserve">
+    <value>Pantone reference</value>
+  </data>
+  <data name="RollPantoneCodeExample" xml:space="preserve">
+    <value>e.g. PANTONE 186 C</value>
+  </data>
+  <data name="RollPantonePreviewColor" xml:space="preserve">
+    <value>Preview color</value>
+  </data>
+  <data name="RollPantoneAdd" xml:space="preserve">
+    <value>Add or update color</value>
+  </data>
+  <data name="RollPantoneRemove" xml:space="preserve">
+    <value>Remove Pantone color</value>
+  </data>
+  <data name="RollPantonePreviewDisclaimer" xml:space="preserve">
+    <value>On-screen preview only; confirm the exact ink with a physical Pantone guide.</value>
+  </data>
+  <data name="RollPantoneInvalidReference" xml:space="preserve">
+    <value>Enter a Pantone reference between 2 and 64 characters.</value>
+  </data>
+  <data name="RollPantoneInvalidSwatch" xml:space="preserve">
+    <value>Select a valid preview color.</value>
+  </data>
+  <data name="RollPantoneLimit" xml:space="preserve">
+    <value>You can add up to 24 Pantone colors.</value>
+  </data>
+  <data name="RollPantoneNone" xml:space="preserve">
+    <value>No Pantone spot colors selected</value>
+  </data>
+  <data name="RollPrintingColors" xml:space="preserve">
+    <value>Roll printing colors</value>
+  </data>
 </root>
