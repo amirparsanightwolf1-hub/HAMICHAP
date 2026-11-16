@@ -310,7 +310,9 @@
         return value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     }
 
-    private static string FormatAmount(decimal value) => value.ToString("N2", CultureInfo.CurrentCulture);
+    private static string FormatAmount(decimal value) =>
+        decimal.Round(value, 0, MidpointRounding.AwayFromZero)
+            .ToString("N0", CultureInfo.CurrentCulture);
 
     private void BackToEditor() =>
         Navigation.NavigateTo($"/sales/quotations/edit/{Id}");
