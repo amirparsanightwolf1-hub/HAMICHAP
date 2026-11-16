@@ -11,9 +11,10 @@
 
 <PageTitle>@L["ProductionOrders"]</PageTitle>
 
-<div class="page-container">
+<div class="page-container operational-page production-order-page">
 
-    <div class="erp-page-header">
+    <div class="erp-page-header operational-hero">
+        <div class="operational-hero-icon"><i class="bi bi-gear-wide-connected" aria-hidden="true"></i></div>
 
         <div>
             <h3 class="erp-page-title">
@@ -26,6 +27,16 @@
         </div>
 
     </div>
+
+    @if (productionOrders != null)
+    {
+        <div class="operational-kpis">
+            <div class="operational-kpi"><span>@L["Workflow_OpenOrders"]</span><strong>@productionOrders.Count(x => x.Status != ProductionOrderStatus.Cancelled && x.Status != ProductionOrderStatus.Completed)</strong></div>
+            <div class="operational-kpi"><span>@L["InProduction"]</span><strong>@productionOrders.Count(x => x.Status == ProductionOrderStatus.InProduction)</strong></div>
+            <div class="operational-kpi"><span>@L["QualityControl"]</span><strong>@productionOrders.Count(x => x.Status == ProductionOrderStatus.QualityControl)</strong></div>
+            <div class="operational-kpi"><span>@L["Completed"]</span><strong>@productionOrders.Count(x => x.Status == ProductionOrderStatus.Completed)</strong></div>
+        </div>
+    }
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
@@ -43,24 +54,41 @@
     else if (productionOrders.Count == 0)
     {
         <div class="card">
-            <div class="card-body">
+            <div class="card-body operational-empty">
                 @L["NoProductionOrdersFound"]
             </div>
         </div>
     }
     else
     {
-        <div class="card">
-
+        <div class="card operational-card">
             <div class="card-body">
+                <div class="operational-toolbar">
+                    <div class="operational-search">
+                        <label for="production-order-search" class="form-label">@L["Search"]</label>
+                        <input id="production-order-search" class="form-control" @bind="searchText" @bind:event="oninput" placeholder="@L["OperationalSearchOrders"]" />
+                    </div>
+                    <div class="operational-filter">
+                        <label for="production-order-status" class="form-label">@L["Status"]</label>
+                        <select id="production-order-status" class="form-select" @bind="statusFilter">
+                            <option value="">@L["AllStatuses"]</option>
+                            @foreach (var status in Enum.GetValues<ProductionOrderStatus>())
+                            {
+                                <option value="@status.ToString()">@LocalizationService.TranslateEnum(status)</option>
+                            }
+                        </select>
+                    </div>
+                    <button class="btn btn-outline-secondary operational-clear" type="button" @onclick="ClearFilters">@L["Workflow_ClearFilters"]</button>
+                </div>
+                <div class="operational-result-count">@FilteredOrders.Count @L["OperationalResults"]</div>
 
                 <div class="table-responsive">
 
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle operational-table">
 
                         <thead>
                             <tr>
-                                <th>Order Number</th>
+                                <th>@L["OrderNumber"]</th>
                                 <th>@L["SalesOrder"]</th>
                                 <th>@L["Status"]</th>
                                 <th>@L["Created"]</th>
@@ -73,39 +101,39 @@
 
                         <tbody>
 
-                            @foreach (var order in productionOrders)
+                            @foreach (var order in FilteredOrders)
                             {
                                 <tr>
 
-                                    <td>
+                                    <td data-label="@L["OrderNumber"]">
                                         <strong>
                                             @order.OrderNumber
                                         </strong>
                                     </td>
 
-                                    <td>
+                                    <td data-label="@L["SalesOrder"]">
                                         @order.SalesOrder?.OrderNumber
                                     </td>
 
-                                    <td>
+                                    <td data-label="@L["Status"]">
                                         <span class="@GetStatusClass(order.Status)">
                                             @LocalizationService.TranslateEnum(order.Status)
                                         </span>
                                     </td>
 
-                                    <td>
+                                    <td data-label="@L["Created"]">
                                         @order.CreatedDate.ToString("yyyy-MM-dd")
                                     </td>
 
-                                    <td>
+                                    <td data-label="@L["PlannedStart"]">
                                         @(order.PlannedStartDate?.ToString("yyyy-MM-dd") ?? "-")
                                     </td>
 
-                                    <td>
+                                    <td data-label="@L["PlannedEnd"]">
                                         @(order.PlannedEndDate?.ToString("yyyy-MM-dd") ?? "-")
                                     </td>
 
-                                    <td>
+                                    <td data-label="@L["Lines"]">
                                         @order.Lines.Count
                                     </td>
 
@@ -141,6 +169,16 @@
     private List<ProductionOrder>? productionOrders;
 
     private string? errorMessage;
+    private string searchText = "";
+    private string statusFilter = "";
+
+    private List<ProductionOrder> FilteredOrders => (productionOrders ?? new())
+        .Where(x => (string.IsNullOrWhiteSpace(statusFilter) || x.Status.ToString() == statusFilter) &&
+            (string.IsNullOrWhiteSpace(searchText) || x.OrderNumber.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
+             (x.SalesOrder?.OrderNumber?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false)))
+        .ToList();
+
+    private void ClearFilters() { searchText = ""; statusFilter = ""; }
 
     protected override async Task OnInitializedAsync()
     {
