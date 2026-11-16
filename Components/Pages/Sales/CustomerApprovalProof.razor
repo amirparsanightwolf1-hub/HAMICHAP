@@ -130,7 +130,12 @@
                         <div class="proof-panel">
                             <div class="proof-panel-title">@LocalizationService["SelectedRollOrientation"]</div>
                             <div class="proof-roll-orientation">
-                                @if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
+                                @if (RollOrientationChoices.Find(rollOrientation) is { } currentOrientation)
+                                {
+                                    <img src="@currentOrientation.ImagePath"
+                                         alt="@LocalizationService[currentOrientation.LocalizationKey]" />
+                                }
+                                else if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
                                 {
                                     <img src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
                                          alt="@RollOrientationLabel" />
@@ -425,9 +430,11 @@
         selectedServices.Contains(storedValue, StringComparer.OrdinalIgnoreCase);
 
     private string RollOrientationLabel =>
-        int.TryParse(rollOrientation, out var n) && n is >= 1 and <= 8
-            ? $"{LocalizationService["RollOrientationOption"]} {n}"
-            : LocalizationService["NoRollOrientationSelected"];
+        RollOrientationChoices.Find(rollOrientation) is { } current
+            ? LocalizationService[current.LocalizationKey]
+            : int.TryParse(rollOrientation, out var n) && n is >= 1 and <= 8
+                ? $"{LocalizationService["RollOrientationOption"]} {n}"
+                : LocalizationService["NoRollOrientationSelected"];
 
     protected override async Task OnParametersSetAsync()
     {
