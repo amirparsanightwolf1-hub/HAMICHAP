@@ -3695,4 +3695,10 @@
   <data name="ProofPrintQualityFailed" xml:space="preserve">
     <value>آماده‌سازی فایل PDF با کیفیت مناسب چاپ انجام نشد. دوباره تلاش کنید یا فایل PDF اصلی را از پیوند آن باز کنید.</value>
   </data>
+  <data name="ProofOrientationMark" xml:space="preserve">
+    <value>انتخاب</value>
+  </data>
+  <data name="ProofOrientationCheckboxHint" xml:space="preserve">
+    <value>جهت‌های مورد نظر را علامت بزنید. علامت‌ها در نسخه چاپی نمونه تأیید نمایش داده می‌شوند.</value>
+  </data>
 </root>
