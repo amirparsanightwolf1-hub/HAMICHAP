@@ -3584,4 +3584,34 @@
   <data name="ManagerMoreAdministration" xml:space="preserve">
     <value>موارد بیشتر مدیریت</value>
   </data>
+  <data name="OperationalSearchOrders" xml:space="preserve">
+    <value>جستجوی شماره سفارش تولید یا فروش</value>
+  </data>
+  <data name="OperationalResults" xml:space="preserve">
+    <value>نتیجه</value>
+  </data>
+  <data name="OperationalTotalOrders" xml:space="preserve">
+    <value>تعداد کل سفارش‌ها</value>
+  </data>
+  <data name="OperationalPage" xml:space="preserve">
+    <value>صفحه</value>
+  </data>
+  <data name="OperationalShowing" xml:space="preserve">
+    <value>در حال نمایش</value>
+  </data>
+  <data name="OperationalSearchSales" xml:space="preserve">
+    <value>جستجوی شماره سفارش یا مشتری</value>
+  </data>
+  <data name="OperationalApplyFilters" xml:space="preserve">
+    <value>اعمال فیلتر</value>
+  </data>
+  <data name="OperationalTotalInspections" xml:space="preserve">
+    <value>کل بازرسی‌ها</value>
+  </data>
+  <data name="OperationalOpenInspections" xml:space="preserve">
+    <value>بازرسی‌های باز</value>
+  </data>
+  <data name="OperationalCompletedInspections" xml:space="preserve">
+    <value>بازرسی‌های تکمیل‌شده</value>
+  </data>
 </root>
