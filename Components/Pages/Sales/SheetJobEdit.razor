@@ -48,6 +48,9 @@
     }
     else if (request is not null)
     {
+        <SalesJobOrderPanel RequestId="@RequestId" TargetQuotationId="@TargetQuotationId"
+                            SaveCurrentAsync="@SaveCurrentForOrderAsync" />
+
         <fieldset class="border-0 p-0 m-0 w-100" disabled="@(!canEditSpecifications)">
         <div class="card job-section mb-4">
             <div class="card-header"><strong>@LocalizationService["OrderInformation"]</strong></div>
@@ -334,8 +337,6 @@
 
         <SalesRequestWorkflowPanel Request="request" />
 
-        <SalesJobOrderPanel RequestId="@RequestId" TargetQuotationId="@TargetQuotationId"
-                            SaveCurrentAsync="@SaveCurrentForOrderAsync" />
 
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
