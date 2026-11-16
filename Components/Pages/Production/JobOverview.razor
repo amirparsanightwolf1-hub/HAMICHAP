@@ -283,7 +283,7 @@
                                     <ol class="job-overview-process-list">
                                         @foreach (var stage in job.Stages)
                                         {
-                                            <li class="job-overview-process" @key="stage.Sequence">
+                                            <li class="job-overview-process">
                                                 <span class="job-overview-stage-index">@stage.Sequence</span>
                                                 <div class="job-overview-stage-content">
                                                     <strong>@StageName(stage.Name)</strong>
