@@ -8,10 +8,21 @@ export async function renderPdf(container, url) {
     let disposed = false;
     let resizeObserver;
 
+    const state = {
+        printing: false,
+        disposed: false,
+        generation: 0,
+        refresh: null,
+        printPromise: null
+    };
+    container.__proofPdfState = state;
     container.__proofPdfCleanup = () => {
         disposed = true;
+        state.disposed = true;
+        state.generation++;
         controller.abort();
         resizeObserver?.disconnect();
+        delete container.__proofPdfState;
     };
 
     try {
@@ -64,7 +75,7 @@ export async function renderPdf(container, url) {
         if (disposed) return;
 
         const renderAllPages = () => {
-            if (disposed) return;
+            if (disposed || state.printing) return;
             const width = container.clientWidth;
             const height = container.clientHeight;
             if (!width || !height) return;
@@ -105,27 +116,22 @@ export async function renderPdf(container, url) {
             container.style.gap = `${gap}px`;
             container.style.overflow = "hidden";
 
-            const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-
+            // Render the PNG directly as an image. Redrawing onto a small
+            // screen-resolution canvas permanently discarded pixels before print.
             for (const item of pages) {
                 const wrapper = document.createElement("div");
                 wrapper.className = "proof-pdf-page";
 
-                const canvas = document.createElement("canvas");
-                const context = canvas.getContext("2d");
-                const cssWidth = item.width * best.scale;
-                const cssHeight = item.height * best.scale;
-
-                canvas.width = Math.ceil(cssWidth * pixelRatio);
-                canvas.height = Math.ceil(cssHeight * pixelRatio);
-                canvas.style.width = `${cssWidth}px`;
-                canvas.style.height = `${cssHeight}px`;
-
-                if (context && item.image) {
-                    context.drawImage(item.image, 0, 0, canvas.width, canvas.height);
-                }
-
-                wrapper.appendChild(canvas);
+                const image = document.createElement("img");
+                image.className = "proof-pdf-image";
+                image.alt = `PDF artwork page ${item.pageNumber} of ${count}`;
+                image.decoding = "async";
+                image.src = item.image.src;
+                image.dataset.previewSrc = item.image.src;
+                image.dataset.printSrc = `${item.image.src}&quality=print`;
+                image.style.width = `${item.width * best.scale}px`;
+                image.style.height = `${item.height * best.scale}px`;
+                wrapper.appendChild(image);
 
                 const pageLabel = document.createElement("div");
                 pageLabel.className = "proof-pdf-page-number";
@@ -135,6 +141,7 @@ export async function renderPdf(container, url) {
             }
         };
 
+        state.refresh = renderAllPages;
         renderAllPages();
 
         if (typeof ResizeObserver !== "undefined") {
@@ -155,6 +162,66 @@ export async function renderPdf(container, url) {
         link.rel = "noopener";
         message.appendChild(link);
         container.appendChild(message);
+    }
+}
+
+
+// Wait for print-quality artwork to decode before opening the Print / Save as PDF
+// dialog. All source PDFs are kept intact; this only changes proof preview images.
+export async function preparePdfForPrint(root) {
+    if (!root) return;
+    const containers = [...root.querySelectorAll(".proof-pdf-pages")];
+    await Promise.all(containers.map(async (container) => {
+        const state = container.__proofPdfState;
+        if (!state || state.disposed) return;
+        if (state.printPromise) return state.printPromise;
+
+        const generation = ++state.generation;
+        state.refresh?.();
+        state.printing = true;
+
+        const run = (async () => {
+            const images = [...container.querySelectorAll("img.proof-pdf-image")];
+            // One high-resolution page at a time to bound memory and PDFium load.
+            for (const image of images) {
+                if (state.disposed || generation !== state.generation) return;
+                const printSrc = image.dataset.printSrc;
+                if (!printSrc) continue;
+                const highResolution = new Image();
+                highResolution.decoding = "async";
+                highResolution.src = printSrc;
+                try {
+                    await highResolution.decode();
+                    if (state.disposed || generation !== state.generation) return;
+                    image.src = printSrc;
+                    if (!image.complete) await image.decode();
+                } catch (error) {
+                    // Keep the unmodified PNG preview if high-res generation fails.
+                    console.warn("Print-quality PDF artwork unavailable:", error);
+                }
+            }
+        })();
+
+        state.printPromise = run;
+        try {
+            await run;
+        } finally {
+            if (state.printPromise === run) state.printPromise = null;
+        }
+    }));
+}
+
+export function restorePdfAfterPrint(root) {
+    if (!root) return;
+    for (const container of root.querySelectorAll(".proof-pdf-pages")) {
+        const state = container.__proofPdfState;
+        if (!state) continue;
+        state.generation++;
+        state.printing = false;
+        for (const image of container.querySelectorAll("img.proof-pdf-image")) {
+            if (image.dataset.previewSrc) image.src = image.dataset.previewSrc;
+        }
+        state.refresh?.();
     }
 }
 
