@@ -8,18 +8,23 @@ export async function renderPdf(container, url) {
     let disposed = false;
     let resizeObserver;
 
+    let markReady;
+    const ready = new Promise(resolve => { markReady = resolve; });
     const state = {
         printing: false,
         disposed: false,
         generation: 0,
         refresh: null,
-        printPromise: null
+        printPromise: null,
+        ready,
+        markReady
     };
     container.__proofPdfState = state;
     container.__proofPdfCleanup = () => {
         disposed = true;
         state.disposed = true;
         state.generation++;
+        state.markReady();
         controller.abort();
         resizeObserver?.disconnect();
         delete container.__proofPdfState;
@@ -143,12 +148,14 @@ export async function renderPdf(container, url) {
 
         state.refresh = renderAllPages;
         renderAllPages();
+        state.markReady();
 
         if (typeof ResizeObserver !== "undefined") {
             resizeObserver = new ResizeObserver(renderAllPages);
             resizeObserver.observe(container);
         }
     } catch (error) {
+        state.markReady();
         if (disposed) return;
         console.error("PDF preview error:", error);
         container.innerHTML = "";
@@ -174,6 +181,8 @@ export async function preparePdfForPrint(root) {
     await Promise.all(containers.map(async (container) => {
         const state = container.__proofPdfState;
         if (!state || state.disposed) return;
+        await state.ready;
+        if (state.disposed) return;
         if (state.printPromise) return state.printPromise;
 
         const generation = ++state.generation;
@@ -196,8 +205,10 @@ export async function preparePdfForPrint(root) {
                     image.src = printSrc;
                     if (!image.complete) await image.decode();
                 } catch (error) {
-                    // Keep the unmodified PNG preview if high-res generation fails.
-                    console.warn("Print-quality PDF artwork unavailable:", error);
+                    // Never silently substitute the low-resolution preview in the
+                    // Print button path: let the UI explain that print art failed.
+                    console.error("Print-quality PDF artwork unavailable:", error);
+                    throw new Error("High-resolution PDF artwork could not be prepared.");
                 }
             }
         })();
