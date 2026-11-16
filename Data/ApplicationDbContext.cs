@@ -20,6 +20,8 @@ namespace HamiChap_MES_ERP.Data
             builder.Entity<ProductionOperationEvent>().Property(x => x.EventType).HasMaxLength(32);
             builder.Entity<ProductionOperationEvent>().Property(x => x.OperatorUserId).HasMaxLength(450);
             builder.Entity<ProductionOperationEvent>().Property(x => x.Reason).HasMaxLength(1000);
+            builder.Entity<ProductionOperationEvent>()
+                .HasIndex(x => new { x.ProductionOperationId, x.OccurredAtUtc });
             builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceSignature).HasMaxLength(64);
             builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceConfirmedBy).HasMaxLength(450);
 
@@ -284,6 +286,12 @@ namespace HamiChap_MES_ERP.Data
                 .WithMany()
                 .HasForeignKey(x => x.ProductionOrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ProductionMaterialRequest>()
+                .HasOne(x => x.ProductionOperation)
+                .WithMany()
+                .HasForeignKey(x => x.ProductionOperationId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<ProductionMaterialRequest>()
                 .Property(x => x.Status).HasMaxLength(40);
