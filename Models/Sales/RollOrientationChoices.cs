@@ -1,21 +1,15 @@
 namespace HamiChap_MES_ERP.Models.Sales;
 
-/// <summary>
-/// The four current roll winding / label-reading diagrams. The string values are
-/// deliberately distinct from legacy numeric orientations (1-8): historical
-/// specifications must not be silently reinterpreted.
-/// </summary>
 public sealed record RollOrientationChoice(string Value, string LocalizationKey, string ImagePath);
 
 public static class RollOrientationChoices
 {
     public static IReadOnlyList<RollOrientationChoice> All { get; } =
     [
-        // Match the reference image ordering: vertical left/right, then horizontal left/right.
-        new("vertical-left", "RollOrientationVerticalLeft", "/images/roll-orientations/vertical-left.svg"),
-        new("vertical-right", "RollOrientationVerticalRight", "/images/roll-orientations/vertical-right.svg"),
-        new("horizontal-left", "RollOrientationHorizontalLeft", "/images/roll-orientations/horizontal-left.svg"),
-        new("horizontal-right", "RollOrientationHorizontalRight", "/images/roll-orientations/horizontal-right.svg")
+        new("vertical-left", "RollOrientationVerticalLeft", "/images/roll-orientations/vertical-left.png"),
+        new("vertical-right", "RollOrientationVerticalRight", "/images/roll-orientations/vertical-right.png"),
+        new("horizontal-left", "RollOrientationHorizontalLeft", "/images/roll-orientations/horizontal-left.png"),
+        new("horizontal-right", "RollOrientationHorizontalRight", "/images/roll-orientations/horizontal-right.png")
     ];
 
     public static RollOrientationChoice? Find(string? value) =>
