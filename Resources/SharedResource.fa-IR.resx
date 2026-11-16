@@ -3452,4 +3452,16 @@
   <data name="OperatorOrder" xml:space="preserve">
     <value>سفارش</value>
   </data>
+  <data name="OperatorSignedInAs" xml:space="preserve">
+    <value>کاربر واردشده</value>
+  </data>
+  <data name="OperatorReadyAndRunning" xml:space="preserve">
+    <value>کارهای فعلی شما</value>
+  </data>
+  <data name="OperatorNoReadyJobs" xml:space="preserve">
+    <value>عملیات آماده شروع وجود ندارد</value>
+  </data>
+  <data name="OperatorNoReadyJobsHint" xml:space="preserve">
+    <value>عملیات بعدی در پایین نمایش داده می‌شود و پس از پایان مرحله قبلی و آزاد شدن دستگاه قابل شروع خواهد بود.</value>
+  </data>
 </root>
