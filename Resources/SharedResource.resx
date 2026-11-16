@@ -3156,4 +3156,6 @@
   </data>
   <data name="JobOverviewNoProcesses" xml:space="preserve"><value>No processes have been identified yet. Check the job specifications and production route.</value></data>
   <data name="JobOverviewShowMore" xml:space="preserve"><value>Show more jobs</value></data>
+  <data name="JobOverviewProducedQuantity" xml:space="preserve"><value>Recorded quantity produced</value></data>
+  <data name="JobOverviewProducedQuantityHint" xml:space="preserve"><value>Based on production quantities posted to this uniquely traceable sales-order line. This is separate from process-step completion.</value></data>
 </root>
