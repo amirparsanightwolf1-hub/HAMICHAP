@@ -211,13 +211,15 @@
                         <div class="proof-panel-body">
                             @if (request.JobType == SalesJobType.Roll)
                             {
-                                @foreach (var dimension in rollDimensions)
-                                {
-                                    <div class="proof-kv">
-                                        <span class="proof-kv-label">@dimension.Key</span>
-                                        <strong class="proof-kv-value">@dimension.Value</strong>
-                                    </div>
-                                }
+                                <div class="proof-dimensions-grid">
+                                    @foreach (var dimension in rollDimensions)
+                                    {
+                                        <div class="proof-kv proof-dimension-item">
+                                            <span class="proof-kv-label">@dimension.Key</span>
+                                            <strong class="proof-kv-value">@dimension.Value</strong>
+                                        </div>
+                                    }
+                                </div>
                             }
                             else
                             {
