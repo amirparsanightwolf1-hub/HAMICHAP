@@ -3671,4 +3671,13 @@
   <data name="RollPrintingColors" xml:space="preserve">
     <value>رنگ‌های چاپ رول</value>
   </data>
+  <data name="RollCmykHint" xml:space="preserve">
+    <value>رنگ‌های چاپ چهاررنگ مورد استفاده برای رول را انتخاب کنید</value>
+  </data>
+  <data name="RollPrintingNotesHint" xml:space="preserve">
+    <value>توضیحات تکمیلی چاپ</value>
+  </data>
+  <data name="RollPantoneProofDisclaimer" xml:space="preserve">
+    <value>پیش‌نمایش رنگ تقریبی است؛ رنگ مرکب چاپ باید با کد پنتون تطبیق داده شود.</value>
+  </data>
 </root>
