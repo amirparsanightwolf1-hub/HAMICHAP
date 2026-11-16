@@ -106,7 +106,7 @@ public static class ProductionAutomaticScheduler
                 return false;
             }
             plan.Add(earliest);
-            occupied.Add(new BusyInterval(earliest.MachineId, earliest.Start, earliest.End));
+            occupied.Add(new BusyInterval(earliest.MachineId!.Value, earliest.Start, earliest.End));
             cursor = earliest.End;
         }
         return true;
