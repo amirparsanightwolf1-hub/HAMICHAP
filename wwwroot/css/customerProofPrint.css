@@ -170,6 +170,34 @@ html.proof-print-layout .proof-roll-choice-caption {
     gap: 0 !important;
 }
 html.proof-print-layout .proof-roll-selected { font-size: 4.8pt !important; }
+html.proof-print-layout .proof-roll-checkbox-row {
+    min-height: 0 !important;
+    gap: .7mm !important;
+    font-size: 5pt !important;
+    color: #27465b !important;
+    line-height: 1.1 !important;
+}
+html.proof-print-layout .proof-roll-check { display: none !important; }
+html.proof-print-layout .proof-roll-print-checkbox {
+    display: inline-flex !important;
+    flex: 0 0 3.3mm !important;
+    inline-size: 3.3mm !important;
+    block-size: 3.3mm !important;
+    border: .3mm solid #263d50 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 8pt !important;
+    line-height: 1 !important;
+    font-weight: 800 !important;
+    background: #fff !important;
+    color: #166e50 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+html.proof-print-layout .proof-roll-choice { cursor: default !important; }
+html.proof-print-layout .proof-orientation-hint { display: none !important; }
+
 html.proof-print-layout .proof-roll-legacy {
     gap: 1mm !important;
     margin-top: .8mm !important;
