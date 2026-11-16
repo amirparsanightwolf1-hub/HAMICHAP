@@ -3154,4 +3154,5 @@
   <data name="JobOverviewViewAllJobs" xml:space="preserve">
     <value>View all jobs</value>
   </data>
+  <data name="JobOverviewNoProcesses" xml:space="preserve"><value>No processes have been identified yet. Check the job specifications and production route.</value></data>
 </root>
