@@ -58,7 +58,10 @@
     }
     @if (isLoading)
     {
-        <div class="text-muted">@LocalizationService["LoadingJob"]</div>
+        <div class="job-edit-loading" role="status" aria-live="polite">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span>@LocalizationService["LoadingJob"]</span>
+        </div>
     }
     else if (request is not null)
     {
@@ -255,7 +258,7 @@
                                             </button>
                                         }
                                     </div>
-                                    <div class="small text-muted mt-2">Selected: @(frontCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => frontCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
+                                    <div class="small text-muted mt-2">@LocalizationService["Selected"]: @(frontCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => frontCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
                                 </div>
                             </div>
                             <div class="col-lg-6">
@@ -271,7 +274,7 @@
                                             </button>
                                         }
                                     </div>
-                                    <div class="small text-muted mt-2">Selected: @(backCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => backCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
+                                    <div class="small text-muted mt-2">@LocalizationService["Selected"]: @(backCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => backCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
                                 </div>
                             </div>
                         </div>
@@ -404,8 +407,12 @@
             <div class="job-edit-save-message">
                 <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
                 <div>
-                    <strong>@LocalizationService["JobEditorSaveHeading"]</strong>
-                    <span>@LocalizationService["JobEditorSaveHint"]</span>
+                    <strong>@((canEditSpecifications || canEditArtwork)
+                        ? LocalizationService["JobEditorSaveHeading"]
+                        : LocalizationService["CustomerApprovalProof"])</strong>
+                    <span>@((canEditSpecifications || canEditArtwork)
+                        ? LocalizationService["JobEditorSaveHint"]
+                        : LocalizationService["JobEditorReadOnlyHint"])</span>
                 </div>
             </div>
             <button type="button" class="job-edit-save-button" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
