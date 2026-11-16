@@ -262,3 +262,25 @@
     .language-switcher { bottom: 10px; right: 10px; }
 }
 
+
+/* Simplified role-aware sidebar */
+.sidebar { padding: 16px 12px 22px; }
+.sidebar-header { padding: 6px 10px 18px; margin-bottom: 14px; }
+.sidebar-header h3 { font-size: 18px; }
+.side-menu { gap: 3px; }
+.side-menu .menu-group-label { padding: 16px 12px 6px; color: rgba(255,255,255,.58); font-size: .68rem; font-weight: 750; letter-spacing: .075em; text-transform: uppercase; }
+.side-menu .menu-button { text-decoration: none; background: transparent; border-radius: 9px; padding: 11px 12px; gap: 12px; font-size: .89rem; min-height: 44px; }
+.side-menu .menu-button i { font-size: 1.05rem; width: 22px; flex: 0 0 22px; text-align: center; }
+.side-menu .menu-button:hover { transform: none; background: rgba(255,255,255,.12); }
+.side-menu .menu-button.active { background: rgba(255,255,255,.19); border-color: rgba(255,255,255,.1); box-shadow: none; font-weight: 700; }
+.nav-more-group { padding-inline: 5px; }
+.nav-more-group summary { padding: 10px 9px; min-height: 42px; font-size: .82rem; color: rgba(255,255,255,.77); cursor: pointer; border-radius: 8px; }
+.nav-more-group summary:hover { background: rgba(255,255,255,.09); }
+.nav-more-group a { display: block; margin-inline-start: 13px; padding: 9px 11px; color: rgba(255,255,255,.88); font-size: .84rem; text-decoration: none; border-inline-start: 1px solid rgba(255,255,255,.25); }
+.nav-more-group a:hover { color: white; background: rgba(255,255,255,.1); }
+.sidebar { overflow-y: auto; }
+@media (max-width: 768px) {
+  .sidebar { padding-top: 68px; }
+  .mobile-menu-btn { width: 48px; height: 48px; }
+  .main-content { padding-top: 75px; }
+}
