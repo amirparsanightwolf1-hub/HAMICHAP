@@ -5,129 +5,181 @@ using Microsoft.EntityFrameworkCore;
 namespace HamiChap_MES_ERP.Services;
 
 /// <summary>
-/// Extends a running machine operation and moves its remaining order stages to the next
-/// feasible free machine intervals. Never changes released, running or completed downstream bookings.
-/// Must be called within the caller's serializable transaction.
+/// Propagates a running operation's delay through order precedence and shared-machine
+/// reservations. Only PLANNED machine bookings and not-yet-started external stages may move.
+/// Caller must hold a serializable database transaction and save the tracked entities.
 /// </summary>
 public static class ProductionOperationOverrunScheduler
 {
+    private sealed class Slot
+    {
+        public required ProductionOperation Operation { get; init; }
+        public ProductionSchedule? Booking { get; init; }
+        public int? MachineId => Booking?.MachineId;
+        public required DateTime OriginalStart { get; init; }
+        public required DateTime OriginalEnd { get; init; }
+        public required int ProductiveMinutes { get; init; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public bool Movable => Booking != null
+            ? Booking.Status == ScheduleStatus.Planned
+            : Operation.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready;
+    }
+
     public static async Task ExtendAsync(
         ApplicationDbContext db, ProductionOperation operation,
         ProductionSchedule runningBooking, DateTime requestedEnd)
     {
-        if (runningBooking.Status != ScheduleStatus.Running ||
-            operation.Status != ProductionOperationStatus.Running)
-            throw new InvalidOperationException("Only running operations can be extended.");
+        if (operation.Status != ProductionOperationStatus.Running ||
+            runningBooking.Status != ScheduleStatus.Running)
+            throw new InvalidOperationException("Only running machine operations can be extended.");
+        if (runningBooking.ProductionOperationId != operation.Id)
+            throw new InvalidOperationException("Booking and operation do not match.");
 
         var order = operation.ProductionOrder;
-        var end = ProductionPlanningTime.NextAllowedProductionMinute(
+        var extendedEnd = ProductionPlanningTime.NextAllowedProductionMinute(
             requestedEnd, order.AvoidOvertime, order.AvoidNightShift);
-        if (end <= runningBooking.PlannedEnd)
-            return;
+        if (extendedEnd <= runningBooking.PlannedEnd) return;
 
-        var later = await db.ProductionOperations
-            .Where(x => x.ProductionOrderId == operation.ProductionOrderId &&
-                        x.Sequence > operation.Sequence)
-            .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToListAsync();
-        var laterIds = later.Select(x => x.Id).ToList();
-        var bookings = await db.ProductionSchedules
-            .Where(x => laterIds.Contains(x.ProductionOperationId) &&
-                        x.Status != ScheduleStatus.Cancelled)
-            .ToListAsync();
+        var schedules = await db.ProductionSchedules
+            .Include(x => x.ProductionOperation).ThenInclude(x => x.ProductionOrder)
+            .Where(x => x.Status != ScheduleStatus.Cancelled).ToListAsync();
 
-        if (later.Any(x => x.Status is ProductionOperationStatus.Running or
-                              ProductionOperationStatus.Completed) ||
-            bookings.Any(x => x.Status != ScheduleStatus.Planned))
-            throw new InvalidOperationException(
-                "A downstream operation is already active or completed. A manager must resolve its schedule.");
+        // Outsourced steps have no machine booking but still block subsequent steps.
+        var outsourced = await db.ProductionOperations
+            .Include(x => x.ProductionOrder)
+            .Where(x => x.IsOutsourced &&
+                        x.OutsourcedPlannedStart.HasValue &&
+                        x.OutsourcedPlannedEnd.HasValue &&
+                        x.Status != ProductionOperationStatus.Cancelled).ToListAsync();
 
-        var conflictingActive = await db.ProductionSchedules
-            .Where(x => x.Id != runningBooking.Id &&
-                        x.MachineId == runningBooking.MachineId &&
-                        x.Status != ScheduleStatus.Cancelled &&
-                        x.Status != ScheduleStatus.Planned &&
-                        x.PlannedStart < end && x.PlannedEnd > runningBooking.PlannedEnd)
-            .AnyAsync();
-        if (conflictingActive)
-            throw new InvalidOperationException("An active machine booking prevents this extension.");
-
-        // Planned jobs belonging to other orders retain their reservations; later stages
-        // of this order are moved past those reservations rather than double-booked.
-        var busy = await db.ProductionSchedules.AsNoTracking()
-            .Where(x => x.Status != ScheduleStatus.Cancelled &&
-                        x.Id != runningBooking.Id &&
-                        !laterIds.Contains(x.ProductionOperationId))
-            .Select(x => new { x.MachineId, x.PlannedStart, x.PlannedEnd })
-            .ToListAsync();
-        var reserved = busy.Select(x =>
-            (x.MachineId, x.PlannedStart, x.PlannedEnd)).ToList();
-
-        // A running job can overrun into another PLANNED booking on its own machine.
-        // Move that planned booking only if it belongs to this order; for other orders,
-        // reject rather than silently mutate another manager's approved route.
-        if (reserved.Any(x => x.MachineId == runningBooking.MachineId &&
-            x.PlannedStart < end && x.PlannedEnd > runningBooking.PlannedEnd))
-            throw new InvalidOperationException(
-                "The extension overlaps another order's machine reservation. Ask the production manager to replan it.");
-
-        var placements = new List<(ProductionOperation Step, ProductionSchedule? Booking,
-            DateTime Start, DateTime End)>();
-        var cursor = end;
-        foreach (var step in later)
+        var slots = new List<Slot>();
+        foreach (var schedule in schedules)
         {
-            var booking = bookings.SingleOrDefault(x => x.ProductionOperationId == step.Id);
-            if (!step.IsOutsourced && booking == null)
-                throw new InvalidOperationException("A downstream machine operation has no booking.");
-
-            var originalStart = step.IsOutsourced ? step.OutsourcedPlannedStart : booking?.PlannedStart;
-            if (originalStart == null)
-                throw new InvalidOperationException("A downstream operation has no planned start.");
-
-            var candidate = ProductionPlanningTime.NextAllowedProductionMinute(
-                originalStart.Value > cursor ? originalStart.Value : cursor,
-                order.AvoidOvertime, order.AvoidNightShift);
-            DateTime candidateEnd = candidate;
-            bool fitted = false;
-            for (var attempt = 0; attempt < 10000; attempt++)
+            var associated = schedule.ProductionOperation;
+            var scheduledOrder = associated.ProductionOrder;
+            var minutes = (int)Math.Round(ProductionPlanningTime.ProductiveSegments(
+                    schedule.PlannedStart, schedule.PlannedEnd,
+                    scheduledOrder.AvoidOvertime, scheduledOrder.AvoidNightShift)
+                .Sum(x => (x.End - x.Start).TotalMinutes), MidpointRounding.AwayFromZero);
+            slots.Add(new Slot
             {
-                candidateEnd = ProductionPlanningTime.CalculateEndDateTime(candidate,
-                    ProductionPlanningTime.OperationMinutes(step.PlannedHours),
-                    order.AvoidOvertime, order.AvoidNightShift);
-                var conflict = booking == null ? null : reserved
-                    .Where(x => x.MachineId == booking.MachineId &&
-                                x.PlannedStart < candidateEnd && candidate < x.PlannedEnd)
-                    .OrderBy(x => x.PlannedEnd).FirstOrDefault();
-                if (booking == null || conflict == default)
-                {
-                    fitted = true;
-                    break;
-                }
-                candidate = ProductionPlanningTime.NextAllowedProductionMinute(
-                    conflict.PlannedEnd > candidate ? conflict.PlannedEnd : candidate.AddMinutes(1),
-                    order.AvoidOvertime, order.AvoidNightShift);
-            }
-            if (!fitted)
-                throw new InvalidOperationException("Cannot find a free slot for the downstream operation.");
-
-            placements.Add((step, booking, candidate, candidateEnd));
-            if (booking != null)
-                reserved.Add((booking.MachineId, candidate, candidateEnd));
-            cursor = candidateEnd;
+                Operation = associated, Booking = schedule,
+                OriginalStart = schedule.PlannedStart, OriginalEnd = schedule.PlannedEnd,
+                Start = schedule.PlannedStart, End = schedule.PlannedEnd,
+                ProductiveMinutes = Math.Max(1, minutes)
+            });
+        }
+        foreach (var outsourcedStep in outsourced)
+        {
+            var start = outsourcedStep.OutsourcedPlannedStart!.Value;
+            var end = outsourcedStep.OutsourcedPlannedEnd!.Value;
+            slots.Add(new Slot
+            {
+                Operation = outsourcedStep,
+                OriginalStart = start, OriginalEnd = end, Start = start, End = end,
+                ProductiveMinutes = ProductionPlanningTime.OperationMinutes(outsourcedStep.PlannedHours)
+            });
         }
 
-        // Commit the whole replan only when all stages have feasible placements.
-        runningBooking.PlannedEnd = end;
-        foreach (var placement in placements)
+        var anchor = slots.SingleOrDefault(x => x.Booking?.Id == runningBooking.Id);
+        if (anchor == null)
+            throw new InvalidOperationException("Running machine booking was not found.");
+        anchor.End = extendedEnd;
+
+        // Freeze the existing machine order; rescheduling can delay future bookings,
+        // but cannot put a later booking ahead of an earlier one.
+        var machinePrevious = new Dictionary<Slot, Slot>();
+        foreach (var machineGroup in slots.Where(x => x.MachineId.HasValue)
+                     .GroupBy(x => x.MachineId!.Value))
         {
-            if (placement.Booking == null)
+            Slot? previous = null;
+            foreach (var slot in machineGroup.OrderBy(x => x.OriginalStart)
+                         .ThenBy(x => x.Booking!.Id))
             {
-                placement.Step.OutsourcedPlannedStart = placement.Start;
-                placement.Step.OutsourcedPlannedEnd = placement.End;
+                if (previous != null) machinePrevious[slot] = previous;
+                previous = slot;
+            }
+        }
+
+        var orderPrevious = new Dictionary<Slot, Slot>();
+        foreach (var orderGroup in slots.GroupBy(x => x.Operation.ProductionOrderId))
+        {
+            Slot? previous = null;
+            foreach (var slot in orderGroup.OrderBy(x => x.Operation.Sequence)
+                         .ThenBy(x => x.Operation.Id))
+            {
+                if (previous != null) orderPrevious[slot] = previous;
+                previous = slot;
+            }
+        }
+
+        // Relax both constraints until stable. Each move is forward-only. This
+        // propagates delays across machines and into downstream stages of other orders.
+        var stabilized = false;
+        var maxPasses = Math.Max(8, slots.Count * 2 + 2);
+        for (var pass = 0; pass < maxPasses; pass++)
+        {
+            var changed = false;
+            foreach (var slot in slots.OrderBy(x => x.OriginalStart)
+                         .ThenBy(x => x.Operation.Id))
+            {
+                if (ReferenceEquals(slot, anchor)) continue;
+
+                var earliest = slot.OriginalStart;
+                if (machinePrevious.TryGetValue(slot, out var machinePredecessor) &&
+                    machinePredecessor.End > earliest)
+                    earliest = machinePredecessor.End;
+                if (orderPrevious.TryGetValue(slot, out var orderPredecessor) &&
+                    orderPredecessor.End > earliest)
+                    earliest = orderPredecessor.End;
+
+                if (earliest <= slot.Start) continue;
+                if (!slot.Movable)
+                    throw new InvalidOperationException(
+                        "A delayed operation would overlap work that is already running or completed. The production manager must resolve the conflict.");
+
+                var plannedOrder = slot.Operation.ProductionOrder;
+                var start = ProductionPlanningTime.NextAllowedProductionMinute(
+                    earliest, plannedOrder.AvoidOvertime, plannedOrder.AvoidNightShift);
+                var end = ProductionPlanningTime.CalculateEndDateTime(
+                    start, slot.ProductiveMinutes,
+                    plannedOrder.AvoidOvertime, plannedOrder.AvoidNightShift);
+                if (start <= slot.Start) continue;
+                slot.Start = start;
+                slot.End = end;
+                changed = true;
+            }
+            if (!changed)
+            {
+                stabilized = true;
+                break;
+            }
+        }
+        if (!stabilized)
+            throw new InvalidOperationException("Schedule dependencies could not be resolved.");
+
+        // Confirm no unexpected overlap remains before mutating tracked records.
+        foreach (var group in slots.Where(x => x.MachineId.HasValue)
+                     .GroupBy(x => x.MachineId!.Value))
+        {
+            var ordered = group.OrderBy(x => x.Start).ThenBy(x => x.Booking!.Id).ToList();
+            for (var i = 1; i < ordered.Count; i++)
+                if (ordered[i - 1].End > ordered[i].Start)
+                    throw new InvalidOperationException("The revised plan contains a machine overlap.");
+        }
+
+        foreach (var slot in slots)
+        {
+            if (slot.Booking != null)
+            {
+                slot.Booking.PlannedStart = slot.Start;
+                slot.Booking.PlannedEnd = slot.End;
             }
             else
             {
-                placement.Booking.PlannedStart = placement.Start;
-                placement.Booking.PlannedEnd = placement.End;
+                slot.Operation.OutsourcedPlannedStart = slot.Start;
+                slot.Operation.OutsourcedPlannedEnd = slot.End;
             }
         }
     }
