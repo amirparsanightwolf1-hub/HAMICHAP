@@ -3009,4 +3009,40 @@
   <data name="JobSetupSubmitHelp" xml:space="preserve">
     <value>This creates a draft job; no quotation is sent yet.</value>
   </data>
+  <data name="ItemsInThisOrder" xml:space="preserve">
+    <value>Items in this order</value>
+  </data>
+  <data name="EachItemHasOwnProof" xml:space="preserve">
+    <value>Each item has its own specifications, quantity and separate customer approval proof.</value>
+  </data>
+  <data name="CurrentItem" xml:space="preserve">
+    <value>Current item</value>
+  </data>
+  <data name="AddRollItem" xml:space="preserve">
+    <value>Add Roll item</value>
+  </data>
+  <data name="AddSheetItem" xml:space="preserve">
+    <value>Add Sheet item</value>
+  </data>
+  <data name="AddItemSavesCurrentJob" xml:space="preserve">
+    <value>Adding an item saves the current job and keeps all items under one draft quotation.</value>
+  </data>
+  <data name="SaveJobBeforeAddingItem" xml:space="preserve">
+    <value>Save the job title, a positive quantity, and specifications before adding another item.</value>
+  </data>
+  <data name="ReuseOldJobNewQuantityHelp" xml:space="preserve">
+    <value>Reuse the saved design and artwork in this new job. Enter a new order quantity; the previous order will not be changed.</value>
+  </data>
+  <data name="ReuseSavedSpecifications" xml:space="preserve">
+    <value>Reuse saved design</value>
+  </data>
+  <data name="EnterNewOrderQuantity" xml:space="preserve">
+    <value>New order quantity</value>
+  </data>
+  <data name="ApplySavedJobWithNewQuantity" xml:space="preserve">
+    <value>Use design and quantity</value>
+  </data>
+  <data name="ManageOrderItemsInJobEditor" xml:space="preserve">
+    <value>Manage items and proofs in Roll/Sheet editor</value>
+  </data>
 </root>
