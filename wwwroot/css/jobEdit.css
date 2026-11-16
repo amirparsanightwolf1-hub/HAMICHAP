@@ -422,6 +422,106 @@
     background: var(--je-accent-soft);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--je-accent) 10%, transparent);
 }
+/* Roll color selection: one printable CMYK side plus separate Pantone swatches. */
+.job-edit-page.job-edit-roll .roll-colors-layout {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    align-items: start;
+    gap: 15px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-panel {
+    min-width: 0;
+    background: #f9fbfd;
+    border: 1px solid var(--je-accent-border);
+    border-radius: 13px;
+    padding: 19px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-panel strong {
+    color: var(--je-accent-strong);
+}
+.job-edit-page.job-edit-roll .roll-pantone-inputs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(110px, 150px);
+    gap: 10px;
+    align-items: end;
+}
+.job-edit-page.job-edit-roll .roll-pantone-inputs label {
+    font-size: .8rem;
+    font-weight: 650;
+    color: var(--je-ink);
+}
+.job-edit-page.job-edit-roll .roll-pantone-picker {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 9px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-add {
+    grid-column: 1 / -1;
+    min-height: 44px;
+    font-weight: 650;
+}
+.job-edit-page.job-edit-roll .roll-pantone-list {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 7px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-entry {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+    padding: 9px 10px;
+    background: white;
+    border: 1px solid #dce5ed;
+    border-radius: 9px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-swatch {
+    display: block;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(0,0,0,.18);
+    border-radius: 7px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: .89rem;
+    font-weight: 650;
+}
+.job-edit-page.job-edit-roll .roll-pantone-hex {
+    font-size: .74rem;
+    font-variant-numeric: tabular-nums;
+    color: #6b7b91;
+}
+.job-edit-page.job-edit-roll .roll-pantone-entry .btn {
+    flex: 0 0 auto;
+    min-height: 36px;
+    min-width: 36px;
+}
+@media (max-width: 880px) {
+    .job-edit-page.job-edit-roll .roll-colors-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+@media (max-width: 390px) {
+    .job-edit-page.job-edit-roll .roll-pantone-panel {
+        padding: 13px;
+    }
+    .job-edit-page.job-edit-roll .roll-pantone-inputs {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .job-edit-page.job-edit-roll .roll-pantone-add {
+        grid-column: auto;
+    }
+}
+
 .job-edit-page .orientation-grid {
     gap: 12px;
 }
