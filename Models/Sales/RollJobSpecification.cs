@@ -17,6 +17,8 @@ public sealed class RollJobSpecification
     public int? LabelQuantity { get; set; }
     public string PaperType { get; set; } = "";
     public int? ColorCount { get; set; }
+    // Named spot colors with user-chosen on-screen preview colors, stored in the job JSON.
+    public List<RollPantoneColor> PantoneColors { get; set; } = new();
     public string PrintingNotes { get; set; } = "";
     public decimal? RollDiameter { get; set; }
     public string RollOrientation { get; set; } = "";
@@ -25,4 +27,21 @@ public sealed class RollJobSpecification
 
     // Service choices are stored as structured values for future costing rules.
     public List<string> SelectedServices { get; set; } = new();
+}
+
+
+/// <summary>
+/// A Pantone reference entered by the printer, together with a separately selected
+/// display swatch. The hex color is a screen preview, not an official color match.
+/// </summary>
+public sealed class RollPantoneColor
+{
+    public string Code { get; set; } = "";
+    public string Hex { get; set; } = "#DB2635";
+
+    public string SafeHex => IsValidHex(Hex) ? Hex : "#808080";
+
+    public static bool IsValidHex(string? value) =>
+        value is { Length: 7 } && value[0] == '#' &&
+        value.Skip(1).All(Uri.IsHexDigit);
 }
