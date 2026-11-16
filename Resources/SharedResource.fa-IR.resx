@@ -3064,4 +3064,6 @@
   <data name="QuotationEditPendingHint" xml:space="preserve"><value>پیش‌فاکتور منتظر تأیید داخلی است. پیش از تأیید یا درخواست اصلاح، قیمت‌ها و برگه‌های تأیید هر قلم را بررسی کنید.</value></data>
   <data name="QuotationEditApprovedHint" xml:space="preserve"><value>تصمیم مشتری را ثبت کنید. با انتخاب «پذیرش مشتری»، سفارش فروش برای تمام اقلام به‌صورت خودکار ایجاد می‌شود.</value></data>
   <data name="QuotationEditClosedHint" xml:space="preserve"><value>این پیش‌فاکتور دیگر قابل ویرایش نیست. برای مشاهده سند نهایی و اقلام آن، پیش‌نمایش را باز کنید.</value></data>
+  <data name="Approve" xml:space="preserve"><value>تأیید</value></data>
+  <data name="Reject" xml:space="preserve"><value>رد</value></data>
 </root>
