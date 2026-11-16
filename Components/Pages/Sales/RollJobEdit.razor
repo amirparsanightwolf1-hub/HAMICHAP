@@ -286,19 +286,21 @@
                     <div class="col-12">
                         <label class="form-label fw-semibold">@LocalizationService["RollOrientationUnwindDirection"]</label>
                         <div class="text-muted small mb-2">@LocalizationService["ChooseRollOrientation"]</div>
-                        <div class="orientation-grid">
-                            @for (var orientation = 1; orientation <= 8; orientation++)
+                        <div class="orientation-grid orientation-grid-four" role="group"
+                             aria-label="@LocalizationService["RollOrientationUnwindDirection"]">
+                            @foreach (var choice in RollOrientationChoices.All)
                             {
-                                var option = orientation.ToString();
-                                var angle = (orientation - 1) * 45;
+                                var option = choice.Value;
                                 <button type="button"
+                                        @key="option"
                                         class="orientation-option @(spec.RollOrientation == option ? "selected" : "")"
+                                        aria-label="@LocalizationService[choice.LocalizationKey]"
                                         aria-pressed="@(spec.RollOrientation == option)"
                                         @onclick="() => spec.RollOrientation = option">
-                                    <img src="@($"/images/roll-orientations/orientation-{orientation}.jpg")"
-                                         alt="Roll orientation @orientation"
-                                         class="orientation-picture" />
-                                    <span class="orientation-caption">@LocalizationService["Option"] @orientation</span>
+                                    <img src="@choice.ImagePath"
+                                         alt="@LocalizationService[choice.LocalizationKey]"
+                                         class="orientation-picture" loading="lazy" />
+                                    <span class="orientation-caption">@LocalizationService[choice.LocalizationKey]</span>
                                     @if (spec.RollOrientation == option)
                                     {
                                         <span class="orientation-check"><i class="bi bi-check-circle-fill"></i> @LocalizationService["Selected"]</span>
@@ -306,6 +308,13 @@
                                 </button>
                             }
                         </div>
+                        @if (RollOrientationChoices.IsLegacy(spec.RollOrientation))
+                        {
+                            <div class="alert alert-warning small mt-3 mb-0" role="status">
+                                @LocalizationService["RollOrientationLegacyNotice"]
+                                (@LocalizationService["RollOrientationOption"] @spec.RollOrientation)
+                            </div>
+                        }
                     </div>
 
                     <div class="col-md-4 d-flex align-items-end">
