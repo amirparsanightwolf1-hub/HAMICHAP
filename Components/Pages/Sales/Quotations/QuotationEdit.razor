@@ -19,11 +19,15 @@
 @inject LocalizationService LocalizationService
 @inject SalesOrderService SalesOrderService
 
+<HeadContent>
+    <link rel="stylesheet" href="css/quotationEdit.css" />
+</HeadContent>
+
 <PageTitle>
     @LocalizationService["Quotation"]
 </PageTitle>
 
-<div class="page-container quotation-edit-page">
+<div class="page-container quotation-edit-page quotation-workspace">
 
     @if (isLoading)
     {
@@ -43,18 +47,27 @@
     }
     else
     {
-        <div class="erp-page-header quotation-page-header mb-4">
-
-            <div>
-                <div class="erp-page-title">
-                    @LocalizationService["Quotation"]
+        <header class="erp-page-header quotation-page-header quotation-workspace-hero">
+            <div class="quotation-workspace-hero-info">
+                <div class="quotation-workspace-hero-emblem" aria-hidden="true">
+                    <i class="bi bi-receipt-cutoff"></i>
                 </div>
-
-                <div class="erp-page-subtitle">
-                    @quotation.QuotationNumber
+                <div class="quotation-workspace-hero-copy">
+                    <div class="quotation-workspace-eyebrow">@LocalizationService["QuotationEditorTitle"]</div>
+                    <h1>@LocalizationService["Quotation"]</h1>
+                    <div class="quotation-workspace-hero-meta">
+                        <span class="quotation-workspace-number">@quotation.QuotationNumber</span>
+                        <span class="quotation-workspace-meta-separator" aria-hidden="true"></span>
+                        <span>@GetCustomerName()</span>
+                    </div>
+                    <div class="quotation-workspace-hero-status">
+                        <span class="quotation-status-badge @GetQuotationStatusCssClass(quotation.Status)">
+                            <span class="quotation-status-dot"></span>
+                            @LocalizationService.TranslateEnum(quotation.Status)
+                        </span>
+                    </div>
                 </div>
             </div>
-
             <div class="quotation-actions">
 
                 @if (quotation.Status == QuotationStatus.Approved ||
@@ -175,6 +188,25 @@
                 }
 
             </div>
+        </header>
+
+        <div class="quotation-workspace-overview" aria-label="@LocalizationService["QuotationInformation"]">
+            <div class="quotation-workspace-overview-item">
+                <span>@LocalizationService["Customer"]</span>
+                <strong>@GetCustomerName()</strong>
+            </div>
+            <div class="quotation-workspace-overview-item">
+                <span>@LocalizationService["JobsOnQuotation"]</span>
+                <strong>@linkedRequests.Count</strong>
+            </div>
+            <div class="quotation-workspace-overview-item">
+                <span>@LocalizationService["QuotationLines"]</span>
+                <strong>@quotation.Lines.Count</strong>
+            </div>
+            <div class="quotation-workspace-overview-item is-total">
+                <span>@LocalizationService["FinalAmount"]</span>
+                <strong>@quotation.Lines.Sum(line => line.TotalPrice).ToString("N2")</strong>
+            </div>
         </div>
 
         @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -191,11 +223,14 @@
             </div>
         }
 
+        <div class="quotation-workspace-layout">
+            <main class="quotation-workspace-main">
         <!-- Quotation Information -->
 
-        <div class="card quotation-card mb-4">
+        <section class="card quotation-card quotation-workspace-section mb-4" aria-label="@LocalizationService["QuotationInformation"]">
 
             <div class="card-header quotation-card-header">
+                <span class="quotation-workspace-section-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span>
                 <strong>
                     @LocalizationService["QuotationInformation"]
                 </strong>
@@ -314,24 +349,31 @@
                 </div>
 
             </div>
-        </div>
+        </section>
 
         <!-- All jobs on this quotation, each retaining its own approval proof. -->
-        <div class="card quotation-card mb-4">
+        <section class="card quotation-card quotation-workspace-section mb-4" aria-label="@LocalizationService["JobsOnQuotation"]">
             <div class="card-header quotation-card-header">
-                <strong>@LocalizationService["JobsOnQuotation"] (@linkedRequests.Count)</strong>
+                <span class="quotation-workspace-section-icon"><i class="bi bi-collection" aria-hidden="true"></i></span>
+                <strong>@LocalizationService["JobsOnQuotation"]</strong>
+                <span class="quotation-workspace-count">@linkedRequests.Count</span>
             </div>
             <div class="card-body quotation-card-body">
                 @foreach (var job in linkedRequests)
                 {
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom py-2" @key="job.Id">
-                        <div>
-                            <strong>@GetRequestTitle(job)</strong>
-                            <div class="text-muted small">
-                                @job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 quotation-workspace-job" @key="job.Id">
+                        <div class="quotation-workspace-job-overview">
+                            <span class="quotation-workspace-job-icon" aria-hidden="true">
+                                <i class="bi @(job.JobType == SalesJobType.Roll ? "bi-disc" : "bi-file-earmark-richtext")"></i>
+                            </span>
+                            <div>
+                                <strong>@GetRequestTitle(job)</strong>
+                                <div class="text-muted small">
+                                    @job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)
+                                </div>
                             </div>
                         </div>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="quotation-workspace-job-actions">
                             <a class="btn btn-sm btn-outline-secondary"
                                href="@($"/sales/requests/{(job.JobType == SalesJobType.Roll ? "roll" : "sheet")}/edit/{job.Id}?quotationId={quotation.Id}")">
                                 @LocalizationService["OpenJob"]
@@ -354,16 +396,17 @@
                     </div>
                 }
             </div>
-        </div>
+        </section>
 
         <!-- Quotation Lines -->
 
-        <div class="card quotation-card mb-4">
-
+        <section class="card quotation-card quotation-workspace-section mb-4" aria-label="@LocalizationService["QuotationLines"]">
             <div class="card-header quotation-card-header">
+                <span class="quotation-workspace-section-icon"><i class="bi bi-calculator" aria-hidden="true"></i></span>
                 <strong>
                     @LocalizationService["QuotationLines"]
                 </strong>
+                <span class="quotation-workspace-header-note">@LocalizationService["QuotationPricingHelp"]</span>
             </div>
 
             <div class="card-body p-0 quotation-table-body">
@@ -402,8 +445,7 @@
 
                             @foreach (var line in quotation.Lines)
                             {
-                                <tr>
-
+                                <tr class="quotation-workspace-price-row">
                                     <td>
                                         <div class="fw-semibold">
                                             @line.Item?.Name
@@ -416,7 +458,7 @@
                                         {
                                             <div class="small mt-1">
                                                 @GetLinkedRequestNumber(sourceId) ·
-                                                <a href="@($"/sales/requests/proof/{sourceId}")">
+                                                <a href="@($"/sales/requests/proof/{sourceId}?quotationId={quotation.Id}")">
                                                     @LocalizationService["OpenApprovalProof"]
                                                 </a>
                                             </div>
@@ -431,7 +473,7 @@
 
                                         @if (IsEditable)
                                         {
-                                            <InputNumber class="form-control text-end"
+                                            <InputNumber class="form-control text-end quotation-workspace-price-input"
                                                          @bind-Value="line.UnitPrice" />
                                         }
                                         else
@@ -467,14 +509,18 @@
                     </table>
 
                 </div>
-
+                <div class="quotation-workspace-table-total" aria-live="polite">
+                    <span>@LocalizationService["FinalAmount"]</span>
+                    <strong>@quotation.Lines.Sum(line => line.TotalPrice).ToString("N2")</strong>
+                </div>
             </div>
-        </div>
+        </section>
 
         <!-- Quotation Notes -->
 
-        <div class="card quotation-card mb-4">
+        <section class="card quotation-card quotation-workspace-section mb-4" aria-label="@LocalizationService["Notes"]">
             <div class="card-header quotation-card-header">
+                <span class="quotation-workspace-section-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
                 <strong>@LocalizationService["Notes"]</strong>
             </div>
             <div class="card-body quotation-card-body">
@@ -489,6 +535,53 @@
                     <textarea class="form-control" rows="4" readonly>@quotation.Notes</textarea>
                 }
             </div>
+        </section>
+            </main>
+
+            <aside class="quotation-workspace-sidebar" aria-label="@LocalizationService["QuotationPricingSummary"]">
+                <section class="quotation-workspace-total-card">
+                    <div class="quotation-workspace-total-heading">
+                        <span class="quotation-workspace-total-icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+                        <div>
+                            <h2>@LocalizationService["QuotationPricingSummary"]</h2>
+                            <p>@quotation.QuotationNumber</p>
+                        </div>
+                    </div>
+
+                    <div class="quotation-workspace-total-amount" aria-live="polite">
+                        <span>@LocalizationService["FinalAmount"]</span>
+                        <strong>@quotation.Lines.Sum(line => line.TotalPrice).ToString("N2")</strong>
+                    </div>
+
+                    <dl class="quotation-workspace-total-details">
+                        <div><dt>@LocalizationService["QuotationLines"]</dt><dd>@quotation.Lines.Count</dd></div>
+                        <div><dt>@LocalizationService["JobsOnQuotation"]</dt><dd>@linkedRequests.Count</dd></div>
+                        <div><dt>@LocalizationService["Customer"]</dt><dd>@GetCustomerName()</dd></div>
+                    </dl>
+
+                    <p class="quotation-workspace-total-help">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                        @LocalizationService["QuotationPricingSummaryHint"]
+                    </p>
+                    @if (quotation.Status is QuotationStatus.Approved or QuotationStatus.ReadyToSend
+                        or QuotationStatus.SentToCustomer or QuotationStatus.CustomerNegotiation
+                        or QuotationStatus.Accepted or QuotationStatus.Rejected)
+                    {
+                        <a class="quotation-workspace-preview-link" href="@($"/sales/quotations/preview/{quotation.Id}")">
+                            <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                            @LocalizationService["QuotationPreview"]
+                        </a>
+                    }
+                </section>
+
+                <section class="quotation-workspace-guidance">
+                    <div class="quotation-workspace-guidance-title">
+                        <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                        <strong>@LocalizationService["QuotationNextStep"]</strong>
+                    </div>
+                    <p>@GetQuotationWorkflowHint()</p>
+                </section>
+            </aside>
         </div>
     }
 </div>
@@ -515,6 +608,18 @@
         quotation != null &&
         (quotation.Status == QuotationStatus.Draft ||
          quotation.Status == QuotationStatus.RevisionRequired);
+
+    private string GetQuotationWorkflowHint() => quotation?.Status switch
+    {
+        QuotationStatus.Draft or QuotationStatus.RevisionRequired =>
+            LocalizationService["QuotationEditDraftHint"],
+        QuotationStatus.PendingApproval =>
+            LocalizationService["QuotationEditPendingHint"],
+        QuotationStatus.Approved or QuotationStatus.ReadyToSend or
+        QuotationStatus.SentToCustomer or QuotationStatus.CustomerNegotiation =>
+            LocalizationService["QuotationEditApprovedHint"],
+        _ => LocalizationService["QuotationEditClosedHint"]
+    };
 
     private static string GetQuotationStatusCssClass(QuotationStatus status) => status switch
     {
