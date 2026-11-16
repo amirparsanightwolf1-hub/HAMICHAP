@@ -173,7 +173,7 @@
                                         <span>@LocalizationService["RollOrientationLegacyProofNotice"] (@RollOrientationLabel)</span>
                                     </div>
                                 }
-                                else if (string.IsNullOrWhiteSpace(rollOrientation))
+                                else if (string.IsNullOrWhiteSpace(rollOrientation) && proofOrientationChecks.Count == 0)
                                 {
                                     <div class="proof-muted mt-2">@LocalizationService["NoRollOrientationSelected"]</div>
                                 }
