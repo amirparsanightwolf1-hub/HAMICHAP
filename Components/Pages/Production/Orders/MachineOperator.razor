@@ -29,7 +29,7 @@
         <div class="d-flex gap-2 align-items-center mb-3">
             <label for="operator-machine">Machine / دستگاه</label>
             <select id="operator-machine" class="form-select" style="max-width:400px" @bind="machineId" @bind:after="ReloadAsync">
-                <option value="0">Select a machine</option>
+                <option value="0">All machines / همه دستگاه‌ها</option>
                 @foreach (var machine in machines)
                 {
                     <option value="@machine.Id">@machine.Name</option>
@@ -74,6 +74,29 @@
                     @if (UpcomingOperations.Count == 0)
                     {
                         <tr><td colspan="5" class="text-muted">No upcoming operations.</td></tr>
+                    }
+                </tbody>
+            </table></div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header"><strong>Production orders / سفارش‌های تولید</strong></div>
+            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+                <thead><tr><th>Order</th><th>Status</th><th>Operations</th><th>Scheduling</th></tr></thead>
+                <tbody>
+                    @foreach (var order in visibleOrders)
+                    {
+                        var count = operations.Count(x => x.ProductionOrderId == order.Id);
+                        var booked = operations.Count(x => x.ProductionOrderId == order.Id &&
+                            BookingFor(x.Id) != null);
+                        <tr><td>@order.OrderNumber</td><td>@order.Status</td>
+                            <td>@count</td>
+                            <td>@(count == 0 ? "Awaiting operation setup / در انتظار تعریف مراحل" :
+                                  booked == 0 ? "Awaiting machine scheduling / در انتظار برنامه‌ریزی" :
+                                  $"{booked}/{count} machine operations booked")</td></tr>
+                    }
+                    @if (visibleOrders.Count == 0)
+                    {
+                        <tr><td colspan="4" class="text-muted">No active production orders found.</td></tr>
                     }
                 </tbody>
             </table></div>
@@ -218,6 +241,7 @@
     private List<Machine> machines = new();
     private List<Item> items = new();
     private List<ProductionOperation> operations = new();
+    private List<ProductionOrder> visibleOrders = new();
     private Dictionary<long, List<ProductionOperationEvent>> eventsByOperation = new();
     private Dictionary<long, string> pauseReasons = new();
     private Dictionary<long, int> requestItemIds = new();
@@ -234,7 +258,17 @@
     private List<ProductionOperation> AvailableOperations =>
         VisibleOperations.Where(x => x.Status == ProductionOperationStatus.Running ||
             ((x.Status is ProductionOperationStatus.Ready or ProductionOperationStatus.Pending) &&
-             PreviousCompleted(x) && BookingFor(x.Id)?.PlannedStart <= DateTime.Now)).ToList();
+             PreviousCompleted(x) && BookingFor(x.Id) != null &&
+             IsAllowedToStartNow(x))).ToList();
+    private bool IsAllowedToStartNow(ProductionOperation step)
+    {
+        var start = step.ProductionOrder.PlannedStartDate;
+        if (!start.HasValue || DateTime.Now < start.Value ||
+            step.ProductionOrder.OperationsSequenceConfirmedAt == null)
+            return false;
+        return ProductionPlanningTime.NextAllowedProductionMinute(DateTime.Now,
+            step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) <= DateTime.Now;
+    }
     private List<ProductionOperation> UpcomingOperations =>
         VisibleOperations.Where(x => (x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready) &&
             !AvailableOperations.Any(a => a.Id == x.Id)).ToList();
@@ -279,7 +313,7 @@
         await using var db = await DbFactory.CreateDbContextAsync();
         machines = await db.Machines.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
         items = await db.Items.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
-        if (machines.Count > 0) machineId = machines[0].Id;
+        machineId = 0; // Show all operations by default.
         await ReloadAsync();
         _ = RefreshLoopAsync();
     }
@@ -316,15 +350,35 @@
         if (!canOperate) return;
         await using var db = await DbFactory.CreateDbContextAsync();
         var machineBookings = await db.ProductionSchedules.AsNoTracking()
-            .Where(x => x.MachineId == machineId && x.Status != ScheduleStatus.Cancelled)
+            .Where(x => x.Status != ScheduleStatus.Cancelled)
             .ToListAsync();
         bookingsByOperation = machineBookings.GroupBy(x => x.ProductionOperationId)
             .ToDictionary(x => x.Key, x => x.OrderByDescending(b => b.Id).First());
-        var ids = bookingsByOperation.Keys.ToList();
-        operations = await db.ProductionOperations.AsNoTracking()
-            .Include(x => x.ProductionOrder)
-            .Where(x => ids.Contains(x.Id) && !x.IsOutsourced)
+        var allOpenOrders = await db.ProductionOrders.AsNoTracking()
+            .Where(x => x.Status != ProductionOrderStatus.Cancelled &&
+                        x.Status != ProductionOrderStatus.Completed)
+            .OrderBy(x => x.PlannedStartDate).ToListAsync();
+        var allIds = allOpenOrders.Select(x => x.Id).ToList();
+        var allOperations = await db.ProductionOperations.AsNoTracking()
+            .Include(x => x.ProductionOrder).Include(x => x.WorkCenter)
+            .Where(x => allIds.Contains(x.ProductionOrderId) && !x.IsOutsourced)
             .ToListAsync();
+        if (machineId == 0)
+        {
+            operations = allOperations;
+            visibleOrders = allOpenOrders;
+        }
+        else
+        {
+            var machine = machines.FirstOrDefault(x => x.Id == machineId);
+            var matchingIds = machineBookings.Where(x => x.MachineId == machineId)
+                .Select(x => x.ProductionOperationId).ToHashSet();
+            operations = allOperations.Where(x =>
+                matchingIds.Contains(x.Id) ||
+                (machine != null && x.WorkCenter?.Code == "MC-" + machine.Code)).ToList();
+            visibleOrders = allOpenOrders.Where(x =>
+                operations.Any(op => op.ProductionOrderId == x.Id)).ToList();
+        }
         var orderIds = operations.Select(x => x.ProductionOrderId).Distinct().ToList();
         var allSteps = await db.ProductionOperations.AsNoTracking()
             .Where(x => orderIds.Contains(x.ProductionOrderId)).ToListAsync();
