@@ -3464,4 +3464,124 @@
   <data name="OperatorNoReadyJobsHint" xml:space="preserve">
     <value>Your next operation appears below. You can start it when the previous step is complete and the machine is available.</value>
   </data>
+  <data name="ManagerOverview" xml:space="preserve">
+    <value>Management overview</value>
+  </data>
+  <data name="ManagerDashboardIntro" xml:space="preserve">
+    <value>Key activity and the next actions for your team.</value>
+  </data>
+  <data name="ManagerQuickActions" xml:space="preserve">
+    <value>Quick access</value>
+  </data>
+  <data name="ManagerOpenWorkspace" xml:space="preserve">
+    <value>Open workspace</value>
+  </data>
+  <data name="ManagerNeedsAttention" xml:space="preserve">
+    <value>Needs attention</value>
+  </data>
+  <data name="ManagerLiveCounts" xml:space="preserve">
+    <value>Current data</value>
+  </data>
+  <data name="ManagerNoOpenAlerts" xml:space="preserve">
+    <value>Nothing needs attention right now.</value>
+  </data>
+  <data name="ManagerSalesDashboard" xml:space="preserve">
+    <value>Sales dashboard</value>
+  </data>
+  <data name="ManagerWarehouseDashboard" xml:space="preserve">
+    <value>Warehouse dashboard</value>
+  </data>
+  <data name="ManagerCeoDashboard" xml:space="preserve">
+    <value>CEO dashboard</value>
+  </data>
+  <data name="ManagerProductionDashboard" xml:space="preserve">
+    <value>Production dashboard</value>
+  </data>
+  <data name="ManagerSalesRequests" xml:space="preserve">
+    <value>Sales requests</value>
+  </data>
+  <data name="ManagerSalesActiveOrders" xml:space="preserve">
+    <value>Active sales orders</value>
+  </data>
+  <data name="ManagerSalesQuotations" xml:space="preserve">
+    <value>Quotations</value>
+  </data>
+  <data name="ManagerSalesInvoices" xml:space="preserve">
+    <value>Sales invoices</value>
+  </data>
+  <data name="ManagerSalesDraftRequests" xml:space="preserve">
+    <value>Draft sales requests</value>
+  </data>
+  <data name="ManagerSalesUndelivered" xml:space="preserve">
+    <value>Overdue sales deliveries</value>
+  </data>
+  <data name="ManagerWarehouseItems" xml:space="preserve">
+    <value>Active items</value>
+  </data>
+  <data name="ManagerWarehouseOpenRequests" xml:space="preserve">
+    <value>Open material requests</value>
+  </data>
+  <data name="ManagerWarehouseDraftDocuments" xml:space="preserve">
+    <value>Draft warehouse documents</value>
+  </data>
+  <data name="ManagerWarehousePostedDocuments" xml:space="preserve">
+    <value>Posted warehouse documents</value>
+  </data>
+  <data name="ManagerWarehouseRequestsToProcess" xml:space="preserve">
+    <value>Material requests to process</value>
+  </data>
+  <data name="ManagerWarehouseDocumentsToPost" xml:space="preserve">
+    <value>Documents awaiting posting</value>
+  </data>
+  <data name="ManagerCeoActiveSales" xml:space="preserve">
+    <value>Active sales orders</value>
+  </data>
+  <data name="ManagerCeoProductionOrders" xml:space="preserve">
+    <value>Active production orders</value>
+  </data>
+  <data name="ManagerCeoApprovedWindows" xml:space="preserve">
+    <value>Production windows set</value>
+  </data>
+  <data name="ManagerCeoOpenWarehouse" xml:space="preserve">
+    <value>Open material requests</value>
+  </data>
+  <data name="ManagerCeoUnplannedOrders" xml:space="preserve">
+    <value>Orders without approved dates</value>
+  </data>
+  <data name="ManagerCeoOverdueProduction" xml:space="preserve">
+    <value>Overdue production orders</value>
+  </data>
+  <data name="ManagerProductionActiveOrders" xml:space="preserve">
+    <value>Active production orders</value>
+  </data>
+  <data name="ManagerProductionUnscheduled" xml:space="preserve">
+    <value>Routes awaiting confirmation</value>
+  </data>
+  <data name="ManagerProductionRunning" xml:space="preserve">
+    <value>Running operations</value>
+  </data>
+  <data name="ManagerProductionMachineBookings" xml:space="preserve">
+    <value>Planned machine bookings</value>
+  </data>
+  <data name="ManagerProductionNeedsSequence" xml:space="preserve">
+    <value>Orders awaiting route confirmation</value>
+  </data>
+  <data name="ManagerProductionLateOrders" xml:space="preserve">
+    <value>Late production orders</value>
+  </data>
+  <data name="ManagerMainNavigation" xml:space="preserve">
+    <value>Main menu</value>
+  </data>
+  <data name="ManagerMoreSales" xml:space="preserve">
+    <value>More sales</value>
+  </data>
+  <data name="ManagerMoreInventory" xml:space="preserve">
+    <value>More inventory</value>
+  </data>
+  <data name="ManagerMoreProduction" xml:space="preserve">
+    <value>More production</value>
+  </data>
+  <data name="ManagerMoreAdministration" xml:space="preserve">
+    <value>More administration</value>
+  </data>
 </root>
