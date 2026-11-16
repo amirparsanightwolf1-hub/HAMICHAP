@@ -7,6 +7,7 @@
 @using HamiChap_MES_ERP.Models.Production
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Services
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthenticationStateProvider Auth
 
@@ -35,7 +36,49 @@
             </select>
             <button class="btn btn-outline-secondary" @onclick="ReloadAsync">Refresh</button>
         </div>
-        @foreach (var step in VisibleOperations)
+        <div class="row g-3 mb-3">
+            <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
+                <div class="small text-muted">Available now / آماده اجرا</div>
+                <div class="fs-3 fw-semibold">@AvailableOperations.Count</div>
+            </div></div></div>
+            <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
+                <div class="small text-muted">Running / در حال اجرا</div>
+                <div class="fs-3 fw-semibold">@VisibleOperations.Count(x => x.Status == ProductionOperationStatus.Running)</div>
+            </div></div></div>
+            <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
+                <div class="small text-muted">Next up / در صف بعدی</div>
+                <div class="fs-3 fw-semibold">@UpcomingOperations.Count</div>
+            </div></div></div>
+            <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
+                <div class="small text-muted">Completed / تکمیل‌شده</div>
+                <div class="fs-3 fw-semibold">@VisibleOperations.Count(x => x.Status == ProductionOperationStatus.Completed)</div>
+            </div></div></div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header"><strong>Next operations / عملیات بعدی</strong></div>
+            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+                <thead><tr><th>Order</th><th>Operation</th><th>Planned start</th><th>Planned end</th><th>Readiness</th></tr></thead>
+                <tbody>
+                    @foreach (var next in UpcomingOperations.Take(10))
+                    {
+                        var booking = BookingFor(next.Id);
+                        <tr>
+                            <td>@next.ProductionOrder.OrderNumber</td>
+                            <td>#@next.Sequence @next.Name</td>
+                            <td>@booking?.PlannedStart.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@booking?.PlannedEnd.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@(PreviousCompleted(next) ? "Ready / آماده" : "Waiting for previous step / منتظر مرحله قبل")</td>
+                        </tr>
+                    }
+                    @if (UpcomingOperations.Count == 0)
+                    {
+                        <tr><td colspan="5" class="text-muted">No upcoming operations.</td></tr>
+                    }
+                </tbody>
+            </table></div>
+        </div>
+        <h2 class="h5 mt-4">Available and active work / کارهای آماده و در حال اجرا</h2>
+        @foreach (var step in AvailableOperations)
         {
             var last = LastEvent(step.Id);
             var paused = last?.EventType == "Paused";
@@ -47,7 +90,7 @@
                 </div>
                 <div class="card-body">
                     <div class="small text-muted mb-2">
-                        Planned: @step.PlannedHours.ToString("0.##") h |
+                        Scheduled: @(BookingFor(step.Id)?.PlannedStart.ToString("yyyy-MM-dd HH:mm")) – @(BookingFor(step.Id)?.PlannedEnd.ToString("yyyy-MM-dd HH:mm")) | Expected work: @step.PlannedHours.ToString("0.##") h |
                         @step.ProductionOrder.OrderNumber
                     </div>
                     @if (!previousDone)
@@ -75,6 +118,18 @@
                                 </div>
                             </div>
                             <button class="btn btn-success" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Finished")'>Finish / پایان عملیات</button>
+                            <div class="border rounded p-3 mt-3">
+                                <strong>Overtime / اضافه‌زمان عملیات</strong>
+                                @if (HasOverrun(step))
+                                {
+                                    <div class="text-danger small">The operation has exceeded its expected duration. Report the cause before finishing.</div>
+                                }
+                                <label class="form-label mt-2">Additional minutes / دقیقه اضافه</label>
+                                <input type="number" min="1" step="1" class="form-control mb-2" @bind="overrunMinutes[step.Id]" />
+                                <label class="form-label">Reason for delay / علت طولانی شدن عملیات</label>
+                                <textarea class="form-control mb-2" maxlength="1000" rows="2" @bind="overrunReasons[step.Id]"></textarea>
+                                <button class="btn btn-outline-warning" disabled="@busy" @onclick="() => ExtendAsync(step.Id)">Report delay and extend schedule / ثبت تأخیر و تمدید برنامه</button>
+                            </div>
                         }
                     }
                     @if (step.Status != ProductionOperationStatus.Completed)
@@ -136,10 +191,33 @@
     private Dictionary<long, int> requestItemIds = new();
     private Dictionary<long, decimal> requestQuantities = new();
     private Dictionary<long, string> requestNotes = new();
+    private Dictionary<long, string> overrunReasons = new();
+    private Dictionary<long, int> overrunMinutes = new();
+    private Dictionary<long, ProductionSchedule> bookingsByOperation = new();
 
     private List<ProductionOperation> VisibleOperations =>
         operations.Where(x => x.Status != ProductionOperationStatus.Cancelled)
-            .OrderBy(x => x.ProductionOrder.PlannedStartDate).ThenBy(x => x.Sequence).ToList();
+            .OrderBy(x => BookingFor(x.Id)?.PlannedStart ?? DateTime.MaxValue)
+            .ThenBy(x => x.Sequence).ToList();
+    private List<ProductionOperation> AvailableOperations =>
+        VisibleOperations.Where(x => x.Status == ProductionOperationStatus.Running ||
+            ((x.Status is ProductionOperationStatus.Ready or ProductionOperationStatus.Pending) &&
+             PreviousCompleted(x))).ToList();
+    private List<ProductionOperation> UpcomingOperations =>
+        VisibleOperations.Where(x => (x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready) &&
+            !AvailableOperations.Any(a => a.Id == x.Id)).ToList();
+    private ProductionSchedule? BookingFor(long id) =>
+        bookingsByOperation.GetValueOrDefault(id);
+    private bool HasOverrun(ProductionOperation step)
+    {
+        var booking = BookingFor(step.Id);
+        var start = eventsByOperation.GetValueOrDefault(step.Id)?
+            .LastOrDefault(e => e.EventType == "Started")?.OccurredAtUtc;
+        return step.Status == ProductionOperationStatus.Running &&
+            (booking != null && DateTime.Now > booking.PlannedEnd ||
+             start.HasValue && (DateTime.UtcNow - start.Value).TotalMinutes >
+                 ProductionPlanningTime.OperationMinutes(step.PlannedHours));
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -162,9 +240,12 @@
     {
         if (!canOperate) return;
         await using var db = await DbFactory.CreateDbContextAsync();
-        var ids = await db.ProductionSchedules.AsNoTracking()
+        var machineBookings = await db.ProductionSchedules.AsNoTracking()
             .Where(x => x.MachineId == machineId && x.Status != ScheduleStatus.Cancelled)
-            .Select(x => x.ProductionOperationId).Distinct().ToListAsync();
+            .ToListAsync();
+        bookingsByOperation = machineBookings.GroupBy(x => x.ProductionOperationId)
+            .ToDictionary(x => x.Key, x => x.OrderByDescending(b => b.Id).First());
+        var ids = bookingsByOperation.Keys.ToList();
         operations = await db.ProductionOperations.AsNoTracking()
             .Include(x => x.ProductionOrder)
             .Where(x => ids.Contains(x.Id) && !x.IsOutsourced)
@@ -185,6 +266,8 @@
             requestQuantities.TryAdd(step.Id, 1m);
             pauseReasons.TryAdd(step.Id, "");
             requestNotes.TryAdd(step.Id, "");
+            overrunReasons.TryAdd(step.Id, "");
+            overrunMinutes.TryAdd(step.Id, 15);
         }
     }
 
