@@ -3,6 +3,12 @@
 // Works for the Print button as well as the browser's Ctrl+P/print menu.
 let registered = false;
 let prepared = false;
+let pdfModulePromise;
+
+function pdfModule() {
+    pdfModulePromise ??= import("./pdfPreview.js");
+    return pdfModulePromise;
+}
 
 function prepareProof() {
     const page = document.querySelector(".proof-page");
@@ -40,6 +46,9 @@ function prepareProof() {
 function finishProof() {
     if (!prepared) return;
     const page = document.querySelector(".proof-page");
+    // Return to fast screen previews after the browser closes the print dialog.
+    pdfModule().then(module => module.restorePdfAfterPrint(page))
+        .catch(error => console.warn("Could not restore PDF previews:", error));
     page?.style.removeProperty("--proof-print-scale");
     document.documentElement.classList.remove("proof-print-layout");
     prepared = false;
@@ -52,10 +61,16 @@ export function registerProofPrint() {
     registered = true;
 }
 
-export function printProof() {
-    // Prepare synchronously before opening the dialog; the beforeprint
-    // handler also covers browser-initiated printing.
+export async function printProof() {
+    // The button path waits for decoded 3600-pixel source PNGs before
+    // opening the dialog. Source PDF files are never rewritten.
     prepareProof();
+    try {
+        const module = await pdfModule();
+        await module.preparePdfForPrint(document.querySelector(".proof-page"));
+    } catch (error) {
+        console.warn("Printing with available PDF previews:", error);
+    }
     window.print();
 }
 
