@@ -213,7 +213,7 @@
                                          aria-valuemin="0" aria-valuemax="100"
                                          aria-valuenow="@job.JobProgressPercent.Value">
                                         <div class="job-overview-progress-fill"
-                                             style="width: @job.JobProgressPercent.Value%"></div>
+                                             style="width: @(job.JobProgressPercent.Value)%"></div>
                                     </div>
                                 }
                                 else
@@ -259,7 +259,7 @@
                                              aria-valuemin="0" aria-valuemax="100"
                                              aria-valuenow="@job.QuantityProgressPercent.Value">
                                             <div class="job-overview-progress-fill"
-                                                 style="width: @job.QuantityProgressPercent.Value%"></div>
+                                                 style="width: @(job.QuantityProgressPercent.Value)%"></div>
                                         </div>
                                         <p>@L["JobOverviewProducedQuantityHint"]</p>
                                     </div>
