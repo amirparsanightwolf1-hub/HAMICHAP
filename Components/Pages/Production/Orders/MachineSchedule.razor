@@ -82,9 +82,9 @@
                                 <div>@L["MachineDuration"]: <strong>@DurationLabel(AllocatedMinutes)</strong></div>
                                 <div class="@(RemainingMinutes < 0 ? "text-danger" : "text-success")">@L["RemainingDuration"]: <strong>@DurationLabel(RemainingMinutes)</strong></div>
                             </div>
-                            @if (RemainingMinutes == 0 && SelectedOperations.Count > 0)
+                            @if (RemainingMinutes >= 0 && SelectedOperations.Count > 0)
                             {
-                                <div class="small text-success mt-2">@L["OperationTotalMatchesCeo"]</div>
+                                <div class="small text-success mt-2">@L["OperationTotalWithinCeo"]</div>
                             }
 
                             <div class="manager-sequence-approval mt-3">
@@ -969,7 +969,7 @@
                 ShowError(L["InvalidOperationSequence"]);
                 return;
             }
-            if (steps.Sum(OperationMinutes) != order.EstimatedDurationMinutes)
+            if (steps.Sum(OperationMinutes) > order.EstimatedDurationMinutes)
             {
                 ShowError(L["StageDurationTotalMismatch"]);
                 return;
