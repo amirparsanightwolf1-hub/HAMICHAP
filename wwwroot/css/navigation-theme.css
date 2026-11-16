@@ -1,0 +1,46 @@
+/* Navigation presentation. Isolated from the layout structure and application forms. */
+.app-layout .sidebar {
+    background: linear-gradient(175deg, #102a43 0%, #153b50 55%, #174b57 100%);
+    border-inline-end: 1px solid rgba(255,255,255,.09);
+    box-shadow: 5px 0 25px rgba(10,31,49,.08);
+}
+.app-layout .sidebar-header { border-bottom: 1px solid rgba(255,255,255,.14); }
+.app-layout .sidebar-header h3 { color: #fff; letter-spacing: .015em; }
+.app-layout .side-menu .menu-group-label { color: #abc7d2; margin-block-start: 9px; }
+.app-layout .side-menu .menu-button {
+    color: #ebf6fa;
+    border-inline-start: 3px solid transparent;
+    border-radius: 10px;
+    transition: background .15s ease, border-color .15s ease;
+}
+.app-layout .side-menu .menu-button i { color: #a1cfdf; }
+.app-layout .side-menu .menu-button:hover { background: rgba(255,255,255,.105); }
+.app-layout .side-menu .menu-button.active {
+    background: #eef8fc;
+    color: #123a54;
+    border-inline-start-color: #20b8c5;
+}
+.app-layout .side-menu .menu-button.active i { color: #0f718f; }
+.app-layout .side-menu .menu-button:focus-visible,
+.app-layout .nav-more-group summary:focus-visible,
+.app-layout .nav-more-group a:focus-visible {
+    outline: 2px solid #70dbe6;
+    outline-offset: 2px;
+}
+.app-layout .nav-more-group { margin-block: 2px 7px; }
+.app-layout .nav-more-group summary { color: #c4dbe4; border-radius: 9px; }
+.app-layout .nav-more-group[open] summary { color: #fff; background: rgba(255,255,255,.09); }
+.app-layout .nav-more-group a { color: #d9eaf0; border-inline-start-color: rgba(159,216,232,.45); }
+.app-layout .nav-more-group a:hover { color: #fff; }
+.app-layout .mobile-menu-btn { background: #154d66; border: 1px solid rgba(255,255,255,.15); }
+.app-layout .language-switcher { gap: 5px; padding: 4px; border: 1px solid var(--erp-border); border-radius: 12px; background: var(--erp-surface); box-shadow: 0 6px 24px rgba(15,42,62,.12); }
+.app-layout .language-button { border: 1px solid transparent; border-radius: 9px; min-height: 36px; }
+.app-layout .language-button.active { background: #e7f4f8; border-color: #b9dce8; color: #14516e; font-weight: 700; }
+@media(max-width: 768px) {
+    .app-layout .sidebar { box-shadow: 8px 0 35px rgba(10,31,49,.2); }
+    .app-layout .side-menu .menu-button { min-height: 48px; }
+    .app-layout .language-switcher { bottom: calc(10px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .app-layout .side-menu .menu-button { transition: none; }
+}
