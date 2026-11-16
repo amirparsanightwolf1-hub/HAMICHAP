@@ -146,23 +146,25 @@
                                 <div class="proof-roll-orientation proof-roll-orientation-grid">
                                     @foreach (var choice in RollOrientationChoices.All)
                                     {
-                                        var isSelected = rollOrientation == choice.Value;
-                                        <div class="proof-roll-choice @(isSelected ? "is-selected" : "")"
-                                             @key="choice.Value">
+                                        var isChecked = proofOrientationChecks.Contains(choice.Value);
+                                        <label class="proof-roll-choice @(isChecked ? "is-selected" : "")"
+                                               @key="choice.Value">
                                             <img src="@choice.ImagePath" alt="@LocalizationService[choice.LocalizationKey]" />
-                                            <div class="proof-roll-choice-caption">
+                                            <span class="proof-roll-choice-caption">
                                                 <span>@LocalizationService[choice.LocalizationKey]</span>
-                                                @if (isSelected)
-                                                {
-                                                    <strong class="proof-roll-selected">
-                                                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                                                        @LocalizationService["Selected"]
-                                                    </strong>
-                                                }
-                                            </div>
-                                        </div>
+                                                <span class="proof-roll-checkbox-row">
+                                                    <input type="checkbox"
+                                                           class="form-check-input proof-roll-check"
+                                                           checked="@isChecked"
+                                                           @onchange="args => SetProofOrientationChecked(choice.Value, args.Value)" />
+                                                    <span class="proof-roll-print-checkbox" aria-hidden="true">@(isChecked ? "✓" : "")</span>
+                                                    <span>@LocalizationService["ProofOrientationMark"]</span>
+                                                </span>
+                                            </span>
+                                        </label>
                                     }
                                 </div>
+                                <p class="proof-muted proof-orientation-hint">@LocalizationService["ProofOrientationCheckboxHint"]</p>
                                 @if (RollOrientationChoices.IsLegacy(rollOrientation))
                                 {
                                     <div class="proof-roll-legacy">
@@ -407,6 +409,18 @@
     private string artworkPath = "";
     private string artworkFileName = "";
     private string rollOrientation = "";
+    // Proof-only markings. The saved production orientation is not overwritten.
+    private readonly HashSet<string> proofOrientationChecks = new(StringComparer.Ordinal);
+
+    private void SetProofOrientationChecked(string value, object? rawChecked)
+    {
+        if (RollOrientationChoices.Find(value) is null) return;
+        if (rawChecked is bool checkedValue && checkedValue)
+            proofOrientationChecks.Add(value);
+        else
+            proofOrientationChecks.Remove(value);
+    }
+
     private List<RollPantoneColor> rollPantoneColors = new();
     private HashSet<string> frontCmyk = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmyk = new(StringComparer.OrdinalIgnoreCase);
@@ -484,6 +498,7 @@
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true; errorMessage = null;
+        proofOrientationChecks.Clear();
         DimensionsSummary = LocalizationService["DimensionsNotSpecified"];
         rollPantoneColors = new();
         request = await Db.SalesRequests.Include(x => x.Customer).FirstOrDefaultAsync(x => x.Id == RequestId);
@@ -499,6 +514,8 @@
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
                 rollOrientation = spec.RollOrientation ?? "";
+                if (RollOrientationChoices.Find(rollOrientation) is not null)
+                    proofOrientationChecks.Add(rollOrientation);
                 rollPantoneColors = spec.PantoneColors ?? new();
                 LoadCmykSelections(request.JobSpecificationJson);
                 DimensionsSummary = $"{LocalizationService["LabelPull"]}: {Fmt(spec.LabelPull)} mm · {LocalizationService["LabelWidth"]}: {Fmt(spec.LabelWidth)} mm · {LocalizationService["Gap"]}: {Fmt(spec.GapBetweenLabels)} mm";
