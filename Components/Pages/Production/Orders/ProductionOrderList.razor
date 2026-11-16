@@ -101,6 +101,10 @@
 
                         <tbody>
 
+                            @if (FilteredOrders.Count == 0)
+                            {
+                                <tr><td colspan="8" class="operational-empty">@L["Workflow_NoMatchingOrders"]</td></tr>
+                            }
                             @foreach (var order in FilteredOrders)
                             {
                                 <tr>
