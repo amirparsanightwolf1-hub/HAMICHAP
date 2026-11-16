@@ -183,6 +183,9 @@ export async function preparePdfForPrint(root) {
         if (!state || state.disposed) return;
         await state.ready;
         if (state.disposed) return;
+        if (!state.refresh) {
+            throw new Error("PDF artwork pages could not be rendered for printing.");
+        }
         if (state.printPromise) return state.printPromise;
 
         const generation = ++state.generation;
@@ -191,6 +194,9 @@ export async function preparePdfForPrint(root) {
 
         const run = (async () => {
             const images = [...container.querySelectorAll("img.proof-pdf-image")];
+            if (images.length === 0) {
+                throw new Error("PDF artwork is not visible in the proof.");
+            }
             // One high-resolution page at a time to bound memory and PDFium load.
             for (const image of images) {
                 if (state.disposed || generation !== state.generation) return;
