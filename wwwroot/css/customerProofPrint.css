@@ -157,6 +157,29 @@ html.proof-print-layout .proof-service-indicator {
     flex-basis: 3mm !important;
     font-size: 5pt !important;
 }
+html.proof-print-layout .proof-roll-single-side {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+html.proof-print-layout .proof-pantone-title {
+    font-size: 6.1pt !important;
+    margin: 1mm 0 .6mm !important;
+}
+html.proof-print-layout .proof-pantone-list { gap: .8mm !important; }
+html.proof-print-layout .proof-pantone-chip {
+    padding: .4mm .8mm !important;
+    gap: .7mm !important;
+    font-size: 5.8pt !important;
+}
+html.proof-print-layout .proof-pantone-swatch {
+    width: 4mm !important;
+    height: 4mm !important;
+    flex-basis: 4mm !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+html.proof-print-layout .proof-uv-panel .proof-service-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
 html.proof-print-layout .proof-two-col {
     gap: 1mm !important;
 }
