@@ -208,7 +208,7 @@
                 <h2>@L["OperatorNextUp"]</h2>
                 @{
                     var waitingJobs = PendingWorklist.Where(x =>
-                        x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready &&
+                        (x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready) &&
                         StartBlockedReason(x) != null).ToList();
                 }
                 @if (waitingJobs.Count == 0)
@@ -450,8 +450,7 @@
     {
         if (!canOperate) return;
         await using var db = await DbFactory.CreateDbContextAsync();
-        {
-            assignedMachineId = await db.Users.AsNoTracking()
+        assignedMachineId = await db.Users.AsNoTracking()
                 .Where(x => x.Id == userId && x.IsActive)
                 .Select(x => x.AssignedMachineId).FirstOrDefaultAsync();
             machines = await db.Machines.AsNoTracking()
@@ -466,7 +465,6 @@
                 predecessors = new();
                 return;
             }
-        }
         var machineBookings = await db.ProductionSchedules.AsNoTracking()
             .Where(x => x.Status != ScheduleStatus.Cancelled)
             .ToListAsync();
@@ -481,8 +479,7 @@
             .Include(x => x.ProductionOrder).Include(x => x.WorkCenter)
             .Where(x => allIds.Contains(x.ProductionOrderId) && !x.IsOutsourced)
             .ToListAsync();
-        {
-            var machine = machines.FirstOrDefault(x => x.Id == machineId);
+        var machine = machines.FirstOrDefault(x => x.Id == machineId);
             var matchingIds = machineBookings.Where(x => x.MachineId == machineId)
                 .Select(x => x.ProductionOperationId).ToHashSet();
             operations = allOperations.Where(x =>
@@ -490,7 +487,6 @@
                 (machine != null && x.WorkCenter?.Code == "MC-" + machine.Code)).ToList();
             visibleOrders = allOpenOrders.Where(x =>
                 operations.Any(op => op.ProductionOrderId == x.Id)).ToList();
-        }
         var orderIds = operations.Select(x => x.ProductionOrderId).Distinct().ToList();
         var allSteps = await db.ProductionOperations.AsNoTracking()
             .Where(x => orderIds.Contains(x.ProductionOrderId)).ToListAsync();
@@ -527,8 +523,11 @@
     private bool PreviousCompleted(ProductionOperation step) =>
         !predecessors.Any(x => x.ProductionOrderId == step.ProductionOrderId &&
                                x.Sequence < step.Sequence && x.Status != ProductionOperationStatus.Completed);
+    // Delay-report events must not override the actual pause/resume state.
     private ProductionOperationEvent? LastEvent(long id) =>
-        eventsByOperation.GetValueOrDefault(id)?.FirstOrDefault();
+        eventsByOperation.GetValueOrDefault(id)?
+            .FirstOrDefault(x => x.EventType is "Started" or "Paused" or "Resumed" or "Finished");
+    private bool IsPaused(long id) => LastEvent(id)?.EventType == "Paused";
 
     private async Task AssertMachinePermissionAsync(ApplicationDbContext db, int actualMachineId)
     {
