@@ -5,10 +5,13 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Production
+@using Microsoft.EntityFrameworkCore
 
 @attribute [Authorize(Roles = "Administrator")]
 
 @inject UserManager<ApplicationUser> UserManager
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager Nav
 
 
@@ -20,6 +23,11 @@
         @L["Add Employee"]
     </button>
 </div>
+
+@if (!string.IsNullOrEmpty(assignmentMessage))
+{
+    <div class="alert @(assignmentError ? "alert-danger" : "alert-success")">@assignmentMessage</div>
+}
 
 @if (users == null)
 {
@@ -36,6 +44,7 @@ else
                 <th>@L["Department"]</th>
                 <th>@L["Status"]</th>
                 <th>@L["Roles"]</th>
+                <th>Assigned machine / دستگاه اختصاص‌یافته</th>
                 <th></th>
             </tr>
         </thead>
@@ -76,6 +85,16 @@ else
                         }
 
                     </td>
+                    <td>
+                        <select class="form-select form-select-sm" value="@(user.AssignedMachineId?.ToString() ?? "0")"
+                                @onchange="e => AssignMachineAsync(user.Id, e.Value?.ToString())">
+                            <option value="0">No machine assigned / بدون دستگاه</option>
+                            @foreach (var machine in machines)
+                            {
+                                <option value="@machine.Id">@machine.Name</option>
+                            }
+                        </select>
+                    </td>
 
                 </tr>
             }
@@ -89,19 +108,65 @@ else
 @code {
 
     private List<ApplicationUser>? users;
+    private List<Machine> machines = new();
+    private string? assignmentMessage;
+    private bool assignmentError;
    
     private Dictionary<string, IList<string>> userRoles = new();
 
 
     protected override async Task OnInitializedAsync()
     {
-        users = UserManager.Users.ToList();
+        users = await UserManager.Users.ToListAsync();
+        await using (var db = await DbFactory.CreateDbContextAsync())
+        {
+            machines = await db.Machines.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        }
 
         foreach (var user in users)
         {
             var roles = await UserManager.GetRolesAsync(user);
 
             userRoles[user.Id] = roles;
+        }
+    }
+
+    private async Task AssignMachineAsync(string userId, string? value)
+    {
+        assignmentMessage = null;
+        assignmentError = false;
+        if (!int.TryParse(value, out var parsed) || parsed < 0)
+        {
+            assignmentError = true;
+            assignmentMessage = "Invalid machine selection.";
+            return;
+        }
+
+        var user = await UserManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            assignmentError = true;
+            assignmentMessage = "User not found.";
+            return;
+        }
+
+        if (parsed != 0 && !machines.Any(x => x.Id == parsed))
+        {
+            assignmentError = true;
+            assignmentMessage = "Machine is not active.";
+            return;
+        }
+
+        user.AssignedMachineId = parsed == 0 ? null : parsed;
+        var result = await UserManager.UpdateAsync(user);
+        assignmentError = !result.Succeeded;
+        assignmentMessage = result.Succeeded
+            ? "Operator machine assignment saved."
+            : string.Join("; ", result.Errors.Select(x => x.Description));
+        if (result.Succeeded && users != null)
+        {
+            var displayed = users.FirstOrDefault(x => x.Id == userId);
+            if (displayed != null) displayed.AssignedMachineId = user.AssignedMachineId;
         }
     }
 
