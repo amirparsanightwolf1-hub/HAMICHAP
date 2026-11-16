@@ -3066,4 +3066,8 @@
   <data name="QuotationEditClosedHint" xml:space="preserve"><value>این پیش‌فاکتور دیگر قابل ویرایش نیست. برای مشاهده سند نهایی و اقلام آن، پیش‌نمایش را باز کنید.</value></data>
   <data name="Approve" xml:space="preserve"><value>تأیید</value></data>
   <data name="Reject" xml:space="preserve"><value>رد</value></data>
+  <data name="ValidityDays" xml:space="preserve"><value>مدت اعتبار (روز)</value></data>
+  <data name="ValidityDaysHelp" xml:space="preserve"><value>از تاریخ پیش‌فاکتور محاسبه می‌شود. برای نداشتن تاریخ انقضا خالی بگذارید.</value></data>
+  <data name="ValidityDaysRange" xml:space="preserve"><value>مدت اعتبار باید بین ۰ تا ۳٬۶۵۰ روز باشد.</value></data>
+  <data name="WholeNumberPriceRequired" xml:space="preserve"><value>قیمت واحد را به صورت عدد صحیح و غیرمنفی (بدون اعشار) وارد کنید.</value></data>
 </root>
