@@ -11,241 +11,376 @@
 @using HamiChap_MES_ERP.Services
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthenticationStateProvider Auth
+@inject LocalizationService L
 
-<PageTitle>Machine operations | عملیات دستگاه‌ها</PageTitle>
-<div class="container-fluid py-3">
-    <h1 class="h4">Machine operations / عملیات دستگاه‌ها</h1>
-    <p class="text-muted">Record execution, pauses and warehouse requests for the selected machine.</p>
+<PageTitle>@L["OperatorDashboardTitle"]</PageTitle>
+
+<div class="container-fluid py-4 operator-dashboard">
+    <div class="operator-hero mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <div class="operator-eyebrow mb-2">@L["OperatorProductionArea"]</div>
+                <h1 class="h3 fw-bold mb-2">@L["OperatorDashboardTitle"]</h1>
+                <p class="mb-0 operator-hero-subtitle">@L["OperatorDashboardDescription"]</p>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <a href="/production/workflow" class="btn btn-light btn-sm">@L["OperatorViewWorkflow"]</a>
+                <button type="button" class="btn btn-outline-light btn-sm" disabled="@busy" @onclick="ReloadAsync">
+                    @L["Refresh"]
+                </button>
+            </div>
+        </div>
+    </div>
+
     @if (!canOperate)
     {
-        <div class="alert alert-danger">Access denied. Production operator permission is required.</div>
+        <div class="alert alert-danger" role="alert">@L["OperatorAccessDenied"]</div>
     }
     else
     {
-        @if (!string.IsNullOrEmpty(message))
+        @if (!string.IsNullOrWhiteSpace(message))
         {
-            <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
+            <div class="alert @(isError ? "alert-danger" : "alert-success")" role="status">@message</div>
         }
         @if (!executionSchemaReady)
         {
-            <div class="alert alert-warning" role="alert">Operator activity logging is unavailable because the database has not been updated. Apply EF migration 20261116133000_AddOperationExecutionTracking, then refresh this page. Recording actions is disabled until the database is ready.</div>
+            <div class="alert alert-warning" role="alert">@L["OperatorMigrationRequired"]</div>
         }
         @if (!isAdministrator && !assignedMachineId.HasValue)
         {
-            <div class="alert alert-warning" role="alert">No machine is assigned to your account. Ask an administrator to assign your machine under Administration → Users / دستگاهی به حساب شما اختصاص نیافته است.</div>
+            <div class="alert alert-warning" role="alert">@L["OperatorNoAssignedMachine"]</div>
         }
-        <div class="d-flex gap-2 align-items-center mb-3">
-            <label for="operator-machine">Machine / دستگاه</label>
-            <select id="operator-machine" class="form-select" style="max-width:400px" @bind="machineId" @bind:after="ReloadAsync">
-                @if (isAdministrator)
-                {
-                    <option value="0">All machines / همه دستگاه‌ها</option>
-                }
-                @foreach (var machine in machines)
-                {
-                    <option value="@machine.Id">@machine.Name</option>
-                }
-            </select>
-            <button class="btn btn-outline-secondary" @onclick="ReloadAsync">Refresh</button>
-        </div>
-        <div class="row g-3 mb-3">
-            <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
-                <div class="small text-muted">Available now / آماده اجرا</div>
-                <div class="fs-3 fw-semibold">@AvailableOperations.Count(x => x.Status != ProductionOperationStatus.Running)</div>
-            </div></div></div>
-            <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
-                <div class="small text-muted">Running / در حال اجرا</div>
-                <div class="fs-3 fw-semibold">@VisibleOperations.Count(x => x.Status == ProductionOperationStatus.Running)</div>
-            </div></div></div>
-            <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
-                <div class="small text-muted">Next up / در صف بعدی</div>
-                <div class="fs-3 fw-semibold">@UpcomingOperations.Count</div>
-            </div></div></div>
-            <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
-                <div class="small text-muted">Completed / تکمیل‌شده</div>
-                <div class="fs-3 fw-semibold">@VisibleOperations.Count(x => x.Status == ProductionOperationStatus.Completed)</div>
-            </div></div></div>
-        </div>
-        <div class="card mb-3">
-            <div class="card-header"><strong>Next operations / عملیات بعدی</strong></div>
-            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
-                <thead><tr><th>Order</th><th>Operation</th><th>Planned start</th><th>Planned end</th><th>Readiness</th></tr></thead>
-                <tbody>
-                    @foreach (var next in UpcomingOperations.Take(10))
+
+        <div class="card operator-filter-card mb-4">
+            <div class="card-body d-flex flex-wrap align-items-end justify-content-between gap-3">
+                <div class="operator-machine-filter">
+                    <label class="form-label small fw-semibold text-muted" for="operator-machine">@L["Machine"]</label>
+                    @if (isAdministrator)
                     {
-                        var booking = BookingFor(next.Id);
-                        <tr>
-                            <td>@next.ProductionOrder.OrderNumber</td>
-                            <td>#@next.Sequence @next.Name</td>
-                            <td>@(booking?.PlannedStart.ToString("yyyy-MM-dd HH:mm"))</td>
-                            <td>@(booking?.PlannedEnd.ToString("yyyy-MM-dd HH:mm"))</td>
-                            <td>@(booking == null ? "Awaiting machine schedule / در انتظار برنامه دستگاه" :
-                                PreviousCompleted(next) ? "Ready when machine is free / آماده پس از آزاد شدن دستگاه" :
-                                "Waiting for previous step / منتظر مرحله قبل")</td>
-                        </tr>
-                    }
-                    @if (UpcomingOperations.Count == 0)
-                    {
-                        <tr><td colspan="5" class="text-muted">No upcoming operations.</td></tr>
-                    }
-                </tbody>
-            </table></div>
-        </div>
-        <div class="card mb-3">
-            <div class="card-header"><strong>Production orders / سفارش‌های تولید</strong></div>
-            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
-                <thead><tr><th>Order</th><th>Status</th><th>Operations</th><th>Scheduling</th></tr></thead>
-                <tbody>
-                    @foreach (var order in visibleOrders)
-                    {
-                        var count = operations.Count(x => x.ProductionOrderId == order.Id);
-                        var booked = operations.Count(x => x.ProductionOrderId == order.Id &&
-                            BookingFor(x.Id) != null);
-                        <tr><td>@order.OrderNumber</td><td>@order.Status</td>
-                            <td>@count</td>
-                            <td>@(count == 0 ? "Awaiting operation setup / در انتظار تعریف مراحل" :
-                                  booked == 0 ? "Awaiting machine scheduling / در انتظار برنامه‌ریزی" :
-                                  $"{booked}/{count} machine operations booked")</td></tr>
-                    }
-                    @if (visibleOrders.Count == 0)
-                    {
-                        <tr><td colspan="4" class="text-muted">No active production orders found.</td></tr>
-                    }
-                </tbody>
-            </table></div>
-        </div>
-        <h2 class="h5 mt-4">Machine operation worklist / فهرست عملیات دستگاه</h2>
-        <p class="text-muted small">All unfinished operations are shown. A Start button is enabled only when the operation is ready and its machine is free.</p>
-        @if (PendingWorklist.Count == 0)
-        {
-            <div class="alert alert-info">There are no unfinished internal machine operations for this selection. If orders have no operations, ask the production manager to generate the route in Machine Schedule.</div>
-        }
-        @foreach (var step in PendingWorklist)
-        {
-            var last = LastEvent(step.Id);
-            var paused = last?.EventType == "Paused";
-            var previousDone = PreviousCompleted(step);
-            <div class="card mb-3" @key="step.Id">
-                <div class="card-header d-flex justify-content-between">
-                    <strong>@step.ProductionOrder.OrderNumber — #@step.Sequence @step.Name</strong>
-                    <span>@step.Status @(paused ? "(Paused / متوقف)" : "")</span>
-                </div>
-                <div class="card-body">
-                    <div class="small text-muted mb-2">
-                        Scheduled: @(BookingFor(step.Id)?.PlannedStart.ToString("yyyy-MM-dd HH:mm")) – @(BookingFor(step.Id)?.PlannedEnd.ToString("yyyy-MM-dd HH:mm")) | Expected work: @step.PlannedHours.ToString("0.##") h |
-                        @step.ProductionOrder.OrderNumber
-                    </div>
-                    @if (BookingFor(step.Id) is ProductionSchedule currentBooking &&
-                         step.ProductionOrder.PlannedEndDate.HasValue &&
-                         currentBooking.PlannedEnd > step.ProductionOrder.PlannedEndDate.Value)
-                    {
-                        <div class="alert alert-warning py-2">Revised finish exceeds the CEO-approved window. Manager review required / نیازمند بررسی مدیر تولید</div>
-                    }
-                    @if (step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready)
-                    {
-                        var blockedReason = StartBlockedReason(step);
-                        @if (blockedReason != null)
-                        {
-                            <div class="alert alert-info py-2">@blockedReason</div>
-                        }
-                        <button class="btn btn-primary me-2" disabled="@(busy || !executionSchemaReady || blockedReason != null)"
-                                @onclick='() => RecordAsync(step.Id, "Started")'>Start / شروع</button>
-                    }
-                    @if (step.Status == ProductionOperationStatus.Running)
-                    {
-                        @if (paused)
-                        {
-                            <button class="btn btn-primary me-2" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Resumed")'>Resume / ادامه</button>
-                        }
-                        else
-                        {
-                            <div class="row g-2 mb-2">
-                                <div class="col-md-8">
-                                    <input class="form-control" @bind="pauseReasons[step.Id]" placeholder="Pause reason / علت توقف" />
-                                </div>
-                                <div class="col-md-4">
-                                    <button class="btn btn-warning w-100" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Paused")'>Pause / توقف</button>
-                                </div>
-                            </div>
-                            <button class="btn btn-success" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Finished")'>Finish / پایان عملیات</button>
-                            <div class="border rounded p-3 mt-3">
-                                <strong>Overtime / اضافه‌زمان عملیات</strong>
-                                @if (HasOverrun(step))
-                                {
-                                    <div class="text-danger small">The operation has exceeded its expected duration. Report the cause before finishing.</div>
-                                }
-                                <label class="form-label mt-2">Additional minutes / دقیقه اضافه</label>
-                                <input type="number" min="1" step="1" class="form-control mb-2" @bind="overrunMinutes[step.Id]" />
-                                <label class="form-label">Reason for delay / علت طولانی شدن عملیات</label>
-                                <textarea class="form-control mb-2" maxlength="1000" rows="2" @bind="overrunReasons[step.Id]"></textarea>
-                                <button class="btn btn-outline-warning" disabled="@busy" @onclick="() => ExtendAsync(step.Id)">Report delay and extend schedule / ثبت تأخیر و تمدید برنامه</button>
-                            </div>
-                        }
-                    }
-                    @if (step.Status != ProductionOperationStatus.Completed)
-                    {
-                        <details class="mt-3">
-                            <summary>Warehouse request / درخواست انبار (materials or tools)</summary>
-                            <div class="row g-2 mt-2">
-                                <div class="col-md-5">
-                                    <label class="form-label">Item / کالا یا ابزار</label>
-                                    <select class="form-select" @bind="requestItemIds[step.Id]">
-                                        <option value="0">Choose item</option>
-                                        @foreach (var item in items)
-                                        {
-                                            <option value="@item.Id">@item.Name (@item.Code)</option>
-                                        }
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Quantity / مقدار</label>
-                                    <input type="number" min="0.001" step="any" class="form-control" @bind="requestQuantities[step.Id]" />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Notes / توضیحات</label>
-                                    <input class="form-control" @bind="requestNotes[step.Id]" />
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-primary mt-2" disabled="@busy" @onclick="() => RequestItemAsync(step.Id)">Submit warehouse request / ثبت درخواست</button>
-                            <div class="small text-muted mt-1">Requests are pending warehouse processing; stock is not issued automatically.</div>
-                        </details>
-                    }
-                    @if (eventsByOperation.TryGetValue(step.Id, out var history) && history.Count > 0)
-                    {
-                        <div class="mt-3 small">
-                            <strong>Activity log / سوابق</strong>
-                            @foreach (var entry in history)
+                        <select id="operator-machine" class="form-select" @bind="machineId" @bind:after="ReloadAsync">
+                            <option value="0">@L["OperatorAllMachines"]</option>
+                            @foreach (var machine in machines)
                             {
-                                <div>@entry.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm") — @entry.EventType @entry.Reason</div>
+                                <option value="@machine.Id">@machine.Name</option>
                             }
+                        </select>
+                    }
+                    else
+                    {
+                        <div class="form-control operator-assigned-machine">
+                            @(machines.FirstOrDefault()?.Name ?? L["OperatorUnassigned"])
                         </div>
                     }
                 </div>
+                <div class="text-muted small">@L["OperatorAutoRefresh"]</div>
             </div>
-        }
-        <div class="card mt-3">
-            <div class="card-header"><strong>Recently completed / عملیات تکمیل‌شده</strong></div>
-            <div class="table-responsive"><table class="table table-sm mb-0">
-                <thead><tr><th>Order</th><th>Operation</th><th>Finish time</th><th>Delay reports</th></tr></thead>
-                <tbody>
-                    @foreach (var completed in VisibleOperations.Where(x =>
-                        x.Status == ProductionOperationStatus.Completed).Take(10))
-                    {
-                        var log = eventsByOperation.GetValueOrDefault(completed.Id) ?? new();
-                        <tr>
-                            <td>@completed.ProductionOrder.OrderNumber</td>
-                            <td>#@completed.Sequence @completed.Name</td>
-                            <td>@(log.FirstOrDefault(x => x.EventType == "Finished")?.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
-                            <td>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="card operator-stat operator-stat-ready h-100">
+                    <div class="card-body">
+                        <div class="operator-stat-icon"><span aria-hidden="true">✓</span></div>
+                        <div class="text-muted small mt-3">@L["OperatorAvailableNow"]</div>
+                        <div class="operator-stat-value">@AvailableOperations.Count(x => x.Status != ProductionOperationStatus.Running)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="card operator-stat operator-stat-active h-100">
+                    <div class="card-body">
+                        <div class="operator-stat-icon"><span aria-hidden="true">▶</span></div>
+                        <div class="text-muted small mt-3">@L["OperatorInProgress"]</div>
+                        <div class="operator-stat-value">@VisibleOperations.Count(x => x.Status == ProductionOperationStatus.Running)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="card operator-stat operator-stat-queue h-100">
+                    <div class="card-body">
+                        <div class="operator-stat-icon"><span aria-hidden="true">◷</span></div>
+                        <div class="text-muted small mt-3">@L["OperatorNextUp"]</div>
+                        <div class="operator-stat-value">@UpcomingOperations.Count</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="card operator-stat operator-stat-done h-100">
+                    <div class="card-body">
+                        <div class="operator-stat-icon"><span aria-hidden="true">✓</span></div>
+                        <div class="text-muted small mt-3">@L["OperatorCompleted"]</div>
+                        <div class="operator-stat-value">@VisibleOperations.Count(x => x.Status == ProductionOperationStatus.Completed)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-xxl-8">
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                    <div>
+                        <h2 class="h5 fw-bold mb-1">@L["OperatorWorklist"]</h2>
+                        <p class="text-muted small mb-0">@L["OperatorWorklistHelp"]</p>
+                    </div>
+                    <span class="badge rounded-pill text-bg-light border">@PendingWorklist.Count</span>
+                </div>
+                @if (PendingWorklist.Count == 0)
+                {
+                    <div class="operator-empty card mb-3">
+                        <div class="card-body text-center py-5">
+                            <div class="operator-empty-symbol mb-3" aria-hidden="true">✓</div>
+                            <h3 class="h6 fw-semibold">@L["OperatorNoPendingWork"]</h3>
+                            <p class="text-muted small mb-0">@L["OperatorNoPendingWorkHint"]</p>
+                        </div>
+                    </div>
+                }
+
+                @foreach (var step in PendingWorklist)
+                {
+                    var last = LastEvent(step.Id);
+                    var paused = last?.EventType == "Paused";
+                    var booking = BookingFor(step.Id);
+                    var blockedReason = step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready
+                        ? StartBlockedReason(step) : null;
+                    <article class="card operator-job-card mb-3" @key="step.Id">
+                        <div class="card-body p-3 p-lg-4">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                                <div>
+                                    <div class="small text-muted mb-1">@L["Order"] · @step.ProductionOrder.OrderNumber · @L["OperatorStep"] @step.Sequence</div>
+                                    <h3 class="h5 fw-bold mb-1">@step.Name</h3>
+                                    <div class="small text-muted">
+                                        @L["Machine"]: @(machines.FirstOrDefault(x => x.Id == booking?.MachineId)?.Name ?? L["OperatorNotScheduled"])
+                                    </div>
+                                </div>
+                                <span class="badge rounded-pill @(paused ? "text-bg-warning" : step.Status == ProductionOperationStatus.Running ? "text-bg-primary" : blockedReason == null ? "text-bg-success" : "text-bg-secondary")">
+                                    @(paused ? L["OperatorPaused"] : step.Status == ProductionOperationStatus.Running ? L["OperatorInProgress"] : blockedReason == null ? L["OperatorAvailableNow"] : L["OperatorWaiting"])
+                                </span>
+                            </div>
+                            <div class="operator-job-metadata mb-3">
+                                <div>
+                                    <span class="text-muted small d-block">@L["PlannedStart"]</span>
+                                    <strong>@(booking?.PlannedStart.ToString("yyyy-MM-dd HH:mm") ?? "—")</strong>
+                                </div>
+                                <div>
+                                    <span class="text-muted small d-block">@L["PlannedEnd"]</span>
+                                    <strong>@(booking?.PlannedEnd.ToString("yyyy-MM-dd HH:mm") ?? "—")</strong>
+                                </div>
+                                <div>
+                                    <span class="text-muted small d-block">@L["OperatorExpectedDuration"]</span>
+                                    <strong>@step.PlannedHours.ToString("0.##") @L["OperatorHours"]</strong>
+                                </div>
+                            </div>
+                            @if (booking != null && step.ProductionOrder.PlannedEndDate.HasValue &&
+                                 booking.PlannedEnd > step.ProductionOrder.PlannedEndDate.Value)
+                            {
+                                <div class="alert alert-warning py-2 small">@L["OperatorOutsideCeoWindow"]</div>
+                            }
+                            @if (step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready)
+                            {
+                                @if (blockedReason != null)
+                                {
+                                    <div class="operator-notice mb-3">@blockedReason</div>
+                                }
+                                <button type="button" class="btn btn-primary operator-main-action"
+                                        disabled="@(busy || blockedReason != null)" @onclick='() => RecordAsync(step.Id, "Started")'>
+                                    @L["OperatorStart"]
+                                </button>
+                            }
+                            @if (step.Status == ProductionOperationStatus.Running)
+                            {
+                                @if (paused)
+                                {
+                                    <button type="button" class="btn btn-primary operator-main-action"
+                                            disabled="@busy" @onclick='() => RecordAsync(step.Id, "Resumed")'>@L["OperatorResume"]</button>
+                                }
+                                else
+                                {
+                                    <div class="row g-2 align-items-end mb-3">
+                                        <div class="col-sm-8">
+                                            <label class="form-label small" for="@($"pause-{step.Id}")">@L["OperatorPauseReason"]</label>
+                                            <input id="@($"pause-{step.Id}")" class="form-control"
+                                                   @bind="pauseReasons[step.Id]" placeholder="@L["OperatorPauseReasonPlaceholder"]" />
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <button type="button" class="btn btn-outline-warning w-100"
+                                                    disabled="@busy" @onclick='() => RecordAsync(step.Id, "Paused")'>@L["OperatorPause"]</button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-success operator-main-action"
+                                            disabled="@busy" @onclick='() => RecordAsync(step.Id, "Finished")'>@L["OperatorFinish"]</button>
+                                }
+                                <details class="operator-expander mt-3">
+                                    <summary>@L["OperatorDelayReport"]</summary>
+                                    <div class="pt-3">
+                                        @if (HasOverrun(step))
+                                        {
+                                            <div class="alert alert-warning small py-2">@L["OperatorOverrunWarning"]</div>
+                                        }
+                                        <div class="row g-3">
+                                            <div class="col-sm-4">
+                                                <label class="form-label small" for="@($"minutes-{step.Id}")">@L["OperatorAdditionalMinutes"]</label>
+                                                <input id="@($"minutes-{step.Id}")" type="number" min="1" max="10080"
+                                                       step="1" class="form-control" @bind="overrunMinutes[step.Id]" />
+                                            </div>
+                                            <div class="col-sm-8">
+                                                <label class="form-label small" for="@($"delay-{step.Id}")">@L["OperatorDelayReason"]</label>
+                                                <textarea id="@($"delay-{step.Id}")" class="form-control" maxlength="1000"
+                                                          rows="2" @bind="overrunReasons[step.Id]"></textarea>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-warning mt-3"
+                                                disabled="@busy" @onclick="() => ExtendAsync(step.Id)">@L["OperatorSubmitDelay"]</button>
+                                    </div>
+                                </details>
+                            }
+                            <details class="operator-expander mt-3">
+                                <summary>@L["OperatorWarehouseRequest"]</summary>
+                                <div class="pt-3">
+                                    <div class="row g-3">
+                                        <div class="col-md-5">
+                                            <label class="form-label small" for="@($"item-{step.Id}")">@L["OperatorItemOrTool"]</label>
+                                            <select id="@($"item-{step.Id}")" class="form-select" @bind="requestItemIds[step.Id]">
+                                                <option value="0">@L["OperatorChooseItem"]</option>
+                                                @foreach (var item in items)
+                                                {
+                                                    <option value="@item.Id">@item.Name (@item.Code)</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label small" for="@($"quantity-{step.Id}")">@L["Quantity"]</label>
+                                            <input id="@($"quantity-{step.Id}")" type="number" min="0.001" step="any"
+                                                   class="form-control" @bind="requestQuantities[step.Id]" />
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label small" for="@($"notes-{step.Id}")">@L["Notes"]</label>
+                                            <input id="@($"notes-{step.Id}")" class="form-control" @bind="requestNotes[step.Id]" />
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary mt-3"
+                                            disabled="@busy" @onclick="() => RequestItemAsync(step.Id)">@L["OperatorSubmitWarehouseRequest"]</button>
+                                    <p class="text-muted small mt-2 mb-0">@L["OperatorWarehouseDisclaimer"]</p>
+                                </div>
+                            </details>
+                            @if (eventsByOperation.TryGetValue(step.Id, out var history) && history.Count > 0)
+                            {
+                                <details class="operator-expander mt-3">
+                                    <summary>@L["OperatorActivityLog"] (@history.Count)</summary>
+                                    <div class="operator-history pt-3">
+                                        @foreach (var entry in history)
+                                        {
+                                            <div class="operator-history-entry">
+                                                <strong>@EventLabel(entry.EventType)</strong>
+                                                <small class="text-muted">@entry.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</small>
+                                                @if (!string.IsNullOrWhiteSpace(entry.Reason))
+                                                {
+                                                    <div class="small mt-1">@entry.Reason</div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </details>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <div class="col-12 col-xxl-4">
+                <section class="card operator-side-card mb-4">
+                    <div class="card-header bg-transparent border-bottom-0 pt-3 px-3">
+                        <h2 class="h6 fw-bold mb-0">@L["OperatorNextUp"]</h2>
+                    </div>
+                    <div class="card-body pt-2">
+                        @if (UpcomingOperations.Count == 0)
+                        {
+                            <p class="text-muted small mb-0">@L["OperatorNoUpcoming"]</p>
+                        }
+                        @foreach (var next in UpcomingOperations.Take(8))
+                        {
+                            var booking = BookingFor(next.Id);
+                            <div class="operator-queue-item">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <strong class="small">@next.Name</strong>
+                                    <span class="text-muted small">@next.ProductionOrder.OrderNumber</span>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    @(booking?.PlannedStart.ToString("yyyy-MM-dd HH:mm") ?? "—")
+                                </div>
+                                <div class="small mt-1">@UpcomingReason(next)</div>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <section class="card operator-side-card mb-4">
+                    <div class="card-header bg-transparent border-bottom-0 pt-3 px-3">
+                        <h2 class="h6 fw-bold mb-0">@L["OperatorProductionOrders"]</h2>
+                    </div>
+                    <div class="card-body pt-2">
+                        @if (visibleOrders.Count == 0)
+                        {
+                            <p class="text-muted small mb-0">@L["OperatorNoOrders"]</p>
+                        }
+                        @foreach (var order in visibleOrders.Take(12))
+                        {
+                            var count = operations.Count(x => x.ProductionOrderId == order.Id);
+                            var booked = operations.Count(x => x.ProductionOrderId == order.Id && BookingFor(x.Id) != null);
+                            <div class="operator-queue-item">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <strong class="small">@order.OrderNumber</strong>
+                                    <span class="badge text-bg-light border">@OrderStatusLabel(order.Status)</span>
+                                </div>
+                                <div class="text-muted small mt-2">
+                                    @L["OperatorOperationCount"]: @count · @L["OperatorScheduledCount"]: @booked
+                                </div>
+                                @if (count == 0)
+                                {
+                                    <div class="small mt-1">@L["OperatorAwaitingRoute"]</div>
+                                }
+                                else if (booked == 0)
+                                {
+                                    <div class="small mt-1">@L["OperatorAwaitingSchedule"]</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <section class="card operator-side-card">
+                    <div class="card-header bg-transparent border-bottom-0 pt-3 px-3">
+                        <h2 class="h6 fw-bold mb-0">@L["OperatorRecentlyCompleted"]</h2>
+                    </div>
+                    <div class="card-body pt-2">
+                        @{
+                            var recentlyCompleted = VisibleOperations.Where(x => x.Status == ProductionOperationStatus.Completed)
+                                .OrderByDescending(x => eventsByOperation.GetValueOrDefault(x.Id)?.FirstOrDefault(e => e.EventType == "Finished")?.OccurredAtUtc)
+                                .Take(8).ToList();
+                        }
+                        @if (recentlyCompleted.Count == 0)
+                        {
+                            <p class="text-muted small mb-0">@L["OperatorNoCompleted"]</p>
+                        }
+                        @foreach (var completed in recentlyCompleted)
+                        {
+                            var log = eventsByOperation.GetValueOrDefault(completed.Id) ?? new();
+                            <div class="operator-queue-item">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <strong class="small">@completed.Name</strong>
+                                    <span class="text-muted small">@completed.ProductionOrder.OrderNumber</span>
+                                </div>
+                                <div class="small text-muted mt-1">
+                                    @(log.FirstOrDefault(x => x.EventType == "Finished")?.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")
+                                </div>
                                 @foreach (var report in log.Where(x => x.EventType == "Overrun"))
                                 {
-                                    <div class="small">@report.Reason</div>
+                                    <div class="small mt-2">@L["OperatorDelayReport"]: @report.Reason</div>
                                 }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table></div>
+                            </div>
+                        }
+                    </div>
+                </section>
+            </div>
         </div>
     }
 </div>
@@ -273,6 +408,36 @@
     private Dictionary<long, string> overrunReasons = new();
     private Dictionary<long, int> overrunMinutes = new();
     private Dictionary<long, ProductionSchedule> bookingsByOperation = new();
+
+    private string EventLabel(string eventType) => eventType switch
+    {
+        "Started" => L["OperatorStarted"],
+        "Paused" => L["OperatorPaused"],
+        "Resumed" => L["OperatorResumed"],
+        "Finished" => L["OperatorFinished"],
+        "Overrun" => L["OperatorDelayReport"],
+        _ => eventType
+    };
+
+    private string OrderStatusLabel(ProductionOrderStatus status) => status switch
+    {
+        ProductionOrderStatus.Planned => L["Planned"],
+        ProductionOrderStatus.ReadyToStart => L["ReadyToStart"],
+        ProductionOrderStatus.InProduction => L["InProduction"],
+        ProductionOrderStatus.WaitingForMaterial => L["WaitingForMaterial"],
+        ProductionOrderStatus.MaterialChecking => L["MaterialChecking"],
+        ProductionOrderStatus.QualityControl => L["QualityControl"],
+        ProductionOrderStatus.Completed => L["Completed"],
+        ProductionOrderStatus.Cancelled => L["Cancelled"],
+        _ => status.ToString()
+    };
+
+    private string UpcomingReason(ProductionOperation step)
+    {
+        if (BookingFor(step.Id) == null) return L["OperatorAwaitingSchedule"];
+        if (!PreviousCompleted(step)) return L["OperatorWaitingPrevious"];
+        return L["OperatorWaitingMachine"];
+    }
 
     private List<ProductionOperation> PendingWorklist =>
         VisibleOperations.Where(x => x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready or ProductionOperationStatus.Running).ToList();
