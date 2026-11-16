@@ -211,6 +211,26 @@
 .job-overview-empty strong { color: #345473; font-weight: 780; }
 .job-overview-empty span { font-size: .82rem; }
 
+.job-overview-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 21px;
+    padding: 17px;
+    background: #f9fbfd;
+    border: 1px solid var(--jo-line);
+    border-radius: 13px;
+    color: var(--jo-muted);
+    font-size: .77rem;
+    font-weight: 710;
+}
+.job-overview-progress-track.is-untracked {
+    border: 1px dashed #dfc891;
+    background: #fff7e9;
+}
+
 .job-overview-list { display: grid; gap: 19px; }
 .job-overview-card {
     border: 1px solid #dbe5ef;
