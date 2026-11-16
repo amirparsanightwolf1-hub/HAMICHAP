@@ -3052,4 +3052,7 @@
   <data name="JobEditorArtworkHint" xml:space="preserve"><value>بارگذاری، جایگزینی یا حذف فایل طرح این قلم</value></data>
   <data name="JobEditorSaveHeading" xml:space="preserve"><value>آماده بررسی این قلم هستید؟</value></data>
   <data name="JobEditorSaveHint" xml:space="preserve"><value>تغییرات را ذخیره کنید و برگه تأیید طرح این قلم را باز کنید.</value></data>
+  <data name="JobEditorReadOnlyHint" xml:space="preserve"><value>این قلم قفل شده است. برگه تأیید طرح ذخیره‌شده را مشاهده کنید.</value></data>
+  <data name="RollJobSpecification" xml:space="preserve"><value>مشخصات سفارش رول</value></data>
+  <data name="SelectExistingCustomerPrompt" xml:space="preserve"><value>مشتری موجود را انتخاب کنید</value></data>
 </root>
