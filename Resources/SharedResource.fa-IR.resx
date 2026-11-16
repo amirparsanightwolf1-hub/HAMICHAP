@@ -3161,4 +3161,214 @@
   <data name="JobOverviewProducedQuantityHint" xml:space="preserve"><value>بر اساس تعداد تولید ثبت‌شده برای ردیف قابل ردیابی این سفارش فروش؛ این شاخص با تکمیل مراحل فرایند متفاوت است.</value></data>
   <data name="OutsourceOperation" xml:space="preserve"><value>برون‌سپاری این مرحله (پیمانکار خارجی)</value></data>
   <data name="OutsourcedOperation" xml:space="preserve"><value>برون‌سپاری‌شده</value></data>
+  <data name="OperatorDashboardTitle" xml:space="preserve">
+    <value>داشبورد اپراتور دستگاه</value>
+  </data>
+  <data name="OperatorProductionArea" xml:space="preserve">
+    <value>سالن تولید</value>
+  </data>
+  <data name="OperatorDashboardDescription" xml:space="preserve">
+    <value>عملیات دستگاه خود را مشاهده، آغاز و ثبت کنید.</value>
+  </data>
+  <data name="OperatorViewWorkflow" xml:space="preserve">
+    <value>گردش کار تولید</value>
+  </data>
+  <data name="OperatorAccessDenied" xml:space="preserve">
+    <value>شما مجوز دسترسی به عملیات دستگاه را ندارید.</value>
+  </data>
+  <data name="OperatorMigrationRequired" xml:space="preserve">
+    <value>برای ثبت فعالیت اپراتور باید مهاجرت پایگاه داده 20261116133000_AddOperationExecutionTracking اجرا شود. تا آن زمان ثبت عملیات غیرفعال است.</value>
+  </data>
+  <data name="OperatorNoAssignedMachine" xml:space="preserve">
+    <value>دستگاهی به حساب شما اختصاص نیافته است. از مدیر سیستم بخواهید در بخش مدیریت کاربران دستگاه را تعیین کند.</value>
+  </data>
+  <data name="OperatorAllMachines" xml:space="preserve">
+    <value>همه دستگاه‌ها</value>
+  </data>
+  <data name="OperatorUnassigned" xml:space="preserve">
+    <value>اختصاص داده نشده</value>
+  </data>
+  <data name="OperatorAutoRefresh" xml:space="preserve">
+    <value>به‌روزرسانی خودکار هر ۳۰ ثانیه</value>
+  </data>
+  <data name="OperatorAvailableNow" xml:space="preserve">
+    <value>آماده شروع</value>
+  </data>
+  <data name="OperatorInProgress" xml:space="preserve">
+    <value>در حال اجرا</value>
+  </data>
+  <data name="OperatorNextUp" xml:space="preserve">
+    <value>عملیات بعدی</value>
+  </data>
+  <data name="OperatorCompleted" xml:space="preserve">
+    <value>تکمیل‌شده</value>
+  </data>
+  <data name="OperatorWorklist" xml:space="preserve">
+    <value>فهرست کار دستگاه من</value>
+  </data>
+  <data name="OperatorWorklistHelp" xml:space="preserve">
+    <value>عملیات آماده را شروع کنید یا دلیل آماده نبودن آن را ببینید.</value>
+  </data>
+  <data name="OperatorNoPendingWork" xml:space="preserve">
+    <value>عملیاتی در انتظار نیست</value>
+  </data>
+  <data name="OperatorNoPendingWorkHint" xml:space="preserve">
+    <value>عملیات برنامه‌ریزی‌شده دستگاه در اینجا نمایش داده می‌شوند.</value>
+  </data>
+  <data name="OperatorStep" xml:space="preserve">
+    <value>مرحله</value>
+  </data>
+  <data name="OperatorWaiting" xml:space="preserve">
+    <value>در انتظار</value>
+  </data>
+  <data name="OperatorNotScheduled" xml:space="preserve">
+    <value>برنامه‌ریزی نشده</value>
+  </data>
+  <data name="OperatorExpectedDuration" xml:space="preserve">
+    <value>مدت پیش‌بینی‌شده</value>
+  </data>
+  <data name="OperatorHours" xml:space="preserve">
+    <value>ساعت</value>
+  </data>
+  <data name="OperatorOutsideCeoWindow" xml:space="preserve">
+    <value>زمان پایان اصلاح‌شده از بازه تأییدشده مدیرعامل عبور کرده و نیازمند بررسی مدیر تولید است.</value>
+  </data>
+  <data name="OperatorStart" xml:space="preserve">
+    <value>شروع عملیات</value>
+  </data>
+  <data name="OperatorResume" xml:space="preserve">
+    <value>ادامه عملیات</value>
+  </data>
+  <data name="OperatorPause" xml:space="preserve">
+    <value>توقف عملیات</value>
+  </data>
+  <data name="OperatorFinish" xml:space="preserve">
+    <value>پایان عملیات</value>
+  </data>
+  <data name="OperatorPaused" xml:space="preserve">
+    <value>متوقف</value>
+  </data>
+  <data name="OperatorPauseReason" xml:space="preserve">
+    <value>علت توقف</value>
+  </data>
+  <data name="OperatorPauseReasonPlaceholder" xml:space="preserve">
+    <value>علت توقف تولید را وارد کنید</value>
+  </data>
+  <data name="OperatorDelayReport" xml:space="preserve">
+    <value>گزارش تأخیر</value>
+  </data>
+  <data name="OperatorOverrunWarning" xml:space="preserve">
+    <value>مدت اجرای این عملیات از زمان پیش‌بینی‌شده بیشتر شده است. پیش از پایان، دلیل را ثبت کنید.</value>
+  </data>
+  <data name="OperatorAdditionalMinutes" xml:space="preserve">
+    <value>دقایق اضافه</value>
+  </data>
+  <data name="OperatorDelayReason" xml:space="preserve">
+    <value>علت تأخیر</value>
+  </data>
+  <data name="OperatorSubmitDelay" xml:space="preserve">
+    <value>ثبت تأخیر و اصلاح برنامه</value>
+  </data>
+  <data name="OperatorWarehouseRequest" xml:space="preserve">
+    <value>درخواست مواد یا ابزار</value>
+  </data>
+  <data name="OperatorItemOrTool" xml:space="preserve">
+    <value>مواد یا ابزار</value>
+  </data>
+  <data name="OperatorChooseItem" xml:space="preserve">
+    <value>انتخاب کالا</value>
+  </data>
+  <data name="OperatorSubmitWarehouseRequest" xml:space="preserve">
+    <value>ثبت درخواست انبار</value>
+  </data>
+  <data name="OperatorWarehouseDisclaimer" xml:space="preserve">
+    <value>درخواست باید توسط انبار بررسی شود و موجودی به‌طور خودکار تحویل داده نمی‌شود.</value>
+  </data>
+  <data name="OperatorActivityLog" xml:space="preserve">
+    <value>سوابق فعالیت</value>
+  </data>
+  <data name="OperatorStarted" xml:space="preserve">
+    <value>شروع‌شده</value>
+  </data>
+  <data name="OperatorResumed" xml:space="preserve">
+    <value>ادامه‌یافته</value>
+  </data>
+  <data name="OperatorFinished" xml:space="preserve">
+    <value>پایان‌یافته</value>
+  </data>
+  <data name="OperatorNoUpcoming" xml:space="preserve">
+    <value>عملیات بعدی برای این دستگاه وجود ندارد.</value>
+  </data>
+  <data name="OperatorProductionOrders" xml:space="preserve">
+    <value>سفارش‌های تولید</value>
+  </data>
+  <data name="OperatorNoOrders" xml:space="preserve">
+    <value>سفارش تولید فعالی برای این انتخاب وجود ندارد.</value>
+  </data>
+  <data name="OperatorOperationCount" xml:space="preserve">
+    <value>تعداد عملیات</value>
+  </data>
+  <data name="OperatorScheduledCount" xml:space="preserve">
+    <value>برنامه‌ریزی‌شده</value>
+  </data>
+  <data name="OperatorAwaitingRoute" xml:space="preserve">
+    <value>در انتظار تعریف مسیر تولید</value>
+  </data>
+  <data name="OperatorAwaitingSchedule" xml:space="preserve">
+    <value>در انتظار برنامه‌ریزی دستگاه</value>
+  </data>
+  <data name="OperatorRecentlyCompleted" xml:space="preserve">
+    <value>عملیات تازه تکمیل‌شده</value>
+  </data>
+  <data name="OperatorNoCompleted" xml:space="preserve">
+    <value>هنوز عملیاتی تکمیل نشده است.</value>
+  </data>
+  <data name="OperatorWaitingPrevious" xml:space="preserve">
+    <value>در انتظار پایان عملیات قبلی</value>
+  </data>
+  <data name="OperatorWaitingMachine" xml:space="preserve">
+    <value>در انتظار آزاد شدن دستگاه یا رسیدن زمان مجاز</value>
+  </data>
+  <data name="OperatorBlockedSchema" xml:space="preserve">
+    <value>برای ثبت عملیات، پایگاه داده باید به‌روزرسانی شود.</value>
+  </data>
+  <data name="OperatorBlockedOtherMachine" xml:space="preserve">
+    <value>این عملیات متعلق به دستگاه دیگری است.</value>
+  </data>
+  <data name="OperatorBlockedBooking" xml:space="preserve">
+    <value>برای این عملیات رزرو تأییدشده دستگاه وجود ندارد. از مدیر تولید درخواست برنامه‌ریزی کنید.</value>
+  </data>
+  <data name="OperatorBlockedBookingStatus" xml:space="preserve">
+    <value>برنامه دستگاه برای شروع آماده نیست.</value>
+  </data>
+  <data name="OperatorBlockedSequence" xml:space="preserve">
+    <value>مدیر تولید باید ترتیب عملیات را تأیید کند.</value>
+  </data>
+  <data name="OperatorBlockedCeoPlan" xml:space="preserve">
+    <value>بازه زمانی تولید باید توسط مدیرعامل تأیید شود.</value>
+  </data>
+  <data name="OperatorBlockedBeforeStart" xml:space="preserve">
+    <value>زمان شروع تأییدشده مدیرعامل هنوز فرا نرسیده است.</value>
+  </data>
+  <data name="OperatorBlockedAfterEnd" xml:space="preserve">
+    <value>بازه زمانی تأییدشده مدیرعامل به پایان رسیده است.</value>
+  </data>
+  <data name="OperatorBlockedShift" xml:space="preserve">
+    <value>زمان فعلی خارج از شیفت تولید مجاز است.</value>
+  </data>
+  <data name="OperatorBlockedMachineBusy" xml:space="preserve">
+    <value>دستگاه در حال اجرای عملیات دیگری است.</value>
+  </data>
+  <data name="OperatorBlockedReservation" xml:space="preserve">
+    <value>رزرو دیگری برای این دستگاه وجود دارد.</value>
+  </data>
+  <data name="OperatorActionRecorded" xml:space="preserve">
+    <value>رویداد عملیات ثبت شد.</value>
+  </data>
+  <data name="OperatorWarehouseSubmitted" xml:space="preserve">
+    <value>درخواست انبار ثبت شد.</value>
+  </data>
+  <data name="OperatorOverrunSaved" xml:space="preserve">
+    <value>تأخیر ثبت و برنامه عملیات بعدی اصلاح شد.</value>
+  </data>
 </root>
