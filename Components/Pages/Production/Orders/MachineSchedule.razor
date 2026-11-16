@@ -188,6 +188,12 @@
                                         <div class="small text-muted">@FormatDateTime(step.OutsourcedPlannedStart) – @FormatDateTime(step.OutsourcedPlannedEnd)</div>
                                     }
                                     <div class="small text-muted">@L["EstimatedHours"]: @DurationLabel(OperationMinutes(step))</div>
+                                    @if (step.IsOutsourced && canEdit && step.Status is not (ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled))
+                                    {
+                                        <button type="button" class="btn btn-outline-success btn-sm mt-2"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => CompleteOutsourcedOperation(step.Id)">Confirm external operation received / تأیید اتمام برون‌سپاری</button>
+                                    }
                                     @if (booking != null)
                                     {
                                         <div class="small text-muted">@FormatDateTime(booking.PlannedStart) – @FormatDateTime(booking.PlannedEnd)</div>
@@ -1086,6 +1092,64 @@
         {
             Logger.LogError(ex, "Could not automatically schedule production order {OrderId}", selectedOrderId);
             ShowError(L["AutoScheduleFailed"]);
+        }
+    }
+
+    private async Task CompleteOutsourcedOperation(long id)
+    {
+        if (!canEdit) return;
+        try
+        {
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
+            var approver = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(approver))
+            {
+                ShowError(L["ApprovalIdentityMissing"]);
+                return;
+            }
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+            var step = await db.ProductionOperations.Include(x => x.ProductionOrder)
+                .FirstOrDefaultAsync(x => x.Id == id && x.IsOutsourced);
+            if (step == null || step.ProductionOrder.OperationsSequenceConfirmedAt == null ||
+                step.OutsourcedPlannedStart == null ||
+                step.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled)
+            {
+                ShowError(L["InvalidOperationSequence"]);
+                return;
+            }
+            if (await db.ProductionOperations.AnyAsync(x =>
+                x.ProductionOrderId == step.ProductionOrderId &&
+                x.Sequence < step.Sequence && x.Status != ProductionOperationStatus.Completed))
+            {
+                ShowError(L["ConfirmSequenceBeforeScheduling"]);
+                return;
+            }
+            step.Status = ProductionOperationStatus.Completed;
+            step.OutsourcedPlannedEnd = DateTime.UtcNow;
+            var next = await db.ProductionOperations
+                .Where(x => x.ProductionOrderId == step.ProductionOrderId && x.Sequence > step.Sequence)
+                .OrderBy(x => x.Sequence).FirstOrDefaultAsync();
+            if (next != null && next.Status == ProductionOperationStatus.Pending)
+                next.Status = ProductionOperationStatus.Ready;
+            db.ProductionOperationEvents.Add(new ProductionOperationEvent
+            {
+                ProductionOperationId = id,
+                EventType = "Finished",
+                OccurredAtUtc = DateTime.UtcNow,
+                OperatorUserId = approver,
+                Reason = "External operation completion confirmed"
+            });
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            ShowSuccess(L["OperationUpdatedReconfirm"]);
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to complete outsourced operation {OperationId}", id);
+            ShowError(L["OperationUpdateFailed"]);
         }
     }
 
