@@ -3371,4 +3371,82 @@
   <data name="OperatorOverrunSaved" xml:space="preserve">
     <value>تأخیر ثبت و برنامه عملیات بعدی اصلاح شد.</value>
   </data>
+  <data name="OperatorErrAuthentication" xml:space="preserve">
+    <value>برای ثبت فعالیت تولید وارد حساب خود شوید.</value>
+  </data>
+  <data name="OperatorErrInactive" xml:space="preserve">
+    <value>حساب اپراتور غیرفعال است یا در دسترس نیست.</value>
+  </data>
+  <data name="OperatorErrRole" xml:space="preserve">
+    <value>مجوز اپراتور تولید مورد نیاز است.</value>
+  </data>
+  <data name="OperatorErrOtherMachine" xml:space="preserve">
+    <value>فقط می‌توانید عملیات دستگاه اختصاص‌یافته به خود را ثبت کنید.</value>
+  </data>
+  <data name="OperatorErrNoBooking" xml:space="preserve">
+    <value>این عملیات برای دستگاه انتخاب‌شده برنامه‌ریزی نشده است.</value>
+  </data>
+  <data name="OperatorErrClosedOrder" xml:space="preserve">
+    <value>این سفارش تولید بسته شده است.</value>
+  </data>
+  <data name="OperatorErrSequence" xml:space="preserve">
+    <value>مدیر تولید باید ترتیب عملیات را تأیید کند.</value>
+  </data>
+  <data name="OperatorErrPrevious" xml:space="preserve">
+    <value>ابتدا باید عملیات قبلی پایان یابد.</value>
+  </data>
+  <data name="OperatorErrAlreadyStarted" xml:space="preserve">
+    <value>این عملیات قبلاً شروع شده است.</value>
+  </data>
+  <data name="OperatorErrCeoWindow" xml:space="preserve">
+    <value>این زمان یا شیفت توسط مدیرعامل تأیید نشده است.</value>
+  </data>
+  <data name="OperatorErrBookingNotReady" xml:space="preserve">
+    <value>برنامه دستگاه هنوز قابل شروع نیست.</value>
+  </data>
+  <data name="OperatorErrMachineBusy" xml:space="preserve">
+    <value>عملیات دیگری روی این دستگاه در حال اجرا است.</value>
+  </data>
+  <data name="OperatorErrReserved" xml:space="preserve">
+    <value>دستگاه برای عملیات دیگری رزرو شده و شروع زودهنگام ممکن نیست.</value>
+  </data>
+  <data name="OperatorErrPauseReason" xml:space="preserve">
+    <value>برای توقف عملیات در حال اجرا باید علت وارد شود.</value>
+  </data>
+  <data name="OperatorErrReasonTooLong" xml:space="preserve">
+    <value>متن علت توقف بیش از حد طولانی است.</value>
+  </data>
+  <data name="OperatorErrNotPaused" xml:space="preserve">
+    <value>این عملیات در وضعیت توقف نیست.</value>
+  </data>
+  <data name="OperatorErrResumeFirst" xml:space="preserve">
+    <value>پیش از پایان عملیات، ابتدا آن را از حالت توقف خارج کنید.</value>
+  </data>
+  <data name="OperatorErrDelayReasonRequired" xml:space="preserve">
+    <value>پیش از پایان عملیات دلیل افزایش مدت زمان را وارد کنید.</value>
+  </data>
+  <data name="OperatorErrDelayInput" xml:space="preserve">
+    <value>علت تأخیر و زمانی بین ۱ تا ۱۰۰۸۰ دقیقه وارد کنید.</value>
+  </data>
+  <data name="OperatorErrNotRunning" xml:space="preserve">
+    <value>عملیات روی دستگاه انتخاب‌شده در حال اجرا نیست.</value>
+  </data>
+  <data name="OperatorErrResumeBeforeExtend" xml:space="preserve">
+    <value>پیش از تمدید برنامه، عملیات را از حالت توقف خارج کنید.</value>
+  </data>
+  <data name="OperatorErrItemQuantity" xml:space="preserve">
+    <value>یک کالا انتخاب و مقدار مثبت وارد کنید.</value>
+  </data>
+  <data name="OperatorErrNoSelectedBooking" xml:space="preserve">
+    <value>این عملیات روی دستگاه انتخاب‌شده برنامه‌ریزی نشده است.</value>
+  </data>
+  <data name="OperatorErrOperationClosed" xml:space="preserve">
+    <value>این عملیات یا سفارش تولید آن بسته شده است.</value>
+  </data>
+  <data name="OperatorErrItemUnavailable" xml:space="preserve">
+    <value>کالای انتخاب‌شده در دسترس نیست.</value>
+  </data>
+  <data name="OperatorErrNotesTooLong" xml:space="preserve">
+    <value>متن توضیحات بیش از حد طولانی است.</value>
+  </data>
 </root>
