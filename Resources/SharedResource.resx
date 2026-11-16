@@ -3159,4 +3159,6 @@
   <data name="JobOverviewShowMore" xml:space="preserve"><value>Show more jobs</value></data>
   <data name="JobOverviewProducedQuantity" xml:space="preserve"><value>Recorded quantity produced</value></data>
   <data name="JobOverviewProducedQuantityHint" xml:space="preserve"><value>Based on production quantities posted to this uniquely traceable sales-order line. This is separate from process-step completion.</value></data>
+  <data name="OutsourceOperation" xml:space="preserve"><value>Outsource this operation (external provider)</value></data>
+  <data name="OutsourcedOperation" xml:space="preserve"><value>Outsourced</value></data>
 </root>
