@@ -30,10 +30,17 @@
         {
             <div class="alert alert-warning" role="alert">Operator activity logging is unavailable because the database has not been updated. Apply EF migration 20261116133000_AddOperationExecutionTracking, then refresh this page. Recording actions is disabled until the database is ready.</div>
         }
+        @if (!isAdministrator && !assignedMachineId.HasValue)
+        {
+            <div class="alert alert-warning" role="alert">No machine is assigned to your account. Ask an administrator to assign your machine under Administration → Users / دستگاهی به حساب شما اختصاص نیافته است.</div>
+        }
         <div class="d-flex gap-2 align-items-center mb-3">
             <label for="operator-machine">Machine / دستگاه</label>
             <select id="operator-machine" class="form-select" style="max-width:400px" @bind="machineId" @bind:after="ReloadAsync">
-                <option value="0">All machines / همه دستگاه‌ها</option>
+                @if (isAdministrator)
+                {
+                    <option value="0">All machines / همه دستگاه‌ها</option>
+                }
                 @foreach (var machine in machines)
                 {
                     <option value="@machine.Id">@machine.Name</option>
@@ -246,6 +253,8 @@
 @code {
     private readonly CancellationTokenSource refreshCancellation = new();
     private bool canOperate;
+    private bool isAdministrator;
+    private int? assignedMachineId;
     private bool executionSchemaReady = true;
     private bool busy;
     private bool isError;
@@ -279,6 +288,8 @@
     private string? StartBlockedReason(ProductionOperation step)
     {
         if (!executionSchemaReady) return "Database migration required before recording work / نیاز به به‌روزرسانی پایگاه داده";
+        if (!isAdministrator && (!assignedMachineId.HasValue || BookingFor(step.Id)?.MachineId != assignedMachineId.Value))
+            return "This operation belongs to another machine / این عملیات متعلق به دستگاه شما نیست";
         if (!PreviousCompleted(step)) return "Waiting for earlier operation to finish / در انتظار اتمام مرحله قبل";
         var booking = BookingFor(step.Id);
         if (booking == null) return "No confirmed machine booking. Production manager must schedule this operation / نیازمند برنامه‌ریزی مدیر تولید";
@@ -350,6 +361,7 @@
     {
         var user = (await Auth.GetAuthenticationStateAsync()).User;
         userId = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+        isAdministrator = user.IsInRole("Administrator");
         canOperate = !string.IsNullOrEmpty(userId) &&
             (user.IsInRole("Administrator") || user.IsInRole("ProductionManager") ||
              user.IsInRole("Production Manager") || user.IsInRole("Manager") ||
@@ -357,9 +369,18 @@
              user.IsInRole("Production") || user.IsInRole("Operator"));
         if (!canOperate) return;
         await using var db = await DbFactory.CreateDbContextAsync();
-        machines = await db.Machines.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        assignedMachineId = await db.Users.AsNoTracking()
+            .Where(x => x.Id == userId && x.IsActive)
+            .Select(x => x.AssignedMachineId).FirstOrDefaultAsync();
+        machines = await db.Machines.AsNoTracking()
+            .Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        if (!isAdministrator)
+        {
+            machines = machines.Where(x => x.Id == assignedMachineId).ToList();
+            machineId = machines.FirstOrDefault()?.Id ?? 0;
+        }
+        else machineId = 0;
         items = await db.Items.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
-        machineId = 0; // Show all operations by default.
         await ReloadAsync();
         _ = RefreshLoopAsync();
     }
@@ -395,6 +416,24 @@
     {
         if (!canOperate) return;
         await using var db = await DbFactory.CreateDbContextAsync();
+        if (!isAdministrator)
+        {
+            assignedMachineId = await db.Users.AsNoTracking()
+                .Where(x => x.Id == userId && x.IsActive)
+                .Select(x => x.AssignedMachineId).FirstOrDefaultAsync();
+            machines = await db.Machines.AsNoTracking()
+                .Where(x => x.IsActive && x.Id == assignedMachineId).ToListAsync();
+            machineId = machines.FirstOrDefault()?.Id ?? 0;
+            if (machineId == 0)
+            {
+                operations = new();
+                visibleOrders = new();
+                bookingsByOperation = new();
+                eventsByOperation = new();
+                predecessors = new();
+                return;
+            }
+        }
         var machineBookings = await db.ProductionSchedules.AsNoTracking()
             .Where(x => x.Status != ScheduleStatus.Cancelled)
             .ToListAsync();
@@ -409,7 +448,7 @@
             .Include(x => x.ProductionOrder).Include(x => x.WorkCenter)
             .Where(x => allIds.Contains(x.ProductionOrderId) && !x.IsOutsourced)
             .ToListAsync();
-        if (machineId == 0)
+        if (machineId == 0 && isAdministrator)
         {
             operations = allOperations;
             visibleOrders = allOpenOrders;
