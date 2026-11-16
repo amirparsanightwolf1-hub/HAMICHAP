@@ -160,7 +160,7 @@
                                      @onclick="() => SelectOperation(step.Id)">
                                     <div class="d-flex justify-content-between gap-2">
                                         <strong>#@step.Sequence @step.Name</strong>
-                                        <small>@(step.IsOutsourced ? L["OutsourcedOperation"] : booking == null ? L["UnscheduledOperations"] : L["Scheduled"])</small>
+                                        <small>@(step.IsOutsourced ? (step.OutsourcedPlannedStart.HasValue ? L["OutsourcedOperation"] : L["UnscheduledOperations"]) : booking == null ? L["UnscheduledOperations"] : L["Scheduled"])</small>
                                     </div>
                                     @if (canEdit)
                                     {
@@ -266,7 +266,7 @@
                             @if (SelectedOperation is ProductionOperation selected)
                             {
                                 <strong>@L["SelectedOperation"]:</strong>
-                                <span>@selected.ProductionOrder.OrderNumber · @selected.Name · @MachineName(selected)</span>
+                                <span>@selected.ProductionOrder.OrderNumber · @selected.Name · @(selected.IsOutsourced ? L["OutsourcedOperation"] : MachineName(selected))</span>
                                 <span class="small text-muted">(@DurationLabel(OperationMinutes(selected)))</span>
                             }
                             else
@@ -886,6 +886,11 @@
             .ToListAsync();
         if (active.Any(x => x.Status != ScheduleStatus.Planned)) return false;
         foreach (var booking in active) booking.Status = ScheduleStatus.Cancelled;
+        foreach (var step in steps)
+        {
+            step.OutsourcedPlannedStart = null;
+            step.OutsourcedPlannedEnd = null;
+        }
         return true;
     }
 
