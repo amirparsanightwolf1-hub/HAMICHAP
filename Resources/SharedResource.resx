@@ -3449,4 +3449,7 @@
   <data name="OperatorErrNotesTooLong" xml:space="preserve">
     <value>The notes exceed the allowed length.</value>
   </data>
+  <data name="OperatorOrder" xml:space="preserve">
+    <value>Order</value>
+  </data>
 </root>
