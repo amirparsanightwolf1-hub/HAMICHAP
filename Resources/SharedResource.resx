@@ -3064,4 +3064,6 @@
   <data name="QuotationEditPendingHint" xml:space="preserve"><value>The quotation is awaiting internal approval. Review the prices and individual proof sheets before approving or requesting a revision.</value></data>
   <data name="QuotationEditApprovedHint" xml:space="preserve"><value>Confirm the customer's decision. Customer Accepted will automatically create the sales order for all items.</value></data>
   <data name="QuotationEditClosedHint" xml:space="preserve"><value>This quotation is no longer editable. Open the preview to review the finalized document and its items.</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reject</value></data>
 </root>
