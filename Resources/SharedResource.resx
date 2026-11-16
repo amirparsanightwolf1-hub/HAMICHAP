@@ -3055,4 +3055,13 @@
   <data name="JobEditorReadOnlyHint" xml:space="preserve"><value>This item is locked. Open its saved customer approval proof.</value></data>
   <data name="RollJobSpecification" xml:space="preserve"><value>Roll job specifications</value></data>
   <data name="SelectExistingCustomerPrompt" xml:space="preserve"><value>Select an existing customer</value></data>
+  <data name="QuotationEditorTitle" xml:space="preserve"><value>Sales quotation workspace</value></data>
+  <data name="QuotationPricingHelp" xml:space="preserve"><value>Set the unit price for each item. The total updates as prices change.</value></data>
+  <data name="QuotationPricingSummary" xml:space="preserve"><value>Quotation summary</value></data>
+  <data name="QuotationPricingSummaryHint" xml:space="preserve"><value>The total is calculated from all item quantities and their unit prices.</value></data>
+  <data name="QuotationNextStep" xml:space="preserve"><value>Next step</value></data>
+  <data name="QuotationEditDraftHint" xml:space="preserve"><value>Review each job and approval proof, enter unit prices, save, then submit the quotation for internal approval.</value></data>
+  <data name="QuotationEditPendingHint" xml:space="preserve"><value>The quotation is awaiting internal approval. Review the prices and individual proof sheets before approving or requesting a revision.</value></data>
+  <data name="QuotationEditApprovedHint" xml:space="preserve"><value>Confirm the customer's decision. Customer Accepted will automatically create the sales order for all items.</value></data>
+  <data name="QuotationEditClosedHint" xml:space="preserve"><value>This quotation is no longer editable. Open the preview to review the finalized document and its items.</value></data>
 </root>
