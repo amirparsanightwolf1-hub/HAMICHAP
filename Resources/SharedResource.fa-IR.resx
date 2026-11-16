@@ -3070,4 +3070,88 @@
   <data name="ValidityDaysHelp" xml:space="preserve"><value>از تاریخ پیش‌فاکتور محاسبه می‌شود. برای نداشتن تاریخ انقضا خالی بگذارید.</value></data>
   <data name="ValidityDaysRange" xml:space="preserve"><value>مدت اعتبار باید بین ۰ تا ۳٬۶۵۰ روز باشد.</value></data>
   <data name="WholeNumberPriceRequired" xml:space="preserve"><value>قیمت واحد را به صورت عدد صحیح و غیرمنفی (بدون اعشار) وارد کنید.</value></data>
+  <data name="All" xml:space="preserve">
+    <value>همه</value>
+  </data>
+  <data name="Jobs" xml:space="preserve">
+    <value>کارها</value>
+  </data>
+  <data name="JobOverview" xml:space="preserve">
+    <value>نمای کلی فرایندهای کار</value>
+  </data>
+  <data name="JobOverviewDescription" xml:space="preserve">
+    <value>مراحل تولید موردنیاز هر کار رول یا شیت و پیشرفت ثبت‌شده آن را مشاهده کنید.</value>
+  </data>
+  <data name="JobOverviewAccessDenied" xml:space="preserve">
+    <value>شما مجوز مشاهده کارهای فروش یا سفارش‌های تولید را ندارید.</value>
+  </data>
+  <data name="JobOverviewActiveProduction" xml:space="preserve">
+    <value>سفارش‌های در حال تولید</value>
+  </data>
+  <data name="JobOverviewCompletedJobs" xml:space="preserve">
+    <value>کارهای با مراحل تکمیل‌شده</value>
+  </data>
+  <data name="JobOverviewSharedRoutes" xml:space="preserve">
+    <value>مسیرهای تولید مشترک</value>
+  </data>
+  <data name="JobOverviewSearchPlaceholder" xml:space="preserve">
+    <value>جست‌وجوی عنوان کار، شماره درخواست یا مشتری</value>
+  </data>
+  <data name="JobOverviewProductionActive" xml:space="preserve">
+    <value>در حال تولید / آماده / کنترل کیفیت</value>
+  </data>
+  <data name="JobOverviewNotScheduled" xml:space="preserve">
+    <value>هنوز زمان‌بندی نشده</value>
+  </data>
+  <data name="JobOverviewUntracked" xml:space="preserve">
+    <value>پیشرفت مجزا ثبت نشده</value>
+  </data>
+  <data name="JobOverviewAwaitingOperations" xml:space="preserve">
+    <value>مراحل موردنیاز از مشخصات کار پیشنهاد شده‌اند؛ هنوز تکمیل هیچ عملیاتی ثبت نشده است.</value>
+  </data>
+  <data name="JobOverviewSharedNoItemProgress" xml:space="preserve">
+    <value>تکمیل مراحل این قلم به‌صورت مستقل ثبت نمی‌شود.</value>
+  </data>
+  <data name="JobOverviewSharedRouteExplanation" xml:space="preserve">
+    <value>این سفارش تولید چند کار را شامل می‌شود. وضعیت عملیات مربوط به کل سفارش تولید است، نه صرفاً این کار.</value>
+  </data>
+  <data name="JobOverviewOrderWideProgress" xml:space="preserve">
+    <value>پیشرفت کل سفارش تولید مشترک</value>
+  </data>
+  <data name="JobOverviewProcessProgress" xml:space="preserve">
+    <value>پیشرفت فرایند</value>
+  </data>
+  <data name="JobOverviewRequiredProcesses" xml:space="preserve">
+    <value>فرایندهای موردنیاز</value>
+  </data>
+  <data name="JobOverviewProcesses" xml:space="preserve">
+    <value>فرایند</value>
+  </data>
+  <data name="JobOverviewStepsComplete" xml:space="preserve">
+    <value>فرایند تکمیل‌شده</value>
+  </data>
+  <data name="JobOverviewInvalidSpecs" xml:space="preserve">
+    <value>مشخصات ذخیره‌شده این کار قابل خواندن نیست. کار را بررسی کنید.</value>
+  </data>
+  <data name="JobOverviewRequiresRoutingReview" xml:space="preserve">
+    <value>تخصیص ماشین یا فرایند نیازمند بررسی مدیر تولید است.</value>
+  </data>
+  <data name="JobOverviewRecentResults" xml:space="preserve">
+    <value>حداکثر ۱۵۰ کار مطابق با جست‌وجو نمایش داده می‌شود. برای یافتن کارهای قدیمی عنوان یا شماره را جست‌وجو کنید.</value>
+  </data>
+  <data name="JobOverviewNoJobs" xml:space="preserve">
+    <value>کاری مطابق با جست‌وجو یافت نشد</value>
+  </data>
+  <data name="JobOverviewSearchHint" xml:space="preserve">
+    <value>عنوان یا شماره دیگری وارد کنید یا فیلترها را پاک کنید.</value>
+  </data>
+  <data name="JobOverviewLoadingError" xml:space="preserve">
+    <value>نمای کلی کارها بارگذاری نشد. دوباره تلاش کنید.</value>
+  </data>
+  <data name="JobOverviewFocusedJob" xml:space="preserve">
+    <value>نمایش یک کار مشخص.</value>
+  </data>
+  <data name="JobOverviewViewAllJobs" xml:space="preserve">
+    <value>نمایش همه کارها</value>
+  </data>
 </root>
