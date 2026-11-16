@@ -127,6 +127,32 @@ html.proof-print-layout .proof-dimensions-panel .proof-kv {
 html.proof-print-layout .proof-dimensions-panel .proof-panel-body {
     padding: .8mm 1mm !important;
 }
+html.proof-print-layout .proof-dimensions-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: .8mm !important;
+}
+html.proof-print-layout .proof-dimensions-grid .proof-dimension-item {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 1mm .4mm !important;
+    gap: .5mm !important;
+    border: .2mm solid #dce2ea !important;
+    border-radius: 1mm !important;
+}
+html.proof-print-layout .proof-dimensions-grid .proof-kv-label {
+    font-size: 5.2pt !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+}
+html.proof-print-layout .proof-dimensions-grid .proof-kv-value {
+    font-size: 6pt !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
 html.proof-print-layout .proof-technical-grid {
     column-gap: 1.5mm !important;
 }
