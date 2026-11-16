@@ -168,9 +168,6 @@
                     <label class="form-label">@LocalizationService["Referrer"]</label>
                     <InputText class="form-control" @bind-Value="spec.Referrer" />
 
-                    <label class="form-label">@LocalizationService["RequiredItems"]</label>
-                    <InputText class="form-control" @bind-Value="spec.RequiredItems" />
-
                 </div>
             </div>
         </div>
@@ -492,7 +489,7 @@
     private static readonly Dictionary<string, string[]> ServiceGroups = new()
     {
         ["ServiceGroupLamination"] = new[] { "سلفون واتربیس مات", "سلفون واتربیس براق", "سلفون حرارتی مات", "سلفون حرارتی براق", "سلفون حرارتی متالایز" },
-        ["ServiceGroupUvCoating"] = new[] { "یووی موضعی" },
+        ["ServiceGroupUvCoating"] = new[] { "یووی موضعی", "یووی سیلندری" },
         ["ServiceGroupFoilStamping"] = new[] { "طلاکوب", "نقره‌کوب", "رنگ فویل" },
         ["ServiceGroupEmbossingDie"] = new[] { "برجسته", "قالب" },
         ["ServiceGroupGluingCuttingPackaging"] = new[] { "جعبه‌چسبانی", "برش و بسته‌بندی" }
