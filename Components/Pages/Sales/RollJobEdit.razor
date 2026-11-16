@@ -602,6 +602,8 @@
 
         if (request.Status == SalesRequestStatus.Draft)
             await SaveAsync();
+        else if (canEditArtwork && artworkEditor?.HasPendingChanges == true)
+            await SaveArtworkOnlyAsync();
 
         return string.IsNullOrWhiteSpace(errorMessage);
     }
