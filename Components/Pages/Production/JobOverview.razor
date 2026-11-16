@@ -242,6 +242,28 @@
                                         @L["JobOverviewInvalidSpecs"]
                                     </div>
                                 }
+                                @if (job.QuantityProgressPercent.HasValue &&
+                                     job.OrderedQuantity.HasValue && job.ProducedQuantity.HasValue)
+                                {
+                                    <div class="job-overview-quantity-progress">
+                                        <div class="job-overview-quantity-heading">
+                                            <span>@L["JobOverviewProducedQuantity"]</span>
+                                            <strong>
+                                                @job.ProducedQuantity.Value.ToString("N0") /
+                                                @job.OrderedQuantity.Value.ToString("N0")
+                                                (@job.QuantityProgressPercent.Value%)
+                                            </strong>
+                                        </div>
+                                        <div class="job-overview-progress-track" role="progressbar"
+                                             aria-label="@L["JobOverviewProducedQuantity"]"
+                                             aria-valuemin="0" aria-valuemax="100"
+                                             aria-valuenow="@job.QuantityProgressPercent.Value">
+                                            <div class="job-overview-progress-fill"
+                                                 style="width: @job.QuantityProgressPercent.Value%"></div>
+                                        </div>
+                                        <p>@L["JobOverviewProducedQuantityHint"]</p>
+                                    </div>
+                                }
                             </div>
 
                             <div class="job-overview-process-panel">
