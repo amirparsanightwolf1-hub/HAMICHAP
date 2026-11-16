@@ -3695,4 +3695,10 @@
   <data name="ProofPrintQualityFailed" xml:space="preserve">
     <value>Could not prepare the original PDF artwork at print quality. Please retry, or open the original PDF using its link.</value>
   </data>
+  <data name="ProofOrientationMark" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="ProofOrientationCheckboxHint" xml:space="preserve">
+    <value>Tick any applicable orientation. Your checkmarks will appear on the printed proof.</value>
+  </data>
 </root>

@@ -11,10 +11,11 @@ public static class RollOrientationChoices
 {
     public static IReadOnlyList<RollOrientationChoice> All { get; } =
     [
-        new("horizontal-left", "RollOrientationHorizontalLeft", "/images/roll-orientations/horizontal-left.svg"),
-        new("horizontal-right", "RollOrientationHorizontalRight", "/images/roll-orientations/horizontal-right.svg"),
+        // Match the reference image ordering: vertical left/right, then horizontal left/right.
         new("vertical-left", "RollOrientationVerticalLeft", "/images/roll-orientations/vertical-left.svg"),
-        new("vertical-right", "RollOrientationVerticalRight", "/images/roll-orientations/vertical-right.svg")
+        new("vertical-right", "RollOrientationVerticalRight", "/images/roll-orientations/vertical-right.svg"),
+        new("horizontal-left", "RollOrientationHorizontalLeft", "/images/roll-orientations/horizontal-left.svg"),
+        new("horizontal-right", "RollOrientationHorizontalRight", "/images/roll-orientations/horizontal-right.svg")
     ];
 
     public static RollOrientationChoice? Find(string? value) =>
