@@ -110,7 +110,7 @@
         section = Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Trim('/').Split('/').LastOrDefault() ?? "";
         var user = (await Authentication.GetAuthenticationStateAsync()).User;
         authorized = user.Identity?.IsAuthenticated == true &&
-            (user.IsInRole("Administrator") || section switch
+            (user.IsInRole("Administrator") || (section switch
             {
                 "sales" => user.IsInRole("Sales") || user.IsInRole("SalesManager") || user.IsInRole("Sales Manager"),
                 "warehouse" => user.IsInRole("Warehouse") || user.IsInRole("WarehouseManager") || user.IsInRole("Warehouse Manager"),
@@ -119,7 +119,7 @@
                     user.IsInRole("Manager") || user.IsInRole("FloorManager") ||
                     user.IsInRole("Floor Manager") || user.IsInRole("Production"),
                 _ => false
-            });
+            }));
         if (authorized) await LoadAsync();
     }
 
