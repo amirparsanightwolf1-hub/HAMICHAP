@@ -1127,7 +1127,6 @@
                 return;
             }
             step.Status = ProductionOperationStatus.Completed;
-            step.OutsourcedPlannedEnd = DateTime.UtcNow;
             var next = await db.ProductionOperations
                 .Where(x => x.ProductionOrderId == step.ProductionOrderId && x.Sequence > step.Sequence)
                 .OrderBy(x => x.Sequence).FirstOrDefaultAsync();
