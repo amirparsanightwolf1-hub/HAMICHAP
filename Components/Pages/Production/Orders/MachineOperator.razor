@@ -181,6 +181,7 @@
             .ToDictionary(x => x.Key, x => x.ToList());
         foreach (var step in operations)
         {
+            requestItemIds.TryAdd(step.Id, 0);
             requestQuantities.TryAdd(step.Id, 1m);
             pauseReasons.TryAdd(step.Id, "");
             requestNotes.TryAdd(step.Id, "");
