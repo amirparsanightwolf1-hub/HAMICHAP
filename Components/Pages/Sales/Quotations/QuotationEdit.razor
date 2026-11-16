@@ -205,7 +205,7 @@
             </div>
             <div class="quotation-workspace-overview-item is-total">
                 <span>@LocalizationService["FinalAmount"]</span>
-                <strong>@quotation.Lines.Sum(line => line.TotalPrice).ToString("N2")</strong>
+                <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
             </div>
         </div>
 
@@ -311,11 +311,19 @@
 
                         @if (IsEditable)
                         {
-                            <input class="form-control"
-                                   value="@FormatJalaliDate(quotation.ValidUntil)"
-                                   @onchange="UpdateValidUntilFromJalali"
-                                   inputmode="numeric"
-                                   placeholder="1405/01/01" />
+                            <label class="form-label" for="quotation-validity-days">
+                                @LocalizationService["ValidityDays"]
+                            </label>
+                            <InputNumber TValue="int?" id="quotation-validity-days"
+                                         class="form-control"
+                                         min="0" max="3650" step="1"
+                                         @bind-Value="ValidityDays" />
+                            <div class="quotation-validity-preview" aria-live="polite">
+                                <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                                <span>@LocalizationService["ValidUntil"]:</span>
+                                <strong>@FormatJalaliDate(quotation.ValidUntil)</strong>
+                            </div>
+                            <div class="form-text">@LocalizationService["ValidityDaysHelp"]</div>
                         }
                         else
                         {
@@ -473,18 +481,20 @@
 
                                         @if (IsEditable)
                                         {
-                                            <InputNumber class="form-control text-end quotation-workspace-price-input"
-                                                         @bind-Value="line.UnitPrice" />
+                                            <input type="number" min="0" step="1" inputmode="numeric"
+                                                   class="form-control text-end quotation-workspace-price-input"
+                                                   value="@FormatWholePriceInput(line.UnitPrice)"
+                                                   @onchange="args => UpdateWholeUnitPrice(line, args)" />
                                         }
                                         else
                                         {
-                                            @line.UnitPrice.ToString("N2")
+                                            @FormatWholeAmount(line.UnitPrice)
                                         }
 
                                     </td>
 
                                     <td class="text-end fw-semibold">
-                                        @line.TotalPrice.ToString("N2")
+                                        @FormatWholeAmount(line.TotalPrice)
                                     </td>
 
                                     <td>
@@ -511,7 +521,7 @@
                 </div>
                 <div class="quotation-workspace-table-total" aria-live="polite">
                     <span>@LocalizationService["FinalAmount"]</span>
-                    <strong>@quotation.Lines.Sum(line => line.TotalPrice).ToString("N2")</strong>
+                    <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
                 </div>
             </div>
         </section>
@@ -550,7 +560,7 @@
 
                     <div class="quotation-workspace-total-amount" aria-live="polite">
                         <span>@LocalizationService["FinalAmount"]</span>
-                        <strong>@quotation.Lines.Sum(line => line.TotalPrice).ToString("N2")</strong>
+                        <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
                     </div>
 
                     <dl class="quotation-workspace-total-details">
@@ -731,6 +741,7 @@
         {
             ValidateQuotation();
 
+            NormalizeUnitPrices();
             CalculateFinalAmount();
 
             isSaving = true;
@@ -768,6 +779,7 @@
         {
             ValidateQuotation();
 
+            NormalizeUnitPrices();
             CalculateFinalAmount();
 
             isSubmitting = true;
@@ -1028,6 +1040,64 @@
         return "-";
     }
 
+    // A blank validity period means no expiry is specified. Derive dates
+    // from the quotation date, not from the day the editor is opened.
+    private int? ValidityDays
+    {
+        get => quotation?.ValidUntil is DateTime expiry
+            ? (expiry.Date - quotation.QuotationDate.Date).Days
+            : null;
+        set
+        {
+            if (quotation == null)
+                return;
+
+            if (value is < 0 or > 3650)
+            {
+                errorMessage = LocalizationService["ValidityDaysRange"];
+                return;
+            }
+
+            quotation.ValidUntil = value.HasValue
+                ? quotation.QuotationDate.Date.AddDays(value.Value)
+                : null;
+            errorMessage = null;
+        }
+    }
+
+    private static decimal WholePrice(decimal amount) =>
+        decimal.Round(amount, 0, MidpointRounding.AwayFromZero);
+
+    private static string FormatWholeAmount(decimal amount) =>
+        WholePrice(amount).ToString("N0", CultureInfo.CurrentCulture);
+
+    // HTML number controls require invariant, ungrouped values.
+    private static string FormatWholePriceInput(decimal amount) =>
+        WholePrice(amount).ToString("0", CultureInfo.InvariantCulture);
+
+    private void UpdateWholeUnitPrice(QuotationLine line, ChangeEventArgs args)
+    {
+        var raw = args.Value?.ToString();
+        if (!decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ||
+            price < 0 || decimal.Truncate(price) != price)
+        {
+            errorMessage = LocalizationService["WholeNumberPriceRequired"];
+            return;
+        }
+
+        line.UnitPrice = price;
+        errorMessage = null;
+    }
+
+    private void NormalizeUnitPrices()
+    {
+        if (quotation is null)
+            return;
+
+        foreach (var line in quotation.Lines)
+            line.UnitPrice = WholePrice(line.UnitPrice);
+    }
+
     private static string FormatJalaliDate(DateTime? date)
     {
         if (!date.HasValue)
@@ -1036,48 +1106,6 @@
         var calendar = new PersianCalendar();
         return $"{calendar.GetYear(date.Value):0000}/{calendar.GetMonth(date.Value):00}/{calendar.GetDayOfMonth(date.Value):00}";
     }
-
-    private void UpdateValidUntilFromJalali(ChangeEventArgs args)
-    {
-        if (quotation == null)
-            return;
-
-        var value = (args.Value?.ToString() ?? string.Empty).Trim()
-            .Replace('-', '/').Replace('.', '/')
-            .Replace('۰', '0').Replace('۱', '1').Replace('۲', '2')
-            .Replace('۳', '3').Replace('۴', '4').Replace('۵', '5')
-            .Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9')
-            .Replace('٠', '0').Replace('١', '1').Replace('٢', '2')
-            .Replace('٣', '3').Replace('٤', '4').Replace('٥', '5')
-            .Replace('٦', '6').Replace('٧', '7').Replace('٨', '8').Replace('٩', '9');
-
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            quotation.ValidUntil = null;
-            return;
-        }
-
-        var parts = value.Split('/');
-        if (parts.Length != 3 ||
-            !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var year) ||
-            !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var month) ||
-            !int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var day))
-        {
-            errorMessage = LocalizationService["InvalidJalaliFromDate"];
-            return;
-        }
-
-        try
-        {
-            quotation.ValidUntil = new PersianCalendar().ToDateTime(year, month, day, 0, 0, 0, 0);
-            errorMessage = null;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            errorMessage = LocalizationService["InvalidJalaliFromDate"];
-        }
-    }
-
 
     private void GoBack()
     {
