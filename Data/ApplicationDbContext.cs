@@ -16,6 +16,9 @@ namespace HamiChap_MES_ERP.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<ProductionOperationEvent>().Property(x => x.EventType).HasMaxLength(32);
+            builder.Entity<ProductionOperationEvent>().Property(x => x.OperatorUserId).HasMaxLength(450);
+            builder.Entity<ProductionOperationEvent>().Property(x => x.Reason).HasMaxLength(1000);
             builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceSignature).HasMaxLength(64);
             builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceConfirmedBy).HasMaxLength(450);
 
