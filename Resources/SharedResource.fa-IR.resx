@@ -3009,4 +3009,40 @@
   <data name="JobSetupSubmitHelp" xml:space="preserve">
     <value>در این مرحله فقط پیش‌نویس کار ایجاد می‌شود و هنوز پیش‌فاکتوری ارسال نمی‌شود.</value>
   </data>
+  <data name="ItemsInThisOrder" xml:space="preserve">
+    <value>اقلام این سفارش</value>
+  </data>
+  <data name="EachItemHasOwnProof" xml:space="preserve">
+    <value>هر قلم دارای مشخصات، تعداد و برگه تأیید طرح مجزای خود است.</value>
+  </data>
+  <data name="CurrentItem" xml:space="preserve">
+    <value>قلم فعلی</value>
+  </data>
+  <data name="AddRollItem" xml:space="preserve">
+    <value>افزودن قلم رول</value>
+  </data>
+  <data name="AddSheetItem" xml:space="preserve">
+    <value>افزودن قلم شیت</value>
+  </data>
+  <data name="AddItemSavesCurrentJob" xml:space="preserve">
+    <value>با افزودن قلم، کار فعلی ذخیره می‌شود و همه اقلام در یک پیش‌فاکتور پیش‌نویس قرار می‌گیرند.</value>
+  </data>
+  <data name="SaveJobBeforeAddingItem" xml:space="preserve">
+    <value>قبل از افزودن قلم دیگر، عنوان کار، تعداد مثبت و مشخصات را ذخیره کنید.</value>
+  </data>
+  <data name="ReuseOldJobNewQuantityHelp" xml:space="preserve">
+    <value>طرح و فایل‌های ذخیره‌شده را در کار جدید استفاده کنید. تعداد سفارش جدید را وارد کنید؛ سفارش قبلی تغییر نمی‌کند.</value>
+  </data>
+  <data name="ReuseSavedSpecifications" xml:space="preserve">
+    <value>استفاده از طرح ذخیره‌شده</value>
+  </data>
+  <data name="EnterNewOrderQuantity" xml:space="preserve">
+    <value>تعداد سفارش جدید</value>
+  </data>
+  <data name="ApplySavedJobWithNewQuantity" xml:space="preserve">
+    <value>استفاده از طرح و تعداد جدید</value>
+  </data>
+  <data name="ManageOrderItemsInJobEditor" xml:space="preserve">
+    <value>مدیریت اقلام و تأییدیه‌ها در ویرایش رول/شیت</value>
+  </data>
 </root>
