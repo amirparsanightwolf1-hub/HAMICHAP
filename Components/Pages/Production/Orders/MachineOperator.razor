@@ -93,6 +93,12 @@
                         Scheduled: @(BookingFor(step.Id)?.PlannedStart.ToString("yyyy-MM-dd HH:mm")) – @(BookingFor(step.Id)?.PlannedEnd.ToString("yyyy-MM-dd HH:mm")) | Expected work: @step.PlannedHours.ToString("0.##") h |
                         @step.ProductionOrder.OrderNumber
                     </div>
+                    @if (BookingFor(step.Id) is ProductionSchedule currentBooking &&
+                         step.ProductionOrder.PlannedEndDate.HasValue &&
+                         currentBooking.PlannedEnd > step.ProductionOrder.PlannedEndDate.Value)
+                    {
+                        <div class="alert alert-warning py-2">Revised finish exceeds the CEO-approved window. Manager review required / نیازمند بررسی مدیر تولید</div>
+                    }
                     @if (!previousDone)
                     {
                         <div class="alert alert-info py-2">Waiting for the previous operation to finish.</div>
@@ -326,6 +332,8 @@
             {
                 if (step.Status is not (ProductionOperationStatus.Pending or ProductionOperationStatus.Ready))
                     throw new InvalidOperationException("Operation has already started.");
+                if (DateTime.Now < booking.PlannedStart)
+                    throw new InvalidOperationException("This operation is scheduled for a future time slot.");
                 step.Status = ProductionOperationStatus.Running;
                 booking.Status = ScheduleStatus.Running;
                 step.ProductionOrder.Status = ProductionOrderStatus.InProduction;
