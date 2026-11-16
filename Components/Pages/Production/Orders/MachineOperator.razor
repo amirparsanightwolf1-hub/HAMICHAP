@@ -584,7 +584,9 @@
                 x.Status != ProductionOperationStatus.Completed);
             if (previous) throw new InvalidOperationException(L["OperatorErrPrevious"]);
             var last = await db.ProductionOperationEvents
-                .Where(x => x.ProductionOperationId == operationId)
+                .Where(x => x.ProductionOperationId == operationId &&
+                    (x.EventType == "Started" || x.EventType == "Paused" ||
+                     x.EventType == "Resumed" || x.EventType == "Finished"))
                 .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
             var paused = last?.EventType == "Paused";
             string reason = "";
@@ -724,7 +726,9 @@
                 throw new InvalidOperationException(L["OperatorErrNotRunning"]);
             await AssertMachinePermissionAsync(db, booking.MachineId);
             var last = await db.ProductionOperationEvents
-                .Where(x => x.ProductionOperationId == operationId)
+                .Where(x => x.ProductionOperationId == operationId &&
+                    (x.EventType == "Started" || x.EventType == "Paused" ||
+                     x.EventType == "Resumed" || x.EventType == "Finished"))
                 .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
             if (last?.EventType == "Paused")
                 throw new InvalidOperationException(L["OperatorErrResumeBeforeExtend"]);
