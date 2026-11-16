@@ -85,12 +85,12 @@
         </div>
 
         <nav class="job-edit-jump-nav" aria-label="@LocalizationService["JobEditorSections"]">
-            <a href="#job-edit-items"><i class="bi bi-layers" aria-hidden="true"></i> @LocalizationService["ItemsInThisOrder"]</a>
-            <a href="#job-edit-information"><i class="bi bi-person-vcard" aria-hidden="true"></i> @LocalizationService["OrderInformation"]</a>
-            <a href="#job-edit-specifications"><i class="bi bi-sliders" aria-hidden="true"></i> @LocalizationService["LabelSpecifications"]</a>
-            <a href="#job-edit-artwork"><i class="bi bi-images" aria-hidden="true"></i> @LocalizationService["ArtworkFiles"]</a>
-            <a href="#job-edit-services"><i class="bi bi-list-check" aria-hidden="true"></i> @LocalizationService["AdditionalServices"]</a>
-            <a href="#job-edit-production"><i class="bi bi-diagram-3" aria-hidden="true"></i> @LocalizationService["RollWorkflowInfo"]</a>
+            <a href="@GetSectionHref("job-edit-items")"><i class="bi bi-layers" aria-hidden="true"></i> @LocalizationService["ItemsInThisOrder"]</a>
+            <a href="@GetSectionHref("job-edit-information")"><i class="bi bi-person-vcard" aria-hidden="true"></i> @LocalizationService["OrderInformation"]</a>
+            <a href="@GetSectionHref("job-edit-specifications")"><i class="bi bi-sliders" aria-hidden="true"></i> @LocalizationService["LabelSpecifications"]</a>
+            <a href="@GetSectionHref("job-edit-artwork")"><i class="bi bi-images" aria-hidden="true"></i> @LocalizationService["ArtworkFiles"]</a>
+            <a href="@GetSectionHref("job-edit-services")"><i class="bi bi-list-check" aria-hidden="true"></i> @LocalizationService["AdditionalServices"]</a>
+            <a href="@GetSectionHref("job-edit-production")"><i class="bi bi-diagram-3" aria-hidden="true"></i> @LocalizationService["RollWorkflowInfo"]</a>
         </nav>
 
         <div id="job-edit-items" class="job-edit-anchor">
@@ -886,6 +886,12 @@
             isSaving = false;
         }
     }
+
+    // Fragment-only hrefs resolve against the app's <base href="/"> and
+    // accidentally navigate to /#job-edit-*. Use the complete current URL
+    // so same-page anchors preserve the request ID and optional quotationId.
+    private string GetSectionHref(string sectionId) =>
+        $"{Navigation.Uri.Split('#')[0]}#{sectionId}";
 
     private void BackToRequest() =>
         Navigation.NavigateTo("/sales/requests");
