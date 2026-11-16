@@ -684,6 +684,12 @@
             }
             else
             {
+                // Editable legacy quotations may contain fractional prices.
+                // Normalize tracked values so visible unit prices and totals
+                // agree immediately; changes persist only when saved.
+                if (IsEditable)
+                    NormalizeUnitPrices();
+
                 // The primary request remains linked for legacy quotations.
                 var requestIds = quotation.Lines
                     .Where(line => line.SourceRequestId.HasValue)
