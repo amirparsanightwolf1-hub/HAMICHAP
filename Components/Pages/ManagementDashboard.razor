@@ -17,7 +17,7 @@
 @inject LocalizationService L
 
 <PageTitle>@DashboardTitle</PageTitle>
-<div class="manager-dashboard">
+<div class="@($"manager-dashboard manager-dashboard-{section}")">
     @if (!authorized)
     {
         <div class="alert alert-warning">@L["AccessDenied"]</div>
