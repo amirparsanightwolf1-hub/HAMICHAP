@@ -10,7 +10,7 @@ namespace HamiChap_MES_ERP.Services;
 /// </summary>
 public static class ProductionAutomaticScheduler
 {
-    public sealed record Placement(long OperationId, int MachineId, DateTime Start, DateTime End);
+    public sealed record Placement(long OperationId, int? MachineId, DateTime Start, DateTime End);
     public sealed record BusyInterval(int MachineId, DateTime Start, DateTime End);
 
     public static bool TryBuild(
@@ -41,6 +41,25 @@ public static class ProductionAutomaticScheduler
                 error = "Estimated duration is missing for " + step.Name;
                 return false;
             }
+            if (step.IsOutsourced)
+            {
+                // External operations retain their sequence and lead time but never occupy a machine.
+                var start = ProductionPlanningTime.NextAllowedProductionMinute(
+                    cursor, order.AvoidOvertime, order.AvoidNightShift);
+                var end = ProductionPlanningTime.CalculateEndDateTime(start,
+                    ProductionPlanningTime.OperationMinutes(step.PlannedHours),
+                    order.AvoidOvertime, order.AvoidNightShift);
+                if (end > windowEnd)
+                {
+                    error = "Outsourced operation '" + step.Name + "' exceeds the CEO window.";
+                    plan.Clear();
+                    return false;
+                }
+                plan.Add(new Placement(step.Id, null, start, end));
+                cursor = end;
+                continue;
+            }
+
             var candidates = machines.Where(m => m.IsActive && isCandidate(step, m)).ToList();
             if (candidates.Count == 0)
             {
