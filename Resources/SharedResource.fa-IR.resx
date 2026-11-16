@@ -3046,4 +3046,10 @@
     <value>مدیریت اقلام و تأییدیه‌ها در ویرایش رول/شیت</value>
   </data>
   <data name="RepeatThisItem" xml:space="preserve"><value>سفارش مجدد این قلم</value></data>
+  <data name="JobEditorEyebrow" xml:space="preserve"><value>محیط مدیریت سفارش</value></data>
+  <data name="JobEditorOverview" xml:space="preserve"><value>نمای کلی سفارش جاری</value></data>
+  <data name="JobEditorSections" xml:space="preserve"><value>رفتن به بخش</value></data>
+  <data name="JobEditorArtworkHint" xml:space="preserve"><value>بارگذاری، جایگزینی یا حذف فایل طرح این قلم</value></data>
+  <data name="JobEditorSaveHeading" xml:space="preserve"><value>آماده بررسی این قلم هستید؟</value></data>
+  <data name="JobEditorSaveHint" xml:space="preserve"><value>تغییرات را ذخیره کنید و برگه تأیید طرح این قلم را باز کنید.</value></data>
 </root>
