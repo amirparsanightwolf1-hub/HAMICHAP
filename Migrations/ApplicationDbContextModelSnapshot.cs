@@ -1037,6 +1037,15 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<decimal>("ActualHours")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<bool>("IsOutsourced")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("OutsourcedPlannedEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("OutsourcedPlannedStart")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
