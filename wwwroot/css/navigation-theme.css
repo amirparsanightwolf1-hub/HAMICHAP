@@ -1,6 +1,6 @@
 /* Navigation presentation. Isolated from the layout structure and application forms. */
 .app-layout .sidebar {
-    background: linear-gradient(175deg, #102a43 0%, #153b50 55%, #174b57 100%);
+    background: linear-gradient(180deg, var(--erp-primary) 0%, var(--erp-primary-dark) 100%);
     border-inline-end: 1px solid rgba(255,255,255,.09);
     box-shadow: 5px 0 25px rgba(10,31,49,.08);
 }
