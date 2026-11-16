@@ -3022,36 +3022,11 @@
     page-break-inside: avoid;
     break-inside: avoid;
 }
-/* Customer-proof orientation checkboxes: keyboard accessible on screen,
-   separate custom boxes ensure marks survive browser PDF printing. */
-.proof-page .proof-roll-choice { cursor: pointer; user-select: none; }
-.proof-page .proof-roll-choice:focus-within { outline: 2px solid #197f63; outline-offset: 2px; }
-.proof-page .proof-roll-checkbox-row {
-    display: inline-flex;
-    gap: 7px;
-    align-items: center;
-    justify-content: center;
-    color: #27465b;
-    font-size: .73rem;
-    font-weight: 650;
-    min-height: 24px;
+.proof-page .proof-roll-choice { cursor: default; }
+.proof-page .proof-dimensions-panel .proof-kv-value {
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
 }
-.proof-page .proof-roll-check {
-    flex: 0 0 17px;
-    width: 17px;
-    height: 17px;
-    margin: 0;
-    accent-color: #178462;
-    cursor: pointer;
-}
-.proof-page .proof-roll-print-checkbox { display: none; }
-.proof-page .proof-orientation-hint {
-    margin: 8px 0 0;
-    font-size: .72rem;
-    line-height: 1.4;
-    color: #586a76;
-}
-
 .proof-page .proof-roll-choice.is-selected {
     border: 2px solid #188461;
     background: #e9f7ef;

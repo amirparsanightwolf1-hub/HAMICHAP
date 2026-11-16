@@ -4803,4 +4803,7 @@
   <data name="ProofOrientationCheckboxHint" xml:space="preserve">
     <value>جهت‌های مورد نظر را علامت بزنید. علامت‌ها در نسخه چاپی نمونه تأیید نمایش داده می‌شوند.</value>
   </data>
+  <data name="ProofDimensionsAndSizes" xml:space="preserve">
+    <value>ابعاد و اندازه‌های لیبل</value>
+  </data>
 </root>
