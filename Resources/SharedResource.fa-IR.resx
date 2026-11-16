@@ -3154,4 +3154,5 @@
   <data name="JobOverviewViewAllJobs" xml:space="preserve">
     <value>نمایش همه کارها</value>
   </data>
+  <data name="JobOverviewNoProcesses" xml:space="preserve"><value>هنوز فرایندی برای این کار مشخص نشده است. مشخصات کار و مسیر تولید را بررسی کنید.</value></data>
 </root>
