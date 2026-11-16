@@ -443,7 +443,6 @@
     };
     private string JobTitle = "";
     private string PrintingNotes = "";
-    private string DimensionsSummary = "";
     private List<KeyValuePair<string, string>> rollDimensions = new();
     private string DimensionsBeforeCutSummary = "";
     private string DimensionsAfterCutSummary = "";
@@ -502,7 +501,6 @@
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true; errorMessage = null;
-        DimensionsSummary = LocalizationService["DimensionsNotSpecified"];
         rollPantoneColors = new();
         request = await Db.SalesRequests.Include(x => x.Customer).FirstOrDefaultAsync(x => x.Id == RequestId);
         if (request is null) { errorMessage = LocalizationService["SalesRequestNotFound"]; isLoading = false; return; }
@@ -541,8 +539,8 @@
                 artworkFiles = spec.ArtworkFiles ?? new();
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
-                DimensionsBeforeCutSummary = $"{LocalizationService["BeforeCutDimensions"]}: {LocalizationService["DimensionWidth"]} {Fmt(spec.BeforeCutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.BeforeCutLengthCm)} cm";
-                DimensionsAfterCutSummary = $"{LocalizationService["AfterCutDimensions"]}: {LocalizationService["DimensionWidth"]} {Fmt(spec.CutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.CutLengthCm)} cm";
+                DimensionsBeforeCutSummary = $"{LocalizationService["DimensionWidth"]} {Fmt(spec.BeforeCutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.BeforeCutLengthCm)} cm";
+                DimensionsAfterCutSummary = $"{LocalizationService["DimensionWidth"]} {Fmt(spec.CutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.CutLengthCm)} cm";
                 LoadCmykSelections(request.JobSpecificationJson);
                 frontPantoneColors = ReadJsonStringProperty(request.JobSpecificationJson, "FrontPantoneColors");
                 backPantoneColors = ReadJsonStringProperty(request.JobSpecificationJson, "BackPantoneColors");
