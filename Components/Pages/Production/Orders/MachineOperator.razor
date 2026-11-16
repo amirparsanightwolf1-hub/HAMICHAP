@@ -68,7 +68,9 @@
                             <td>#@next.Sequence @next.Name</td>
                             <td>@(booking?.PlannedStart.ToString("yyyy-MM-dd HH:mm"))</td>
                             <td>@(booking?.PlannedEnd.ToString("yyyy-MM-dd HH:mm"))</td>
-                            <td>@(PreviousCompleted(next) ? "Ready / آماده" : "Waiting for previous step / منتظر مرحله قبل")</td>
+                            <td>@(booking == null ? "Awaiting machine schedule / در انتظار برنامه دستگاه" :
+                                PreviousCompleted(next) ? "Ready when machine is free / آماده پس از آزاد شدن دستگاه" :
+                                "Waiting for previous step / منتظر مرحله قبل")</td>
                         </tr>
                     }
                     @if (UpcomingOperations.Count == 0)
@@ -264,7 +266,9 @@
     {
         var start = step.ProductionOrder.PlannedStartDate;
         if (!start.HasValue || DateTime.Now < start.Value ||
-            step.ProductionOrder.OperationsSequenceConfirmedAt == null)
+            step.ProductionOrder.OperationsSequenceConfirmedAt == null ||
+            (step.ProductionOrder.PlannedEndDate.HasValue &&
+             DateTime.Now >= step.ProductionOrder.PlannedEndDate.Value))
             return false;
         return ProductionPlanningTime.NextAllowedProductionMinute(DateTime.Now,
             step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) <= DateTime.Now;
@@ -443,10 +447,18 @@
                     throw new InvalidOperationException("Operation has already started.");
                 var now = DateTime.Now;
                 if (step.ProductionOrder.PlannedStartDate is not DateTime approvedStart ||
-                    now < approvedStart ||
+                    step.ProductionOrder.PlannedEndDate is not DateTime approvedEnd ||
+                    now < approvedStart || now >= approvedEnd ||
                     ProductionPlanningTime.NextAllowedProductionMinute(now,
                         step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) > now)
                     throw new InvalidOperationException("The CEO has not approved this time or shift.");
+                if (booking.Status != ScheduleStatus.Planned)
+                    throw new InvalidOperationException("The machine booking is not available to start.");
+                if (await db.ProductionSchedules.AnyAsync(x =>
+                    x.Id != booking.Id && x.MachineId == booking.MachineId &&
+                    x.Status == ScheduleStatus.Running))
+                    throw new InvalidOperationException(
+                        "Another operation is still running on this machine.");
 
                 // An early start is permitted as soon as the preceding operation has
                 // finished, but it must not overlap any other reservation on this machine.
