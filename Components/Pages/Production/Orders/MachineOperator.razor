@@ -211,6 +211,8 @@
                 x.Status != ScheduleStatus.Cancelled);
             if (step == null || booking == null)
                 throw new InvalidOperationException("Operation is not scheduled for this machine.");
+            if (step.ProductionOrder.Status is ProductionOrderStatus.Cancelled or ProductionOrderStatus.Completed)
+                throw new InvalidOperationException("Production order is closed.");
             if (step.ProductionOrder.OperationsSequenceConfirmedAt == null)
                 throw new InvalidOperationException("Manager sequence confirmation is required.");
             var previous = await db.ProductionOperations.AnyAsync(x =>
@@ -290,13 +292,15 @@
             if (itemId == 0 || quantity <= 0 || quantity > 100000000)
                 throw new InvalidOperationException("Select an item and enter a positive quantity.");
             await using var db = await DbFactory.CreateDbContextAsync();
-            var step = await db.ProductionOperations.AsNoTracking().FirstOrDefaultAsync(x => x.Id == operationId);
+            var step = await db.ProductionOperations.AsNoTracking().Include(x => x.ProductionOrder)
+                .FirstOrDefaultAsync(x => x.Id == operationId);
             if (step == null || step.IsOutsourced ||
                 !await db.ProductionSchedules.AnyAsync(x => x.ProductionOperationId == operationId &&
                     x.MachineId == machineId && x.Status != ScheduleStatus.Cancelled))
                 throw new InvalidOperationException("Operation is not scheduled on the selected machine.");
-            if (step.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled)
-                throw new InvalidOperationException("This operation is closed.");
+            if (step.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled ||
+                step.ProductionOrder.Status is ProductionOrderStatus.Completed or ProductionOrderStatus.Cancelled)
+                throw new InvalidOperationException("This operation or production order is closed.");
             var item = await db.Items.AsNoTracking().FirstOrDefaultAsync(x => x.Id == itemId && x.IsActive);
             if (item == null) throw new InvalidOperationException("Item is not available.");
             var notes = requestNotes.GetValueOrDefault(operationId, "").Trim();
