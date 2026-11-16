@@ -206,13 +206,21 @@
                                         @(job.JobProgressPercent.HasValue ? $"{job.JobProgressPercent.Value}%" : "—")
                                     </div>
                                 </div>
-                                <div class="job-overview-progress-track" role="progressbar"
-                                     aria-label="@L["JobOverviewProcessProgress"]"
-                                     aria-valuemin="0" aria-valuemax="100"
-                                     aria-valuenow="@(job.JobProgressPercent?.ToString() ?? "0")">
-                                    <div class="job-overview-progress-fill"
-                                         style="width: @(job.JobProgressPercent ?? 0)%"></div>
-                                </div>
+                                @if (job.JobProgressPercent.HasValue)
+                                {
+                                    <div class="job-overview-progress-track" role="progressbar"
+                                         aria-label="@L["JobOverviewProcessProgress"]"
+                                         aria-valuemin="0" aria-valuemax="100"
+                                         aria-valuenow="@job.JobProgressPercent.Value">
+                                        <div class="job-overview-progress-fill"
+                                             style="width: @job.JobProgressPercent.Value%"></div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="job-overview-progress-track is-untracked"
+                                         aria-label="@L["JobOverviewUntracked"]"></div>
+                                }
                                 @if (job.SharedProductionRoute)
                                 {
                                     <div class="job-overview-shared-warning">
@@ -329,6 +337,16 @@
                     </article>
                 }
             </div>
+            @if (FilteredJobs.Count > visibleCount)
+            {
+                <div class="job-overview-more">
+                    <span>@visibleCount / @FilteredJobs.Count @L["Jobs"]</span>
+                    <button type="button" class="btn btn-outline-primary"
+                            @onclick="() => visibleCount += 20">
+                        @L["JobOverviewShowMore"]
+                    </button>
+                </div>
+            }
         }
     }
 </div>
@@ -347,16 +365,22 @@
     private string? error;
     private long? loadedRequestId;
     private bool firstLoad = true;
+    private int visibleCount = 20;
 
-    private List<JobRow> VisibleJobs => jobs.Where(x => statusFilter switch
+    private List<JobRow> FilteredJobs => jobs.Where(x => statusFilter switch
     {
-        "not-started" => x.ProductionOrderId is null,
+        "not-started" => x.ProductionOrderId is null ||
+                         x.ProductionStatus is ProductionOrderStatus.Planned or
+                         ProductionOrderStatus.MaterialChecking or
+                         ProductionOrderStatus.WaitingForMaterial,
         "active" => x.ProductionStatus is ProductionOrderStatus.InProduction or
                      ProductionOrderStatus.ReadyToStart or ProductionOrderStatus.QualityControl,
         "completed" => x.UsingRecordedOperations && x.JobProgressPercent == 100,
         "shared" => x.SharedProductionRoute,
         _ => true
     }).ToList();
+
+    private List<JobRow> VisibleJobs => FilteredJobs.Take(visibleCount).ToList();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -372,6 +396,7 @@
     {
         loading = true;
         error = null;
+        visibleCount = 20;
         try
         {
             var principal = (await Auth.GetAuthenticationStateAsync()).User;
