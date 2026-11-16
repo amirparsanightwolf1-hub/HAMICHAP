@@ -161,6 +161,15 @@
                         @if (canViewSalesRequests)
                         {
                             <button class="menu-button"
+                                    @onclick='() => GoTo("/production/jobs")'>
+                                <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>
+                                @LocalizationService["JobOverview"]
+                            </button>
+                        }
+
+                        @if (canViewSalesRequests)
+                        {
+                            <button class="menu-button"
                                     @onclick='() => GoTo("/sales/quotations")'>
                                 🧾 @LocalizationService["SalesQuotations"]
                             </button>
@@ -208,6 +217,12 @@
                             🔄 @LocalizationService["ProductionWorkflow"]
                         </button>
         
+                        <button class="menu-button"
+                                @onclick='() => GoTo("/production/jobs")'>
+                            <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>
+                            @LocalizationService["JobOverview"]
+                        </button>
+
                         <button class="menu-button"
                                 @onclick='() => GoTo("/production/orders")'>
                             🏭 @LocalizationService["ProductionOrders"]
