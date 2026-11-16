@@ -332,6 +332,28 @@
             {
                 if (step.Status != ProductionOperationStatus.Running || paused)
                     throw new InvalidOperationException("Resume the operation before finishing.");
+                var startedAtUtc = await db.ProductionOperationEvents
+                    .Where(x => x.ProductionOperationId == operationId && x.EventType == "Started")
+                    .OrderBy(x => x.Id).Select(x => (DateTime?)x.OccurredAtUtc).FirstOrDefaultAsync();
+                var durationExceeded = startedAtUtc.HasValue &&
+                    (DateTime.UtcNow - startedAtUtc.Value).TotalMinutes >
+                    ProductionPlanningTime.OperationMinutes(step.PlannedHours);
+                if (DateTime.Now > booking.PlannedEnd || durationExceeded)
+                {
+                    reason = overrunReasons.GetValueOrDefault(operationId, "").Trim();
+                    if (string.IsNullOrWhiteSpace(reason) || reason.Length > 1000)
+                        throw new InvalidOperationException("Explain why the operation exceeded its estimated duration before finishing.");
+                    var extendedEnd = DateTime.Now > booking.PlannedEnd
+                        ? DateTime.Now : booking.PlannedEnd;
+                    await ProductionOperationOverrunScheduler.ExtendAsync(
+                        db, step, booking, extendedEnd);
+                    db.ProductionOperationEvents.Add(new ProductionOperationEvent
+                    {
+                        ProductionOperationId = operationId, EventType = "Overrun",
+                        OccurredAtUtc = DateTime.UtcNow, OperatorUserId = userId,
+                        Reason = reason
+                    });
+                }
                 step.Status = ProductionOperationStatus.Completed;
                 booking.Status = ScheduleStatus.Completed;
                 var next = await db.ProductionOperations.Where(x =>
@@ -354,6 +376,57 @@
             message = action + " recorded.";
             isError = false;
             pauseReasons[operationId] = "";
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+            isError = true;
+        }
+        finally { busy = false; }
+    }
+
+    private async Task ExtendAsync(long operationId)
+    {
+        if (!canOperate || busy) return;
+        busy = true;
+        message = "";
+        try
+        {
+            var reason = overrunReasons.GetValueOrDefault(operationId, "").Trim();
+            var minutes = overrunMinutes.GetValueOrDefault(operationId);
+            if (reason.Length == 0 || reason.Length > 1000 || minutes <= 0 || minutes > 10080)
+                throw new InvalidOperationException("Enter an overtime reason and 1–10080 additional minutes.");
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var step = await db.ProductionOperations.Include(x => x.ProductionOrder)
+                .FirstOrDefaultAsync(x => x.Id == operationId && !x.IsOutsourced);
+            var booking = await db.ProductionSchedules.FirstOrDefaultAsync(x =>
+                x.ProductionOperationId == operationId && x.MachineId == machineId &&
+                x.Status == ScheduleStatus.Running);
+            if (step == null || booking == null)
+                throw new InvalidOperationException("The operation is not running on your selected machine.");
+            var last = await db.ProductionOperationEvents
+                .Where(x => x.ProductionOperationId == operationId)
+                .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
+            if (last?.EventType == "Paused")
+                throw new InvalidOperationException("Resume the operation before extending its schedule.");
+            var requestedEnd = booking.PlannedEnd.AddMinutes(minutes);
+            if (DateTime.Now > requestedEnd) requestedEnd = DateTime.Now.AddMinutes(minutes);
+            await ProductionOperationOverrunScheduler.ExtendAsync(db, step, booking, requestedEnd);
+            db.ProductionOperationEvents.Add(new ProductionOperationEvent
+            {
+                ProductionOperationId = operationId,
+                EventType = "Overrun",
+                OccurredAtUtc = DateTime.UtcNow,
+                OperatorUserId = userId,
+                Reason = "Additional " + minutes + " minutes. " + reason
+            });
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            message = "Overrun recorded. Later planned operations have been moved to feasible machine slots.";
+            isError = false;
+            overrunReasons[operationId] = "";
             await ReloadAsync();
         }
         catch (Exception ex)
