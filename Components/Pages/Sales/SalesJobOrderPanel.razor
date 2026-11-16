@@ -22,7 +22,7 @@
             <strong id="order-items-heading">@LocalizationService["ItemsInThisOrder"]</strong>
             <span class="badge bg-secondary ms-2">@jobs.Count</span>
         </div>
-        @if (linkedQuotationId.HasValue)
+        @if (linkedQuotationId.HasValue && !canAdd)
         {
             <a class="btn btn-sm btn-outline-secondary" href="@($"/sales/quotations/edit/{linkedQuotationId.Value}")">
                 @LocalizationService["ContinueToQuotation"]
@@ -101,13 +101,10 @@
                         disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Sheet)">
                     <i class="bi bi-plus-circle me-1"></i> @LocalizationService["AddSheetItem"]
                 </button>
-                @if (!linkedQuotationId.HasValue)
-                {
-                    <button type="button" class="btn btn-primary"
-                            disabled="@busy" @onclick="OpenQuotationAsync">
-                        @LocalizationService["ContinueToQuotation"]
-                    </button>
-                }
+                <button type="button" class="btn btn-primary"
+                        disabled="@busy" @onclick="OpenQuotationAsync">
+                    @LocalizationService["ContinueToQuotation"]
+                </button>
             </div>
             <p class="form-text mt-2 mb-0">@LocalizationService["AddItemSavesCurrentJob"]</p>
         }
