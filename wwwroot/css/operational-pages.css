@@ -1,0 +1,64 @@
+/* Four core operations pages: cohesive layout without affecting other screens. */
+.operational-page { --ops-ink: #183d56; --ops-accent: #197da5; --ops-soft: #e7f5fa; --ops-border: #d7e5ed; max-width: 1560px; margin-inline: auto; padding-bottom: 28px; }
+.production-workflow-page { --ops-ink: #214d5f; --ops-accent: #167b8b; --ops-soft: #e4f5f5; --ops-border: #cce5e8; }
+.production-order-page { --ops-ink: #634a22; --ops-accent: #b8751f; --ops-soft: #fff3de; --ops-border: #f1dfbf; }
+.sales-order-page { --ops-ink: #224879; --ops-accent: #3268bb; --ops-soft: #eaf1ff; --ops-border: #d8e3fa; }
+.quality-inspection-page { --ops-ink: #275648; --ops-accent: #258466; --ops-soft: #e7f6ee; --ops-border: #d2e9df; }
+.operational-page .operational-hero { display:flex; align-items:center; gap:18px; justify-content:flex-start; flex-wrap:wrap; margin-bottom:22px; background:linear-gradient(115deg,var(--ops-soft),var(--bs-body-bg)); border:1px solid var(--ops-border); border-radius:17px; padding:clamp(16px,2.4vw,26px); }
+.operational-page .operational-hero > div:not(.operational-hero-icon) { flex: 1 1 240px; }
+.operational-page .operational-hero h1,.operational-page .operational-hero h3,.operational-page .operational-hero .erp-page-title { color:var(--ops-ink); font-weight:760; font-size:clamp(1.35rem,2.4vw,1.85rem); line-height:1.3; margin-bottom:5px; }
+.operational-page .operational-hero .erp-page-subtitle,.operational-page .operational-hero p { color:var(--bs-secondary-color); font-size:.91rem; }
+.operational-page .operational-hero-icon { width:54px; height:54px; border-radius:14px; flex:0 0 54px; display:grid; place-items:center; color:var(--ops-ink); background:var(--bs-body-bg); border:1px solid var(--ops-border); font-size:1.5rem; }
+.operational-page .operational-hero .btn { min-height:43px; }
+.operational-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:22px; }
+.operational-kpis-three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.operational-kpi { background:var(--bs-body-bg); border:1px solid var(--ops-border); border-radius:13px; padding:18px; box-shadow:0 5px 20px rgba(21,40,60,.035); position:relative; overflow:hidden; }
+.operational-kpi:before { content:""; position:absolute; inset-inline-start:0; top:0; bottom:0; width:4px; background:var(--ops-accent); }
+.operational-kpi span { font-size:.83rem; line-height:1.4; color:var(--bs-secondary-color); display:block; }
+.operational-kpi strong { font-size:clamp(1.5rem,2.5vw,2.15rem); font-weight:770; line-height:1.3; color:var(--ops-ink); display:block; margin-top:8px; font-variant-numeric:tabular-nums; }
+.operational-card { border:1px solid var(--ops-border); border-radius:14px; overflow:hidden; background:var(--bs-body-bg); box-shadow:0 4px 20px rgba(20,42,59,.045); }
+.operational-card > .card-header { padding:16px 19px; background:var(--bs-body-bg)!important; border-bottom:1px solid var(--ops-border); }
+.operational-card > .card-header h2,.operational-card > .card-header strong { font-weight:720; color:var(--ops-ink); }
+.operational-card .card-body { padding:clamp(14px,2vw,20px); }
+.operational-page .operational-toolbar { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin-bottom:14px; }
+.operational-search { flex:2 1 230px; min-width:0; }
+.operational-filter { flex:1 1 180px; min-width:0; }
+.operational-page .operational-toolbar .form-label { margin-bottom:6px; font-size:.81rem; font-weight:700; color:var(--ops-ink); }
+.operational-page .operational-toolbar .form-control,.operational-page .operational-toolbar .form-select { min-height:45px; border-radius:9px; }
+.operational-clear { min-height:45px; }
+.operational-result-count { font-size:.8rem; color:var(--bs-secondary-color); margin-bottom:9px; }
+.operational-page .operational-table { border-collapse:separate; border-spacing:0; font-size:.9rem; }
+.operational-page .operational-table thead th { background:var(--bs-tertiary-bg); padding:13px 12px; border-bottom:1px solid var(--ops-border); white-space:nowrap; font-size:.79rem; color:var(--ops-ink); font-weight:740; }
+.operational-page .operational-table tbody td { padding:13px 12px; vertical-align:middle; border-bottom:1px solid var(--bs-border-color); }
+.operational-page .operational-table tbody tr:last-child td { border-bottom:0; }
+.operational-page .operational-table tbody tr:hover { background:var(--ops-soft); }
+.operational-page .operational-table .badge { font-size:.73rem; font-weight:700; padding:7px 10px; border-radius:20px; }
+.operational-page .operational-table .btn { min-height:37px; padding-inline:12px; white-space:nowrap; }
+.operational-empty { text-align:center; padding:34px!important; color:var(--bs-secondary-color); }
+.operational-page .btn-primary { --bs-btn-bg:var(--ops-accent); --bs-btn-border-color:var(--ops-accent); }
+.operational-page .btn-outline-primary { --bs-btn-color:var(--ops-accent); --bs-btn-border-color:var(--ops-accent); --bs-btn-hover-bg:var(--ops-accent); --bs-btn-hover-border-color:var(--ops-accent); }
+.operational-workflow-kpis .card { border:1px solid var(--ops-border); border-radius:12px; box-shadow:0 3px 15px rgba(20,42,59,.045); }
+.operational-workflow-kpis .card-body { padding:19px; }
+.operational-workflow-kpis .fs-3 { color:var(--ops-ink); font-variant-numeric:tabular-nums; }
+.operational-stages .operational-stage-grid > div > .border { border-color:var(--ops-border)!important; border-radius:12px!important; background:var(--bs-body-bg); transition:box-shadow .15s ease; }
+.operational-stages .operational-stage-grid > div > .border:hover { box-shadow:0 7px 20px rgba(20,42,59,.08); }
+.operational-stages .operational-stage-grid .fw-semibold { color:var(--ops-ink); font-size:.97rem; }
+.operational-page .operational-progress { border-radius:8px; background:var(--ops-soft); }
+.operational-page .operational-progress .progress-bar { background:var(--ops-accent); }
+.quality-inspection-page .card { border-radius:13px; }
+.quality-inspection-page .card-header { background:var(--bs-tertiary-bg); color:var(--ops-ink); font-weight:700; }
+.quality-inspection-page .form-control,.quality-inspection-page .form-select { min-height:43px; border-radius:9px; }
+.quality-inspection-page .btn { min-height:42px; }
+.quality-inspection-page .erp-page-header:not(.operational-hero) { padding:18px; background:var(--ops-soft); border-radius:13px; border:1px solid var(--ops-border); }
+@media(max-width:1000px) { .operational-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:650px) {
+  .operational-page .operational-hero { gap:12px; }
+  .operational-page .operational-hero-icon { width:44px; height:44px; flex-basis:44px; font-size:1.2rem; }
+  .operational-page .operational-toolbar { align-items:stretch; }
+  .operational-page .operational-search,.operational-page .operational-filter,.operational-page .operational-clear { flex-basis:100%; width:100%; }
+  .operational-page .operational-table { min-width:680px; }
+  .operational-page .operational-table tbody td { padding:11px 10px; }
+  .operational-page .operational-stages .operational-stage-grid > div > .border { padding:15px!important; }
+  .operational-page .operational-kpi { padding:13px; }
+}
+@media (prefers-reduced-motion:reduce) { .operational-stages .operational-stage-grid > div > .border { transition:none; } }
