@@ -223,10 +223,9 @@
                         <div class="proof-panel-body">
                             <div class="proof-two-col @(request.JobType == SalesJobType.Roll ? "proof-roll-single-side" : "")">
                                 <div>
-                                    @if (request.JobType != SalesJobType.Roll)
-                                    {
-                                        <div class="proof-muted mb-1">@LocalizationService["FrontSide"]</div>
-                                    }
+                                    <div class="proof-muted mb-1">
+                                        @(request.JobType == SalesJobType.Roll ? LocalizationService["RollCmykColors"] : LocalizationService["FrontSide"])
+                                    </div>
                                     <div class="proof-cmyk-grid">
                                         @foreach (var color in CmykColors)
                                         {
@@ -272,6 +271,7 @@
                                         }
                                     </div>
                                 }
+                                <div class="proof-muted mt-1">@LocalizationService["RollPantoneProofDisclaimer"]</div>
                             }
                             <div class="proof-muted mt-2">@LocalizationService["HighlightedTilesExplain"]</div>
                         </div>
