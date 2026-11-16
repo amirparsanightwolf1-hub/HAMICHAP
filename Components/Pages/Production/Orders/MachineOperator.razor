@@ -107,8 +107,13 @@
                 </tbody>
             </table></div>
         </div>
-        <h2 class="h5 mt-4">Available and active work / کارهای آماده و در حال اجرا</h2>
-        @foreach (var step in AvailableOperations)
+        <h2 class="h5 mt-4">Machine operation worklist / فهرست عملیات دستگاه</h2>
+        <p class="text-muted small">All unfinished operations are shown. A Start button is enabled only when the operation is ready and its machine is free.</p>
+        @if (PendingWorklist.Count == 0)
+        {
+            <div class="alert alert-info">There are no unfinished internal machine operations for this selection. If orders have no operations, ask the production manager to generate the route in Machine Schedule.</div>
+        }
+        @foreach (var step in PendingWorklist)
         {
             var last = LastEvent(step.Id);
             var paused = last?.EventType == "Paused";
@@ -129,13 +134,15 @@
                     {
                         <div class="alert alert-warning py-2">Revised finish exceeds the CEO-approved window. Manager review required / نیازمند بررسی مدیر تولید</div>
                     }
-                    @if (!previousDone)
+                    @if (step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready)
                     {
-                        <div class="alert alert-info py-2">Waiting for the previous operation to finish.</div>
-                    }
-                    @if (previousDone && (step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready))
-                    {
-                        <button class="btn btn-primary me-2" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Started")'>Start / شروع</button>
+                        var blockedReason = StartBlockedReason(step);
+                        @if (blockedReason != null)
+                        {
+                            <div class="alert alert-info py-2">@blockedReason</div>
+                        }
+                        <button class="btn btn-primary me-2" disabled="@(busy || !executionSchemaReady || blockedReason != null)"
+                                @onclick='() => RecordAsync(step.Id, "Started")'>Start / شروع</button>
                     }
                     @if (step.Status == ProductionOperationStatus.Running)
                     {
@@ -258,6 +265,9 @@
     private Dictionary<long, int> overrunMinutes = new();
     private Dictionary<long, ProductionSchedule> bookingsByOperation = new();
 
+    private List<ProductionOperation> PendingWorklist =>
+        VisibleOperations.Where(x => x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready or ProductionOperationStatus.Running).ToList();
+
     private List<ProductionOperation> VisibleOperations =>
         operations.Where(x => x.Status != ProductionOperationStatus.Cancelled)
             .OrderBy(x => BookingFor(x.Id)?.PlannedStart ?? DateTime.MaxValue)
@@ -265,12 +275,35 @@
     private List<ProductionOperation> AvailableOperations =>
         VisibleOperations.Where(x => x.Status == ProductionOperationStatus.Running ||
             ((x.Status is ProductionOperationStatus.Ready or ProductionOperationStatus.Pending) &&
-             PreviousCompleted(x) && BookingFor(x.Id) != null &&
-             IsAllowedToStartNow(x) &&
-             !bookingsByOperation.Values.Any(other =>
-                 other.MachineId == BookingFor(x.Id)!.MachineId &&
-                 other.ProductionOperationId != x.Id &&
-                 other.Status == ScheduleStatus.Running))).ToList();
+             StartBlockedReason(x) == null)).ToList();
+    private string? StartBlockedReason(ProductionOperation step)
+    {
+        if (!executionSchemaReady) return "Database migration required before recording work / نیاز به به‌روزرسانی پایگاه داده";
+        if (!PreviousCompleted(step)) return "Waiting for earlier operation to finish / در انتظار اتمام مرحله قبل";
+        var booking = BookingFor(step.Id);
+        if (booking == null) return "No confirmed machine booking. Production manager must schedule this operation / نیازمند برنامه‌ریزی مدیر تولید";
+        if (booking.Status != ScheduleStatus.Planned) return "Machine booking is not available for starting / برنامه دستگاه آماده شروع نیست";
+        if (step.ProductionOrder.OperationsSequenceConfirmedAt == null) return "Production manager must confirm the sequence / نیازمند تأیید ترتیب مراحل";
+        var now = DateTime.Now;
+        if (!step.ProductionOrder.PlannedStartDate.HasValue || !step.ProductionOrder.PlannedEndDate.HasValue)
+            return "CEO must approve the production window / نیازمند برنامه مدیرعامل";
+        if (now < step.ProductionOrder.PlannedStartDate.Value) return "CEO-approved start time has not arrived / زمان شروع تعیین‌شده فرا نرسیده";
+        if (now >= step.ProductionOrder.PlannedEndDate.Value) return "CEO-approved production window has ended / مهلت برنامه مدیرعامل پایان یافته";
+        if (ProductionPlanningTime.NextAllowedProductionMinute(
+                now, step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) > now)
+            return "Outside an approved production shift / خارج از شیفت مجاز";
+        if (bookingsByOperation.Values.Any(x =>
+                x.MachineId == booking.MachineId && x.ProductionOperationId != step.Id &&
+                x.Status == ScheduleStatus.Running))
+            return "Machine is currently running another operation / دستگاه مشغول است";
+        if (bookingsByOperation.Values.Any(x =>
+                x.Id != booking.Id && x.MachineId == booking.MachineId &&
+                x.Status != ScheduleStatus.Cancelled &&
+                x.PlannedStart < booking.PlannedStart && x.PlannedEnd > now))
+            return "Another booking occupies this machine before the planned start / رزرو دیگر دستگاه";
+        return null;
+    }
+
     private bool IsAllowedToStartNow(ProductionOperation step)
     {
         var start = step.ProductionOrder.PlannedStartDate;
