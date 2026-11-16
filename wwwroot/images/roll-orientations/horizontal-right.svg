@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 242" role="img" aria-label="horizontal labels, roll on right">
+<rect width="480" height="242" fill="white"/>
+<ellipse cx="349" cy="33" rx="126" ry="28" fill="white" stroke="#303234" stroke-width="5"/><ellipse cx="349" cy="33" rx="45" ry="9" fill="white" stroke="#303234" stroke-width="6"/>
+<path d="M476 34 V208 Q476 232 437 232 H14 V55 H224" fill="#fff" stroke="#303234" stroke-width="5" stroke-linejoin="round"/>
+<g stroke="#333" stroke-width="2" fill="#fff"><rect x="54" y="85" width="175" height="115"/><rect x="246" y="85" width="177" height="115"/></g>
+<g font-family="Arial, Helvetica, sans-serif" font-size="121" font-weight="400" fill="#ed2429" text-anchor="middle"><text x="141" y="187" textLength="168" lengthAdjust="spacingAndGlyphs">AB</text><text x="334" y="187" textLength="168" lengthAdjust="spacingAndGlyphs">AB</text></g>
+</svg>
