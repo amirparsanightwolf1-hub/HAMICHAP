@@ -12,6 +12,8 @@ namespace HamiChap_MES_ERP.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
+        public DbSet<ProductionOperationEvent> ProductionOperationEvents => Set<ProductionOperationEvent>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceSignature).HasMaxLength(64);
