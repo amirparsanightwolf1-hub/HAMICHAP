@@ -3371,4 +3371,82 @@
   <data name="OperatorOverrunSaved" xml:space="preserve">
     <value>The delay was recorded and later operations were rescheduled.</value>
   </data>
+  <data name="OperatorErrAuthentication" xml:space="preserve">
+    <value>Please sign in to record production activity.</value>
+  </data>
+  <data name="OperatorErrInactive" xml:space="preserve">
+    <value>Operator account is disabled or unavailable.</value>
+  </data>
+  <data name="OperatorErrRole" xml:space="preserve">
+    <value>Production operator permission is required.</value>
+  </data>
+  <data name="OperatorErrOtherMachine" xml:space="preserve">
+    <value>You can only record operations assigned to your machine.</value>
+  </data>
+  <data name="OperatorErrNoBooking" xml:space="preserve">
+    <value>This operation is not scheduled for the selected machine.</value>
+  </data>
+  <data name="OperatorErrClosedOrder" xml:space="preserve">
+    <value>This production order is closed.</value>
+  </data>
+  <data name="OperatorErrSequence" xml:space="preserve">
+    <value>The production manager must confirm the operation sequence.</value>
+  </data>
+  <data name="OperatorErrPrevious" xml:space="preserve">
+    <value>The previous operation must finish first.</value>
+  </data>
+  <data name="OperatorErrAlreadyStarted" xml:space="preserve">
+    <value>This operation has already started.</value>
+  </data>
+  <data name="OperatorErrCeoWindow" xml:space="preserve">
+    <value>This time or shift is not approved by the CEO.</value>
+  </data>
+  <data name="OperatorErrBookingNotReady" xml:space="preserve">
+    <value>The machine booking cannot be started yet.</value>
+  </data>
+  <data name="OperatorErrMachineBusy" xml:space="preserve">
+    <value>Another operation is running on this machine.</value>
+  </data>
+  <data name="OperatorErrReserved" xml:space="preserve">
+    <value>The machine is reserved for another operation; early start is not possible.</value>
+  </data>
+  <data name="OperatorErrPauseReason" xml:space="preserve">
+    <value>Enter a reason before pausing a running operation.</value>
+  </data>
+  <data name="OperatorErrReasonTooLong" xml:space="preserve">
+    <value>The pause reason is too long.</value>
+  </data>
+  <data name="OperatorErrNotPaused" xml:space="preserve">
+    <value>The operation is not paused.</value>
+  </data>
+  <data name="OperatorErrResumeFirst" xml:space="preserve">
+    <value>Resume the operation before finishing it.</value>
+  </data>
+  <data name="OperatorErrDelayReasonRequired" xml:space="preserve">
+    <value>Explain why the operation exceeded its expected duration before finishing.</value>
+  </data>
+  <data name="OperatorErrDelayInput" xml:space="preserve">
+    <value>Enter a delay reason and between 1 and 10080 additional minutes.</value>
+  </data>
+  <data name="OperatorErrNotRunning" xml:space="preserve">
+    <value>The operation is not running on your selected machine.</value>
+  </data>
+  <data name="OperatorErrResumeBeforeExtend" xml:space="preserve">
+    <value>Resume the operation before extending its schedule.</value>
+  </data>
+  <data name="OperatorErrItemQuantity" xml:space="preserve">
+    <value>Select a valid item and enter a positive quantity.</value>
+  </data>
+  <data name="OperatorErrNoSelectedBooking" xml:space="preserve">
+    <value>This operation has no booking on the selected machine.</value>
+  </data>
+  <data name="OperatorErrOperationClosed" xml:space="preserve">
+    <value>This operation or its production order is closed.</value>
+  </data>
+  <data name="OperatorErrItemUnavailable" xml:space="preserve">
+    <value>The selected item is not available.</value>
+  </data>
+  <data name="OperatorErrNotesTooLong" xml:space="preserve">
+    <value>The notes exceed the allowed length.</value>
+  </data>
 </root>
