@@ -419,7 +419,8 @@
             var step = await db.ProductionOperations
                 .Include(x => x.ProductionOrder).FirstOrDefaultAsync(x => x.Id == operationId && !x.IsOutsourced);
             var booking = await db.ProductionSchedules.FirstOrDefaultAsync(x =>
-                x.ProductionOperationId == operationId && x.MachineId == machineId &&
+                x.ProductionOperationId == operationId &&
+                (machineId == 0 || x.MachineId == machineId) &&
                 x.Status != ScheduleStatus.Cancelled);
             if (step == null || booking == null)
                 throw new InvalidOperationException("Operation is not scheduled for this machine.");
@@ -440,8 +441,26 @@
             {
                 if (step.Status is not (ProductionOperationStatus.Pending or ProductionOperationStatus.Ready))
                     throw new InvalidOperationException("Operation has already started.");
-                if (DateTime.Now < booking.PlannedStart)
-                    throw new InvalidOperationException("This operation is scheduled for a future time slot.");
+                var now = DateTime.Now;
+                if (step.ProductionOrder.PlannedStartDate is not DateTime approvedStart ||
+                    now < approvedStart ||
+                    ProductionPlanningTime.NextAllowedProductionMinute(now,
+                        step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) > now)
+                    throw new InvalidOperationException("The CEO has not approved this time or shift.");
+
+                // An early start is permitted as soon as the preceding operation has
+                // finished, but it must not overlap any other reservation on this machine.
+                if (now < booking.PlannedStart)
+                {
+                    var collision = await db.ProductionSchedules.AnyAsync(x =>
+                        x.Id != booking.Id && x.MachineId == booking.MachineId &&
+                        x.Status != ScheduleStatus.Cancelled &&
+                        x.PlannedStart < booking.PlannedStart && x.PlannedEnd > now);
+                    if (collision)
+                        throw new InvalidOperationException(
+                            "The machine is reserved for another operation. Early start is not yet possible.");
+                    booking.PlannedStart = now;
+                }
                 step.Status = ProductionOperationStatus.Running;
                 booking.Status = ScheduleStatus.Running;
                 step.ProductionOrder.Status = ProductionOrderStatus.InProduction;
@@ -487,6 +506,12 @@
                 }
                 step.Status = ProductionOperationStatus.Completed;
                 booking.Status = ScheduleStatus.Completed;
+                if (DateTime.Now < booking.PlannedEnd)
+                {
+                    booking.PlannedEnd = DateTime.Now;
+                    await ProductionOperationEarlyCompletionScheduler.AdvanceFollowingAsync(
+                        db, step, booking.PlannedEnd);
+                }
                 var next = await db.ProductionOperations.Where(x =>
                     x.ProductionOrderId == step.ProductionOrderId && x.Sequence > step.Sequence)
                     .OrderBy(x => x.Sequence).FirstOrDefaultAsync();
@@ -533,7 +558,8 @@
             var step = await db.ProductionOperations.Include(x => x.ProductionOrder)
                 .FirstOrDefaultAsync(x => x.Id == operationId && !x.IsOutsourced);
             var booking = await db.ProductionSchedules.FirstOrDefaultAsync(x =>
-                x.ProductionOperationId == operationId && x.MachineId == machineId &&
+                x.ProductionOperationId == operationId &&
+                (machineId == 0 || x.MachineId == machineId) &&
                 x.Status == ScheduleStatus.Running);
             if (step == null || booking == null)
                 throw new InvalidOperationException("The operation is not running on your selected machine.");
@@ -583,7 +609,8 @@
                 .FirstOrDefaultAsync(x => x.Id == operationId);
             if (step == null || step.IsOutsourced ||
                 !await db.ProductionSchedules.AnyAsync(x => x.ProductionOperationId == operationId &&
-                    x.MachineId == machineId && x.Status != ScheduleStatus.Cancelled))
+                    (machineId == 0 || x.MachineId == machineId) &&
+                    x.Status != ScheduleStatus.Cancelled))
                 throw new InvalidOperationException("Operation is not scheduled on the selected machine.");
             if (step.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled ||
                 step.ProductionOrder.Status is ProductionOrderStatus.Completed or ProductionOrderStatus.Cancelled)
