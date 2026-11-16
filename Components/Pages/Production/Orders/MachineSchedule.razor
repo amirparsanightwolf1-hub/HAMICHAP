@@ -34,7 +34,10 @@
                 <div class="erp-page-title">@L["MachineSchedule"]</div>
                 <div class="erp-page-subtitle">@L["ManagerCalendarInstructions"]</div>
             </div>
-            <button type="button" class="btn btn-outline-secondary" @onclick="GoToToday">@L["Today"]</button>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-primary" href="/production/machine-operator">Operator execution / ثبت عملکرد اپراتور</a>
+                <button type="button" class="btn btn-outline-secondary" @onclick="GoToToday">@L["Today"]</button>
+            </div>
         </div>
 
         <div class="planning-layout">
