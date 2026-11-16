@@ -190,7 +190,7 @@
                                         <span>
                                             @if (job.UsingRecordedOperations)
                                             {
-                                                @($"{job.CompletedStages} / {job.ActiveStages} {L["JobOverviewStepsComplete"]}")
+                                                <text>@job.CompletedStages / @job.ActiveStages @L["JobOverviewStepsComplete"]</text>
                                             }
                                             else if (job.SharedProductionRoute)
                                             {
