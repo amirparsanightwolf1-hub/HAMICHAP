@@ -3671,4 +3671,13 @@
   <data name="RollPrintingColors" xml:space="preserve">
     <value>Roll printing colors</value>
   </data>
+  <data name="RollCmykHint" xml:space="preserve">
+    <value>Select the process colors used for the roll</value>
+  </data>
+  <data name="RollPrintingNotesHint" xml:space="preserve">
+    <value>Additional printing instructions</value>
+  </data>
+  <data name="RollPantoneProofDisclaimer" xml:space="preserve">
+    <value>Swatch previews are approximate; match printing ink to the Pantone reference.</value>
+  </data>
 </root>
