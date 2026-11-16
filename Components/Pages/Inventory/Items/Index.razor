@@ -12,7 +12,10 @@
     @LocalizationService["Items"]
 </PageTitle>
 
-<div class="erp-page-header">
+<div class="inventory-page inventory-catalog">
+
+<div class="erp-page-header inventory-hero">
+        <div class="inventory-hero-icon" aria-hidden="true"><i class="bi bi-box-seam"></i></div>
     <h3 class="erp-page-title">@LocalizationService["ItemsManagement"]</h3>
 </div>
 
@@ -28,6 +31,7 @@
      ========================================= -->
 
 <div class="card mb-4">
+    <div class="card-header inventory-form-header"><strong>@LocalizationService["Add"]</strong></div>
 
     <div class="card-body">
 
@@ -429,6 +433,8 @@
 
     </div>
 }
+
+</div>
 
 @code {
 
