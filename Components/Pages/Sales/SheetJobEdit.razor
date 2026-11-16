@@ -48,7 +48,7 @@
     }
     else if (request is not null)
     {
-        <fieldset class="border-0 p-0 m-0 w-100" disabled="@(request.Status != SalesRequestStatus.Draft)">
+        <fieldset class="border-0 p-0 m-0 w-100" disabled="@(!canEditSpecifications)">
         <div class="card job-section mb-4">
             <div class="card-header"><strong>@LocalizationService["OrderInformation"]</strong></div>
             <div class="card-body">
@@ -63,14 +63,14 @@
                     <div>
                         @if (!isCreatingCustomer)
                         {
-                            <select class="form-select" @bind="selectedCustomerId" disabled="@TargetQuotationId.HasValue">
+                            <select class="form-select" @bind="selectedCustomerId" disabled="@(TargetQuotationId.HasValue || request.Status != SalesRequestStatus.Draft)">
                                 <option value="0">-- @LocalizationService["SelectExistingCustomer"] --</option>
                                 @foreach (var customer in customers)
                                 {
                                     <option value="@customer.Id">@customer.Code - @customer.Name</option>
                                 }
                             </select>
-                            <button type="button" class="btn btn-link px-0" disabled="@TargetQuotationId.HasValue" @onclick="StartNewCustomer">
+                            <button type="button" class="btn btn-link px-0" disabled="@(TargetQuotationId.HasValue || request.Status != SalesRequestStatus.Draft)" @onclick="StartNewCustomer">
                                 + @LocalizationService["CreateNewCustomer"]
                             </button>
                         }
@@ -297,7 +297,7 @@
             </div>
         </div>
 
-        <fieldset class="border-0 p-0 m-0 w-100" disabled="@(request.Status != SalesRequestStatus.Draft)">
+        <fieldset class="border-0 p-0 m-0 w-100" disabled="@(!canEditSpecifications)">
         <div class="card job-section mb-4">
             <div class="card-header">
                 <strong>@LocalizationService["AdditionalServicesAndColorSelection"]</strong>
@@ -339,11 +339,9 @@
 
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
-                <i class="bi bi-file-earmark-pdf"></i> @(request.Status == SalesRequestStatus.Draft
-                    ? LocalizationService["SavePreviewAndContinueSalesWorkflow"]
-                    : (canEditArtwork
-                        ? LocalizationService["SaveAndPreviewApprovalProof"]
-                        : LocalizationService["CustomerApprovalProof"]))
+                <i class="bi bi-file-earmark-pdf"></i> @((canEditSpecifications || canEditArtwork)
+                    ? LocalizationService["SaveAndPreviewApprovalProof"]
+                    : LocalizationService["CustomerApprovalProof"])
             </button>
         </div>
     }
@@ -371,6 +369,7 @@
     private string? successMessage;
     private JobArtworkEditor? artworkEditor;
     private bool canEditArtwork;
+    private bool canEditSpecifications;
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private string frontPantoneColors = string.Empty;
@@ -442,12 +441,17 @@
         if (request is not null)
         {
             selectedCustomerId = request.CustomerId;
+            var linkedQuoteStatus = await Db.Quotations.AsNoTracking()
+                .Where(q => q.SalesRequestId == RequestId ||
+                            q.Lines.Any(line => line.SourceRequestId == RequestId))
+                .Select(q => (QuotationStatus?)q.Status)
+                .FirstOrDefaultAsync();
+            var quoteIsEditable = linkedQuoteStatus is
+                QuotationStatus.Draft or QuotationStatus.RevisionRequired;
+            canEditSpecifications = request.Status == SalesRequestStatus.Draft ||
+                (request.Status == SalesRequestStatus.QuotationCreated && quoteIsEditable);
             canEditArtwork = request.Status != SalesRequestStatus.Cancelled &&
-                !await Db.Quotations.AsNoTracking().AnyAsync(q =>
-                    (q.SalesRequestId == RequestId ||
-                     q.Lines.Any(line => line.SourceRequestId == RequestId)) &&
-                    q.Status != QuotationStatus.Draft &&
-                    q.Status != QuotationStatus.RevisionRequired);
+                (!linkedQuoteStatus.HasValue || quoteIsEditable);
         }
 
         if (request is null)
@@ -580,7 +584,7 @@
         if (request is null)
             return false;
 
-        if (request.Status == SalesRequestStatus.Draft)
+        if (canEditSpecifications)
             await SaveAsync();
         else if (canEditArtwork && artworkEditor?.HasPendingChanges == true)
             await SaveArtworkOnlyAsync();
@@ -593,7 +597,7 @@
         if (request is null)
             return;
 
-        if (request.Status == SalesRequestStatus.Draft)
+        if (canEditSpecifications)
         {
             await SaveAsync();
             if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -628,7 +632,14 @@
 
     private async Task SaveAsync()
     {
-        if (request is null || request.Status != SalesRequestStatus.Draft) return;
+        if (request is null || !canEditSpecifications) return;
+
+        if (request.Status == SalesRequestStatus.QuotationCreated &&
+            (isCreatingCustomer || selectedCustomerId != request.CustomerId))
+        {
+            errorMessage = LocalizationService["QuotationCustomerMustMatch"];
+            return;
+        }
 
         if (TargetQuotationId.HasValue)
         {
@@ -730,6 +741,10 @@
             spec.FinishedProductItemId = item.Id;
             SalesRequestFinishedLineSync.Apply(
                 Db, request, item, orderedQuantity, previousFinishedProductItemId);
+
+            // Update only this job's quotation line, preserving per-item proofs.
+            await SalesJobQuotationLineSync.SyncAsync(
+                Db, request, item, orderedQuantity.Value);
 
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(
