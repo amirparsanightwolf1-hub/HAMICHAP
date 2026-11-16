@@ -217,11 +217,15 @@
                     </div>
 
                     <div class="proof-panel">
-                        <div class="proof-panel-title">@LocalizationService["PrintingColorsFrontBack"]</div>
+                        <div class="proof-panel-title">
+                            @(request.JobType == SalesJobType.Roll ? LocalizationService["RollPrintingColors"] : LocalizationService["PrintingColorsFrontBack"])
+                        </div>
                         <div class="proof-panel-body">
-                            <div class="proof-two-col">
+                            <div class="proof-two-col @(request.JobType == SalesJobType.Roll ? "proof-roll-single-side" : "")">
                                 <div>
-                                    <div class="proof-muted mb-1">@LocalizationService["FrontSide"]</div>
+                                    <div class="proof-muted mb-1">
+                                        @(request.JobType == SalesJobType.Roll ? LocalizationService["RollCmykColors"] : LocalizationService["FrontSide"])
+                                    </div>
                                     <div class="proof-cmyk-grid">
                                         @foreach (var color in CmykColors)
                                         {
@@ -232,30 +236,69 @@
                                         }
                                     </div>
                                 </div>
-                                <div>
-                                    <div class="proof-muted mb-1">@LocalizationService["BackSide"]</div>
-                                    <div class="proof-cmyk-grid">
-                                        @foreach (var color in CmykColors)
+                                @if (request.JobType != SalesJobType.Roll)
+                                {
+                                    <div>
+                                        <div class="proof-muted mb-1">@LocalizationService["BackSide"]</div>
+                                        <div class="proof-cmyk-grid">
+                                            @foreach (var color in CmykColors)
+                                            {
+                                                <div class="proof-cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
+                                                    <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
+                                                    <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            @if (request.JobType == SalesJobType.Roll)
+                            {
+                                <div class="proof-pantone-title">@LocalizationService["RollPantoneColors"]</div>
+                                @if (rollPantoneColors.Count == 0)
+                                {
+                                    <span class="proof-muted">@LocalizationService["RollPantoneNone"]</span>
+                                }
+                                else
+                                {
+                                    <div class="proof-pantone-list">
+                                        @foreach (var spot in rollPantoneColors)
                                         {
-                                            <div class="proof-cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
-                                                <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
-                                                <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
+                                            <div class="proof-pantone-chip" @key="spot.Code">
+                                                <span class="proof-pantone-swatch" style="@($"background-color:{spot.SafeHex}")" aria-hidden="true"></span>
+                                                <strong>@spot.Code</strong>
                                             </div>
                                         }
                                     </div>
-                                </div>
-                            </div>
+                                }
+                                <div class="proof-muted mt-1">@LocalizationService["RollPantoneProofDisclaimer"]</div>
+                            }
                             <div class="proof-muted mt-2">@LocalizationService["HighlightedTilesExplain"]</div>
                         </div>
                     </div>
 
                     @if (request.JobType == SalesJobType.Roll)
                     {
+                        <div class="proof-panel proof-uv-panel">
+                            <div class="proof-panel-title">@LocalizationService["ServiceGroupUvCoating"]</div>
+                            <div class="proof-panel-body">
+                                <div class="proof-service-list">
+                                    @foreach (var uv in RollFinishingServices.Groups.First(x => x.TitleKey == "ServiceGroupUvCoating").Services)
+                                    {
+                                        var selected = IsServiceSelected(uv.Value);
+                                        <div class="proof-service @(selected ? "is-selected" : "is-not-selected")">
+                                            <span class="proof-service-indicator">@(selected ? "✓" : "")</span>
+                                            <span>@LocalizationService[uv.LabelKey]</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
                         <div class="proof-panel">
                             <div class="proof-panel-title">@LocalizationService["SelectedServices"]</div>
                             <div class="proof-panel-body">
                                 <div class="proof-service-groups">
-                                    @foreach (var group in RollServiceGroups)
+                                    @foreach (var group in RollFinishingServices.Groups.Where(x => x.TitleKey != "ServiceGroupUvCoating"))
                                     {
                                         <section>
                                             <div class="proof-service-group-title">@LocalizationService[group.TitleKey]</div>
@@ -336,6 +379,7 @@
     private string artworkPath = "";
     private string artworkFileName = "";
     private string rollOrientation = "";
+    private List<RollPantoneColor> rollPantoneColors = new();
     private HashSet<string> frontCmyk = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmyk = new(StringComparer.OrdinalIgnoreCase);
     private string frontPantoneColors = "";
@@ -365,33 +409,6 @@
         string TitleKey,
         (string Value, string LabelKey)[] Services);
 
-    private static readonly ProofServiceGroup[] RollServiceGroups =
-    {
-        new("ServiceGroupUvCoating", new[]
-        {
-            ("یووی روتاری", "ServiceUvRotary"),
-            ("یووی برجسته", "ServiceUvEmbossed"),
-            ("یووی تخت", "ServiceUvFlat"),
-            ("یووی موضعی", "ServiceUvSpot")
-        }),
-        new("ServiceGroupLamination", new[]
-        {
-            ("سلفون مات", "ServiceMatteLamination"),
-            ("سلفون براق", "ServiceGlossLamination")
-        }),
-        new("ServiceGroupFoilStamping", new[]
-        {
-            ("طلاکوب روتاری", "ServiceRotaryFoil"),
-            ("طلاکوب تخت", "ServiceFlatFoil"),
-            ("رنگ فویل", "ServiceFoilColor")
-        }),
-        new("ServiceGroupEmbossingDie", new[]
-        {
-            ("قالب روتاری", "ServiceRotaryDie"),
-            ("قالب تخت", "ServiceFlatDie"),
-            ("دیلن میلن", "ServiceDylanMilan")
-        })
-    };
 
     private static readonly ProofServiceGroup[] SheetServiceGroups =
     {
@@ -440,6 +457,7 @@
     {
         isLoading = true; errorMessage = null;
         DimensionsSummary = LocalizationService["DimensionsNotSpecified"];
+        rollPantoneColors = new();
         request = await Db.SalesRequests.Include(x => x.Customer).FirstOrDefaultAsync(x => x.Id == RequestId);
         if (request is null) { errorMessage = LocalizationService["SalesRequestNotFound"]; isLoading = false; return; }
         try
@@ -453,6 +471,7 @@
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
                 rollOrientation = spec.RollOrientation ?? "";
+                rollPantoneColors = spec.PantoneColors ?? new();
                 LoadCmykSelections(request.JobSpecificationJson);
                 DimensionsSummary = $"{LocalizationService["LabelPull"]}: {Fmt(spec.LabelPull)} mm · {LocalizationService["LabelWidth"]}: {Fmt(spec.LabelWidth)} mm · {LocalizationService["Gap"]}: {Fmt(spec.GapBetweenLabels)} mm";
                 technicalDetails = new() {

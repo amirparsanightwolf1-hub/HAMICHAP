@@ -4731,4 +4731,55 @@
   <data name="RollOrientationLegacyNotice" xml:space="preserve">
     <value>این سفارش از قالب قبلی جهت رول استفاده می‌کند. برای به‌روزرسانی یکی از چهار حالت جدید را انتخاب کنید. انتخاب قبلی تا زمان انتخاب حالت جدید بدون تغییر باقی می‌ماند.</value>
   </data>
+  <data name="RollCmykColors" xml:space="preserve">
+    <value>رنگ‌های چاپ چهاررنگ (CMYK)</value>
+  </data>
+  <data name="RollPantoneColors" xml:space="preserve">
+    <value>رنگ‌های اسپات پنتون</value>
+  </data>
+  <data name="RollPantoneMultipleHint" xml:space="preserve">
+    <value>هر رنگ اسپات را جداگانه اضافه کنید</value>
+  </data>
+  <data name="RollPantoneReference" xml:space="preserve">
+    <value>کد رنگ پنتون</value>
+  </data>
+  <data name="RollPantoneCodeExample" xml:space="preserve">
+    <value>مثلاً PANTONE 186 C</value>
+  </data>
+  <data name="RollPantonePreviewColor" xml:space="preserve">
+    <value>رنگ پیش‌نمایش</value>
+  </data>
+  <data name="RollPantoneAdd" xml:space="preserve">
+    <value>افزودن یا به‌روزرسانی رنگ</value>
+  </data>
+  <data name="RollPantoneRemove" xml:space="preserve">
+    <value>حذف رنگ پنتون</value>
+  </data>
+  <data name="RollPantonePreviewDisclaimer" xml:space="preserve">
+    <value>این رنگ فقط برای پیش‌نمایش نمایشگر است؛ رنگ دقیق چاپ را با راهنمای فیزیکی پنتون تأیید کنید.</value>
+  </data>
+  <data name="RollPantoneInvalidReference" xml:space="preserve">
+    <value>کد پنتون باید بین ۲ تا ۶۴ نویسه باشد.</value>
+  </data>
+  <data name="RollPantoneInvalidSwatch" xml:space="preserve">
+    <value>یک رنگ معتبر برای پیش‌نمایش انتخاب کنید.</value>
+  </data>
+  <data name="RollPantoneLimit" xml:space="preserve">
+    <value>می‌توانید حداکثر ۲۴ رنگ پنتون اضافه کنید.</value>
+  </data>
+  <data name="RollPantoneNone" xml:space="preserve">
+    <value>هیچ رنگ اسپات پنتونی انتخاب نشده است</value>
+  </data>
+  <data name="RollPrintingColors" xml:space="preserve">
+    <value>رنگ‌های چاپ رول</value>
+  </data>
+  <data name="RollCmykHint" xml:space="preserve">
+    <value>رنگ‌های چاپ چهاررنگ مورد استفاده برای رول را انتخاب کنید</value>
+  </data>
+  <data name="RollPrintingNotesHint" xml:space="preserve">
+    <value>توضیحات تکمیلی چاپ</value>
+  </data>
+  <data name="RollPantoneProofDisclaimer" xml:space="preserve">
+    <value>پیش‌نمایش رنگ تقریبی است؛ رنگ مرکب چاپ باید با کد پنتون تطبیق داده شود.</value>
+  </data>
 </root>

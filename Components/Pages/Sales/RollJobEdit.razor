@@ -241,42 +241,76 @@
                     </div>
                     <div class="label-specification-field">
                         <label>@LocalizationService["PrintingNotes"]</label>
-                        <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="@LocalizationService["CustomDetailsPantone"]" />
+                        <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="@LocalizationService["RollPrintingNotesHint"]" />
                     </div>
                     <div class="col-12">
-                        <div class="row g-3">
-                            <div class="col-lg-6">
-                                <div class="cmyk-panel">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <strong>@LocalizationService["FrontPrintingColors"]</strong><span class="text-muted small">@LocalizationService["SelectAllColorsOnFront"]</span>
-                                    </div>
-                                    <div class="cmyk-options">
-                                        @foreach (var color in CmykColors)
-                                        {
-                                            <button type="button" class="cmyk-option @(frontCmykColors.Contains(color.Key) ? "selected" : "")" aria-pressed="@frontCmykColors.Contains(color.Key)" @onclick="() => ToggleCmykColor(frontCmykColors, color.Key)">
-                                                <span class="cmyk-letter @color.Css">@color.Key</span><span>@color.Name</span>
-                                            </button>
-                                        }
-                                    </div>
-                                    <div class="small text-muted mt-2">@LocalizationService["Selected"]: @(frontCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => frontCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
+                        <div class="roll-colors-layout">
+                            <section class="cmyk-panel">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                    <strong>@LocalizationService["RollCmykColors"]</strong>
+                                    <span class="text-muted small">@LocalizationService["RollCmykHint"]</span>
                                 </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="cmyk-panel">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <strong>@LocalizationService["BackPrintingColors"]</strong><span class="text-muted small">@LocalizationService["SelectAllColorsOnBack"]</span>
-                                    </div>
-                                    <div class="cmyk-options">
-                                        @foreach (var color in CmykColors)
-                                        {
-                                            <button type="button" class="cmyk-option @(backCmykColors.Contains(color.Key) ? "selected" : "")" aria-pressed="@backCmykColors.Contains(color.Key)" @onclick="() => ToggleCmykColor(backCmykColors, color.Key)">
-                                                <span class="cmyk-letter @color.Css">@color.Key</span><span>@color.Name</span>
-                                            </button>
-                                        }
-                                    </div>
-                                    <div class="small text-muted mt-2">@LocalizationService["Selected"]: @(backCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => backCmykColors.Contains(c.Key)).Select(c => c.Key)))</div>
+                                <div class="cmyk-options">
+                                    @foreach (var color in CmykColors)
+                                    {
+                                        <button type="button" class="cmyk-option @(frontCmykColors.Contains(color.Key) ? "selected" : "")"
+                                                aria-pressed="@frontCmykColors.Contains(color.Key)"
+                                                @onclick="() => ToggleCmykColor(frontCmykColors, color.Key)">
+                                            <span class="cmyk-letter @color.Css">@color.Key</span>
+                                            <span>@LocalizationService[color.LocalizationKey]</span>
+                                        </button>
+                                    }
                                 </div>
-                            </div>
+                                <div class="small text-muted mt-2">@LocalizationService["Selected"]:
+                                    @(frontCmykColors.Count == 0 ? LocalizationService["None"] : string.Join(" · ", CmykColors.Where(c => frontCmykColors.Contains(c.Key)).Select(c => c.Key)))
+                                </div>
+                            </section>
+
+                            <section class="roll-pantone-panel" aria-label="@LocalizationService["RollPantoneColors"]">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                                    <strong>@LocalizationService["RollPantoneColors"]</strong>
+                                    <span class="text-muted small">@LocalizationService["RollPantoneMultipleHint"]</span>
+                                </div>
+                                <div class="roll-pantone-inputs">
+                                    <div>
+                                        <label class="form-label" for="roll-pantone-code">@LocalizationService["RollPantoneReference"]</label>
+                                        <input id="roll-pantone-code" type="text" class="form-control" maxlength="64"
+                                               @bind="pantoneCode" placeholder="@LocalizationService["RollPantoneCodeExample"]" />
+                                    </div>
+                                    <div>
+                                        <label class="form-label" for="roll-pantone-color">@LocalizationService["RollPantonePreviewColor"]</label>
+                                        <input id="roll-pantone-color" type="color" class="form-control form-control-color roll-pantone-picker"
+                                               @bind="pantoneHex" />
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary roll-pantone-add"
+                                            @onclick="AddPantoneColor">
+                                        <i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["RollPantoneAdd"]
+                                    </button>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(pantoneError))
+                                {
+                                    <div class="text-danger small mt-2" role="alert">@pantoneError</div>
+                                }
+                                <div class="small text-muted mt-2">@LocalizationService["RollPantonePreviewDisclaimer"]</div>
+                                @if (spec.PantoneColors is { Count: > 0 })
+                                {
+                                    <ul class="roll-pantone-list">
+                                        @foreach (var color in spec.PantoneColors)
+                                        {
+                                            <li class="roll-pantone-entry" @key="color">
+                                                <span class="roll-pantone-swatch" style="@($"background-color:{color.SafeHex}")" aria-hidden="true"></span>
+                                                <span class="roll-pantone-name">@color.Code</span>
+                                                <span class="roll-pantone-hex">@color.SafeHex</span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                        aria-label="@($"{LocalizationService["RollPantoneRemove"]}: {color.Code}")"
+                                                        @onclick="() => RemovePantoneColor(color)">
+                                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                                </button>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </section>
                         </div>
                     </div>
                     <div class="label-specification-field">
@@ -341,25 +375,28 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    @foreach (var group in ServiceGroups)
+                    @foreach (var group in RollFinishingServices.Groups)
                     {
-                        <div class="col-12 col-xl-6" @key="group.Key">
+                        <div class="col-12 col-xl-6" @key="group.TitleKey">
                             <section class="border rounded p-3 h-100">
                                 <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-                                    <h6 class="mb-0 fw-semibold">@group.Key</h6>
-                                    <span class="badge bg-light text-dark border">@group.Value.Count(x => spec.SelectedServices.Contains(x)) از @group.Value.Length</span>
+                                    <h6 class="mb-0 fw-semibold">@LocalizationService[group.TitleKey]</h6>
+                                    <span class="badge bg-light text-dark border">
+                                        @group.Services.Count(x => spec.SelectedServices.Contains(x.Value)) / @group.Services.Count
+                                    </span>
                                 </div>
                                 <div class="row g-3">
-                                    @foreach (var service in group.Value)
+                                    @foreach (var service in group.Services)
                                     {
-                                        <div class="col-sm-6" @key="service">
+                                        var serviceId = "roll-service-" + service.LabelKey;
+                                        <div class="col-sm-6" @key="service.Value">
                                             <div class="form-check">
-                                                <input id="roll-service-@service.GetHashCode()"
-                                                       class="form-check-input"
-                                                       type="checkbox"
-                                                       checked="@spec.SelectedServices.Contains(service)"
-                                                       @onchange="args => ToggleService(service, args)" />
-                                                <label class="form-check-label" for="roll-service-@service.GetHashCode()">@service</label>
+                                                <input id="@serviceId" class="form-check-input" type="checkbox"
+                                                       checked="@spec.SelectedServices.Contains(service.Value)"
+                                                       @onchange="args => ToggleService(service.Value, args)" />
+                                                <label class="form-check-label" for="@serviceId">
+                                                    @LocalizationService[service.LabelKey]
+                                                </label>
                                             </div>
                                         </div>
                                     }
@@ -497,11 +534,13 @@
     private bool canEditArtwork;
     private bool canEditSpecifications;
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
-    private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly (string Key, string Name, string Css)[] CmykColors =
+    private string pantoneCode = "";
+    private string pantoneHex = "#DB2635";
+    private string? pantoneError;
+    private static readonly (string Key, string LocalizationKey, string Css)[] CmykColors =
     {
-        ("C", "Cyan", "cmyk-c"), ("M", "Magenta", "cmyk-m"),
-        ("Y", "Yellow", "cmyk-y"), ("K", "Black", "cmyk-k")
+        ("C", "CmykCyan", "cmyk-c"), ("M", "CmykMagenta", "cmyk-m"),
+        ("Y", "CmykYellow", "cmyk-y"), ("K", "CmykBlack", "cmyk-k")
     };
 
     private static void ToggleCmykColor(HashSet<string> selection, string color)
@@ -509,12 +548,48 @@
         if (!selection.Add(color)) selection.Remove(color);
     }
 
-    private static readonly Dictionary<string, string[]> ServiceGroups = new()
+    private void AddPantoneColor()
     {
-        ["سلفون و لمینیت"] = new[] { "سلفون مات", "سلفون براق" },
-        ["طلاکوب و فویل"] = new[] { "طلاکوب روتاری", "طلاکوب تخت", "رنگ فویل" },
-        ["قالب و عملیات تکمیلی"] = new[] { "قالب روتاری", "قالب تخت", "دیلن میلن" }
-    };
+        pantoneError = null;
+        var reference = pantoneCode.Trim();
+        if (reference.Length < 2 || reference.Length > 64)
+        {
+            pantoneError = LocalizationService["RollPantoneInvalidReference"];
+            return;
+        }
+        if (!RollPantoneColor.IsValidHex(pantoneHex))
+        {
+            pantoneError = LocalizationService["RollPantoneInvalidSwatch"];
+            return;
+        }
+        spec.PantoneColors ??= new();
+        var existing = spec.PantoneColors.FirstOrDefault(x =>
+            string.Equals(x.Code, reference, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            existing.Hex = pantoneHex.ToUpperInvariant();
+        }
+        else
+        {
+            if (spec.PantoneColors.Count >= 24)
+            {
+                pantoneError = LocalizationService["RollPantoneLimit"];
+                return;
+            }
+            spec.PantoneColors.Add(new RollPantoneColor
+            {
+                Code = reference,
+                Hex = pantoneHex.ToUpperInvariant()
+            });
+        }
+        pantoneCode = "";
+    }
+
+    private void RemovePantoneColor(RollPantoneColor color)
+    {
+        spec.PantoneColors.Remove(color);
+        pantoneError = null;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -576,7 +651,10 @@
                     }
                 }
                 frontCmykColors = ReadColorSelection(savedJson?["FrontCmykColors"]);
-                backCmykColors = ReadColorSelection(savedJson?["BackCmykColors"]);
+                spec.PantoneColors ??= new();
+                spec.SelectedServices ??= new();
+                pantoneCode = "";
+                pantoneError = null;
             }
             catch (JsonException)
             {
@@ -855,7 +933,6 @@
                 Db, request, item, orderedQuantity.Value);
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(frontCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
-            savedSpec["BackCmykColors"] = new JsonArray(backCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
             var workflowJson = new JsonObject();
             foreach (var field in WorkflowFieldLabels)
                 workflowJson[field.Key] = workflowFields[field.Key] ?? string.Empty;
