@@ -11,11 +11,13 @@
 @using Microsoft.AspNetCore.Hosting
 @using System.IO
 @using HamiChap_MES_ERP.Services
+@using HamiChap_MES_ERP.Models.Shared.Services
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject IWebHostEnvironment HostEnvironment
 @inject LocalizationService LocalizationService
+@inject QuotationService QuotationService
 
 <PageTitle>@LocalizationService["RollJobSpecification"]</PageTitle>
 
@@ -338,6 +340,9 @@
 
         <SalesRequestWorkflowPanel Request="request" />
 
+        <SalesJobOrderPanel RequestId="@RequestId" TargetQuotationId="@TargetQuotationId"
+                            SaveCurrentAsync="@SaveCurrentForOrderAsync" />
+
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-outline-dark" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
                 <i class="bi bi-file-earmark-pdf"></i> @(request.Status == SalesRequestStatus.Draft
@@ -590,20 +595,49 @@
         }
     }
 
+    private async Task<bool> SaveCurrentForOrderAsync()
+    {
+        if (request is null)
+            return false;
+
+        if (request.Status == SalesRequestStatus.Draft)
+            await SaveAsync();
+
+        return string.IsNullOrWhiteSpace(errorMessage);
+    }
+
     private async Task SaveAndOpenProofAsync()
     {
         if (request is null)
             return;
 
         if (request.Status == SalesRequestStatus.Draft)
+        {
             await SaveAsync();
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+                return;
+
+            // The job joins its draft quotation on save; each item still
+            // receives a separate approval proof.
+            if (TargetQuotationId.HasValue)
+            {
+                try
+                {
+                    await QuotationService.AddRequestToQuotationAsync(
+                        TargetQuotationId.Value, RequestId);
+                }
+                catch (Exception ex)
+                {
+                    errorMessage = ex.Message;
+                    return;
+                }
+            }
+        }
         else
             await SaveArtworkOnlyAsync();
 
         if (!string.IsNullOrWhiteSpace(errorMessage))
             return;
-
-        // The single button saves the job and opens its approval proof.
         // Submission/quotation actions remain on the job editor.
         Navigation.NavigateTo(TargetQuotationId.HasValue
             ? $"/sales/requests/proof/{RequestId}?quotationId={TargetQuotationId.Value}"
@@ -645,16 +679,8 @@
             return;
         }
         // Correcting an artwork mistake may temporarily leave the job without artwork.
-        if (!isCreatingCustomer)
-        {
-            var duplicates = await ExistingSalesJobLookup.FindAsync(
-                Db, selectedCustomerId, SalesJobType.Roll, spec.JobTitle, RequestId);
-            if (duplicates.Count > 0)
-            {
-                errorMessage = LocalizationService["MatchingExistingJobSaveBlocked"];
-                return;
-            }
-        }
+        // Repeated titles are legitimate repeat orders; the title matcher
+        // reuses specifications, not historical order quantities.
 
         Customer? customerCreatedThisAttempt = null;
         var originalCustomerId = request.CustomerId;
