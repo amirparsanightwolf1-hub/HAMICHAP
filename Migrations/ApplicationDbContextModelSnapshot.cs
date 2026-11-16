@@ -899,6 +899,48 @@ namespace HamiChap_MES_ERP.Migrations
                     b.ToTable("ProductionMaterialConsumptions");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionOperationEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OperatorUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<long>("ProductionOperationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionOperationId", "OccurredAtUtc");
+
+                    b.ToTable("ProductionOperationEvents");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequest", b =>
                 {
                     b.Property<long>("Id")
@@ -906,6 +948,9 @@ namespace HamiChap_MES_ERP.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("ProductionOperationId")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("ProductionOrderId")
                         .HasColumnType("bigint");
@@ -925,6 +970,8 @@ namespace HamiChap_MES_ERP.Migrations
                         .HasColumnType("nvarchar(40)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductionOperationId");
 
                     b.HasIndex("ProductionOrderId");
 
@@ -2735,13 +2782,31 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionOperationEvent", b =>
+                {
+                    b.HasOne("HamiChap_MES_ERP.Models.Production.ProductionOperation", "ProductionOperation")
+                        .WithMany()
+                        .HasForeignKey("ProductionOperationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductionOperation");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequest", b =>
                 {
+                    b.HasOne("HamiChap_MES_ERP.Models.Production.ProductionOperation", "ProductionOperation")
+                        .WithMany()
+                        .HasForeignKey("ProductionOperationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("HamiChap_MES_ERP.Models.Production.ProductionOrder", "ProductionOrder")
                         .WithMany()
                         .HasForeignKey("ProductionOrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ProductionOperation");
 
                     b.Navigation("ProductionOrder");
                 });
