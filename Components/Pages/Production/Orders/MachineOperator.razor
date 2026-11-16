@@ -517,6 +517,14 @@
             throw new UnauthorizedAccessException("Operator account is disabled or unavailable.");
 
         if (principal.IsInRole("Administrator")) return;
+        if (!(principal.IsInRole("ProductionManager") ||
+              principal.IsInRole("Production Manager") ||
+              principal.IsInRole("Manager") ||
+              principal.IsInRole("FloorManager") ||
+              principal.IsInRole("Floor Manager") ||
+              principal.IsInRole("Production") ||
+              principal.IsInRole("Operator")))
+            throw new UnauthorizedAccessException("Production operator role is required.");
         if (!account.AssignedMachineId.HasValue ||
             account.AssignedMachineId.Value != actualMachineId)
             throw new UnauthorizedAccessException(
