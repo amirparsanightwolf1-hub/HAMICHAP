@@ -1,0 +1,49 @@
+name: Publish HamiChap for IIS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-iis:
+    name: Build and publish ASP.NET Core for Windows IIS
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies for Windows x64
+        run: dotnet restore "./HamiChap MES_ERP.csproj" --runtime win-x64
+
+      - name: Publish release files for IIS
+        run: dotnet publish "./HamiChap MES_ERP.csproj" --configuration Release --runtime win-x64 --self-contained false --no-restore --output "./iis-publish" /p:UseAppHost=false
+
+      - name: Verify ASP.NET Core IIS configuration
+        shell: pwsh
+        run: |
+          if (!(Test-Path "./iis-publish/web.config")) {
+            throw "The published output is missing web.config."
+          }
+          if (!(Test-Path "./iis-publish/HamiChap_MES_ERP.dll")) {
+            throw "The published output is missing HamiChap_MES_ERP.dll."
+          }
+
+      - name: Upload IIS publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HamiChap-IIS-win-x64
+          path: iis-publish/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
