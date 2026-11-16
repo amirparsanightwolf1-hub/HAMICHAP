@@ -3045,4 +3045,5 @@
   <data name="ManageOrderItemsInJobEditor" xml:space="preserve">
     <value>Manage items and proofs in Roll/Sheet editor</value>
   </data>
+  <data name="RepeatThisItem" xml:space="preserve"><value>Repeat this item</value></data>
 </root>
