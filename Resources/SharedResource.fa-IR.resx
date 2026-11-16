@@ -3692,4 +3692,7 @@
   <data name="ProofPreparingHighQualityPdf" xml:space="preserve">
     <value>آماده‌سازی نمونه چاپ با کیفیت بالا...</value>
   </data>
+  <data name="ProofPrintQualityFailed" xml:space="preserve">
+    <value>آماده‌سازی فایل PDF با کیفیت مناسب چاپ انجام نشد. دوباره تلاش کنید یا فایل PDF اصلی را از پیوند آن باز کنید.</value>
+  </data>
 </root>
