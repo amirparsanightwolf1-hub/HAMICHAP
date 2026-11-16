@@ -14,9 +14,10 @@
     @LocalizationService["SalesOrders"]
 </PageTitle>
 
-<div class="page-container">
+<div class="page-container operational-page sales-order-page">
 
-    <div class="erp-page-header mb-4">
+    <div class="erp-page-header operational-hero mb-4">
+        <div class="operational-hero-icon"><i class="bi bi-bag-check" aria-hidden="true"></i></div>
         <div>
             <div class="erp-page-title">
                 @LocalizationService["SalesOrders"]
@@ -27,6 +28,27 @@
             </div>
         </div>
     </div>
+
+    <div class="operational-kpis operational-kpis-three">
+        <div class="operational-kpi"><span>@LocalizationService["OperationalTotalOrders"]</span><strong>@totalCount.ToString("N0")</strong></div>
+        <div class="operational-kpi"><span>@LocalizationService["OperationalPage"]</span><strong>@currentPage / @(Math.Max(totalPages, 1))</strong></div>
+        <div class="operational-kpi"><span>@LocalizationService["OperationalShowing"]</span><strong>@orders.Count</strong></div>
+    </div>
+
+    <div class="card operational-card mb-3"><div class="card-body"><div class="operational-toolbar">
+        <div class="operational-search"><label for="sales-order-search" class="form-label">@LocalizationService["Search"]</label>
+            <input id="sales-order-search" class="form-control" @bind="searchText" @bind:event="oninput" placeholder="@LocalizationService["OperationalSearchSales"]" />
+        </div>
+        <div class="operational-filter"><label for="sales-order-status" class="form-label">@LocalizationService["Status"]</label>
+            <select id="sales-order-status" class="form-select" @bind="statusFilter"><option value="">@LocalizationService["AllStatuses"]</option>
+                @foreach (var status in Enum.GetValues<SalesOrderStatus>())
+                {
+                    <option value="@status.ToString()">@LocalizationService.TranslateEnum(status)</option>
+                }
+            </select>
+        </div>
+        <button class="btn btn-primary operational-clear" type="button" disabled="@isLoading" @onclick="ApplyFiltersAsync">@LocalizationService["OperationalApplyFilters"]</button>
+    </div></div></div>
 
     @if (isLoading)
     {
@@ -46,12 +68,12 @@
     }
     else
     {
-        <div class="card shadow-sm">
+        <div class="card operational-card shadow-sm">
 
             <div class="card-body p-0">
 
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 table-responsive-cards">
+                    <table class="table table-hover align-middle mb-0 operational-table">
                         <thead class="table-light">
                             <tr>
                                 <th>@LocalizationService["OrderNumber"]</th>
@@ -78,27 +100,27 @@
                                 @foreach (var order in orders)
                                 {
                                     <tr @key="order.Id">
-                                        <td class="fw-semibold">
+                                        <td data-label="@LocalizationService["OrderNumber"]" class="fw-semibold">
                                             @order.OrderNumber
                                         </td>
 
-                                        <td>
+                                        <td data-label="@LocalizationService["Customer"]">
                                             @order.Customer?.Name
                                         </td>
 
-                                        <td>
+                                        <td data-label="@LocalizationService["OrderDate"]">
                                             @order.OrderDate.ToString("yyyy-MM-dd")
                                         </td>
 
-                                        <td>
+                                        <td data-label="@LocalizationService["DeliveryDate"]">
                                             @(order.DeliveryDate?.ToString("yyyy-MM-dd") ?? "-")
                                         </td>
 
-                                        <td class="text-end">
+                                        <td data-label="@LocalizationService["TotalAmount"]" class="text-end">
                                             @order.TotalAmount.ToString("N2")
                                         </td>
 
-                                        <td>
+                                        <td data-label="@LocalizationService["Status"]">
                                             <span class="badge @GetStatusClass(order.Status)">
                                                 @LocalizationService.TranslateEnum(order.Status)
                                             </span>
@@ -167,7 +189,11 @@
     private bool isLoading = true;
     private string? errorMessage;
 
+    private string searchText = "";
+    private string statusFilter = "";
     private int currentPage = 1;
+
+    private async Task ApplyFiltersAsync() { currentPage = 1; await LoadAsync(); }
     private int totalCount;
 
     private int totalPages =>
@@ -189,6 +215,15 @@
         {
             var query = Db.SalesOrders
                 .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var term = searchText.Trim();
+                query = query.Where(x => x.OrderNumber.Contains(term) || x.Customer.Name.Contains(term));
+            }
+            if (!string.IsNullOrWhiteSpace(statusFilter) &&
+                Enum.TryParse<SalesOrderStatus>(statusFilter, out var selectedStatus))
+                query = query.Where(x => x.Status == selectedStatus);
 
             totalCount = await query.CountAsync();
 
