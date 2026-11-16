@@ -261,7 +261,11 @@
         VisibleOperations.Where(x => x.Status == ProductionOperationStatus.Running ||
             ((x.Status is ProductionOperationStatus.Ready or ProductionOperationStatus.Pending) &&
              PreviousCompleted(x) && BookingFor(x.Id) != null &&
-             IsAllowedToStartNow(x))).ToList();
+             IsAllowedToStartNow(x) &&
+             !bookingsByOperation.Values.Any(other =>
+                 other.MachineId == BookingFor(x.Id)!.MachineId &&
+                 other.ProductionOperationId != x.Id &&
+                 other.Status == ScheduleStatus.Running))).ToList();
     private bool IsAllowedToStartNow(ProductionOperation step)
     {
         var start = step.ProductionOrder.PlannedStartDate;
