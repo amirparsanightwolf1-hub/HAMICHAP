@@ -277,6 +277,35 @@
     color: #3f536e;
     opacity: 1;
 }
+.quotation-workspace .quotation-validity-preview {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    min-height: 34px;
+    margin-top: 9px;
+    padding: 8px 11px;
+    background: #f0f6fd;
+    color: #486b8e;
+    border: 1px solid #d8e7f4;
+    border-radius: 9px;
+    font-size: .77rem;
+}
+.quotation-workspace .quotation-validity-preview > i {
+    color: #3671a7;
+    font-size: .95rem;
+}
+.quotation-workspace .quotation-validity-preview > strong {
+    font-weight: 800;
+    color: #245680;
+    font-variant-numeric: tabular-nums;
+}
+.quotation-workspace #quotation-validity-days { font-variant-numeric: tabular-nums; }
+.quotation-workspace .quotation-workspace-price-input {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .01em;
+}
+
 .quotation-workspace .quotation-status-value { min-height: 44px; }
 .quotation-workspace .quotation-status-badge { font-size: .74rem; }
 .quotation-workspace .quotation-card-body > .row { row-gap: 20px !important; }
