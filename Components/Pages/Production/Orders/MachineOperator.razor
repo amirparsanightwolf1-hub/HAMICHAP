@@ -65,8 +65,8 @@
                         <tr>
                             <td>@next.ProductionOrder.OrderNumber</td>
                             <td>#@next.Sequence @next.Name</td>
-                            <td>@booking?.PlannedStart.ToString("yyyy-MM-dd HH:mm")</td>
-                            <td>@booking?.PlannedEnd.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@(booking?.PlannedStart.ToString("yyyy-MM-dd HH:mm"))</td>
+                            <td>@(booking?.PlannedEnd.ToString("yyyy-MM-dd HH:mm"))</td>
                             <td>@(PreviousCompleted(next) ? "Ready / آماده" : "Waiting for previous step / منتظر مرحله قبل")</td>
                         </tr>
                     }
@@ -97,7 +97,7 @@
                     {
                         <div class="alert alert-info py-2">Waiting for the previous operation to finish.</div>
                     }
-                    @if (previousDone && step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready)
+                    @if (previousDone && (step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready))
                     {
                         <button class="btn btn-primary me-2" disabled="@busy" @onclick='() => RecordAsync(step.Id, "Started")'>Start / شروع</button>
                     }
