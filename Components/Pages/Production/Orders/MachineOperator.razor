@@ -205,9 +205,10 @@
             await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             var step = await db.ProductionOperations
                 .Include(x => x.ProductionOrder).FirstOrDefaultAsync(x => x.Id == operationId && !x.IsOutsourced);
-            if (step == null || !await db.ProductionSchedules.AnyAsync(x =>
-                    x.ProductionOperationId == operationId && x.MachineId == machineId &&
-                    x.Status != ScheduleStatus.Cancelled))
+            var booking = await db.ProductionSchedules.FirstOrDefaultAsync(x =>
+                x.ProductionOperationId == operationId && x.MachineId == machineId &&
+                x.Status != ScheduleStatus.Cancelled);
+            if (step == null || booking == null)
                 throw new InvalidOperationException("Operation is not scheduled for this machine.");
             if (step.ProductionOrder.OperationsSequenceConfirmedAt == null)
                 throw new InvalidOperationException("Manager sequence confirmation is required.");
@@ -225,6 +226,7 @@
                 if (step.Status is not (ProductionOperationStatus.Pending or ProductionOperationStatus.Ready))
                     throw new InvalidOperationException("Operation has already started.");
                 step.Status = ProductionOperationStatus.Running;
+                booking.Status = ScheduleStatus.Running;
                 step.ProductionOrder.Status = ProductionOrderStatus.InProduction;
                 step.ProductionOrder.ActualStartDate ??= DateTime.UtcNow;
             }
@@ -245,6 +247,7 @@
                 if (step.Status != ProductionOperationStatus.Running || paused)
                     throw new InvalidOperationException("Resume the operation before finishing.");
                 step.Status = ProductionOperationStatus.Completed;
+                booking.Status = ScheduleStatus.Completed;
                 var next = await db.ProductionOperations.Where(x =>
                     x.ProductionOrderId == step.ProductionOrderId && x.Sequence > step.Sequence)
                     .OrderBy(x => x.Sequence).FirstOrDefaultAsync();
