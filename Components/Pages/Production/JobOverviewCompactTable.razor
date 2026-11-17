@@ -1,0 +1,263 @@
+@using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using static HamiChap_MES_ERP.Services.JobProcessOverviewService
+
+@inject LocalizationService L
+
+<div class="job-overview-compact">
+    <div class="job-overview-compact-help">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        @L["JobOverviewCompactHint"]
+    </div>
+    <div class="job-overview-compact-scroll" role="region" tabindex="0"
+         aria-label="@L["JobOverviewCompactView"]">
+        <table class="job-overview-compact-table">
+            <thead>
+                <tr>
+                    <th scope="col" class="job-overview-compact-pin">@L["RequestNumber"]</th>
+                    <th scope="col">@L["JobTitle"]</th>
+                    <th scope="col">@L["Customer"]</th>
+                    <th scope="col">@L["JobType"]</th>
+                    <th scope="col">@L["Quantity"]</th>
+                    <th scope="col">@L["RequestDate"]</th>
+                    <th scope="col">@L["RequestedDeliveryDate"]</th>
+                    <th scope="col">@L["JobOverviewCompactRequestStatus"]</th>
+                    <th scope="col">@L["JobOverviewCompactProductionStatus"]</th>
+                    <th scope="col">@L["SalesOrder"]</th>
+                    <th scope="col">@L["ProductionOrder"]</th>
+                    <th scope="col">@L["Quotation"]</th>
+                    <th scope="col">@L["JobOverviewProcessProgress"]</th>
+                    <th scope="col">@L["JobOverviewCompactCompletedStages"]</th>
+                    <th scope="col">@L["JobOverviewProducedQuantity"]</th>
+                    <th scope="col">@L["OrderedQuantity"]</th>
+                    <th scope="col">@L["JobOverviewCompactQuantityProgress"]</th>
+                    <th scope="col">@L["JobOverviewCompactSharedRoute"]</th>
+                    <th scope="col">@L["JobOverviewOrderWideProgress"]</th>
+                    <th scope="col">@L["JobOverviewCompactVerifiedRoute"]</th>
+                    <th scope="col">@L["JobOverviewInvalidSpecs"]</th>
+                    <th scope="col">@L["JobOverviewCompactPlannedStart"]</th>
+                    <th scope="col">@L["PlannedEnd"]</th>
+                    <th scope="col">@L["JobOverviewCompactActualStart"]</th>
+                    <th scope="col">@L["JobOverviewCompactActualEnd"]</th>
+                    <th scope="col" class="job-overview-compact-wide">@L["JobOverviewRequiredProcesses"]</th>
+                    <th scope="col" class="job-overview-compact-wide">@L["JobOverviewCompactItems"]</th>
+                    <th scope="col" class="job-overview-compact-wide">@L["Notes"]</th>
+                    <th scope="col" class="job-overview-compact-wide">@L["ProductionNotes"]</th>
+                    @foreach (var key in SpecificationColumns)
+                    {
+                        <th scope="col" class="job-overview-compact-spec" @key="key">
+                            @SpecificationLabel(key)
+                        </th>
+                    }
+                    <th scope="col">@L["JobOverviewCompactActions"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var job in Jobs)
+                {
+                    <tr @key="job.RequestId">
+                        <th scope="row" class="job-overview-compact-pin">
+                            <a href="@job.EditUrl">@job.RequestNumber</a>
+                        </th>
+                        <td>@Display(job.Title)</td>
+                        <td>@Display(job.Customer)</td>
+                        <td>@L.TranslateEnum(job.JobType)</td>
+                        <td class="job-overview-compact-number">
+                            @(job.Quantity.HasValue ? job.Quantity.Value.ToString("N0") : "—")
+                        </td>
+                        <td class="job-overview-compact-date">@job.RequestDate.ToString("yyyy-MM-dd")</td>
+                        <td class="job-overview-compact-date">@FormatDate(job.RequestedDeliveryDate)</td>
+                        <td>@L.TranslateEnum(job.RequestStatus)</td>
+                        <td>
+                            @(job.ProductionStatus.HasValue ? L.TranslateEnum(job.ProductionStatus.Value) : "—")
+                        </td>
+                        <td>
+                            @if (job.SalesOrderId.HasValue)
+                            {
+                                <a href="@($"/sales/orders/edit/{job.SalesOrderId.Value}")">
+                                    @Display(job.SalesOrderNumber)
+                                </a>
+                            }
+                            else { <span>—</span> }
+                        </td>
+                        <td>
+                            @if (job.ProductionOrderId.HasValue)
+                            {
+                                <a href="@($"/production/orders/edit/{job.ProductionOrderId.Value}")">
+                                    @Display(job.ProductionOrderNumber)
+                                </a>
+                            }
+                            else { <span>—</span> }
+                        </td>
+                        <td>
+                            @if (job.QuotationId.HasValue)
+                            {
+                                <a href="@($"/sales/quotations/edit/{job.QuotationId.Value}")">
+                                    @job.QuotationId.Value
+                                </a>
+                            }
+                            else { <span>—</span> }
+                        </td>
+                        <td class="job-overview-compact-number">
+                            @(job.JobProgressPercent.HasValue ? $"{job.JobProgressPercent.Value}%" : "—")
+                        </td>
+                        <td class="job-overview-compact-number">
+                            @job.CompletedStages / @job.ActiveStages
+                        </td>
+                        <td class="job-overview-compact-number">
+                            @(job.ProducedQuantity.HasValue ? job.ProducedQuantity.Value.ToString("N0") : "—")
+                        </td>
+                        <td class="job-overview-compact-number">
+                            @(job.OrderedQuantity.HasValue ? job.OrderedQuantity.Value.ToString("N0") : "—")
+                        </td>
+                        <td class="job-overview-compact-number">
+                            @(job.QuantityProgressPercent.HasValue ? $"{job.QuantityProgressPercent.Value}%" : "—")
+                        </td>
+                        <td>@YesNo(job.SharedProductionRoute)</td>
+                        <td class="job-overview-compact-number">
+                            @(job.SharedOrderProgressPercent.HasValue ? $"{job.SharedOrderProgressPercent.Value}%" : "—")
+                        </td>
+                        <td>@YesNo(job.UsingRecordedOperations)</td>
+                        <td>@YesNo(job.InvalidSpecifications)</td>
+                        <td class="job-overview-compact-date">@FormatDateTime(job.PlannedStart)</td>
+                        <td class="job-overview-compact-date">@FormatDateTime(job.PlannedEnd)</td>
+                        <td class="job-overview-compact-date">@FormatDateTime(job.ActualStart)</td>
+                        <td class="job-overview-compact-date">@FormatDateTime(job.ActualEnd)</td>
+                        <td class="job-overview-compact-wide">
+                            @if (job.Stages.Count == 0)
+                            {
+                                <span>—</span>
+                            }
+                            else
+                            {
+                                <div class="job-overview-compact-stages">
+                                    @foreach (var stage in job.Stages)
+                                    {
+                                        <span @key="stage.Sequence">
+                                            <strong>@stage.Sequence. @StageName(stage.Name)</strong>
+                                            — @StageLabel(stage.State)
+                                            @if (!string.IsNullOrWhiteSpace(StageMachine(stage)))
+                                            {
+                                                <span> · @StageMachine(stage)</span>
+                                            }
+                                            @if (stage.PlannedStart.HasValue)
+                                            {
+                                                <span> · @stage.PlannedStart.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                            }
+                                            @if (stage.PlannedEnd.HasValue)
+                                            {
+                                                <span> → @stage.PlannedEnd.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                            }
+                                            @if (stage.NeedsReview)
+                                            {
+                                                <span> · @L["JobOverviewRequiresRoutingReview"]</span>
+                                            }
+                                        </span>
+                                    }
+                                </div>
+                            }
+                        </td>
+                        <td class="job-overview-compact-wide">@Display(job.RequestItems)</td>
+                        <td class="job-overview-compact-wide">@Display(job.RequestNotes)</td>
+                        <td class="job-overview-compact-wide">@Display(job.ProductionNotes)</td>
+                        @foreach (var key in SpecificationColumns)
+                        {
+                            <td class="job-overview-compact-spec" @key="key">
+                                @Display(SpecificationValue(job, key))
+                            </td>
+                        }
+                        <td class="job-overview-compact-links">
+                            <a href="@job.EditUrl">@L["OpenJob"]</a>
+                            @if (job.Quantity > 0)
+                            {
+                                <a href="@job.ProofUrl">@L["OpenApprovalProof"]</a>
+                            }
+                            @if (job.ProductionOrderId.HasValue)
+                            {
+                                <a href="@($"/production/orders/edit/{job.ProductionOrderId.Value}")">
+                                    @L["ProductionOrder"]
+                                </a>
+                            }
+                            else if (job.QuotationId.HasValue)
+                            {
+                                <a href="@($"/sales/quotations/edit/{job.QuotationId.Value}")">
+                                    @L["Quotation"]
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<JobRow> Jobs { get; set; } = Array.Empty<JobRow>();
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> SpecificationColumns { get; set; } = Array.Empty<string>();
+
+    private static string Display(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private static string FormatDate(DateTime? value) =>
+        value?.ToString("yyyy-MM-dd") ?? "—";
+
+    private static string FormatDateTime(DateTime? value) =>
+        value?.ToString("yyyy-MM-dd HH:mm") ?? "—";
+
+    private string YesNo(bool value) => L[value ? "Yes" : "No"];
+
+    private static string SpecificationValue(JobRow job, string key) =>
+        job.SpecificationValues.TryGetValue(key, out var value) ? value : "";
+
+    private string SpecificationLabel(string key)
+    {
+        // Existing resource keys cover most typed Roll/Sheet fields.
+        var resourceKey = key switch
+        {
+            "PantoneColors" => "RollPantoneColors",
+            "ArtworkRelativePath" => "JobOverviewCompactArtworkPath",
+            "ArtworkOriginalFileName" => "JobOverviewCompactArtworkName",
+            "FinishedProductItemId" => "JobOverviewCompactFinishedItem",
+            _ => key
+        };
+
+        var localized = L[resourceKey];
+        if (!string.Equals(localized, resourceKey, StringComparison.Ordinal))
+            return localized;
+
+        // A future JSON field remains visible even without a translation.
+        return System.Text.RegularExpressions.Regex.Replace(
+            key, "(?<=[a-z0-9])(?=[A-Z])", " ");
+    }
+
+    private string StageLabel(StageState stage) => stage switch
+    {
+        StageState.NotScheduled => L["JobOverviewNotScheduled"],
+        StageState.Untracked => L["JobOverviewUntracked"],
+        StageState.Ready => L.TranslateEnum(ProductionOperationStatus.Ready),
+        StageState.Running => L.TranslateEnum(ProductionOperationStatus.Running),
+        StageState.Completed => L.TranslateEnum(ProductionOperationStatus.Completed),
+        StageState.Cancelled => L.TranslateEnum(ProductionOperationStatus.Cancelled),
+        _ => L.TranslateEnum(ProductionOperationStatus.Pending)
+    };
+
+    private static string StageName(string name)
+    {
+        var parts = name.Split(" | ", 2, StringSplitOptions.None);
+        return parts.Length == 2 ? parts[1] : name;
+    }
+
+    private static string? StageMachine(ProcessStage stage)
+    {
+        if (!string.IsNullOrWhiteSpace(stage.Machine))
+            return stage.Machine;
+
+        var parts = stage.Name.Split(" | ", 2, StringSplitOptions.None);
+        return parts.Length == 2 && parts[0] != "REVIEW" ? parts[0] : null;
+    }
+}
