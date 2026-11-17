@@ -3704,4 +3704,58 @@
   <data name="ProofDimensionsAndSizes" xml:space="preserve">
     <value>Label dimensions and sizes</value>
   </data>
+  <data name="JobOverviewViewMode" xml:space="preserve">
+    <value>Job overview layout</value>
+  </data>
+  <data name="JobOverviewDetailedView" xml:space="preserve">
+    <value>Detailed view</value>
+  </data>
+  <data name="JobOverviewCompactView" xml:space="preserve">
+    <value>Compact view</value>
+  </data>
+  <data name="JobOverviewCompactHint" xml:space="preserve">
+    <value>Spreadsheet view: one row per job. Scroll horizontally to see every saved specification and production detail.</value>
+  </data>
+  <data name="JobOverviewCompactRequestStatus" xml:space="preserve">
+    <value>Request status</value>
+  </data>
+  <data name="JobOverviewCompactProductionStatus" xml:space="preserve">
+    <value>Production status</value>
+  </data>
+  <data name="JobOverviewCompactCompletedStages" xml:space="preserve">
+    <value>Completed / total stages</value>
+  </data>
+  <data name="JobOverviewCompactQuantityProgress" xml:space="preserve">
+    <value>Quantity progress</value>
+  </data>
+  <data name="JobOverviewCompactSharedRoute" xml:space="preserve">
+    <value>Shared production route</value>
+  </data>
+  <data name="JobOverviewCompactVerifiedRoute" xml:space="preserve">
+    <value>Verified operations</value>
+  </data>
+  <data name="JobOverviewCompactPlannedStart" xml:space="preserve">
+    <value>Planned start</value>
+  </data>
+  <data name="JobOverviewCompactActualStart" xml:space="preserve">
+    <value>Actual start</value>
+  </data>
+  <data name="JobOverviewCompactActualEnd" xml:space="preserve">
+    <value>Actual end</value>
+  </data>
+  <data name="JobOverviewCompactItems" xml:space="preserve">
+    <value>Request items and quantities</value>
+  </data>
+  <data name="JobOverviewCompactActions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="JobOverviewCompactArtworkPath" xml:space="preserve">
+    <value>Artwork file path</value>
+  </data>
+  <data name="JobOverviewCompactArtworkName" xml:space="preserve">
+    <value>Artwork file name</value>
+  </data>
+  <data name="JobOverviewCompactFinishedItem" xml:space="preserve">
+    <value>Finished product item ID</value>
+  </data>
 </root>
