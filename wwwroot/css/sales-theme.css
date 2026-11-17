@@ -1,7 +1,7 @@
 /* Sales-first visual language. Loaded last after shared component styles. */
 :root {
     --bs-primary: var(--erp-primary);
-    --bs-primary-rgb: 13, 23, 65;
+    --bs-primary-rgb: 12, 86, 141;
     --bs-link-color: var(--erp-primary);
     --bs-link-hover-color: var(--erp-primary-dark);
     --bs-border-color: var(--erp-border);
@@ -30,8 +30,8 @@
 }
 .form-control:focus,
 .form-select:focus {
-    border-color: #69769e;
-    box-shadow: 0 0 0 3px rgba(13, 23, 65, .08);
+    border-color: #0c568d;
+    box-shadow: 0 0 0 3px rgba(12, 86, 141, .08);
 }
 .card {
     border: 1px solid var(--erp-border);
@@ -59,8 +59,8 @@
    ============================================================= */
 
 :root {
-    --erp-sales-navy: #0d1741;
-    --erp-sales-navy-hover: #202e5b;
+    --erp-sales-navy: #0c568d;
+    --erp-sales-navy-hover: #08446f;
     --erp-sales-ink: #343a56;
     --erp-sales-muted: #596078;
     --erp-sales-subtle: #858ba0;
@@ -181,7 +181,7 @@
 .form-control:focus,
 .form-select:focus {
     border-color: #69769e;
-    box-shadow: 0 0 0 3px rgba(13, 23, 65, .08);
+    box-shadow: 0 0 0 3px rgba(12, 86, 141, .08);
 }
 .form-control[readonly],
 .form-select:disabled,

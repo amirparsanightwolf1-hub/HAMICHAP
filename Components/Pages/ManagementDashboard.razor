@@ -1,0 +1,225 @@
+@page "/dashboard/sales"
+@page "/dashboard/warehouse"
+@page "/dashboard/ceo"
+@page "/dashboard/production"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider Authentication
+@inject NavigationManager Navigation
+@inject LocalizationService L
+
+<PageTitle>@DashboardTitle</PageTitle>
+<div class="@($"manager-dashboard manager-dashboard-{section}")">
+    @if (!authorized)
+    {
+        <div class="alert alert-warning">@L["AccessDenied"]</div>
+    }
+    else
+    {
+        <header class="manager-dashboard-heading">
+            <div>
+                <span class="manager-overline">@L["ManagerOverview"]</span>
+                <h1>@DashboardTitle</h1>
+                <p>@L["ManagerDashboardIntro"]</p>
+            </div>
+            <button class="btn btn-outline-primary" type="button" disabled="@busy" @onclick="LoadAsync">@L["Refresh"]</button>
+        </header>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger">@error</div>
+        }
+        <div class="manager-kpi-grid">
+            @foreach (var kpi in kpis)
+            {
+                <div class="manager-kpi">
+                    <span>@L[kpi.Key]</span>
+                    <strong>@kpi.Value.ToString("N0")</strong>
+                </div>
+            }
+        </div>
+
+        <div class="manager-dashboard-grid">
+            <section class="manager-panel">
+                <div class="manager-panel-heading">
+                    <h2>@L["ManagerQuickActions"]</h2>
+                    <span>@L["ManagerOpenWorkspace"]</span>
+                </div>
+                <div class="manager-shortcuts">
+                    @foreach (var shortcut in shortcuts)
+                    {
+                        <a class="manager-shortcut" href="@shortcut.Url">
+                            <span>@L[shortcut.Key]</span>
+                            <span aria-hidden="true">›</span>
+                        </a>
+                    }
+                </div>
+            </section>
+            <section class="manager-panel">
+                <div class="manager-panel-heading">
+                    <h2>@L["ManagerNeedsAttention"]</h2>
+                    <span>@L["ManagerLiveCounts"]</span>
+                </div>
+                @foreach (var item in alerts)
+                {
+                    <a class="manager-alert-row" href="@item.Url">
+                        <span>@L[item.Key]</span>
+                        <strong>@item.Count.ToString("N0")</strong>
+                    </a>
+                }
+                @if (alerts.Count == 0)
+                {
+                    <p class="manager-no-alerts">@L["ManagerNoOpenAlerts"]</p>
+                }
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    private record Metric(string Key, int Value);
+    private record Shortcut(string Key, string Url);
+    private record Alert(string Key, int Count, string Url);
+
+    private readonly List<Metric> kpis = new();
+    private readonly List<Shortcut> shortcuts = new();
+    private readonly List<Alert> alerts = new();
+    private bool authorized;
+    private bool busy;
+    private string error = "";
+    private string section = "";
+
+    private string DashboardTitle => section switch
+    {
+        "sales" => L["ManagerSalesDashboard"],
+        "warehouse" => L["ManagerWarehouseDashboard"],
+        "ceo" => L["ManagerCeoDashboard"],
+        "production" => L["ManagerProductionDashboard"],
+        _ => L["Dashboard"]
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        section = Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Trim('/').Split('/').LastOrDefault() ?? "";
+        var user = (await Authentication.GetAuthenticationStateAsync()).User;
+        authorized = user.Identity?.IsAuthenticated == true &&
+            (user.IsInRole("Administrator") || (section switch
+            {
+                "sales" => user.IsInRole("Sales") || user.IsInRole("SalesManager") || user.IsInRole("Sales Manager"),
+                "warehouse" => user.IsInRole("Warehouse") || user.IsInRole("WarehouseManager") || user.IsInRole("Warehouse Manager"),
+                "ceo" => user.IsInRole("CEO") || user.IsInRole("Ceo") || user.IsInRole("Manager"),
+                "production" => user.IsInRole("ProductionManager") || user.IsInRole("Production Manager") ||
+                    user.IsInRole("Manager") || user.IsInRole("FloorManager") ||
+                    user.IsInRole("Floor Manager") || user.IsInRole("Production"),
+                _ => false
+            }));
+        if (authorized) await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (!authorized || busy) return;
+        busy = true;
+        error = "";
+        kpis.Clear();
+        shortcuts.Clear();
+        alerts.Clear();
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var now = DateTime.Now;
+            if (section == "sales")
+            {
+                kpis.Add(new("ManagerSalesRequests", await db.SalesRequests.CountAsync(x => x.Status != SalesRequestStatus.Cancelled)));
+                kpis.Add(new("ManagerSalesActiveOrders", await db.SalesOrders.CountAsync(x =>
+                    x.Status != SalesOrderStatus.Completed && x.Status != SalesOrderStatus.Cancelled)));
+                kpis.Add(new("ManagerSalesQuotations", await db.Quotations.CountAsync()));
+                kpis.Add(new("ManagerSalesInvoices", await db.SalesInvoices.CountAsync()));
+                alerts.Add(new("ManagerSalesDraftRequests", await db.SalesRequests.CountAsync(x => x.Status == SalesRequestStatus.Draft), "/sales/requests"));
+                alerts.Add(new("ManagerSalesUndelivered", await db.SalesOrders.CountAsync(x =>
+                    x.DeliveryDate.HasValue && x.DeliveryDate.Value < now &&
+                    x.Status != SalesOrderStatus.Completed && x.Status != SalesOrderStatus.Cancelled), "/sales/orders"));
+                shortcuts.AddRange(new[] {
+                    new Shortcut("SalesRequests", "/sales/requests"),
+                    new Shortcut("SalesQuotations", "/sales/quotations"),
+                    new Shortcut("SalesOrders", "/sales/orders"),
+                    new Shortcut("SalesInvoices", "/sales/invoices")
+                });
+            }
+            else if (section == "warehouse")
+            {
+                kpis.Add(new("ManagerWarehouseItems", await db.Items.CountAsync(x => x.IsActive)));
+                kpis.Add(new("ManagerWarehouseOpenRequests", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested")));
+                kpis.Add(new("ManagerWarehouseDraftDocuments", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Draft)));
+                kpis.Add(new("ManagerWarehousePostedDocuments", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Posted)));
+                alerts.Add(new("ManagerWarehouseRequestsToProcess", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested"), "/inventory/documents"));
+                alerts.Add(new("ManagerWarehouseDocumentsToPost", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Draft), "/inventory/documents"));
+                shortcuts.AddRange(new[] {
+                    new Shortcut("Documents", "/inventory/documents"),
+                    new Shortcut("InventoryStock", "/inventory/stock"),
+                    new Shortcut("Items", "/inventory/items"),
+                    new Shortcut("Transactions", "/inventory/transactions")
+                });
+            }
+            else if (section == "ceo")
+            {
+                kpis.Add(new("ManagerCeoActiveSales", await db.SalesOrders.CountAsync(x =>
+                    x.Status != SalesOrderStatus.Completed && x.Status != SalesOrderStatus.Cancelled)));
+                kpis.Add(new("ManagerCeoProductionOrders", await db.ProductionOrders.CountAsync(x =>
+                    x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled)));
+                kpis.Add(new("ManagerCeoApprovedWindows", await db.ProductionOrders.CountAsync(x =>
+                    x.PlannedStartDate.HasValue && x.PlannedEndDate.HasValue)));
+                kpis.Add(new("ManagerCeoOpenWarehouse", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested")));
+                alerts.Add(new("ManagerCeoUnplannedOrders", await db.ProductionOrders.CountAsync(x =>
+                    x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled &&
+                    (!x.PlannedStartDate.HasValue || !x.PlannedEndDate.HasValue)), "/production/planning"));
+                alerts.Add(new("ManagerCeoOverdueProduction", await db.ProductionOrders.CountAsync(x =>
+                    x.PlannedEndDate.HasValue && x.PlannedEndDate.Value < now &&
+                    x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled), "/production/planning"));
+                shortcuts.AddRange(new[] {
+                    new Shortcut("CeoDeadlineCalendar", "/production/planning"),
+                    new Shortcut("ProductionOrders", "/production/orders"),
+                    new Shortcut("SalesOrders", "/sales/orders"),
+                    new Shortcut("ProductionWorkflow", "/production/workflow")
+                });
+            }
+            else if (section == "production")
+            {
+                kpis.Add(new("ManagerProductionActiveOrders", await db.ProductionOrders.CountAsync(x =>
+                    x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled)));
+                kpis.Add(new("ManagerProductionUnscheduled", await db.ProductionOrders.CountAsync(x =>
+                    x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled &&
+                    x.OperationsSequenceConfirmedAt == null)));
+                kpis.Add(new("ManagerProductionRunning", await db.ProductionOperations.CountAsync(x => x.Status == ProductionOperationStatus.Running)));
+                kpis.Add(new("ManagerProductionMachineBookings", await db.ProductionSchedules.CountAsync(x => x.Status == ScheduleStatus.Planned)));
+                alerts.Add(new("ManagerProductionNeedsSequence", await db.ProductionOrders.CountAsync(x =>
+                    x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled &&
+                    x.OperationsSequenceConfirmedAt == null), "/production/machine-schedule"));
+                alerts.Add(new("ManagerProductionLateOrders", await db.ProductionOrders.CountAsync(x =>
+                    x.PlannedEndDate.HasValue && x.PlannedEndDate.Value < now &&
+                    x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled), "/production/machine-schedule"));
+                shortcuts.AddRange(new[] {
+                    new Shortcut("MachineSchedule", "/production/machine-schedule"),
+                    new Shortcut("ProductionWorkflow", "/production/workflow"),
+                    new Shortcut("ProductionOrders", "/production/orders"),
+                    new Shortcut("QualityInspectionManagement", "/production/quality-inspections")
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

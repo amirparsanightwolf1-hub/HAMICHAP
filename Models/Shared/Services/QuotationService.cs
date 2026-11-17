@@ -23,27 +23,36 @@ public class QuotationService
         _userManager = userManager;
     }
 
+    /// <summary>
+    /// One-step job-to-quotation flow: no separate request submission required.
+    /// Existing associations are reused instead of creating duplicate quotes.
+    /// </summary>
     public async Task<Quotation> CreateFromRequestAsync(long salesRequestId)
     {
+        var existingFromLine = await _db.QuotationLines
+            .Where(x => x.SourceRequestId == salesRequestId)
+            .Select(x => x.Quotation)
+            .FirstOrDefaultAsync();
+        if (existingFromLine != null)
+            return existingFromLine;
+
+        // Preserve old quotations that still use only the primary request FK.
+        var legacy = await _db.Quotations
+            .FirstOrDefaultAsync(x => x.SalesRequestId == salesRequestId);
+        if (legacy != null)
+            return legacy;
+
         var request = await _db.SalesRequests
             .Include(x => x.Lines)
-            .Include(x => x.Customer)
-            .FirstOrDefaultAsync(x => x.Id == salesRequestId);
+            .FirstOrDefaultAsync(x => x.Id == salesRequestId)
+            ?? throw new InvalidOperationException("Sales request not found.");
 
-        if (request == null)
-            throw new InvalidOperationException("Sales request not found.");
-
-        if (request.Status != SalesRequestStatus.Submitted &&
-            request.Status != SalesRequestStatus.EvaluationCompleted)
-            throw new InvalidOperationException(
-                "Only submitted sales requests can be quoted.");
-
-        var number = await _numberSeries.GetNextNumberAsync(NumberSeriesType.Quotation);
+        ValidateRequestCanBeQuoted(request);
 
         var quotation = new Quotation
         {
-            QuotationNumber = number,
-            SalesRequestId = request.Id,
+            QuotationNumber = await _numberSeries.GetNextNumberAsync(NumberSeriesType.Quotation),
+            SalesRequestId = request.Id, // backwards-compatible primary request
             CustomerId = request.CustomerId,
             Status = QuotationStatus.Draft,
             QuotationDate = DateTime.Now
@@ -53,8 +62,10 @@ public class QuotationService
         {
             quotation.Lines.Add(new QuotationLine
             {
+                SourceRequestId = request.Id,
                 ItemId = line.ItemId,
                 Quantity = line.Quantity,
+                Notes = line.Notes,
                 UnitPrice = 0
             });
         }
@@ -62,8 +73,86 @@ public class QuotationService
         _db.Quotations.Add(quotation);
         request.Status = SalesRequestStatus.QuotationCreated;
         await _db.SaveChangesAsync();
-
         return quotation;
+    }
+
+    /// <summary>
+    /// Attach another saved Roll/Sheet request to an editable quotation.
+    /// Multiple requests must belong to the SAME customer. Each line keeps
+    /// its SourceRequestId, allowing separate customer approval proofs.
+    /// </summary>
+    public async Task AddRequestToQuotationAsync(long quotationId, long salesRequestId)
+    {
+        var quotation = await _db.Quotations
+            .Include(x => x.Lines)
+            .FirstOrDefaultAsync(x => x.Id == quotationId)
+            ?? throw new InvalidOperationException("Quotation not found.");
+
+        if (quotation.Status is not (QuotationStatus.Draft or QuotationStatus.RevisionRequired))
+            throw new InvalidOperationException("Requests can only be attached to editable quotations.");
+
+        if (quotation.SalesRequestId == salesRequestId ||
+            quotation.Lines.Any(x => x.SourceRequestId == salesRequestId))
+            return; // idempotent add
+
+        var linkedElsewhere =
+            await _db.Quotations.AnyAsync(x => x.SalesRequestId == salesRequestId) ||
+            await _db.QuotationLines.AnyAsync(x => x.SourceRequestId == salesRequestId);
+        if (linkedElsewhere)
+            throw new InvalidOperationException("This request is already attached to another quotation.");
+
+        var request = await _db.SalesRequests
+            .Include(x => x.Lines)
+            .FirstOrDefaultAsync(x => x.Id == salesRequestId)
+            ?? throw new InvalidOperationException("Sales request not found.");
+
+        if (request.CustomerId != quotation.CustomerId)
+            throw new InvalidOperationException("All requests in one quotation must belong to the same customer.");
+
+        ValidateRequestCanBeQuoted(request);
+
+        foreach (var line in request.Lines)
+        {
+            quotation.Lines.Add(new QuotationLine
+            {
+                QuotationId = quotation.Id,
+                SourceRequestId = request.Id,
+                ItemId = line.ItemId,
+                Quantity = line.Quantity,
+                Notes = line.Notes,
+                UnitPrice = 0
+            });
+        }
+
+        request.Status = SalesRequestStatus.QuotationCreated;
+        quotation.FinalAmount = quotation.Lines.Sum(x => x.TotalPrice);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<List<SalesRequest>> GetAvailableRequestsAsync(int customerId)
+    {
+        return await _db.SalesRequests.AsNoTracking()
+            .Where(r => r.CustomerId == customerId &&
+                (r.Status == SalesRequestStatus.Draft ||
+                 r.Status == SalesRequestStatus.Submitted ||
+                 r.Status == SalesRequestStatus.EvaluationCompleted) &&
+                r.Lines.Any() &&
+                !(_db.Quotations.Any(q => q.SalesRequestId == r.Id) ||
+                  _db.QuotationLines.Any(line => line.SourceRequestId == r.Id)))
+            .OrderByDescending(r => r.RequestDate)
+            .ToListAsync();
+    }
+
+    private static void ValidateRequestCanBeQuoted(SalesRequest request)
+    {
+        if (request.Status is not (SalesRequestStatus.Draft or
+            SalesRequestStatus.Submitted or SalesRequestStatus.EvaluationCompleted))
+            throw new InvalidOperationException("This request is not available for quotation.");
+
+        if (request.CustomerId <= 0 || request.Lines.Count == 0 ||
+            request.Lines.Any(x => x.ItemId <= 0 || x.UnitId <= 0 || x.Quantity <= 0))
+            throw new InvalidOperationException(
+                "Save the job with its title, positive quantity and finished-product item before quoting.");
     }
 
     public async Task AssignPricingUserAsEvaluatorAsync(long quotationId, string userId)
@@ -92,7 +181,21 @@ public class QuotationService
         if (!hasPricing)
             return;
 
-        quotation.SalesRequest.AssignedToUserId = userId;
+        // Apply the evaluator to every linked request, not just the primary.
+        var requestIds = quotation.Lines
+            .Where(line => line.SourceRequestId.HasValue)
+            .Select(line => line.SourceRequestId!.Value)
+            .Append(quotation.SalesRequestId)
+            .Distinct()
+            .ToArray();
+
+        var requests = await _db.SalesRequests
+            .Where(r => requestIds.Contains(r.Id))
+            .ToListAsync();
+
+        foreach (var request in requests)
+            request.AssignedToUserId = userId;
+
         await _db.SaveChangesAsync();
     }
 

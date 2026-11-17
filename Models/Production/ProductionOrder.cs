@@ -21,6 +21,12 @@ public class ProductionOrder : BaseEntity
     public bool AvoidOvertime { get; set; }
     public bool AvoidNightShift { get; set; }
 
+    // Production Manager approval: applies to a fingerprint of the current ordered machine stages.
+    public bool OperationsRouteInitialized { get; set; }
+    public DateTime? OperationsSequenceConfirmedAt { get; set; }
+    public string? OperationsSequenceConfirmedBy { get; set; }
+    public string? OperationsSequenceSignature { get; set; }
+
     public string Notes { get; set; } = "";
     public ICollection<ProductionOrderLine> Lines { get; set; } = new List<ProductionOrderLine>();
 }

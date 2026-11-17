@@ -8,7 +8,10 @@ public class ProductionMaterialRequest : BaseEntity
 {
     public long Id { get; set; }
     public long ProductionOrderId { get; set; }
+    public long? ProductionOperationId { get; set; }
+    public ProductionOperation? ProductionOperation { get; set; }
     public ProductionOrder ProductionOrder { get; set; } = null!;
+    public string? RequestedByUserId { get; set; }
     public DateTime RequestedDate { get; set; } = DateTime.Now;
     public string Status { get; set; } = "Requested";
     public ICollection<ProductionMaterialRequestLine> Lines { get; set; } = new List<ProductionMaterialRequestLine>();

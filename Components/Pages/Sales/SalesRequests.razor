@@ -244,7 +244,7 @@
                                         <td class="text-end">
                                             <button type="button"
                                                     class="btn btn-sm btn-outline-primary"
-                                                    @onclick="() => OpenRequest(request.Id)"
+                                                    @onclick="() => OpenRequest(request)"
                                                     @onclick:stopPropagation="true">
                                                 <i class="bi bi-pencil"></i>
                                                 @LocalizationService["Open"]
@@ -706,8 +706,9 @@
         Navigation.NavigateTo("/sales/requests/create");
     }
 
-    private void OpenRequest(long id)
+    private void OpenRequest(SalesRequest request)
     {
-        Navigation.NavigateTo($"/sales/requests/edit/{id}");
+        var job = request.JobType == SalesJobType.Roll ? "roll" : "sheet";
+        Navigation.NavigateTo($"/sales/requests/{job}/edit/{request.Id}");
     }
 }

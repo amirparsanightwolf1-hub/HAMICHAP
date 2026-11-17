@@ -19,11 +19,15 @@
 @inject LocalizationService LocalizationService
 @inject SalesOrderService SalesOrderService
 
+<HeadContent>
+    <link rel="stylesheet" href="css/quotationEdit.css" />
+</HeadContent>
+
 <PageTitle>
     @LocalizationService["Quotation"]
 </PageTitle>
 
-<div class="page-container quotation-edit-page">
+<div class="page-container quotation-edit-page quotation-workspace">
 
     @if (isLoading)
     {
@@ -43,18 +47,27 @@
     }
     else
     {
-        <div class="erp-page-header quotation-page-header mb-4">
-
-            <div>
-                <div class="erp-page-title">
-                    @LocalizationService["Quotation"]
+        <header class="erp-page-header quotation-page-header quotation-workspace-hero">
+            <div class="quotation-workspace-hero-info">
+                <div class="quotation-workspace-hero-emblem" aria-hidden="true">
+                    <i class="bi bi-receipt-cutoff"></i>
                 </div>
-
-                <div class="erp-page-subtitle">
-                    @quotation.QuotationNumber
+                <div class="quotation-workspace-hero-copy">
+                    <div class="quotation-workspace-eyebrow">@LocalizationService["QuotationEditorTitle"]</div>
+                    <h1>@LocalizationService["Quotation"]</h1>
+                    <div class="quotation-workspace-hero-meta">
+                        <span class="quotation-workspace-number">@quotation.QuotationNumber</span>
+                        <span class="quotation-workspace-meta-separator" aria-hidden="true"></span>
+                        <span>@GetCustomerName()</span>
+                    </div>
+                    <div class="quotation-workspace-hero-status">
+                        <span class="quotation-status-badge @GetQuotationStatusCssClass(quotation.Status)">
+                            <span class="quotation-status-dot"></span>
+                            @LocalizationService.TranslateEnum(quotation.Status)
+                        </span>
+                    </div>
                 </div>
             </div>
-
             <div class="quotation-actions">
 
                 @if (quotation.Status == QuotationStatus.Approved ||
@@ -174,24 +187,25 @@
                     </button>
                 }
 
-                @if (quotation.Status == QuotationStatus.Accepted)
-                {
-                    <button type="button"
-                            class="btn btn-success"
-                            @onclick="CreateSalesOrderAsync"
-                            disabled="@isCreatingSalesOrder">
+            </div>
+        </header>
 
-                        @if (isCreatingSalesOrder)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1"></span>
-                        }
-
-                        <i class="bi bi-cart-check"></i>
-                        @LocalizationService["CreateSalesOrder"]
-
-                    </button>
-                }
-
+        <div class="quotation-workspace-overview" aria-label="@LocalizationService["QuotationInformation"]">
+            <div class="quotation-workspace-overview-item">
+                <span>@LocalizationService["Customer"]</span>
+                <strong>@GetCustomerName()</strong>
+            </div>
+            <div class="quotation-workspace-overview-item">
+                <span>@LocalizationService["JobsOnQuotation"]</span>
+                <strong>@linkedRequests.Count</strong>
+            </div>
+            <div class="quotation-workspace-overview-item">
+                <span>@LocalizationService["QuotationLines"]</span>
+                <strong>@quotation.Lines.Count</strong>
+            </div>
+            <div class="quotation-workspace-overview-item is-total">
+                <span>@LocalizationService["FinalAmount"]</span>
+                <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
             </div>
         </div>
 
@@ -209,11 +223,14 @@
             </div>
         }
 
+        <div class="quotation-workspace-layout">
+            <div class="quotation-workspace-main">
         <!-- Quotation Information -->
 
-        <div class="card quotation-card mb-4">
+        <section class="card quotation-card quotation-workspace-section mb-4" aria-label="@LocalizationService["QuotationInformation"]">
 
             <div class="card-header quotation-card-header">
+                <span class="quotation-workspace-section-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span>
                 <strong>
                     @LocalizationService["QuotationInformation"]
                 </strong>
@@ -288,21 +305,28 @@
 
                     <div class="col-md-4">
 
-                        <label class="form-label">
-                            @LocalizationService["ValidUntil"]
+                        <label class="form-label" for="quotation-validity-days">
+                            @(IsEditable
+                                ? LocalizationService["ValidityDays"]
+                                : LocalizationService["ValidUntil"])
                         </label>
 
                         @if (IsEditable)
                         {
-                            <input class="form-control"
-                                   value="@FormatJalaliDate(quotation.ValidUntil)"
-                                   @onchange="UpdateValidUntilFromJalali"
-                                   inputmode="numeric"
-                                   placeholder="1405/01/01" />
+                            <InputNumber TValue="int?" id="quotation-validity-days"
+                                         class="form-control"
+                                         min="0" max="3650" step="1"
+                                         @bind-Value="ValidityDays" />
+                            <div class="quotation-validity-preview" aria-live="polite">
+                                <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                                <span>@LocalizationService["ValidUntil"]:</span>
+                                <strong>@FormatJalaliDate(quotation.ValidUntil)</strong>
+                            </div>
+                            <div class="form-text">@LocalizationService["ValidityDaysHelp"]</div>
                         }
                         else
                         {
-                            <input class="form-control"
+                            <input id="quotation-validity-days" class="form-control"
                                    value="@FormatJalaliDate(quotation.ValidUntil)"
                                    readonly />
                         }
@@ -332,16 +356,64 @@
                 </div>
 
             </div>
-        </div>
+        </section>
+
+        <!-- All jobs on this quotation, each retaining its own approval proof. -->
+        <section class="card quotation-card quotation-workspace-section mb-4" aria-label="@LocalizationService["JobsOnQuotation"]">
+            <div class="card-header quotation-card-header">
+                <span class="quotation-workspace-section-icon"><i class="bi bi-collection" aria-hidden="true"></i></span>
+                <strong>@LocalizationService["JobsOnQuotation"]</strong>
+                <span class="quotation-workspace-count">@linkedRequests.Count</span>
+            </div>
+            <div class="card-body quotation-card-body">
+                @foreach (var job in linkedRequests)
+                {
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 quotation-workspace-job" @key="job.Id">
+                        <div class="quotation-workspace-job-overview">
+                            <span class="quotation-workspace-job-icon" aria-hidden="true">
+                                <i class="bi @(job.JobType == SalesJobType.Roll ? "bi-disc" : "bi-file-earmark-richtext")"></i>
+                            </span>
+                            <div>
+                                <strong>@GetRequestTitle(job)</strong>
+                                <div class="text-muted small">
+                                    @job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="quotation-workspace-job-actions">
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="@($"/sales/requests/{(job.JobType == SalesJobType.Roll ? "roll" : "sheet")}/edit/{job.Id}?quotationId={quotation.Id}")">
+                                @LocalizationService["OpenJob"]
+                            </a>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="@($"/sales/requests/proof/{job.Id}?quotationId={quotation.Id}")">
+                                @LocalizationService["OpenApprovalProof"]
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                @if (IsEditable && linkedRequests.Count > 0)
+                {
+                    <div class="mt-3">
+                        <a class="btn btn-outline-primary"
+                           href="@($"/sales/requests/{(linkedRequests[0].JobType == SalesJobType.Roll ? "roll" : "sheet")}/edit/{linkedRequests[0].Id}?quotationId={quotation.Id}")">
+                            @LocalizationService["ManageOrderItemsInJobEditor"]
+                        </a>
+                    </div>
+                }
+            </div>
+        </section>
 
         <!-- Quotation Lines -->
 
-        <div class="card quotation-card mb-4">
-
+        <section class="card quotation-card quotation-workspace-section mb-4" aria-label="@LocalizationService["QuotationLines"]">
             <div class="card-header quotation-card-header">
+                <span class="quotation-workspace-section-icon"><i class="bi bi-calculator" aria-hidden="true"></i></span>
                 <strong>
                     @LocalizationService["QuotationLines"]
                 </strong>
+                <span class="quotation-workspace-header-note">@LocalizationService["QuotationPricingHelp"]</span>
             </div>
 
             <div class="card-body p-0 quotation-table-body">
@@ -380,8 +452,7 @@
 
                             @foreach (var line in quotation.Lines)
                             {
-                                <tr>
-
+                                <tr class="quotation-workspace-price-row">
                                     <td>
                                         <div class="fw-semibold">
                                             @line.Item?.Name
@@ -390,6 +461,15 @@
                                         <small class="text-muted">
                                             @line.Item?.Code
                                         </small>
+                                        @if (line.SourceRequestId is long sourceId)
+                                        {
+                                            <div class="small mt-1">
+                                                @GetLinkedRequestNumber(sourceId) ·
+                                                <a href="@($"/sales/requests/proof/{sourceId}?quotationId={quotation.Id}")">
+                                                    @LocalizationService["OpenApprovalProof"]
+                                                </a>
+                                            </div>
+                                        }
                                     </td>
 
                                     <td class="text-end">
@@ -400,18 +480,21 @@
 
                                         @if (IsEditable)
                                         {
-                                            <InputNumber class="form-control text-end"
-                                                         @bind-Value="line.UnitPrice" />
+                                            <input type="number" min="0" step="1" inputmode="numeric"
+                                                   class="form-control text-end quotation-workspace-price-input @(invalidPriceLineIds.Contains(line.Id) ? "is-invalid" : "")"
+                                                   aria-invalid="@invalidPriceLineIds.Contains(line.Id)"
+                                                   value="@FormatWholePriceInput(line.UnitPrice)"
+                                                   @onchange="args => UpdateWholeUnitPrice(line, args)" />
                                         }
                                         else
                                         {
-                                            @line.UnitPrice.ToString("N2")
+                                            @FormatWholeAmount(line.UnitPrice)
                                         }
 
                                     </td>
 
                                     <td class="text-end fw-semibold">
-                                        @line.TotalPrice.ToString("N2")
+                                        @FormatWholeAmount(line.TotalPrice)
                                     </td>
 
                                     <td>
@@ -436,14 +519,18 @@
                     </table>
 
                 </div>
-
+                <div class="quotation-workspace-table-total" aria-live="polite">
+                    <span>@LocalizationService["FinalAmount"]</span>
+                    <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
+                </div>
             </div>
-        </div>
+        </section>
 
         <!-- Quotation Notes -->
 
-        <div class="card quotation-card mb-4">
+        <section class="card quotation-card quotation-workspace-section mb-4" aria-label="@LocalizationService["Notes"]">
             <div class="card-header quotation-card-header">
+                <span class="quotation-workspace-section-icon"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
                 <strong>@LocalizationService["Notes"]</strong>
             </div>
             <div class="card-body quotation-card-body">
@@ -458,6 +545,53 @@
                     <textarea class="form-control" rows="4" readonly>@quotation.Notes</textarea>
                 }
             </div>
+        </section>
+            </div>
+
+            <aside class="quotation-workspace-sidebar" aria-label="@LocalizationService["QuotationPricingSummary"]">
+                <section class="quotation-workspace-total-card">
+                    <div class="quotation-workspace-total-heading">
+                        <span class="quotation-workspace-total-icon" aria-hidden="true"><i class="bi bi-receipt"></i></span>
+                        <div>
+                            <h2>@LocalizationService["QuotationPricingSummary"]</h2>
+                            <p>@quotation.QuotationNumber</p>
+                        </div>
+                    </div>
+
+                    <div class="quotation-workspace-total-amount" aria-live="polite">
+                        <span>@LocalizationService["FinalAmount"]</span>
+                        <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
+                    </div>
+
+                    <dl class="quotation-workspace-total-details">
+                        <div><dt>@LocalizationService["QuotationLines"]</dt><dd>@quotation.Lines.Count</dd></div>
+                        <div><dt>@LocalizationService["JobsOnQuotation"]</dt><dd>@linkedRequests.Count</dd></div>
+                        <div><dt>@LocalizationService["Customer"]</dt><dd>@GetCustomerName()</dd></div>
+                    </dl>
+
+                    <p class="quotation-workspace-total-help">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                        @LocalizationService["QuotationPricingSummaryHint"]
+                    </p>
+                    @if (quotation.Status is QuotationStatus.Approved or QuotationStatus.ReadyToSend
+                        or QuotationStatus.SentToCustomer or QuotationStatus.CustomerNegotiation
+                        or QuotationStatus.Accepted or QuotationStatus.Rejected)
+                    {
+                        <a class="quotation-workspace-preview-link" href="@($"/sales/quotations/preview/{quotation.Id}")">
+                            <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                            @LocalizationService["QuotationPreview"]
+                        </a>
+                    }
+                </section>
+
+                <section class="quotation-workspace-guidance">
+                    <div class="quotation-workspace-guidance-title">
+                        <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                        <strong>@LocalizationService["QuotationNextStep"]</strong>
+                    </div>
+                    <p>@GetQuotationWorkflowHint()</p>
+                </section>
+            </aside>
         </div>
     }
 </div>
@@ -468,6 +602,7 @@
     public long Id { get; set; }
 
     private Quotation? quotation;
+    private List<SalesRequest> linkedRequests = new();
 
     private bool isLoading = true;
     private bool isSaving;
@@ -475,15 +610,27 @@
     private bool isApproving;
     private bool isRejecting;
     private bool isDeciding;
-    private bool isCreatingSalesOrder;
 
     private string? errorMessage;
     private string? successMessage;
+    private readonly HashSet<long> invalidPriceLineIds = new();
 
     private bool IsEditable =>
         quotation != null &&
         (quotation.Status == QuotationStatus.Draft ||
          quotation.Status == QuotationStatus.RevisionRequired);
+
+    private string GetQuotationWorkflowHint() => quotation?.Status switch
+    {
+        QuotationStatus.Draft or QuotationStatus.RevisionRequired =>
+            LocalizationService["QuotationEditDraftHint"],
+        QuotationStatus.PendingApproval =>
+            LocalizationService["QuotationEditPendingHint"],
+        QuotationStatus.Approved or QuotationStatus.ReadyToSend or
+        QuotationStatus.SentToCustomer or QuotationStatus.CustomerNegotiation =>
+            LocalizationService["QuotationEditApprovedHint"],
+        _ => LocalizationService["QuotationEditClosedHint"]
+    };
 
     private static string GetQuotationStatusCssClass(QuotationStatus status) => status switch
     {
@@ -535,6 +682,30 @@
                 errorMessage =
                     LocalizationService["QuotationNotFound"];
             }
+            else
+            {
+                // Editable legacy quotations may contain fractional prices.
+                // Normalize tracked values so visible unit prices and totals
+                // agree immediately; changes persist only when saved.
+                if (IsEditable)
+                    NormalizeUnitPrices();
+
+                // The primary request remains linked for legacy quotations.
+                var requestIds = quotation.Lines
+                    .Where(line => line.SourceRequestId.HasValue)
+                    .Select(line => line.SourceRequestId!.Value)
+                    .Append(quotation.SalesRequestId)
+                    .Distinct()
+                    .ToArray();
+
+                invalidPriceLineIds.Clear();
+
+                linkedRequests = await Db.SalesRequests.AsNoTracking()
+                    .Where(job => requestIds.Contains(job.Id))
+                    .OrderBy(job => job.RequestDate)
+                    .ToListAsync();
+
+            }
         }
         catch (Exception ex)
         {
@@ -546,6 +717,26 @@
         }
     }
 
+
+    private string GetLinkedRequestNumber(long requestId) =>
+        linkedRequests.FirstOrDefault(x => x.Id == requestId)?.RequestNumber ?? $"#{requestId}";
+
+    private static string GetRequestTitle(SalesRequest request)
+    {
+        try
+        {
+            using var json = JsonDocument.Parse(
+                string.IsNullOrWhiteSpace(request.JobSpecificationJson)
+                    ? "{}" : request.JobSpecificationJson);
+            if (json.RootElement.TryGetProperty("JobTitle", out var value) &&
+                value.ValueKind == JsonValueKind.String &&
+                !string.IsNullOrWhiteSpace(value.GetString()))
+                return value.GetString()!;
+        }
+        catch (JsonException) { }
+
+        return request.RequestNumber;
+    }
 
     private async Task SaveAsync()
     {
@@ -559,6 +750,7 @@
         {
             ValidateQuotation();
 
+            NormalizeUnitPrices();
             CalculateFinalAmount();
 
             isSaving = true;
@@ -596,6 +788,7 @@
         {
             ValidateQuotation();
 
+            NormalizeUnitPrices();
             CalculateFinalAmount();
 
             isSubmitting = true;
@@ -688,10 +881,9 @@
     }
 
 
-    private async Task CustomerDecisionAsync(
-        bool accepted)
+    private async Task CustomerDecisionAsync(bool accepted)
     {
-        if (quotation == null)
+        if (quotation == null || isDeciding)
             return;
 
         errorMessage = null;
@@ -701,54 +893,31 @@
         {
             isDeciding = true;
 
-            await QuotationService
-                .CustomerDecisionAsync(
-                    quotation.Id,
-                    accepted);
+            if (accepted)
+            {
+                // One action: record customer acceptance and create the order
+                // in a single transaction. Repeated requests reuse the order.
+                var salesOrder = await SalesOrderService
+                    .AcceptQuotationAndCreateOrderAsync(quotation.Id);
 
+                Navigation.NavigateTo($"/sales/orders/edit/{salesOrder.Id}");
+                return;
+            }
+
+            // Rejection only returns the quotation for price revision.
+            await QuotationService.CustomerDecisionAsync(quotation.Id, false);
             await LoadAsync();
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
-        }
-        finally
-        {
-            isDeciding = false;
-        }
-    }
-
-
-    private async Task CreateSalesOrderAsync()
-    {
-        if (quotation == null)
-            return;
-
-        if (quotation.Status != QuotationStatus.Accepted)
-            return;
-
-        errorMessage = null;
-        successMessage = null;
-
-        try
-        {
-            isCreatingSalesOrder = true;
-
-            var salesOrder =
-                await SalesOrderService
-                    .CreateFromQuotationAsync(
-                        quotation.Id);
-
-            Navigation.NavigateTo(
-                $"/sales/orders/edit/{salesOrder.Id}");
-        }
-        catch (Exception ex)
-        {
+            // Refresh the actual persisted state after a rolled-back acceptance.
+            await LoadAsync();
             errorMessage = ex.Message;
         }
         finally
         {
-            isCreatingSalesOrder = false;
+            isDeciding = false;
         }
     }
 
@@ -779,6 +948,10 @@
     {
         if (quotation == null)
             return;
+
+        if (invalidPriceLineIds.Count > 0)
+            throw new InvalidOperationException(
+                LocalizationService["WholeNumberPriceRequired"]);
 
         if (!quotation.Lines.Any())
         {
@@ -850,6 +1023,8 @@
 
     private string GetJobTitle()
     {
+        if (linkedRequests.Count > 1)
+            return $"{linkedRequests.Count} {LocalizationService["JobsOnQuotation"]}";
         var json = quotation?.SalesRequest?.JobSpecificationJson;
         if (string.IsNullOrWhiteSpace(json))
             return "-";
@@ -878,6 +1053,66 @@
         return "-";
     }
 
+    // A blank validity period means no expiry is specified. Derive dates
+    // from the quotation date, not from the day the editor is opened.
+    private int? ValidityDays
+    {
+        get => quotation?.ValidUntil is DateTime expiry
+            ? (expiry.Date - quotation.QuotationDate.Date).Days
+            : null;
+        set
+        {
+            if (quotation == null)
+                return;
+
+            if (value is < 0 or > 3650)
+            {
+                errorMessage = LocalizationService["ValidityDaysRange"];
+                return;
+            }
+
+            quotation.ValidUntil = value.HasValue
+                ? quotation.QuotationDate.Date.AddDays(value.Value)
+                : null;
+            errorMessage = null;
+        }
+    }
+
+    private static decimal WholePrice(decimal amount) =>
+        decimal.Round(amount, 0, MidpointRounding.AwayFromZero);
+
+    private static string FormatWholeAmount(decimal amount) =>
+        WholePrice(amount).ToString("N0", CultureInfo.CurrentCulture);
+
+    // HTML number controls require invariant, ungrouped values.
+    private static string FormatWholePriceInput(decimal amount) =>
+        WholePrice(amount).ToString("0", CultureInfo.InvariantCulture);
+
+    private void UpdateWholeUnitPrice(QuotationLine line, ChangeEventArgs args)
+    {
+        var raw = args.Value?.ToString();
+        if (!decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ||
+            price < 0 || decimal.Truncate(price) != price)
+        {
+            invalidPriceLineIds.Add(line.Id);
+            errorMessage = LocalizationService["WholeNumberPriceRequired"];
+            return;
+        }
+
+        invalidPriceLineIds.Remove(line.Id);
+        line.UnitPrice = price;
+        errorMessage = null;
+    }
+
+    private void NormalizeUnitPrices()
+    {
+        if (quotation is null)
+            return;
+
+        foreach (var line in quotation.Lines)
+            line.UnitPrice = WholePrice(line.UnitPrice);
+    }
+
     private static string FormatJalaliDate(DateTime? date)
     {
         if (!date.HasValue)
@@ -886,48 +1121,6 @@
         var calendar = new PersianCalendar();
         return $"{calendar.GetYear(date.Value):0000}/{calendar.GetMonth(date.Value):00}/{calendar.GetDayOfMonth(date.Value):00}";
     }
-
-    private void UpdateValidUntilFromJalali(ChangeEventArgs args)
-    {
-        if (quotation == null)
-            return;
-
-        var value = (args.Value?.ToString() ?? string.Empty).Trim()
-            .Replace('-', '/').Replace('.', '/')
-            .Replace('۰', '0').Replace('۱', '1').Replace('۲', '2')
-            .Replace('۳', '3').Replace('۴', '4').Replace('۵', '5')
-            .Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9')
-            .Replace('٠', '0').Replace('١', '1').Replace('٢', '2')
-            .Replace('٣', '3').Replace('٤', '4').Replace('٥', '5')
-            .Replace('٦', '6').Replace('٧', '7').Replace('٨', '8').Replace('٩', '9');
-
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            quotation.ValidUntil = null;
-            return;
-        }
-
-        var parts = value.Split('/');
-        if (parts.Length != 3 ||
-            !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var year) ||
-            !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var month) ||
-            !int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var day))
-        {
-            errorMessage = LocalizationService["InvalidJalaliFromDate"];
-            return;
-        }
-
-        try
-        {
-            quotation.ValidUntil = new PersianCalendar().ToDateTime(year, month, day, 0, 0, 0, 0);
-            errorMessage = null;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            errorMessage = LocalizationService["InvalidJalaliFromDate"];
-        }
-    }
-
 
     private void GoBack()
     {
@@ -939,7 +1132,6 @@
             return;
         }
 
-        Navigation.NavigateTo(
-            $"/sales/requests/edit/{quotation.SalesRequestId}");
+        Navigation.NavigateTo("/sales/quotations");
     }
 }

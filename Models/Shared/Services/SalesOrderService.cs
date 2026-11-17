@@ -23,6 +23,58 @@ public class SalesOrderService
     }
 
 
+    /// <summary>
+    /// Customer acceptance is the final sales step: accept the quotation and
+    /// create its confirmed sales order atomically. Repeated calls reuse the
+    /// order, including for quotations accepted before this workflow change.
+    /// </summary>
+    public async Task<SalesOrder> AcceptQuotationAndCreateOrderAsync(long quotationId)
+    {
+        // The serializable transaction protects the check/create sequence from
+        // parallel acceptance requests and the number series already uses this
+        // context's ambient EF transaction.
+        await using var transaction = await _db.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.Serializable);
+
+        try
+        {
+            var quotation = await _db.Quotations
+                .FirstOrDefaultAsync(x => x.Id == quotationId)
+                ?? throw new InvalidOperationException("Quotation not found.");
+
+            var canAccept =
+                quotation.Status == QuotationStatus.Approved ||
+                quotation.Status == QuotationStatus.ReadyToSend ||
+                quotation.Status == QuotationStatus.SentToCustomer ||
+                quotation.Status == QuotationStatus.CustomerNegotiation ||
+                quotation.Status == QuotationStatus.Accepted;
+
+            if (!canAccept)
+                throw new InvalidOperationException(
+                    "Only an internally approved quotation may be accepted by the customer.");
+
+            if (quotation.Status != QuotationStatus.Accepted)
+            {
+                quotation.Status = QuotationStatus.Accepted;
+                await _db.SaveChangesAsync();
+            }
+
+            // This method checks for an existing SalesOrder by QuotationId.
+            // If creation fails the acceptance status is rolled back as well.
+            var order = await CreateFromQuotationAsync(quotationId);
+            await transaction.CommitAsync();
+            return order;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            // A failed transaction must not leave Accepted/added order entities
+            // tracked as if they had been committed.
+            _db.ChangeTracker.Clear();
+            throw;
+        }
+    }
+
     public async Task<SalesOrder> CreateFromQuotationAsync(
         long quotationId)
     {
@@ -87,6 +139,8 @@ public class SalesOrderService
                 new SalesOrderLine
                 {
                     ItemId = line.ItemId,
+                    // Preserve the source request/proof through QuotationLine.
+                    QuotationLineId = line.Id,
                     Quantity = line.Quantity,
                     UnitId = item.UnitId,
                     UnitPrice = line.UnitPrice,

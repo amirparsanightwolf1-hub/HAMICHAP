@@ -27,6 +27,9 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int?>("AssignedMachineId")
+                        .HasColumnType("int");
+
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
@@ -899,6 +902,48 @@ namespace HamiChap_MES_ERP.Migrations
                     b.ToTable("ProductionMaterialConsumptions");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionOperationEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OperatorUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<long>("ProductionOperationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionOperationId", "OccurredAtUtc");
+
+                    b.ToTable("ProductionOperationEvents");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequest", b =>
                 {
                     b.Property<long>("Id")
@@ -907,8 +952,15 @@ namespace HamiChap_MES_ERP.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("ProductionOperationId")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("ProductionOrderId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("RequestedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("RequestedDate")
                         .HasColumnType("datetime2");
@@ -925,6 +977,8 @@ namespace HamiChap_MES_ERP.Migrations
                         .HasColumnType("nvarchar(40)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductionOperationId");
 
                     b.HasIndex("ProductionOrderId");
 
@@ -1037,6 +1091,15 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<decimal>("ActualHours")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<bool>("IsOutsourced")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("OutsourcedPlannedEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("OutsourcedPlannedStart")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1096,6 +1159,20 @@ namespace HamiChap_MES_ERP.Migrations
 
                     b.Property<int>("EstimatedDurationMinutes")
                         .HasColumnType("int");
+
+                    b.Property<bool>("OperationsRouteInitialized")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("OperationsSequenceConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OperationsSequenceConfirmedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("OperationsSequenceSignature")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Notes")
                         .IsRequired()
@@ -1552,6 +1629,9 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<long>("QuotationId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SourceRequestId")
+                        .HasColumnType("bigint");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -1566,6 +1646,8 @@ namespace HamiChap_MES_ERP.Migrations
                     b.HasIndex("ItemId");
 
                     b.HasIndex("QuotationId");
+
+                    b.HasIndex("SourceRequestId");
 
                     b.ToTable("QuotationLines");
                 });
@@ -2707,13 +2789,31 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionOperationEvent", b =>
+                {
+                    b.HasOne("HamiChap_MES_ERP.Models.Production.ProductionOperation", "ProductionOperation")
+                        .WithMany()
+                        .HasForeignKey("ProductionOperationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductionOperation");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Production.ProductionMaterialRequest", b =>
                 {
+                    b.HasOne("HamiChap_MES_ERP.Models.Production.ProductionOperation", "ProductionOperation")
+                        .WithMany()
+                        .HasForeignKey("ProductionOperationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("HamiChap_MES_ERP.Models.Production.ProductionOrder", "ProductionOrder")
                         .WithMany()
                         .HasForeignKey("ProductionOrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ProductionOperation");
 
                     b.Navigation("ProductionOrder");
                 });
@@ -2989,9 +3089,16 @@ namespace HamiChap_MES_ERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.SalesRequest", "SourceRequest")
+                        .WithMany()
+                        .HasForeignKey("SourceRequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Item");
 
                     b.Navigation("Quotation");
+
+                    b.Navigation("SourceRequest");
                 });
 
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesDelivery", b =>

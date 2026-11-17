@@ -2,6 +2,7 @@
 @page "/"
 
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject HamiChap_MES_ERP.Services.PermissionService PermissionService
@@ -18,10 +19,35 @@
 
         <div class="home-actions">
 
-            <a class="login-button"
-               href="/Account/Login">
-                🔐 @LocalizationService["Login"]
-            </a>
+            @if (!isAuthenticated)
+            {
+                <a class="login-button" href="/Account/Login">
+                    @LocalizationService["Login"]
+                </a>
+            }
+            else
+            {
+                @if (showSalesDashboard)
+                {
+                    <a class="login-button" href="/dashboard/sales">@LocalizationService["ManagerSalesDashboard"]</a>
+                }
+                @if (showWarehouseDashboard)
+                {
+                    <a class="login-button" href="/dashboard/warehouse">@LocalizationService["ManagerWarehouseDashboard"]</a>
+                }
+                @if (showCeoDashboard)
+                {
+                    <a class="login-button" href="/dashboard/ceo">@LocalizationService["ManagerCeoDashboard"]</a>
+                }
+                @if (showProductionDashboard)
+                {
+                    <a class="login-button" href="/dashboard/production">@LocalizationService["ManagerProductionDashboard"]</a>
+                }
+                @if (showOperatorDashboard)
+                {
+                    <a class="login-button" href="/production/machine-operator">@LocalizationService["OperatorDashboardTitle"]</a>
+                }
+            }
 
             @if (canCreateSalesRequest)
             {
@@ -39,6 +65,12 @@
 </div>
 
 @code {
+    private bool isAuthenticated;
+    private bool showSalesDashboard;
+    private bool showWarehouseDashboard;
+    private bool showCeoDashboard;
+    private bool showProductionDashboard;
+    private bool showOperatorDashboard;
     private bool canCreateSalesRequest;
 
     protected override async Task OnInitializedAsync()
@@ -48,6 +80,19 @@
 
         if (authState.User.Identity?.IsAuthenticated == true)
         {
+            isAuthenticated = true;
+            var user = authState.User;
+            showSalesDashboard = user.IsInRole("Administrator") || user.IsInRole("Sales") ||
+                user.IsInRole("SalesManager") || user.IsInRole("Sales Manager");
+            showWarehouseDashboard = user.IsInRole("Administrator") || user.IsInRole("Warehouse") ||
+                user.IsInRole("WarehouseManager") || user.IsInRole("Warehouse Manager");
+            showCeoDashboard = user.IsInRole("Administrator") || user.IsInRole("CEO") ||
+                user.IsInRole("Ceo") || user.IsInRole("Manager");
+            showProductionDashboard = user.IsInRole("Administrator") ||
+                user.IsInRole("ProductionManager") || user.IsInRole("Production Manager") ||
+                user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
+                user.IsInRole("Production") || user.IsInRole("Manager");
+            showOperatorDashboard = user.IsInRole("Operator") || user.IsInRole("Production");
             canCreateSalesRequest =
                 await PermissionService.HasPermissionAsync(
                     authState.User,

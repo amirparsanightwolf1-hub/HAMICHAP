@@ -1,0 +1,812 @@
+@page "/production/machine-operator"
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using System.Security.Claims
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Models.Production
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Services
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider Auth
+@inject LocalizationService L
+
+<PageTitle>@L["OperatorDashboardTitle"]</PageTitle>
+
+<div class="operator-mobile-page">
+    <header class="operator-mobile-header">
+        <div class="operator-header-top">
+            <div>
+                <span class="operator-kicker">@L["OperatorProductionArea"]</span>
+                <h1>@L["OperatorDashboardTitle"]</h1>
+            </div>
+            <button type="button" class="btn operator-refresh" disabled="@busy" @onclick="ReloadAsync"
+                    aria-label="@L["Refresh"]">@L["Refresh"]</button>
+        </div>
+        @if (canOperate)
+        {
+            <div class="operator-identity">
+                <div class="operator-identity-item">
+                    <span>@L["OperatorSignedInAs"]</span>
+                    <strong>@operatorDisplayName</strong>
+                </div>
+                <div class="operator-identity-item">
+                    <span>@L["Machine"]</span>
+                    <strong>@(machines.FirstOrDefault(x => x.Id == machineId)?.Name ?? L["OperatorUnassigned"])</strong>
+                </div>
+            </div>
+        }
+    </header>
+
+    @if (!canOperate)
+    {
+        <div class="alert alert-danger" role="alert">@L["OperatorAccessDenied"]</div>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert @(isError ? "alert-danger" : "alert-success")" role="status">@message</div>
+        }
+        @if (!executionSchemaReady)
+        {
+            <div class="alert alert-warning" role="alert">@L["OperatorMigrationRequired"]</div>
+        }
+        @if (!assignedMachineId.HasValue || machineId == 0)
+        {
+            <div class="alert alert-warning" role="alert">@L["OperatorNoAssignedMachine"]</div>
+        }
+        else
+        {
+            <div class="operator-overview" aria-label="@L["OperatorWorklist"]">
+                <div class="operator-overview-item">
+                    <strong>@AvailableOperations.Count(x => x.Status != ProductionOperationStatus.Running)</strong>
+                    <span>@L["OperatorAvailableNow"]</span>
+                </div>
+                <div class="operator-overview-item">
+                    <strong>@VisibleOperations.Count(x => x.Status == ProductionOperationStatus.Running)</strong>
+                    <span>@L["OperatorInProgress"]</span>
+                </div>
+                <div class="operator-overview-item">
+                    <strong>@UpcomingOperations.Count</strong>
+                    <span>@L["OperatorNextUp"]</span>
+                </div>
+            </div>
+
+            <section class="operator-section">
+                <h2>@L["OperatorReadyAndRunning"]</h2>
+                @{
+                    var primaryJobs = PendingWorklist.Where(x =>
+                        x.Status == ProductionOperationStatus.Running ||
+                        StartBlockedReason(x) == null).ToList();
+                }
+                @if (primaryJobs.Count == 0)
+                {
+                    <div class="operator-empty-state">
+                        <strong>@L["OperatorNoReadyJobs"]</strong>
+                        <p>@L["OperatorNoReadyJobsHint"]</p>
+                    </div>
+                }
+                @foreach (var step in primaryJobs)
+                {
+                    var paused = IsPaused(step.Id);
+                    var booking = BookingFor(step.Id);
+                    <article class="operator-operation-card" @key="step.Id">
+                        <div class="operator-operation-top">
+                            <div>
+                                <span class="operator-order-number">@L["OperatorOrder"] @step.ProductionOrder.OrderNumber</span>
+                                <h3>@step.Name</h3>
+                                <div class="operator-step">@L["OperatorStep"] @step.Sequence</div>
+                            </div>
+                            <span class="operator-status @(paused ? "operator-status-paused" : step.Status == ProductionOperationStatus.Running ? "operator-status-active" : "operator-status-ready")">
+                                @(paused ? L["OperatorPaused"] : step.Status == ProductionOperationStatus.Running ? L["OperatorInProgress"] : L["OperatorAvailableNow"])
+                            </span>
+                        </div>
+                        <div class="operator-timing">
+                            <div><span>@L["PlannedStart"]</span><strong>@(booking?.PlannedStart.ToString("HH:mm") ?? "—")</strong></div>
+                            <div><span>@L["PlannedEnd"]</span><strong>@(booking?.PlannedEnd.ToString("HH:mm") ?? "—")</strong></div>
+                            <div><span>@L["OperatorExpectedDuration"]</span><strong>@step.PlannedHours.ToString("0.##") @L["OperatorHours"]</strong></div>
+                        </div>
+                        @if (booking != null && step.ProductionOrder.PlannedEndDate.HasValue &&
+                             booking.PlannedEnd > step.ProductionOrder.PlannedEndDate.Value)
+                        {
+                            <div class="alert alert-warning py-2 small">@L["OperatorOutsideCeoWindow"]</div>
+                        }
+                        @if (step.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready)
+                        {
+                            <button type="button" class="btn btn-primary operator-touch-button"
+                                    disabled="@(busy || !executionSchemaReady)" @onclick='() => RecordAsync(step.Id, "Started")'>
+                                @L["OperatorStart"]
+                            </button>
+                        }
+                        else if (step.Status == ProductionOperationStatus.Running)
+                        {
+                            @if (paused)
+                            {
+                                <button type="button" class="btn btn-primary operator-touch-button"
+                                        disabled="@busy" @onclick='() => RecordAsync(step.Id, "Resumed")'>@L["OperatorResume"]</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-success operator-touch-button"
+                                        disabled="@busy" @onclick='() => RecordAsync(step.Id, "Finished")'>@L["OperatorFinish"]</button>
+                                <details class="operator-action-details">
+                                    <summary>@L["OperatorPause"]</summary>
+                                    <div class="operator-detail-body">
+                                        <label for="@($"pause-{step.Id}")">@L["OperatorPauseReason"]</label>
+                                        <textarea id="@($"pause-{step.Id}")" rows="2" class="form-control"
+                                                  @bind="pauseReasons[step.Id]"></textarea>
+                                        <button type="button" class="btn btn-outline-warning operator-touch-button"
+                                                disabled="@busy" @onclick='() => RecordAsync(step.Id, "Paused")'>@L["OperatorPause"]</button>
+                                    </div>
+                                </details>
+                            }
+                            <details class="operator-action-details">
+                                <summary>@L["OperatorDelayReport"]</summary>
+                                <div class="operator-detail-body">
+                                    @if (HasOverrun(step))
+                                    {
+                                        <div class="alert alert-warning small py-2">@L["OperatorOverrunWarning"]</div>
+                                    }
+                                    <label for="@($"minutes-{step.Id}")">@L["OperatorAdditionalMinutes"]</label>
+                                    <input id="@($"minutes-{step.Id}")" type="number" min="1" max="10080" step="1"
+                                           class="form-control" @bind="overrunMinutes[step.Id]" />
+                                    <label for="@($"delay-{step.Id}")">@L["OperatorDelayReason"]</label>
+                                    <textarea id="@($"delay-{step.Id}")" rows="2" maxlength="1000"
+                                              class="form-control" @bind="overrunReasons[step.Id]"></textarea>
+                                    <button type="button" class="btn btn-outline-warning operator-touch-button"
+                                            disabled="@busy" @onclick="() => ExtendAsync(step.Id)">@L["OperatorSubmitDelay"]</button>
+                                </div>
+                            </details>
+                        }
+                        <details class="operator-action-details">
+                            <summary>@L["OperatorWarehouseRequest"]</summary>
+                            <div class="operator-detail-body">
+                                <label for="@($"item-{step.Id}")">@L["OperatorItemOrTool"]</label>
+                                <select id="@($"item-{step.Id}")" class="form-select" @bind="requestItemIds[step.Id]">
+                                    <option value="0">@L["OperatorChooseItem"]</option>
+                                    @foreach (var item in items)
+                                    {
+                                        <option value="@item.Id">@item.Name (@item.Code)</option>
+                                    }
+                                </select>
+                                <label for="@($"quantity-{step.Id}")">@L["Quantity"]</label>
+                                <input id="@($"quantity-{step.Id}")" type="number" min="0.001" step="any"
+                                       class="form-control" @bind="requestQuantities[step.Id]" />
+                                <label for="@($"notes-{step.Id}")">@L["Notes"]</label>
+                                <input id="@($"notes-{step.Id}")" class="form-control" @bind="requestNotes[step.Id]" />
+                                <button type="button" class="btn btn-outline-primary operator-touch-button"
+                                        disabled="@busy" @onclick="() => RequestItemAsync(step.Id)">@L["OperatorSubmitWarehouseRequest"]</button>
+                            </div>
+                        </details>
+                        @if (eventsByOperation.TryGetValue(step.Id, out var history) && history.Count > 0)
+                        {
+                            <details class="operator-action-details">
+                                <summary>@L["OperatorActivityLog"] (@history.Count)</summary>
+                                <div class="operator-detail-body">
+                                    @foreach (var entry in history)
+                                    {
+                                        <div class="operator-log-row">
+                                            <strong>@EventLabel(entry.EventType)</strong>
+                                            <span>@entry.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                                            @if (!string.IsNullOrWhiteSpace(entry.Reason))
+                                            {
+                                                <p>@entry.Reason</p>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </details>
+                        }
+                    </article>
+                }
+            </section>
+
+            <section class="operator-section">
+                <h2>@L["OperatorNextUp"]</h2>
+                @{
+                    var waitingJobs = PendingWorklist.Where(x =>
+                        (x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready) &&
+                        StartBlockedReason(x) != null).ToList();
+                }
+                @if (waitingJobs.Count == 0)
+                {
+                    <div class="operator-empty-state">@L["OperatorNoUpcoming"]</div>
+                }
+                @foreach (var step in waitingJobs)
+                {
+                    <div class="operator-waiting-row" @key="step.Id">
+                        <div class="operator-waiting-heading">
+                            <strong>@step.Name</strong>
+                            <span>@step.ProductionOrder.OrderNumber</span>
+                        </div>
+                        <small>@(BookingFor(step.Id)?.PlannedStart.ToString("yyyy-MM-dd HH:mm") ?? "—")</small>
+                        <p>@StartBlockedReason(step)</p>
+                    </div>
+                }
+            </section>
+
+            <details class="operator-other-work">
+                <summary>@L["OperatorRecentlyCompleted"]</summary>
+                @{
+                    var recent = VisibleOperations.Where(x => x.Status == ProductionOperationStatus.Completed)
+                        .OrderByDescending(x => eventsByOperation.GetValueOrDefault(x.Id)?
+                            .FirstOrDefault(e => e.EventType == "Finished")?.OccurredAtUtc).Take(8).ToList();
+                }
+                @if (recent.Count == 0)
+                {
+                    <p>@L["OperatorNoCompleted"]</p>
+                }
+                @foreach (var step in recent)
+                {
+                    <div class="operator-waiting-row">
+                        <div class="operator-waiting-heading"><strong>@step.Name</strong><span>@step.ProductionOrder.OrderNumber</span></div>
+                        <small>@(eventsByOperation.GetValueOrDefault(step.Id)?
+                            .FirstOrDefault(e => e.EventType == "Finished")?.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")</small>
+                    </div>
+                }
+            </details>
+            <p class="operator-auto-update">@L["OperatorAutoRefresh"]</p>
+        }
+    }
+</div>
+
+@code {
+    private readonly CancellationTokenSource refreshCancellation = new();
+    private bool canOperate;
+    private int? assignedMachineId;
+    private bool executionSchemaReady = true;
+    private bool busy;
+    private bool isError;
+    private string message = "";
+    private string userId = "";
+    private string operatorDisplayName = "";
+    private int machineId;
+    private List<Machine> machines = new();
+    private List<Item> items = new();
+    private List<ProductionOperation> operations = new();
+    private List<ProductionOrder> visibleOrders = new();
+    private Dictionary<long, List<ProductionOperationEvent>> eventsByOperation = new();
+    private Dictionary<long, string> pauseReasons = new();
+    private Dictionary<long, int> requestItemIds = new();
+    private Dictionary<long, decimal> requestQuantities = new();
+    private Dictionary<long, string> requestNotes = new();
+    private Dictionary<long, string> overrunReasons = new();
+    private Dictionary<long, int> overrunMinutes = new();
+    private Dictionary<long, ProductionSchedule> bookingsByOperation = new();
+
+    private string EventLabel(string eventType) => eventType switch
+    {
+        "Started" => L["OperatorStarted"],
+        "Paused" => L["OperatorPaused"],
+        "Resumed" => L["OperatorResumed"],
+        "Finished" => L["OperatorFinished"],
+        "Overrun" => L["OperatorDelayReport"],
+        _ => eventType
+    };
+
+    private string OrderStatusLabel(ProductionOrderStatus status) => status switch
+    {
+        ProductionOrderStatus.Planned => L["Planned"],
+        ProductionOrderStatus.ReadyToStart => L["ReadyToStart"],
+        ProductionOrderStatus.InProduction => L["InProduction"],
+        ProductionOrderStatus.WaitingForMaterial => L["WaitingForMaterial"],
+        ProductionOrderStatus.MaterialChecking => L["MaterialChecking"],
+        ProductionOrderStatus.QualityControl => L["QualityControl"],
+        ProductionOrderStatus.Completed => L["Completed"],
+        ProductionOrderStatus.Cancelled => L["Cancelled"],
+        _ => status.ToString()
+    };
+
+    private string UpcomingReason(ProductionOperation step)
+    {
+        if (BookingFor(step.Id) == null) return L["OperatorAwaitingSchedule"];
+        if (!PreviousCompleted(step)) return L["OperatorWaitingPrevious"];
+        return L["OperatorWaitingMachine"];
+    }
+
+    private List<ProductionOperation> PendingWorklist =>
+        VisibleOperations.Where(x => x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready or ProductionOperationStatus.Running).ToList();
+
+    private List<ProductionOperation> VisibleOperations =>
+        operations.Where(x => x.Status != ProductionOperationStatus.Cancelled)
+            .OrderBy(x => BookingFor(x.Id)?.PlannedStart ?? DateTime.MaxValue)
+            .ThenBy(x => x.Sequence).ToList();
+    private List<ProductionOperation> AvailableOperations =>
+        VisibleOperations.Where(x => x.Status == ProductionOperationStatus.Running ||
+            ((x.Status is ProductionOperationStatus.Ready or ProductionOperationStatus.Pending) &&
+             StartBlockedReason(x) == null)).ToList();
+    private string? StartBlockedReason(ProductionOperation step)
+    {
+        if (!executionSchemaReady) return L["OperatorBlockedSchema"];
+        if (!assignedMachineId.HasValue || BookingFor(step.Id)?.MachineId != assignedMachineId.Value)
+            return L["OperatorBlockedOtherMachine"];
+        if (!PreviousCompleted(step)) return L["OperatorWaitingPrevious"];
+        var booking = BookingFor(step.Id);
+        if (booking == null) return L["OperatorBlockedBooking"];
+        if (booking.Status != ScheduleStatus.Planned) return L["OperatorBlockedBookingStatus"];
+        if (step.ProductionOrder.OperationsSequenceConfirmedAt == null) return L["OperatorBlockedSequence"];
+        var now = DateTime.Now;
+        if (!step.ProductionOrder.PlannedStartDate.HasValue || !step.ProductionOrder.PlannedEndDate.HasValue)
+            return L["OperatorBlockedCeoPlan"];
+        if (now < step.ProductionOrder.PlannedStartDate.Value) return L["OperatorBlockedBeforeStart"];
+        if (now >= step.ProductionOrder.PlannedEndDate.Value) return L["OperatorBlockedAfterEnd"];
+        if (ProductionPlanningTime.NextAllowedProductionMinute(
+                now, step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) > now)
+            return L["OperatorBlockedShift"];
+        if (bookingsByOperation.Values.Any(x =>
+                x.MachineId == booking.MachineId && x.ProductionOperationId != step.Id &&
+                x.Status == ScheduleStatus.Running))
+            return L["OperatorBlockedMachineBusy"];
+        if (now < booking.PlannedStart && bookingsByOperation.Values.Any(x =>
+                x.Id != booking.Id && x.MachineId == booking.MachineId &&
+                x.Status != ScheduleStatus.Cancelled &&
+                x.PlannedStart < booking.PlannedStart && x.PlannedEnd > now))
+            return L["OperatorBlockedReservation"];
+        return null;
+    }
+
+    private bool IsAllowedToStartNow(ProductionOperation step)
+    {
+        var start = step.ProductionOrder.PlannedStartDate;
+        if (!start.HasValue || DateTime.Now < start.Value ||
+            step.ProductionOrder.OperationsSequenceConfirmedAt == null ||
+            (step.ProductionOrder.PlannedEndDate.HasValue &&
+             DateTime.Now >= step.ProductionOrder.PlannedEndDate.Value))
+            return false;
+        return ProductionPlanningTime.NextAllowedProductionMinute(DateTime.Now,
+            step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) <= DateTime.Now;
+    }
+    private List<ProductionOperation> UpcomingOperations =>
+        VisibleOperations.Where(x => (x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready) &&
+            !AvailableOperations.Any(a => a.Id == x.Id)).ToList();
+    private ProductionSchedule? BookingFor(long id) =>
+        bookingsByOperation.GetValueOrDefault(id);
+    private bool HasOverrun(ProductionOperation step)
+    {
+        var booking = BookingFor(step.Id);
+        return step.Status == ProductionOperationStatus.Running &&
+            (booking != null && DateTime.Now > booking.PlannedEnd ||
+             ActiveMinutes(eventsByOperation.GetValueOrDefault(step.Id) ?? new(),
+                 DateTime.UtcNow) > ProductionPlanningTime.OperationMinutes(step.PlannedHours));
+    }
+    private static double ActiveMinutes(IEnumerable<ProductionOperationEvent> events, DateTime nowUtc)
+    {
+        DateTime? activeFrom = null;
+        double minutes = 0;
+        foreach (var entry in events.OrderBy(x => x.OccurredAtUtc).ThenBy(x => x.Id))
+        {
+            if (entry.EventType is "Started" or "Resumed") activeFrom = entry.OccurredAtUtc;
+            else if (entry.EventType is "Paused" or "Finished")
+            {
+                if (activeFrom.HasValue)
+                    minutes += Math.Max(0, (entry.OccurredAtUtc - activeFrom.Value).TotalMinutes);
+                activeFrom = null;
+            }
+        }
+        if (activeFrom.HasValue) minutes += Math.Max(0, (nowUtc - activeFrom.Value).TotalMinutes);
+        return minutes;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        userId = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+        canOperate = !string.IsNullOrEmpty(userId) &&
+            (user.IsInRole("Administrator") || user.IsInRole("ProductionManager") ||
+             user.IsInRole("Production Manager") || user.IsInRole("Manager") ||
+             user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
+             user.IsInRole("Production") || user.IsInRole("Operator"));
+        if (!canOperate) return;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        assignedMachineId = await db.Users.AsNoTracking()
+            .Where(x => x.Id == userId && x.IsActive)
+            .Select(x => x.AssignedMachineId).FirstOrDefaultAsync();
+        var account = await db.Users.AsNoTracking()
+            .Where(x => x.Id == userId && x.IsActive)
+            .Select(x => new { x.FirstName, x.LastName, x.UserName }).FirstOrDefaultAsync();
+        operatorDisplayName = account == null ? user.Identity?.Name ?? "" :
+            (account.FirstName + " " + account.LastName).Trim();
+        if (string.IsNullOrWhiteSpace(operatorDisplayName))
+            operatorDisplayName = account?.UserName ?? user.Identity?.Name ?? "";
+        machines = await db.Machines.AsNoTracking()
+            .Where(x => x.IsActive && x.Id == assignedMachineId).ToListAsync();
+        machineId = machines.FirstOrDefault()?.Id ?? 0;
+        items = await db.Items.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        await ReloadAsync();
+        _ = RefreshLoopAsync();
+    }
+
+    private async Task RefreshLoopAsync()
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+            while (await timer.WaitForNextTickAsync(refreshCancellation.Token))
+            {
+                if (busy) continue;
+                await InvokeAsync(async () =>
+                {
+                    if (busy) return;
+                    await ReloadAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        refreshCancellation.Cancel();
+        refreshCancellation.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    private async Task ReloadAsync()
+    {
+        if (!canOperate) return;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        assignedMachineId = await db.Users.AsNoTracking()
+                .Where(x => x.Id == userId && x.IsActive)
+                .Select(x => x.AssignedMachineId).FirstOrDefaultAsync();
+            machines = await db.Machines.AsNoTracking()
+                .Where(x => x.IsActive && x.Id == assignedMachineId).ToListAsync();
+            machineId = machines.FirstOrDefault()?.Id ?? 0;
+            if (machineId == 0)
+            {
+                operations = new();
+                visibleOrders = new();
+                bookingsByOperation = new();
+                eventsByOperation = new();
+                predecessors = new();
+                return;
+            }
+        var machineBookings = await db.ProductionSchedules.AsNoTracking()
+            .Where(x => x.Status != ScheduleStatus.Cancelled)
+            .ToListAsync();
+        bookingsByOperation = machineBookings.GroupBy(x => x.ProductionOperationId)
+            .ToDictionary(x => x.Key, x => x.OrderByDescending(b => b.Id).First());
+        var allOpenOrders = await db.ProductionOrders.AsNoTracking()
+            .Where(x => x.Status != ProductionOrderStatus.Cancelled &&
+                        x.Status != ProductionOrderStatus.Completed)
+            .OrderBy(x => x.PlannedStartDate).ToListAsync();
+        var allIds = allOpenOrders.Select(x => x.Id).ToList();
+        var allOperations = await db.ProductionOperations.AsNoTracking()
+            .Include(x => x.ProductionOrder).Include(x => x.WorkCenter)
+            .Where(x => allIds.Contains(x.ProductionOrderId) && !x.IsOutsourced)
+            .ToListAsync();
+        var machine = machines.FirstOrDefault(x => x.Id == machineId);
+            var matchingIds = machineBookings.Where(x => x.MachineId == machineId)
+                .Select(x => x.ProductionOperationId).ToHashSet();
+            operations = allOperations.Where(x =>
+                matchingIds.Contains(x.Id) ||
+                (machine != null && x.WorkCenter?.Code == "MC-" + machine.Code)).ToList();
+            visibleOrders = allOpenOrders.Where(x =>
+                operations.Any(op => op.ProductionOrderId == x.Id)).ToList();
+        var orderIds = operations.Select(x => x.ProductionOrderId).Distinct().ToList();
+        var allSteps = await db.ProductionOperations.AsNoTracking()
+            .Where(x => orderIds.Contains(x.ProductionOrderId)).ToListAsync();
+        predecessors = allSteps;
+        var operationIds = operations.Select(x => x.Id).ToList();
+        try
+        {
+            eventsByOperation = (await db.ProductionOperationEvents.AsNoTracking()
+                .Where(x => operationIds.Contains(x.ProductionOperationId))
+                .OrderByDescending(x => x.OccurredAtUtc).ToListAsync())
+                .GroupBy(x => x.ProductionOperationId)
+                .ToDictionary(x => x.Key, x => x.ToList());
+            executionSchemaReady = true;
+        }
+        catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 208)
+        {
+            // The operator audit table is created by the execution-tracking migration.
+            // Keep the dashboard viewable without allowing unaudited actions.
+            executionSchemaReady = false;
+            eventsByOperation = new();
+        }
+        foreach (var step in operations)
+        {
+            requestItemIds.TryAdd(step.Id, 0);
+            requestQuantities.TryAdd(step.Id, 1m);
+            pauseReasons.TryAdd(step.Id, "");
+            requestNotes.TryAdd(step.Id, "");
+            overrunReasons.TryAdd(step.Id, "");
+            overrunMinutes.TryAdd(step.Id, 15);
+        }
+    }
+
+    private List<ProductionOperation> predecessors = new();
+    private bool PreviousCompleted(ProductionOperation step) =>
+        !predecessors.Any(x => x.ProductionOrderId == step.ProductionOrderId &&
+                               x.Sequence < step.Sequence && x.Status != ProductionOperationStatus.Completed);
+    // Delay-report events must not override the actual pause/resume state.
+    private ProductionOperationEvent? LastEvent(long id) =>
+        eventsByOperation.GetValueOrDefault(id)?
+            .FirstOrDefault(x => x.EventType is "Started" or "Paused" or "Resumed" or "Finished");
+    private bool IsPaused(long id) => LastEvent(id)?.EventType == "Paused";
+
+    private async Task AssertMachinePermissionAsync(ApplicationDbContext db, int actualMachineId)
+    {
+        var principal = (await Auth.GetAuthenticationStateAsync()).User;
+        if (principal.Identity?.IsAuthenticated != true ||
+            principal.FindFirstValue(ClaimTypes.NameIdentifier) != userId)
+            throw new UnauthorizedAccessException(L["OperatorErrAuthentication"]);
+
+        var account = await db.Users.AsNoTracking()
+            .Where(x => x.Id == userId && x.IsActive)
+            .Select(x => new { x.AssignedMachineId }).FirstOrDefaultAsync();
+        if (account == null)
+            throw new UnauthorizedAccessException(L["OperatorErrInactive"]);
+
+        if (!(principal.IsInRole("Administrator") ||
+              principal.IsInRole("ProductionManager") ||
+              principal.IsInRole("Production Manager") ||
+              principal.IsInRole("Manager") ||
+              principal.IsInRole("FloorManager") ||
+              principal.IsInRole("Floor Manager") ||
+              principal.IsInRole("Production") ||
+              principal.IsInRole("Operator")))
+            throw new UnauthorizedAccessException(L["OperatorErrRole"]);
+        if (!account.AssignedMachineId.HasValue ||
+            account.AssignedMachineId.Value != actualMachineId)
+            throw new UnauthorizedAccessException(
+                L["OperatorErrOtherMachine"]);
+    }
+
+    private async Task RecordAsync(long operationId, string action)
+    {
+        if (!canOperate || !executionSchemaReady || busy || !new[] { "Started", "Paused", "Resumed", "Finished" }.Contains(action)) return;
+        busy = true;
+        message = "";
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var step = await db.ProductionOperations
+                .Include(x => x.ProductionOrder).FirstOrDefaultAsync(x => x.Id == operationId && !x.IsOutsourced);
+            var booking = await db.ProductionSchedules.FirstOrDefaultAsync(x =>
+                x.ProductionOperationId == operationId &&
+                (machineId == 0 || x.MachineId == machineId) &&
+                x.Status != ScheduleStatus.Cancelled);
+            if (step == null || booking == null)
+                throw new InvalidOperationException(L["OperatorErrNoBooking"]);
+            await AssertMachinePermissionAsync(db, booking.MachineId);
+            if (step.ProductionOrder.Status is ProductionOrderStatus.Cancelled or ProductionOrderStatus.Completed)
+                throw new InvalidOperationException(L["OperatorErrClosedOrder"]);
+            if (step.ProductionOrder.OperationsSequenceConfirmedAt == null)
+                throw new InvalidOperationException(L["OperatorErrSequence"]);
+            var previous = await db.ProductionOperations.AnyAsync(x =>
+                x.ProductionOrderId == step.ProductionOrderId && x.Sequence < step.Sequence &&
+                x.Status != ProductionOperationStatus.Completed);
+            if (previous) throw new InvalidOperationException(L["OperatorErrPrevious"]);
+            var last = await db.ProductionOperationEvents
+                .Where(x => x.ProductionOperationId == operationId &&
+                    (x.EventType == "Started" || x.EventType == "Paused" ||
+                     x.EventType == "Resumed" || x.EventType == "Finished"))
+                .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
+            var paused = last?.EventType == "Paused";
+            string reason = "";
+            if (action == "Started")
+            {
+                if (step.Status is not (ProductionOperationStatus.Pending or ProductionOperationStatus.Ready))
+                    throw new InvalidOperationException(L["OperatorErrAlreadyStarted"]);
+                var now = DateTime.Now;
+                if (step.ProductionOrder.PlannedStartDate is not DateTime approvedStart ||
+                    step.ProductionOrder.PlannedEndDate is not DateTime approvedEnd ||
+                    now < approvedStart || now >= approvedEnd ||
+                    ProductionPlanningTime.NextAllowedProductionMinute(now,
+                        step.ProductionOrder.AvoidOvertime, step.ProductionOrder.AvoidNightShift) > now)
+                    throw new InvalidOperationException(L["OperatorErrCeoWindow"]);
+                if (booking.Status != ScheduleStatus.Planned)
+                    throw new InvalidOperationException(L["OperatorErrBookingNotReady"]);
+                if (await db.ProductionSchedules.AnyAsync(x =>
+                    x.Id != booking.Id && x.MachineId == booking.MachineId &&
+                    x.Status == ScheduleStatus.Running))
+                    throw new InvalidOperationException(
+                        L["OperatorErrMachineBusy"]);
+
+                // An early start is permitted as soon as the preceding operation has
+                // finished, but it must not overlap any other reservation on this machine.
+                if (now < booking.PlannedStart)
+                {
+                    var collision = await db.ProductionSchedules.AnyAsync(x =>
+                        x.Id != booking.Id && x.MachineId == booking.MachineId &&
+                        x.Status != ScheduleStatus.Cancelled &&
+                        x.PlannedStart < booking.PlannedStart && x.PlannedEnd > now);
+                    if (collision)
+                        throw new InvalidOperationException(
+                            L["OperatorErrReserved"]);
+                    booking.PlannedStart = now;
+                }
+                step.Status = ProductionOperationStatus.Running;
+                booking.Status = ScheduleStatus.Running;
+                step.ProductionOrder.Status = ProductionOrderStatus.InProduction;
+                step.ProductionOrder.ActualStartDate ??= DateTime.UtcNow;
+            }
+            else if (action == "Paused")
+            {
+                reason = pauseReasons.GetValueOrDefault(operationId, "").Trim();
+                if (step.Status != ProductionOperationStatus.Running || paused || reason.Length == 0)
+                    throw new InvalidOperationException(L["OperatorErrPauseReason"]);
+                if (reason.Length > 1000) throw new InvalidOperationException(L["OperatorErrReasonTooLong"]);
+            }
+            else if (action == "Resumed")
+            {
+                if (step.Status != ProductionOperationStatus.Running || !paused)
+                    throw new InvalidOperationException(L["OperatorErrNotPaused"]);
+            }
+            else if (action == "Finished")
+            {
+                if (step.Status != ProductionOperationStatus.Running || paused)
+                    throw new InvalidOperationException(L["OperatorErrResumeFirst"]);
+                var events = await db.ProductionOperationEvents
+                    .Where(x => x.ProductionOperationId == operationId)
+                    .OrderBy(x => x.Id).ToListAsync();
+                var durationExceeded = ActiveMinutes(events, DateTime.UtcNow) >
+                    ProductionPlanningTime.OperationMinutes(step.PlannedHours);
+                var needsExtension = DateTime.Now > booking.PlannedEnd;
+                var alreadyReported = events.Any(x => x.EventType == "Overrun");
+                if (needsExtension || (durationExceeded && !alreadyReported))
+                {
+                    reason = overrunReasons.GetValueOrDefault(operationId, "").Trim();
+                    if (string.IsNullOrWhiteSpace(reason) || reason.Length > 1000)
+                        throw new InvalidOperationException(L["OperatorErrDelayReasonRequired"]);
+                    if (needsExtension)
+                        await ProductionOperationOverrunScheduler.ExtendAsync(
+                            db, step, booking, DateTime.Now);
+                    db.ProductionOperationEvents.Add(new ProductionOperationEvent
+                    {
+                        ProductionOperationId = operationId, EventType = "Overrun",
+                        OccurredAtUtc = DateTime.UtcNow, OperatorUserId = userId,
+                        Reason = reason
+                    });
+                }
+                step.Status = ProductionOperationStatus.Completed;
+                booking.Status = ScheduleStatus.Completed;
+                if (DateTime.Now < booking.PlannedEnd)
+                {
+                    booking.PlannedEnd = DateTime.Now;
+                    await ProductionOperationEarlyCompletionScheduler.AdvanceFollowingAsync(
+                        db, step, booking.PlannedEnd);
+                }
+                var next = await db.ProductionOperations.Where(x =>
+                    x.ProductionOrderId == step.ProductionOrderId && x.Sequence > step.Sequence)
+                    .OrderBy(x => x.Sequence).FirstOrDefaultAsync();
+                if (next != null && next.Status == ProductionOperationStatus.Pending)
+                    next.Status = ProductionOperationStatus.Ready;
+                // The production order's final completion is still handled by QC and order workflow.
+            }
+            db.ProductionOperationEvents.Add(new ProductionOperationEvent
+            {
+                ProductionOperationId = operationId,
+                EventType = action,
+                OccurredAtUtc = DateTime.UtcNow,
+                OperatorUserId = userId,
+                Reason = reason
+            });
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            message = L["OperatorActionRecorded"];
+            isError = false;
+            pauseReasons[operationId] = "";
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+            isError = true;
+        }
+        finally { busy = false; }
+    }
+
+    private async Task ExtendAsync(long operationId)
+    {
+        if (!canOperate || !executionSchemaReady || busy) return;
+        busy = true;
+        message = "";
+        try
+        {
+            var reason = overrunReasons.GetValueOrDefault(operationId, "").Trim();
+            var minutes = overrunMinutes.GetValueOrDefault(operationId);
+            if (reason.Length == 0 || reason.Length > 1000 || minutes <= 0 || minutes > 10080)
+                throw new InvalidOperationException(L["OperatorErrDelayInput"]);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var step = await db.ProductionOperations.Include(x => x.ProductionOrder)
+                .FirstOrDefaultAsync(x => x.Id == operationId && !x.IsOutsourced);
+            var booking = await db.ProductionSchedules.FirstOrDefaultAsync(x =>
+                x.ProductionOperationId == operationId &&
+                (machineId == 0 || x.MachineId == machineId) &&
+                x.Status == ScheduleStatus.Running);
+            if (step == null || booking == null)
+                throw new InvalidOperationException(L["OperatorErrNotRunning"]);
+            await AssertMachinePermissionAsync(db, booking.MachineId);
+            var last = await db.ProductionOperationEvents
+                .Where(x => x.ProductionOperationId == operationId &&
+                    (x.EventType == "Started" || x.EventType == "Paused" ||
+                     x.EventType == "Resumed" || x.EventType == "Finished"))
+                .OrderByDescending(x => x.Id).FirstOrDefaultAsync();
+            if (last?.EventType == "Paused")
+                throw new InvalidOperationException(L["OperatorErrResumeBeforeExtend"]);
+            var requestedEnd = booking.PlannedEnd.AddMinutes(minutes);
+            if (DateTime.Now > requestedEnd) requestedEnd = DateTime.Now.AddMinutes(minutes);
+            await ProductionOperationOverrunScheduler.ExtendAsync(db, step, booking, requestedEnd);
+            db.ProductionOperationEvents.Add(new ProductionOperationEvent
+            {
+                ProductionOperationId = operationId,
+                EventType = "Overrun",
+                OccurredAtUtc = DateTime.UtcNow,
+                OperatorUserId = userId,
+                Reason = "Additional " + minutes + " minutes. " + reason
+            });
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            message = L["OperatorOverrunSaved"];
+            isError = false;
+            overrunReasons[operationId] = "";
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+            isError = true;
+        }
+        finally { busy = false; }
+    }
+
+    private async Task RequestItemAsync(long operationId)
+    {
+        if (!canOperate || !executionSchemaReady || busy) return;
+        busy = true;
+        try
+        {
+            var itemId = requestItemIds.GetValueOrDefault(operationId);
+            var quantity = requestQuantities.GetValueOrDefault(operationId);
+            if (itemId == 0 || quantity <= 0 || quantity > 100000000)
+                throw new InvalidOperationException(L["OperatorErrItemQuantity"]);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var step = await db.ProductionOperations.AsNoTracking().Include(x => x.ProductionOrder)
+                .FirstOrDefaultAsync(x => x.Id == operationId);
+            var booking = await db.ProductionSchedules.AsNoTracking().FirstOrDefaultAsync(x =>
+                x.ProductionOperationId == operationId &&
+                (machineId == 0 || x.MachineId == machineId) &&
+                x.Status != ScheduleStatus.Cancelled);
+            if (step == null || step.IsOutsourced || booking == null)
+                throw new InvalidOperationException(L["OperatorErrNoSelectedBooking"]);
+            await AssertMachinePermissionAsync(db, booking.MachineId);
+            if (step.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled ||
+                step.ProductionOrder.Status is ProductionOrderStatus.Completed or ProductionOrderStatus.Cancelled)
+                throw new InvalidOperationException(L["OperatorErrOperationClosed"]);
+            var item = await db.Items.AsNoTracking().FirstOrDefaultAsync(x => x.Id == itemId && x.IsActive);
+            if (item == null) throw new InvalidOperationException(L["OperatorErrItemUnavailable"]);
+            var notes = requestNotes.GetValueOrDefault(operationId, "").Trim();
+            if (notes.Length > 1000) throw new InvalidOperationException(L["OperatorErrNotesTooLong"]);
+            db.ProductionMaterialRequests.Add(new ProductionMaterialRequest
+            {
+                ProductionOrderId = step.ProductionOrderId,
+                ProductionOperationId = step.Id,
+                RequestedDate = DateTime.Now,
+                Status = "Requested",
+                RequestedByUserId = userId,
+                Lines = new List<ProductionMaterialRequestLine>
+                {
+                    new() { ItemId = item.Id, UnitId = item.UnitId, Quantity = quantity, Notes = notes }
+                }
+            });
+            await db.SaveChangesAsync();
+            message = L["OperatorWarehouseSubmitted"];
+            isError = false;
+            requestNotes[operationId] = "";
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+            isError = true;
+        }
+        finally { busy = false; }
+    }
+}

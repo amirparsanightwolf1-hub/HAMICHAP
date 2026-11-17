@@ -1,0 +1,163 @@
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Logging
+
+@inject IServiceScopeFactory ScopeFactory
+@inject NavigationManager Navigation
+@inject LocalizationService LocalizationService
+@inject ILogger<ExistingJobTitlePrompt> Logger
+
+@* Reuse old specifications, NOT the historical request or its quantity.
+   All input occurs through ordinary Blazor events; no JS callback/navigation
+   runs during the title lookup. *@
+@if (matches.Count > 0)
+{
+    <div class="alert alert-info mt-2 mb-2">
+        <div class="fw-semibold mb-2">
+            @LocalizationService["MatchingExistingJobFound"]
+        </div>
+        <p class="small mb-2">@LocalizationService["ReuseOldJobNewQuantityHelp"]</p>
+        @foreach (var match in matches)
+        {
+            <div class="border-top py-2" @key="match.Id">
+                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div class="text-break">
+                        <strong>@match.RequestNumber</strong>
+                        <small class="text-muted ms-2">@LocalizationService.TranslateEnum(match.Status)</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                            disabled="@isCopying"
+                            @onclick="() => SelectTemplate(match.Id)">
+                        @LocalizationService["ReuseSavedSpecifications"]
+                    </button>
+                </div>
+                @if (selectedSourceId == match.Id)
+                {
+                    <div class="row g-2 align-items-end mt-2">
+                        <div class="col-sm-5">
+                            <label class="form-label small fw-semibold" for="@($"reuse-quantity-{match.Id}")">
+                                @LocalizationService["EnterNewOrderQuantity"]
+                            </label>
+                            <InputNumber TValue="int?" id="@($"reuse-quantity-{match.Id}")"
+                                         class="form-control form-control-sm"
+                                         min="1" @bind-Value="newQuantity" />
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="button" class="btn btn-sm btn-primary"
+                                    disabled="@(isCopying || newQuantity.GetValueOrDefault() <= 0)"
+                                    @onclick="() => ReuseAsync(match.Id)">
+                                @LocalizationService["ApplySavedJobWithNewQuantity"]
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+@if (!string.IsNullOrWhiteSpace(copyError))
+{
+    <div class="alert alert-danger my-2" role="alert">@copyError</div>
+}
+@if (lookupFailed)
+{
+    <div class="alert alert-warning my-2">@LocalizationService["ExistingJobLookupFailed"]</div>
+}
+
+@code {
+    [Parameter] public long CurrentRequestId { get; set; }
+    [Parameter] public int CustomerId { get; set; }
+    [Parameter] public SalesJobType JobType { get; set; }
+    [Parameter] public string? JobTitle { get; set; }
+    [Parameter] public long? TargetQuotationId { get; set; }
+
+    private IReadOnlyList<ExistingSalesJobLookup.Match> matches =
+        Array.Empty<ExistingSalesJobLookup.Match>();
+
+    private (long Id, int Customer, SalesJobType Kind, string Title)? lastQuery;
+    private long? selectedSourceId;
+    private int? newQuantity;
+    private bool isCopying;
+    private bool lookupFailed;
+    private string? copyError;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var query = (Id: CurrentRequestId, Customer: CustomerId,
+            Kind: JobType, Title: JobTitle?.Trim() ?? string.Empty);
+        if (lastQuery == query)
+            return;
+
+        lastQuery = query;
+        matches = Array.Empty<ExistingSalesJobLookup.Match>();
+        selectedSourceId = null;
+        newQuantity = null;
+        copyError = null;
+        lookupFailed = false;
+
+        if (query.Customer <= 0 || string.IsNullOrWhiteSpace(query.Title))
+            return;
+
+        try
+        {
+            using var scope = ScopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var found = await ExistingSalesJobLookup.FindAsync(
+                db, query.Customer, query.Kind, query.Title, query.Id);
+            if (lastQuery == query)
+                matches = found;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Existing job lookup failed for request {RequestId}", query.Id);
+            if (lastQuery == query)
+                lookupFailed = true;
+        }
+    }
+
+    private void SelectTemplate(long id)
+    {
+        selectedSourceId = id;
+        newQuantity = null; // Never default to the historical order quantity.
+        copyError = null;
+    }
+
+    private async Task ReuseAsync(long sourceId)
+    {
+        if (isCopying || selectedSourceId != sourceId ||
+            !matches.Any(m => m.Id == sourceId) ||
+            newQuantity.GetValueOrDefault() <= 0)
+            return;
+
+        try
+        {
+            isCopying = true;
+            copyError = null;
+            using var scope = ScopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await ExistingSalesJobLookup.CopySpecificationsIntoDraftAsync(
+                db, sourceId, CurrentRequestId, newQuantity!.Value);
+
+            // The same editor reloads the copied specifications and fresh
+            // quantity. The old request, quotation, and approval proof are
+            // unchanged.
+            var kind = JobType == SalesJobType.Roll ? "roll" : "sheet";
+            var url = $"/sales/requests/{kind}/edit/{CurrentRequestId}";
+            if (TargetQuotationId.HasValue)
+                url += $"?quotationId={TargetQuotationId.Value}";
+            Navigation.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not reuse saved specifications {SourceRequestId}", sourceId);
+            copyError = ex.Message;
+        }
+        finally
+        {
+            isCopying = false;
+        }
+    }
+}

@@ -1,0 +1,505 @@
+@page "/production/jobs"
+@attribute [Authorize]
+
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Logging
+@using static HamiChap_MES_ERP.Services.JobProcessOverviewService
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
+@inject LocalizationService L
+@inject NavigationManager Navigation
+@inject ILogger<JobOverview> Logger
+
+<PageTitle>@L["JobOverview"]</PageTitle>
+<HeadContent>
+    <link rel="stylesheet" href="css/jobOverview.css" />
+</HeadContent>
+
+<div class="page-container job-overview-page">
+    <header class="job-overview-hero">
+        <div class="job-overview-heading">
+            <div class="job-overview-hero-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></div>
+            <div>
+                <div class="job-overview-kicker">@L["Production"]</div>
+                <h1>@L["JobOverview"]</h1>
+                <p>@L["JobOverviewDescription"]</p>
+            </div>
+        </div>
+        <div class="job-overview-hero-actions">
+            <a class="btn btn-outline-secondary" href="/production/orders">
+                <i class="bi bi-box-seam" aria-hidden="true"></i> @L["ProductionOrders"]
+            </a>
+            <button type="button" class="btn btn-primary"
+                    disabled="@(loading || !canView)" @onclick="LoadAsync">
+                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> @L["Refresh"]
+            </button>
+        </div>
+    </header>
+
+    @if (loading && !loaded)
+    {
+        <div class="job-overview-loading" role="status">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            @L["Loading"]
+        </div>
+    }
+    else if (!canView)
+    {
+        <div class="alert alert-warning" role="alert">@L["JobOverviewAccessDenied"]</div>
+    }
+    else
+    {
+        <div class="job-overview-stats" aria-label="@L["JobOverview"]">
+            <div class="job-overview-stat">
+                <span class="job-overview-stat-icon"><i class="bi bi-collection" aria-hidden="true"></i></span>
+                <span>@L["Jobs"]</span>
+                <strong>@jobs.Count</strong>
+            </div>
+            <div class="job-overview-stat">
+                <span class="job-overview-stat-icon is-running"><i class="bi bi-gear-wide-connected" aria-hidden="true"></i></span>
+                <span>@L["JobOverviewActiveProduction"]</span>
+                <strong>@jobs.Count(x => x.ProductionStatus == ProductionOrderStatus.InProduction)</strong>
+            </div>
+            <div class="job-overview-stat">
+                <span class="job-overview-stat-icon is-complete"><i class="bi bi-check2-circle" aria-hidden="true"></i></span>
+                <span>@L["JobOverviewCompletedJobs"]</span>
+                <strong>@jobs.Count(x => x.JobProgressPercent == 100 && x.UsingRecordedOperations)</strong>
+            </div>
+            <div class="job-overview-stat">
+                <span class="job-overview-stat-icon is-shared"><i class="bi bi-layers" aria-hidden="true"></i></span>
+                <span>@L["JobOverviewSharedRoutes"]</span>
+                <strong>@jobs.Count(x => x.SharedProductionRoute)</strong>
+            </div>
+        </div>
+
+        <section class="job-overview-filters" aria-label="@L["Search"]">
+            <div class="job-overview-filter">
+                <label for="job-overview-search">@L["Search"]</label>
+                <input id="job-overview-search" type="search" class="form-control"
+                       placeholder="@L["JobOverviewSearchPlaceholder"]"
+                       @bind="searchText" @bind:event="oninput"
+                       @onkeydown="HandleSearchKeyDown" />
+            </div>
+            <div class="job-overview-filter">
+                <label for="job-overview-type">@L["JobType"]</label>
+                <select id="job-overview-type" class="form-select" @bind="jobTypeFilter">
+                    <option value="">@L["AllJobTypes"]</option>
+                    <option value="Roll">@L["RollJob"]</option>
+                    <option value="Sheet">@L["SheetJob"]</option>
+                </select>
+            </div>
+            <div class="job-overview-filter">
+                <label for="job-overview-progress">@L["Status"]</label>
+                <select id="job-overview-progress" class="form-select" @bind="statusFilter">
+                    <option value="">@L["All"]</option>
+                    <option value="not-started">@L["JobOverviewNotScheduled"]</option>
+                    <option value="active">@L["JobOverviewProductionActive"]</option>
+                    <option value="completed">@L["JobOverviewCompletedJobs"]</option>
+                    <option value="shared">@L["JobOverviewSharedRoutes"]</option>
+                </select>
+            </div>
+            <div class="job-overview-filter-actions">
+                <button type="button" class="btn btn-primary" disabled="@loading"
+                        @onclick="SearchAsync">
+                    <i class="bi bi-search" aria-hidden="true"></i> @L["Search"]
+                </button>
+                <button type="button" class="btn btn-outline-secondary"
+                        disabled="@loading" @onclick="ClearFiltersAsync">@L["Clear"]</button>
+            </div>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(error))
+        {
+            <div class="alert alert-danger" role="alert">@error</div>
+        }
+
+        @if (RequestId.HasValue)
+        {
+            <div class="job-overview-focus">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                @L["JobOverviewFocusedJob"]
+                <a href="/production/jobs">@L["JobOverviewViewAllJobs"]</a>
+            </div>
+        }
+        else
+        {
+            <p class="job-overview-results-note">
+                @L["JobOverviewRecentResults"]
+                @if (loading) { <span class="spinner-border spinner-border-sm ms-2" aria-hidden="true"></span> }
+            </p>
+        }
+
+        @if (VisibleJobs.Count == 0)
+        {
+            <div class="job-overview-empty">
+                <i class="bi bi-inboxes" aria-hidden="true"></i>
+                <strong>@L["JobOverviewNoJobs"]</strong>
+                <span>@L["JobOverviewSearchHint"]</span>
+            </div>
+        }
+        else
+        {
+            <div class="job-overview-list">
+                @foreach (var job in VisibleJobs)
+                {
+                    <article class="job-overview-card" @key="job.RequestId">
+                        <div class="job-overview-card-header">
+                            <div class="job-overview-card-title">
+                                <span class="job-overview-type-icon" aria-hidden="true">
+                                    <i class="bi @(job.JobType == SalesJobType.Roll ? "bi-disc" : "bi-file-earmark-richtext")"></i>
+                                </span>
+                                <div>
+                                    <div class="job-overview-card-eyebrow">
+                                        <span>@job.RequestNumber</span>
+                                        <span aria-hidden="true">·</span>
+                                        <span>@L.TranslateEnum(job.JobType)</span>
+                                    </div>
+                                    <h2>@job.Title</h2>
+                                    <p>@job.Customer
+                                        @if (job.Quantity.HasValue)
+                                        {
+                                            <span> · @L["Quantity"]: @job.Quantity.Value.ToString("N0")</span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="job-overview-order-status">
+                                @if (job.ProductionStatus.HasValue)
+                                {
+                                    @L.TranslateEnum(job.ProductionStatus.Value)
+                                }
+                                else
+                                {
+                                    @L.TranslateEnum(job.RequestStatus)
+                                }
+                            </span>
+                        </div>
+
+                        <div class="job-overview-card-content">
+                            <div class="job-overview-progress-panel">
+                                <div class="job-overview-progress-header">
+                                    <div>
+                                        <strong>@L["JobOverviewProcessProgress"]</strong>
+                                        <span>
+                                            @if (job.UsingRecordedOperations)
+                                            {
+                                                <text>@job.CompletedStages / @job.ActiveStages @L["JobOverviewStepsComplete"]</text>
+                                            }
+                                            else if (job.SharedProductionRoute)
+                                            {
+                                                @L["JobOverviewSharedNoItemProgress"]
+                                            }
+                                            else
+                                            {
+                                                @L["JobOverviewAwaitingOperations"]
+                                            }
+                                        </span>
+                                    </div>
+                                    <div class="job-overview-progress-percent">
+                                        @(job.JobProgressPercent.HasValue ? $"{job.JobProgressPercent.Value}%" : "—")
+                                    </div>
+                                </div>
+                                @if (job.JobProgressPercent.HasValue)
+                                {
+                                    <div class="job-overview-progress-track" role="progressbar"
+                                         aria-label="@L["JobOverviewProcessProgress"]"
+                                         aria-valuemin="0" aria-valuemax="100"
+                                         aria-valuenow="@job.JobProgressPercent.Value">
+                                        <div class="job-overview-progress-fill"
+                                             style="width: @(job.JobProgressPercent.Value)%"></div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="job-overview-progress-track is-untracked"
+                                         aria-label="@L["JobOverviewUntracked"]"></div>
+                                }
+                                @if (job.SharedProductionRoute)
+                                {
+                                    <div class="job-overview-shared-warning">
+                                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                                        <span>@L["JobOverviewSharedRouteExplanation"]</span>
+                                    </div>
+                                    @if (job.SharedOrderProgressPercent.HasValue)
+                                    {
+                                        <div class="job-overview-shared-progress">
+                                            @L["JobOverviewOrderWideProgress"]:
+                                            <strong>@job.SharedOrderProgressPercent.Value%</strong>
+                                        </div>
+                                    }
+                                }
+                                else if (job.InvalidSpecifications)
+                                {
+                                    <div class="job-overview-shared-warning">
+                                        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                                        @L["JobOverviewInvalidSpecs"]
+                                    </div>
+                                }
+                                @if (job.QuantityProgressPercent.HasValue &&
+                                     job.OrderedQuantity.HasValue && job.ProducedQuantity.HasValue)
+                                {
+                                    <div class="job-overview-quantity-progress">
+                                        <div class="job-overview-quantity-heading">
+                                            <span>@L["JobOverviewProducedQuantity"]</span>
+                                            <strong>
+                                                @job.ProducedQuantity.Value.ToString("N0") /
+                                                @job.OrderedQuantity.Value.ToString("N0")
+                                                (@job.QuantityProgressPercent.Value%)
+                                            </strong>
+                                        </div>
+                                        <div class="job-overview-progress-track" role="progressbar"
+                                             aria-label="@L["JobOverviewProducedQuantity"]"
+                                             aria-valuemin="0" aria-valuemax="100"
+                                             aria-valuenow="@job.QuantityProgressPercent.Value">
+                                            <div class="job-overview-progress-fill"
+                                                 style="width: @(job.QuantityProgressPercent.Value)%"></div>
+                                        </div>
+                                        <p>@L["JobOverviewProducedQuantityHint"]</p>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="job-overview-process-panel">
+                                <div class="job-overview-process-heading">
+                                    <strong>@L["JobOverviewRequiredProcesses"]</strong>
+                                    <span>@job.Stages.Count @L["JobOverviewProcesses"]</span>
+                                </div>
+
+                                @if (job.Stages.Count == 0)
+                                {
+                                    <div class="job-overview-no-stages">
+                                        @L["JobOverviewNoProcesses"]
+                                    </div>
+                                }
+                                else
+                                {
+                                    <ol class="job-overview-process-list">
+                                        @foreach (var stage in job.Stages)
+                                        {
+                                            <li class="job-overview-process">
+                                                <span class="job-overview-stage-index">@stage.Sequence</span>
+                                                <div class="job-overview-stage-content">
+                                                    <strong>@StageName(stage.Name)</strong>
+                                                    <div class="job-overview-stage-meta">
+                                                        @if (!string.IsNullOrWhiteSpace(StageMachine(stage)))
+                                                        {
+                                                            <span><i class="bi bi-gear" aria-hidden="true"></i> @StageMachine(stage)</span>
+                                                        }
+                                                        @if (stage.PlannedStart.HasValue)
+                                                        {
+                                                            <span><i class="bi bi-calendar-event" aria-hidden="true"></i>
+                                                                @stage.PlannedStart.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <span class="job-overview-stage-pill @StageCss(stage.State)">
+                                                    @StageLabel(stage.State)
+                                                </span>
+                                                @if (stage.NeedsReview)
+                                                {
+                                                    <span class="job-overview-review" title="@L["JobOverviewRequiresRoutingReview"]">
+                                                        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                                                    </span>
+                                                }
+                                            </li>
+                                        }
+                                    </ol>
+                                }
+                            </div>
+                        </div>
+
+                        <footer class="job-overview-card-footer">
+                            <div class="job-overview-order-refs">
+                                @if (!string.IsNullOrWhiteSpace(job.SalesOrderNumber))
+                                {
+                                    <span>@L["SalesOrder"]: <strong>@job.SalesOrderNumber</strong></span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(job.ProductionOrderNumber))
+                                {
+                                    <span>@L["ProductionOrder"]: <strong>@job.ProductionOrderNumber</strong></span>
+                                }
+                                @if (job.PlannedEnd.HasValue)
+                                {
+                                    <span>@L["PlannedEnd"]: <strong>@job.PlannedEnd.Value.ToString("yyyy-MM-dd")</strong></span>
+                                }
+                            </div>
+                            <div class="job-overview-card-actions">
+                                <a href="@job.EditUrl" class="btn btn-sm btn-outline-secondary">
+                                    @L["OpenJob"]
+                                </a>
+                                @if (job.Quantity > 0)
+                                {
+                                    <a href="@job.ProofUrl" class="btn btn-sm btn-outline-secondary">
+                                        @L["OpenApprovalProof"]
+                                    </a>
+                                }
+                                @if (job.ProductionOrderId.HasValue)
+                                {
+                                    <a href="@($"/production/orders/edit/{job.ProductionOrderId.Value}")"
+                                       class="btn btn-sm btn-primary">
+                                        @L["ProductionOrder"]
+                                    </a>
+                                }
+                                else if (job.QuotationId.HasValue)
+                                {
+                                    <a href="@($"/sales/quotations/edit/{job.QuotationId.Value}")"
+                                       class="btn btn-sm btn-outline-primary">
+                                        @L["Quotation"]
+                                    </a>
+                                }
+                            </div>
+                        </footer>
+                    </article>
+                }
+            </div>
+            @if (FilteredJobs.Count > visibleCount)
+            {
+                <div class="job-overview-more">
+                    <span>@visibleCount / @FilteredJobs.Count @L["Jobs"]</span>
+                    <button type="button" class="btn btn-outline-primary"
+                            @onclick="() => visibleCount += 20">
+                        @L["JobOverviewShowMore"]
+                    </button>
+                </div>
+            }
+        }
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "requestId")]
+    public long? RequestId { get; set; }
+
+    private readonly List<JobRow> jobs = new();
+    private string searchText = "";
+    private string jobTypeFilter = "";
+    private string statusFilter = "";
+    private bool loading = true;
+    private bool loaded;
+    private bool canView;
+    private string? error;
+    private long? loadedRequestId;
+    private bool firstLoad = true;
+    private int visibleCount = 20;
+
+    private List<JobRow> FilteredJobs => jobs.Where(x => statusFilter switch
+    {
+        "not-started" => x.ProductionOrderId is null ||
+                         x.ProductionStatus is ProductionOrderStatus.Planned or
+                         ProductionOrderStatus.MaterialChecking or
+                         ProductionOrderStatus.WaitingForMaterial,
+        "active" => x.ProductionStatus is ProductionOrderStatus.InProduction or
+                     ProductionOrderStatus.ReadyToStart or ProductionOrderStatus.QualityControl,
+        "completed" => x.UsingRecordedOperations && x.JobProgressPercent == 100,
+        "shared" => x.SharedProductionRoute,
+        _ => true
+    }).ToList();
+
+    private List<JobRow> VisibleJobs => FilteredJobs.Take(visibleCount).ToList();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (firstLoad || loadedRequestId != RequestId)
+        {
+            firstLoad = false;
+            loadedRequestId = RequestId;
+            await LoadAsync();
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        error = null;
+        visibleCount = 20;
+        try
+        {
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
+            canView = await Permissions.HasPermissionAsync(principal, "Sales.Requests.View") ||
+                      await Permissions.HasPermissionAsync(principal, "Production.Orders.View");
+            if (!canView)
+            {
+                jobs.Clear();
+                return;
+            }
+
+            var parsedType = Enum.TryParse<SalesJobType>(jobTypeFilter, true, out var type)
+                ? type : (SalesJobType?)null;
+            var updated = await JobProcessOverviewService.LoadAsync(
+                DbFactory, searchText, parsedType, RequestId);
+            jobs.Clear();
+            jobs.AddRange(updated);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load job process overview");
+            error = L["JobOverviewLoadingError"];
+        }
+        finally
+        {
+            loading = false;
+            loaded = true;
+        }
+    }
+
+    private Task SearchAsync() => LoadAsync();
+
+    private async Task ClearFiltersAsync()
+    {
+        searchText = "";
+        jobTypeFilter = "";
+        statusFilter = "";
+        if (RequestId.HasValue)
+            Navigation.NavigateTo("/production/jobs");
+        else
+            await LoadAsync();
+    }
+
+    private async Task HandleSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            await LoadAsync();
+    }
+
+    private string StageLabel(StageState stage) => stage switch
+    {
+        StageState.NotScheduled => L["JobOverviewNotScheduled"],
+        StageState.Untracked => L["JobOverviewUntracked"],
+        StageState.Ready => L.TranslateEnum(ProductionOperationStatus.Ready),
+        StageState.Running => L.TranslateEnum(ProductionOperationStatus.Running),
+        StageState.Completed => L.TranslateEnum(ProductionOperationStatus.Completed),
+        StageState.Cancelled => L.TranslateEnum(ProductionOperationStatus.Cancelled),
+        _ => L.TranslateEnum(ProductionOperationStatus.Pending)
+    };
+
+    private static string StageCss(StageState status) => status switch
+    {
+        StageState.Completed => "is-complete",
+        StageState.Running => "is-running",
+        StageState.Ready => "is-ready",
+        StageState.Cancelled => "is-cancelled",
+        StageState.Untracked => "is-untracked",
+        _ => "is-pending"
+    };
+
+    private static string StageName(string name)
+    {
+        var parts = name.Split(" | ", 2, StringSplitOptions.None);
+        return parts.Length == 2 ? parts[1] : name;
+    }
+
+    private static string? StageMachine(ProcessStage stage)
+    {
+        if (!string.IsNullOrWhiteSpace(stage.Machine))
+            return stage.Machine;
+        var parts = stage.Name.Split(" | ", 2, StringSplitOptions.None);
+        return parts.Length == 2 && parts[0] != "REVIEW" ? parts[0] : null;
+    }
+}

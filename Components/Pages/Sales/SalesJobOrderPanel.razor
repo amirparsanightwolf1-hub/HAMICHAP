@@ -1,0 +1,387 @@
+@using System.Text.Json
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Models.Shared.Services
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject SalesRequestService SalesRequestService
+@inject QuotationService QuotationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject LocalizationService LocalizationService
+@inject NavigationManager Navigation
+
+<section class="card shadow-sm mb-4" aria-labelledby="order-items-heading">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            <strong id="order-items-heading">@LocalizationService["ItemsInThisOrder"]</strong>
+            <span class="badge bg-secondary ms-2">@jobs.Count</span>
+        </div>
+        @if (linkedQuotationId.HasValue && !canAdd)
+        {
+            <a class="btn btn-sm btn-outline-secondary" href="@($"/sales/quotations/edit/{linkedQuotationId.Value}")">
+                @LocalizationService["ContinueToQuotation"]
+            </a>
+        }
+    </div>
+    <div class="card-body">
+        <p class="text-muted small mb-3">@LocalizationService["EachItemHasOwnProof"]</p>
+
+        @foreach (var job in jobs)
+        {
+            var isCurrent = job.Id == RequestId;
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom py-3"
+                 @key="job.Id">
+                <div>
+                    <strong>@GetJobTitle(job)</strong>
+                    @if (isCurrent)
+                    {
+                        <span class="badge bg-light text-dark border ms-2">@LocalizationService["CurrentItem"]</span>
+                    }
+                    <div class="small text-muted mt-1">
+                        @job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)
+                        · @LocalizationService["Quantity"]: @GetQuantity(job)
+                    </div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a class="btn btn-sm btn-outline-secondary" href="@GetEditUrl(job)">
+                        @LocalizationService["OpenJob"]
+                    </a>
+                    <a class="btn btn-sm btn-outline-secondary"
+                       href="@($"/production/jobs?requestId={job.Id}")">
+                        <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>
+                        @LocalizationService["JobOverview"]
+                    </a>
+                    @if (!string.IsNullOrWhiteSpace(job.JobSpecificationJson) &&
+                         job.Lines.Any(x => x.Quantity > 0))
+                    {
+                        <a class="btn btn-sm btn-outline-primary" href="@GetProofUrl(job)">
+                            @LocalizationService["OpenApprovalProof"]
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-success" disabled="@busy"
+                                @onclick="() => SelectRepeatJob(job.Id)">
+                            @LocalizationService["RepeatThisItem"]
+                        </button>
+                    }
+                </div>
+            </div>
+            @if (repeatSourceId == job.Id)
+            {
+                <div class="rounded border p-3 my-2 bg-light">
+                    <div class="small mb-2">@LocalizationService["ReuseOldJobNewQuantityHelp"]</div>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-sm-4">
+                            <label class="form-label fw-semibold small">@LocalizationService["EnterNewOrderQuantity"]</label>
+                            <InputNumber TValue="int?" class="form-control" min="1" @bind-Value="repeatQuantity" />
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="button" class="btn btn-primary"
+                                    disabled="@(busy || repeatQuantity.GetValueOrDefault() <= 0)"
+                                    @onclick="() => RepeatItemAsync(job)">
+                                @LocalizationService["ApplySavedJobWithNewQuantity"]
+                            </button>
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="button" class="btn btn-outline-secondary"
+                                    @onclick="() => repeatSourceId = null">@LocalizationService["Cancel"]</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        @if (canAdd)
+        {
+            <div class="d-flex gap-2 flex-wrap mt-3">
+                <button type="button" class="btn btn-outline-primary"
+                        disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Roll)">
+                    <i class="bi bi-plus-circle me-1"></i> @LocalizationService["AddRollItem"]
+                </button>
+                <button type="button" class="btn btn-outline-primary"
+                        disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Sheet)">
+                    <i class="bi bi-plus-circle me-1"></i> @LocalizationService["AddSheetItem"]
+                </button>
+                <button type="button" class="btn btn-primary"
+                        disabled="@busy" @onclick="OpenQuotationAsync">
+                    @LocalizationService["ContinueToQuotation"]
+                </button>
+            </div>
+            <p class="form-text mt-2 mb-0">@LocalizationService["AddItemSavesCurrentJob"]</p>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(panelError))
+        {
+            <div class="alert alert-danger mt-3 mb-0" role="alert">@panelError</div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public long RequestId { get; set; }
+    [Parameter] public long? TargetQuotationId { get; set; }
+    [Parameter, EditorRequired] public Func<Task<bool>> SaveCurrentAsync { get; set; } = default!;
+
+    private List<SalesRequest> jobs = new();
+    private long? linkedQuotationId;
+    private bool canAdd;
+    private bool busy;
+    private long? repeatSourceId;
+    private int? repeatQuantity;
+    private string? panelError;
+    private (long RequestId, long? QuotationId)? lastLoaded;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var key = (RequestId, TargetQuotationId);
+        if (lastLoaded == key)
+            return;
+        lastLoaded = key;
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var current = await db.SalesRequests.AsNoTracking()
+            .Include(x => x.Lines)
+            .FirstOrDefaultAsync(x => x.Id == RequestId);
+        if (current is null)
+        {
+            canAdd = false;
+            jobs.Clear();
+            return;
+        }
+
+        // A quote is the internal container for all item-level requests.
+        var quoteId = TargetQuotationId ?? await db.QuotationLines.AsNoTracking()
+            .Where(x => x.SourceRequestId == RequestId)
+            .Select(x => (long?)x.QuotationId)
+            .FirstOrDefaultAsync()
+            ?? await db.Quotations.AsNoTracking()
+            .Where(x => x.SalesRequestId == RequestId)
+            .Select(x => (long?)x.Id)
+            .FirstOrDefaultAsync();
+
+        linkedQuotationId = null;
+        jobs = new List<SalesRequest> { current };
+        canAdd = current.Status == SalesRequestStatus.Draft;
+
+        if (!quoteId.HasValue)
+            return;
+
+        var quote = await db.Quotations.AsNoTracking()
+            .Where(x => x.Id == quoteId.Value)
+            .Select(x => new { x.Id, x.CustomerId, x.Status, x.SalesRequestId })
+            .FirstOrDefaultAsync();
+
+        if (quote is null || quote.CustomerId != current.CustomerId)
+        {
+            panelError = LocalizationService["QuotationCustomerMustMatch"];
+            canAdd = false;
+            return;
+        }
+
+        linkedQuotationId = quote.Id;
+        canAdd = quote.Status is QuotationStatus.Draft or QuotationStatus.RevisionRequired;
+
+        var ids = await db.QuotationLines.AsNoTracking()
+            .Where(x => x.QuotationId == quote.Id && x.SourceRequestId.HasValue)
+            .Select(x => x.SourceRequestId!.Value)
+            .Distinct().ToListAsync();
+        ids.Add(quote.SalesRequestId);
+        ids.Add(RequestId);
+
+        jobs = await db.SalesRequests.AsNoTracking()
+            .Include(x => x.Lines)
+            .Where(x => ids.Contains(x.Id))
+            .OrderBy(x => x.RequestDate)
+            .ThenBy(x => x.Id)
+            .ToListAsync();
+    }
+
+    private async Task<long> EnsureCurrentLinkedAsync()
+    {
+        if (!await SaveCurrentAsync())
+            throw new InvalidOperationException(LocalizationService["SaveJobBeforeAddingItem"]);
+
+        // Refresh the current row after saving, because a new draft job may
+        // not have been assigned its finished-product line beforehand.
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var current = await db.SalesRequests.AsNoTracking()
+            .FirstAsync(x => x.Id == RequestId);
+
+        if (linkedQuotationId.HasValue)
+        {
+            await QuotationService.AddRequestToQuotationAsync(linkedQuotationId.Value, RequestId);
+            return linkedQuotationId.Value;
+        }
+
+        var existingQuoteId = await db.Quotations.AsNoTracking()
+            .Where(x => x.SalesRequestId == RequestId)
+            .Select(x => (long?)x.Id)
+            .FirstOrDefaultAsync()
+            ?? await db.QuotationLines.AsNoTracking()
+            .Where(x => x.SourceRequestId == RequestId)
+            .Select(x => (long?)x.QuotationId)
+            .FirstOrDefaultAsync();
+
+        if (existingQuoteId.HasValue)
+        {
+            var editable = await db.Quotations.AsNoTracking().AnyAsync(x =>
+                x.Id == existingQuoteId.Value &&
+                (x.Status == QuotationStatus.Draft || x.Status == QuotationStatus.RevisionRequired));
+            if (!editable)
+                throw new InvalidOperationException(LocalizationService["QuotationNotEditable"]);
+            return existingQuoteId.Value;
+        }
+
+        var quote = await QuotationService.CreateFromRequestAsync(current.Id);
+        return quote.Id;
+    }
+
+    private void SelectRepeatJob(long id)
+    {
+        repeatSourceId = id;
+        repeatQuantity = null; // Never inherit the historical order quantity.
+        panelError = null;
+    }
+
+    private async Task RepeatItemAsync(SalesRequest source)
+    {
+        if (busy || repeatSourceId != source.Id ||
+            repeatQuantity.GetValueOrDefault() <= 0)
+            return;
+
+        panelError = null;
+        busy = true;
+        try
+        {
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(auth.User)
+                ?? throw new InvalidOperationException(LocalizationService["UserNotAuthenticated"]);
+
+            // Repeats of accepted/closed orders ALWAYS create a separate draft
+            // order. If this quote is still editable, repeat may join it.
+            var attachToQuote = canAdd ? linkedQuotationId : null;
+            var newJob = await SalesRequestService.CreateRequestAsync(
+                source.CustomerId, user.Id, source.JobType);
+
+            await using (var db = await DbFactory.CreateDbContextAsync())
+            {
+                await ExistingSalesJobLookup.CopySpecificationsIntoDraftAsync(
+                    db, source.Id, newJob.Id, repeatQuantity!.Value);
+            }
+
+            var segment = source.JobType == SalesJobType.Roll ? "roll" : "sheet";
+            var url = $"/sales/requests/{segment}/edit/{newJob.Id}";
+            if (attachToQuote.HasValue)
+                url += $"?quotationId={attachToQuote.Value}";
+            Navigation.NavigateTo(url);
+        }
+        catch (Exception ex)
+        {
+            panelError = ex.Message;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task AddItemAsync(SalesJobType type)
+    {
+        if (busy || !canAdd)
+            return;
+
+        panelError = null;
+        busy = true;
+        try
+        {
+            var quotationId = await EnsureCurrentLinkedAsync();
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(auth.User)
+                ?? throw new InvalidOperationException(LocalizationService["UserNotAuthenticated"]);
+
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var customerId = await db.Quotations.AsNoTracking()
+                .Where(q => q.Id == quotationId)
+                .Select(q => q.CustomerId).FirstAsync();
+
+            var newJob = await SalesRequestService.CreateRequestAsync(customerId, user.Id, type);
+            var segment = type == SalesJobType.Roll ? "roll" : "sheet";
+            Navigation.NavigateTo($"/sales/requests/{segment}/edit/{newJob.Id}?quotationId={quotationId}");
+        }
+        catch (Exception ex)
+        {
+            panelError = ex.Message;
+            await RefreshAsync();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task OpenQuotationAsync()
+    {
+        if (busy || !canAdd)
+            return;
+
+        panelError = null;
+        busy = true;
+        try
+        {
+            var quotationId = await EnsureCurrentLinkedAsync();
+            Navigation.NavigateTo($"/sales/quotations/edit/{quotationId}");
+        }
+        catch (Exception ex)
+        {
+            panelError = ex.Message;
+            await RefreshAsync();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private string GetEditUrl(SalesRequest job)
+    {
+        var segment = job.JobType == SalesJobType.Roll ? "roll" : "sheet";
+        var route = $"/sales/requests/{segment}/edit/{job.Id}";
+        return linkedQuotationId.HasValue
+            ? $"{route}?quotationId={linkedQuotationId.Value}" : route;
+    }
+
+    private string GetProofUrl(SalesRequest job)
+    {
+        var route = $"/sales/requests/proof/{job.Id}";
+        return linkedQuotationId.HasValue
+            ? $"{route}?quotationId={linkedQuotationId.Value}" : route;
+    }
+
+    private static string GetJobTitle(SalesRequest job)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(job.JobSpecificationJson ?? "{}");
+            if (doc.RootElement.TryGetProperty("JobTitle", out var title) &&
+                title.ValueKind == JsonValueKind.String &&
+                !string.IsNullOrWhiteSpace(title.GetString()))
+                return title.GetString()!;
+        }
+        catch (JsonException) { }
+        return job.RequestNumber;
+    }
+
+    private static string GetQuantity(SalesRequest job)
+    {
+        var line = job.Lines.FirstOrDefault();
+        return line is null ? "—" : line.Quantity.ToString("N0");
+    }
+}

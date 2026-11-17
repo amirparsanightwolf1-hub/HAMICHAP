@@ -13,7 +13,10 @@
     @LocalizationService["InventoryDocuments"]
 </PageTitle>
 
-<div class="erp-page-header">
+<div class="inventory-page inventory-documents">
+
+<div class="erp-page-header inventory-hero">
+        <div class="inventory-hero-icon" aria-hidden="true"><i class="bi bi-files"></i></div>
     <div>
         <h3 class="erp-page-title">@LocalizationService["InventoryDocuments"]</h3>
     </div>
@@ -46,7 +49,8 @@ else
 {
     <div class="card erp-table-card mb-3">
         <div class="card-body p-0">
-            <table class="table table-hover table-bordered table-responsive-cards">
+            <div class="inventory-table-scroll">
+<table class="table table-hover table-bordered table-responsive-cards">
 
         <thead class="table-light">
 
@@ -128,6 +132,7 @@ else
         </tbody>
 
     </table>
+</div>
         </div>
     </div>
 
@@ -179,6 +184,8 @@ else
     }
 
 }
+
+</div>
 
 @code
 {

@@ -12,8 +12,19 @@ namespace HamiChap_MES_ERP.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
+        public DbSet<ProductionOperationEvent> ProductionOperationEvents => Set<ProductionOperationEvent>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<ProductionMaterialRequest>().Property(x => x.RequestedByUserId).HasMaxLength(450);
+            builder.Entity<ProductionOperationEvent>().Property(x => x.EventType).HasMaxLength(32);
+            builder.Entity<ProductionOperationEvent>().Property(x => x.OperatorUserId).HasMaxLength(450);
+            builder.Entity<ProductionOperationEvent>().Property(x => x.Reason).HasMaxLength(1000);
+            builder.Entity<ProductionOperationEvent>()
+                .HasIndex(x => new { x.ProductionOperationId, x.OccurredAtUtc });
+            builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceSignature).HasMaxLength(64);
+            builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceConfirmedBy).HasMaxLength(450);
+
             builder.Entity<SalesInvoice>().Property(x => x.Subtotal).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().Property(x => x.TotalAmount).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().HasIndex(x => x.InvoiceNumber).IsUnique();
@@ -277,6 +288,12 @@ namespace HamiChap_MES_ERP.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<ProductionMaterialRequest>()
+                .HasOne(x => x.ProductionOperation)
+                .WithMany()
+                .HasForeignKey(x => x.ProductionOperationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ProductionMaterialRequest>()
                 .Property(x => x.Status).HasMaxLength(40);
 
             builder.Entity<ProductionMaterialRequestLine>()
@@ -414,6 +431,15 @@ namespace HamiChap_MES_ERP.Data
                 .WithMany(x => x.Lines)
                 .HasForeignKey(x => x.QuotationId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // A quotation may contain lines from several Roll/Sheet requests.
+            // The original Quotation.SalesRequestId remains the primary request
+            // for backwards compatibility with existing integrations.
+            builder.Entity<QuotationLine>()
+                .HasOne(x => x.SourceRequest)
+                .WithMany()
+                .HasForeignKey(x => x.SourceRequestId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
 

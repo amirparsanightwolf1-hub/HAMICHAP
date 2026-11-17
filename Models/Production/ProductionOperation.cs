@@ -29,6 +29,12 @@ public class ProductionOperation : BaseEntity
 
 
 
+    public bool IsOutsourced { get; set; }
+
+    public DateTime? OutsourcedPlannedStart { get; set; }
+
+    public DateTime? OutsourcedPlannedEnd { get; set; }
+
     public decimal PlannedHours { get; set; }
 
 

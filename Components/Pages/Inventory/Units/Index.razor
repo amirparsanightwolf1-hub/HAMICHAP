@@ -12,11 +12,15 @@
     @LocalizationService["Units"]
 </PageTitle>
 
-<h3>
-    @LocalizationService["Units"]
-</h3>
+<div class="inventory-page inventory-catalog">
+
+<div class="erp-page-header inventory-hero">
+    <div class="inventory-hero-icon" aria-hidden="true"><i class="bi bi-rulers"></i></div>
+    <div><h1 class="erp-page-title">@LocalizationService["Units"]</h1></div>
+</div>
 
 <div class="card mb-3">
+    <div class="card-header inventory-form-header"><strong>@LocalizationService["Add"]</strong></div>
 
     <div class="card-body">
 
@@ -61,6 +65,7 @@
 
 </div>
 
+<div class="inventory-table-scroll">
 <table class="table table-bordered table-responsive-cards">
 
     <thead>
@@ -120,6 +125,9 @@
     </tbody>
 
 </table>
+</div>
+
+</div>
 
 @code {
 

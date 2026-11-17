@@ -46,243 +46,194 @@
                     <h3>@LocalizationService["AppTitle"]</h3>
                 </div>
         
-                <nav class="side-menu">
-        
-                    <!-- Dashboard -->
-                    <button class="menu-button"
-                            @onclick='() => GoTo("/")'>
-                        🏠 @LocalizationService["Dashboard"]
-                    </button>
-        
-        
-                    <!-- =====================================================
-                         Inventory
-                         ===================================================== -->
+                <nav class="side-menu" aria-label="@LocalizationService["ManagerMainNavigation"]">
+                    <div class="menu-group-label">@LocalizationService["ManagerMainNavigation"]</div>
+                    <a class="@NavClass("/")" href="/" @onclick="CloseMenu">
+                        <i class="bi bi-house-door" aria-hidden="true"></i><span>@LocalizationService["Dashboard"]</span>
+                    </a>
+                    @if (showSalesDashboard)
+                    {
+                        <a class="@NavClass("/dashboard/sales")" href="/dashboard/sales" @onclick="CloseMenu">
+                            <i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span>@LocalizationService["ManagerSalesDashboard"]</span>
+                        </a>
+                    }
+                    @if (showWarehouseDashboard)
+                    {
+                        <a class="@NavClass("/dashboard/warehouse")" href="/dashboard/warehouse" @onclick="CloseMenu">
+                            <i class="bi bi-box-seam" aria-hidden="true"></i><span>@LocalizationService["ManagerWarehouseDashboard"]</span>
+                        </a>
+                    }
+                    @if (showCeoDashboard)
+                    {
+                        <a class="@NavClass("/dashboard/ceo")" href="/dashboard/ceo" @onclick="CloseMenu">
+                            <i class="bi bi-bar-chart-line" aria-hidden="true"></i><span>@LocalizationService["ManagerCeoDashboard"]</span>
+                        </a>
+                    }
+                    @if (showProductionDashboard)
+                    {
+                        <a class="@NavClass("/dashboard/production")" href="/dashboard/production" @onclick="CloseMenu">
+                            <i class="bi bi-kanban" aria-hidden="true"></i><span>@LocalizationService["ManagerProductionDashboard"]</span>
+                        </a>
+                    }
+                    @if (showOperatorWorkspace)
+                    {
+                        <a class="@NavClass("/production/machine-operator")" href="/production/machine-operator" @onclick="CloseMenu">
+                            <i class="bi bi-play-circle" aria-hidden="true"></i><span>@LocalizationService["OperatorDashboardTitle"]</span>
+                        </a>
+                    }
+
+                    @if (canViewSales || canViewCustomers)
+                    {
+                        <div class="menu-group-label">@LocalizationService["Sales"]</div>
+                        @if (canViewSalesRequests)
+                        {
+                            <a class="@NavClass("/sales/requests")" href="/sales/requests" @onclick="CloseMenu">
+                                <i class="bi bi-clipboard-check" aria-hidden="true"></i><span>@LocalizationService["SalesRequests"]</span>
+                            </a>
+                            <a class="@NavClass("/sales/quotations")" href="/sales/quotations" @onclick="CloseMenu">
+                                <i class="bi bi-receipt" aria-hidden="true"></i><span>@LocalizationService["SalesQuotations"]</span>
+                            </a>
+                        }
+                        @if (canViewSalesOrders)
+                        {
+                            <a class="@NavClass("/sales/orders")" href="/sales/orders" @onclick="CloseMenu">
+                                <i class="bi bi-bag-check" aria-hidden="true"></i><span>@LocalizationService["SalesOrders"]</span>
+                            </a>
+                        }
+                        @if (canViewCustomers)
+                        {
+                            <a class="@NavClass("/customers")" href="/customers" @onclick="CloseMenu">
+                                <i class="bi bi-people" aria-hidden="true"></i><span>@LocalizationService["Customers"]</span>
+                            </a>
+                        }
+                        @if (canViewSalesDeliveries || canViewSalesInvoices || canViewCustomers)
+                        {
+                            <details class="nav-more-group">
+                                <summary>@LocalizationService["ManagerMoreSales"]</summary>
+                                @if (canViewSalesDeliveries)
+                                {
+                                    <a href="/sales/deliveries/create" @onclick="CloseMenu">@LocalizationService["SalesDeliveries"]</a>
+                                }
+                                @if (canViewSalesInvoices)
+                                {
+                                    <a href="/sales/invoices" @onclick="CloseMenu">@LocalizationService["SalesInvoices"]</a>
+                                }
+                                @if (canViewCustomers)
+                                {
+                                    <a href="/customers/inventory" @onclick="CloseMenu">@LocalizationService["CustomerInventory"]</a>
+                                }
+                            </details>
+                        }
+                    }
+
                     @if (canViewInventory)
                     {
-                        <h6 class="menu-section">
-                            @LocalizationService["Inventory"]
-                        </h6>
-        
+                        <div class="menu-group-label">@LocalizationService["Inventory"]</div>
                         @if (canViewDocuments)
                         {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/documents")'>
-                                📄 @LocalizationService["Documents"]
-                            </button>
+                            <a class="@NavClass("/inventory/documents")" href="/inventory/documents" @onclick="CloseMenu">
+                                <i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>@LocalizationService["Documents"]</span>
+                            </a>
                         }
-        
-                        @if (canViewItems)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/items")'>
-                                📦 @LocalizationService["Items"]
-                            </button>
-                        }
-        
-                        @if (canViewUnits)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/units")'>
-                                📏 @LocalizationService["Units"]
-                            </button>
-                        }
-        
-                        @if (canViewCategories)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/itemcategories")'>
-                                🗂 @LocalizationService["ItemCategories"]
-                            </button>
-                        }
-        
-                        @if (canViewLots)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/lots")'>
-                                🏷 @LocalizationService["Lots"]
-                            </button>
-                        }
-        
                         @if (canViewStock)
                         {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/stock")'>
-                                📊 @LocalizationService["InventoryStock"]
-                            </button>
-        
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/stock/warehouse")'>
-                                📊 @LocalizationService["WarehouseStock"]
-                            </button>
-        
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/stock/lots")'>
-                                🏷️ @LocalizationService["StockByLot"]
-                            </button>
+                            <a class="@NavClass("/inventory/stock")" href="/inventory/stock" @onclick="CloseMenu">
+                                <i class="bi bi-boxes" aria-hidden="true"></i><span>@LocalizationService["InventoryStock"]</span>
+                            </a>
                         }
-        
-                        @if (canViewLocations)
+                        @if (canViewItems)
                         {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/locations")'>
-                                🏢 @LocalizationService["Locations"]
-                            </button>
+                            <a class="@NavClass("/inventory/items")" href="/inventory/items" @onclick="CloseMenu">
+                                <i class="bi bi-box" aria-hidden="true"></i><span>@LocalizationService["Items"]</span>
+                            </a>
                         }
-        
-                        @if (canViewTransactions)
+                        <details class="nav-more-group">
+                            <summary>@LocalizationService["ManagerMoreInventory"]</summary>
+                            @if (canViewStock)
+                            {
+                                <a href="/inventory/stock/warehouse" @onclick="CloseMenu">@LocalizationService["WarehouseStock"]</a>
+                                <a href="/inventory/stock/lots" @onclick="CloseMenu">@LocalizationService["StockByLot"]</a>
+                            }
+                            @if (canViewTransactions)
+                            {
+                                <a href="/inventory/transactions" @onclick="CloseMenu">@LocalizationService["Transactions"]</a>
+                            }
+                            @if (canViewLocations)
+                            {
+                                <a href="/inventory/locations" @onclick="CloseMenu">@LocalizationService["Locations"]</a>
+                            }
+                            @if (canViewCategories)
+                            {
+                                <a href="/inventory/itemcategories" @onclick="CloseMenu">@LocalizationService["ItemCategories"]</a>
+                            }
+                            @if (canViewUnits)
+                            {
+                                <a href="/inventory/units" @onclick="CloseMenu">@LocalizationService["Units"]</a>
+                            }
+                            @if (canViewLots)
+                            {
+                                <a href="/inventory/lots" @onclick="CloseMenu">@LocalizationService["Lots"]</a>
+                            }
+                        </details>
+                    }
+
+                    @if (canViewProduction || showProductionDashboard || showCeoDashboard)
+                    {
+                        <div class="menu-group-label">@LocalizationService["Production"]</div>
+                        @if (canViewProduction || showCeoDashboard)
                         {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/inventory/transactions")'>
-                                🔄 @LocalizationService["Transactions"]
-                            </button>
+                            <a class="@NavClass("/production/orders")" href="/production/orders" @onclick="CloseMenu">
+                                <i class="bi bi-list-check" aria-hidden="true"></i><span>@LocalizationService["ProductionOrders"]</span>
+                            </a>
+                        }
+                        @if (showCeoDashboard)
+                        {
+                            <a class="@NavClass("/production/planning")" href="/production/planning" @onclick="CloseMenu">
+                                <i class="bi bi-calendar-event" aria-hidden="true"></i><span>@LocalizationService["CeoDeadlineCalendar"]</span>
+                            </a>
+                        }
+                        @if (showProductionDashboard)
+                        {
+                            <a class="@NavClass("/production/machine-schedule")" href="/production/machine-schedule" @onclick="CloseMenu">
+                                <i class="bi bi-calendar3" aria-hidden="true"></i><span>@LocalizationService["MachineSchedule"]</span>
+                            </a>
+                        }
+                        @if (canViewProduction)
+                        {
+                            <details class="nav-more-group">
+                                <summary>@LocalizationService["ManagerMoreProduction"]</summary>
+                                <a href="/production/workflow" @onclick="CloseMenu">@LocalizationService["ProductionWorkflow"]</a>
+                                <a href="/production/jobs" @onclick="CloseMenu">@LocalizationService["JobOverview"]</a>
+                                <a href="/production/imposition-optimizer" @onclick="CloseMenu">@LocalizationService["Imposition Optimizer"]</a>
+                                <a href="/production/quality-inspections" @onclick="CloseMenu">@LocalizationService["QualityInspectionManagement"]</a>
+                            </details>
                         }
                     }
-        
-        
-                    <!-- =====================================================
-                         Sales
-                         ===================================================== -->
-                    @if (canViewSales)
+
+                    @if (canViewUsers || canViewRoles || canManagePermissions)
                     {
-                        <h6 class="menu-section">
-                            @LocalizationService["Sales"]
-                        </h6>
-        
-                        
-                        @if (canViewSalesRequests)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/sales/requests")'>
-                                📋 @LocalizationService["SalesRequests"]
-                            </button>
-                        }
-        
-                        @if (canViewSalesRequests)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/sales/quotations")'>
-                                🧾 @LocalizationService["SalesQuotations"]
-                            </button>
-                        }
-        
-                        @if (canViewSalesDeliveries)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/sales/deliveries/create")'>
-                                🚚 @LocalizationService["SalesDeliveries"]
-                            </button>
-                        }
-        
-                        @if (canViewSalesInvoices)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/sales/invoices")'>
-                                🧾 @LocalizationService["SalesInvoices"]
-                            </button>
-                        }
-        
-                    }
-        
-                    @if (canViewSalesOrders)
-                    {
-                        <button class="menu-button"
-                                @onclick='() => GoTo("/sales/orders")'>
-                            📦 @LocalizationService["SalesOrders"]
-                        </button>
-                    }
-        
-        
-                    
-                    <!-- =====================================================
-                        Production
-                        ===================================================== -->
-                    @if (canViewProduction)
-                    {
-                        <h6 class="menu-section">
-                            @LocalizationService["Production"]
-                        </h6>
-        
-                        <button class="menu-button"
-                                @onclick='() => GoTo("/production/workflow")'>
-                            🔄 @LocalizationService["ProductionWorkflow"]
-                        </button>
-        
-                        <button class="menu-button"
-                                @onclick='() => GoTo("/production/orders")'>
-                            🏭 @LocalizationService["ProductionOrders"]
-                        </button>
-        
-                        <button class="menu-button"
-                                @onclick='() => GoTo("/production/imposition-optimizer")'>
-                            📐 PDF Imposition Optimizer
-                        </button>
-        
-                        <button class="menu-button"
-                                @onclick='() => GoTo("/production/quality-inspections")'>
-                            🔍 @LocalizationService["QualityInspectionManagement"]
-                        </button>
-                    }
-        
-        
-        
-                    <!-- =====================================================
-                         Customers
-                         ===================================================== -->
-                    @if (canViewCustomers)
-                    {
-                        <h6 class="menu-section">
-                            @LocalizationService["Customers"]
-                        </h6>
-        
-                        <button class="menu-button"
-                                @onclick='() => GoTo("/customers")'>
-                            👥 @LocalizationService["Customers"]
-                        </button>
-        
-                        <button class="menu-button"
-                                @onclick='() => GoTo("/customers/inventory")'>
-                            📦 @LocalizationService["CustomerInventory"]
-                        </button>
-                    }
-        
-        
-                    <!-- =====================================================
-                         Administration
-                         ===================================================== -->
-                    @if (canViewUsers ||
-                                     canViewRoles ||
-                                     canManagePermissions)
-                    {
-                        <h6 class="menu-section">
-                            @LocalizationService["Administration"]
-                        </h6>
-        
+                        <div class="menu-group-label">@LocalizationService["Administration"]</div>
                         @if (canViewUsers)
                         {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/administration/users")'>
-                                👤 @LocalizationService["Users"]
-                            </button>
+                            <a class="@NavClass("/administration/users")" href="/administration/users" @onclick="CloseMenu">
+                                <i class="bi bi-person-gear" aria-hidden="true"></i><span>@LocalizationService["Users"]</span>
+                            </a>
                         }
-        
-                        @if (canViewRoles)
+                        @if (canViewRoles || canManagePermissions)
                         {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/administration/roles")'>
-                                👥 @LocalizationService["Roles"]
-                            </button>
-                        }
-        
-                        @if (canManagePermissions)
-                        {
-                            <button class="menu-button"
-                                    @onclick='() => GoTo("/administration/permission-management")'>
-                                🔐 @LocalizationService["Permissions"]
-                            </button>
+                            <details class="nav-more-group">
+                                <summary>@LocalizationService["ManagerMoreAdministration"]</summary>
+                                @if (canViewRoles)
+                                {
+                                    <a href="/administration/roles" @onclick="CloseMenu">@LocalizationService["Roles"]</a>
+                                }
+                                @if (canManagePermissions)
+                                {
+                                    <a href="/administration/permission-management" @onclick="CloseMenu">@LocalizationService["Permissions"]</a>
+                                }
+                            </details>
                         }
                     }
-        
                 </nav>
         
             </div>
@@ -301,7 +252,7 @@
         <button type="button"
                 class="language-button @(LocalizationService.CurrentLanguage == "en" ? "active" : "")"
                 @onclick='() => ChangeLanguage("en-US")'>
-            🇬🇧 English
+            🇬🇧 @LocalizationService["English"]
         </button>
 
         <button type="button"
@@ -319,6 +270,14 @@
 @code {
 
     private bool menuOpen = false;
+    private bool showSalesDashboard;
+    private bool showWarehouseDashboard;
+    private bool showCeoDashboard;
+    private bool showProductionDashboard;
+    private bool showOperatorWorkspace;
+    private string NavClass(string path) =>
+        "menu-button" + (Navigation.ToBaseRelativePath(Navigation.Uri).TrimEnd('/') ==
+            path.TrimStart('/').TrimEnd('/') ? " active" : "");
 
     protected override async Task OnInitializedAsync()
     {
@@ -457,6 +416,21 @@
                 return;
             }
 
+
+            showSalesDashboard = user.IsInRole("Administrator") || user.IsInRole("Sales") ||
+                user.IsInRole("SalesManager") || user.IsInRole("Sales Manager");
+            showWarehouseDashboard = user.IsInRole("Administrator") || user.IsInRole("Warehouse") ||
+                user.IsInRole("WarehouseManager") || user.IsInRole("Warehouse Manager");
+            showCeoDashboard = user.IsInRole("Administrator") || user.IsInRole("CEO") ||
+                user.IsInRole("Ceo") || user.IsInRole("Manager");
+            showProductionDashboard = user.IsInRole("Administrator") ||
+                user.IsInRole("ProductionManager") || user.IsInRole("Production Manager") ||
+                user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
+                user.IsInRole("Production") || user.IsInRole("Manager");
+            showOperatorWorkspace = user.IsInRole("Administrator") || user.IsInRole("Operator") ||
+                user.IsInRole("ProductionManager") || user.IsInRole("Production Manager") ||
+                user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
+                user.IsInRole("Production") || user.IsInRole("Manager");
 
             // =====================================================
             // Inventory

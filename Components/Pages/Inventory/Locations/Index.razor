@@ -9,11 +9,15 @@
 
 <PageTitle>@LocalizationService["InventoryLocations"]</PageTitle>
 
-<div class="erp-page-header">
+<div class="inventory-page inventory-catalog">
+
+<div class="erp-page-header inventory-hero">
+        <div class="inventory-hero-icon" aria-hidden="true"><i class="bi bi-geo-alt"></i></div>
     <h3 class="erp-page-title">@LocalizationService["InventoryLocations"]</h3>
 </div>
 
 <div class="card mb-4">
+    <div class="card-header inventory-form-header"><strong>@LocalizationService["Add"]</strong></div>
 
     <div class="card-body">
 
@@ -88,6 +92,7 @@
 
 </div>
 
+<div class="inventory-table-scroll">
 <table class="table table-bordered table-responsive-cards">
 
     <thead>
@@ -144,6 +149,9 @@
     </tbody>
 
 </table>
+</div>
+
+</div>
 
 @code {
 

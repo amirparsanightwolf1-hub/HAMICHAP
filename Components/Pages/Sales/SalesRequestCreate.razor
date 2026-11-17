@@ -16,222 +16,239 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject LocalizationService LocalizationService
 
-<PageTitle>@LocalizationService["SalesRequest"]</PageTitle>
+<PageTitle>@LocalizationService["CreateJob"]</PageTitle>
 
-<div class="page-container">
-
-    <!-- Page Header -->
-    <div class="erp-page-header mb-4">
-        <div>
-            <div class="erp-page-title">
-                @LocalizationService["SalesRequest"]
+<div class="page-container job-create-page">
+    <header class="job-create-intro">
+        <div class="job-create-heading">
+            <div class="job-create-eyebrow">
+                <i class="bi bi-grid-1x2" aria-hidden="true"></i>
+                <span>@LocalizationService["StartNewJobQuotation"]</span>
             </div>
-
-            <div class="erp-page-subtitle">
-                @LocalizationService["ChooseCustomerAndJobType"]
-            </div>
+            <h1>@LocalizationService["CreateJob"]</h1>
+            <p>@LocalizationService["ChooseCustomerAndJobType"]</p>
         </div>
 
-        <button type="button"
-                class="btn sales-action-btn sales-back-btn"
-                @onclick="GoBack">
-
-            <i class="bi bi-arrow-left"></i>
+        <button type="button" class="job-create-back" @onclick="GoBack">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
             @LocalizationService["Back"]
-
         </button>
+    </header>
+
+    <div class="job-create-steps" aria-label="@LocalizationService["JobSetupProgress"]">
+        <div class="job-create-step is-current">
+            <span class="job-create-step-number">01</span>
+            <span>@LocalizationService["Customer"]</span>
+        </div>
+        <span class="job-create-step-divider" aria-hidden="true"></span>
+        <div class="job-create-step is-current">
+            <span class="job-create-step-number">02</span>
+            <span>@LocalizationService["JobType"]</span>
+        </div>
+        <span class="job-create-step-divider" aria-hidden="true"></span>
+        <div class="job-create-step">
+            <span class="job-create-step-number">03</span>
+            <span>@LocalizationService["JobDetailsNext"]</span>
+        </div>
     </div>
 
-    <!-- Error Message -->
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
-        <div class="alert alert-danger mb-4">
-            @errorMessage
+        <div class="alert alert-danger job-create-alert" role="alert">
+            <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+            <span>@errorMessage</span>
         </div>
     }
 
-    <!-- Sales Request Form -->
-    <div class="card shadow-sm">
-
-        <div class="card-header">
-            <strong>
-                @LocalizationService["SalesRequestInformation"]
-            </strong>
-        </div>
-
-        <div class="card-body">
-
-            <div class="row g-3">
-
-                <!-- Customer Selection -->
-                <div class="col-md-6">
-
-                    <label class="form-label">
-                        @LocalizationService["Customer"]
-                    </label>
-
-                    @if (!isCreatingCustomer)
-                    {
-                        <select class="form-select" @bind="customerId">
-
-                            <option value="0">
-                                @LocalizationService["SelectCustomer"]
-                            </option>
-
-                            @foreach (var customer in customers)
-                            {
-                                <option value="@customer.Id">
-                                    @customer.Code - @customer.Name
-                                </option>
-                            }
-
-                        </select>
-
-                        <div class="customer-action-wrapper">
-
-                            <button type="button"
-                                    class="btn sales-action-btn"
-                                    @onclick="StartNewCustomer">
-
-                                <i class="bi bi-person-plus"></i>
-                                @LocalizationService["CreateNewCustomer"]
-
-                            </button>
-
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="d-flex align-items-center gap-2">
-
-                            <span class="form-control bg-light">
-                                @LocalizationService["NewCustomer"]
-                            </span>
-
-                            <button type="button"
-                                    class="btn sales-action-btn sales-select-btn"
-                                    @onclick="SelectExistingCustomer">
-
-                                <i class="bi bi-people"></i>
-                                @LocalizationService["SelectExisting"]
-
-                            </button>
-
-                        </div>
-                    }
-
+    <div class="job-create-layout">
+        <div class="job-create-main">
+            <section class="job-create-panel" aria-labelledby="job-create-customer-heading">
+                <div class="job-create-section-heading">
+                    <span class="job-create-section-icon">
+                        <i class="bi bi-person-badge" aria-hidden="true"></i>
+                    </span>
+                    <div>
+                        <div class="job-create-section-kicker">@LocalizationService["JobSetupStepOne"]</div>
+                        <h2 id="job-create-customer-heading">@LocalizationService["Customer"]</h2>
+                        <p>@LocalizationService["SelectExistingOrCreateCustomer"]</p>
+                    </div>
                 </div>
 
-                <!-- New Customer Fields -->
-                @if (isCreatingCustomer)
+                @if (!TargetQuotationId.HasValue)
                 {
-                    <div class="col-md-4">
-
-                        <label class="form-label">
-                            @LocalizationService["CustomerCode"] *
-                        </label>
-
-                        <InputText class="form-control"
-                                   @bind-Value="newCustomerCode" />
-
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <label class="form-label">
-                            @LocalizationService["CustomerName"] *
-                        </label>
-
-                        <InputText class="form-control"
-                                   @bind-Value="newCustomerName" />
-
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <label class="form-label">
-                            @LocalizationService["Phone"]
-                        </label>
-
-                        <InputText class="form-control"
-                                   @bind-Value="newCustomerPhone" />
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <label class="form-label">
-                            @LocalizationService["Email"]
-                        </label>
-
-                        <InputText class="form-control"
-                                   @bind-Value="newCustomerEmail" />
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <label class="form-label">
-                            @LocalizationService["Address"]
-                        </label>
-
-                        <InputText class="form-control"
-                                   @bind-Value="newCustomerAddress" />
-
+                    <div class="job-create-customer-choices" role="group" aria-label="@LocalizationService["Customer"]">
+                        <button type="button"
+                                class="job-create-customer-choice @(!isCreatingCustomer ? "is-selected" : "")"
+                                aria-pressed="@(!isCreatingCustomer)"
+                                @onclick="SelectExistingCustomer">
+                            <i class="bi bi-people" aria-hidden="true"></i>
+                            @LocalizationService["SelectExisting"]
+                        </button>
+                        <button type="button"
+                                class="job-create-customer-choice @(isCreatingCustomer ? "is-selected" : "")"
+                                aria-pressed="@isCreatingCustomer"
+                                @onclick="StartNewCustomer">
+                            <i class="bi bi-person-plus" aria-hidden="true"></i>
+                            @LocalizationService["CreateNewCustomer"]
+                        </button>
                     </div>
                 }
 
-                <!-- Job Type -->
-                <div class="col-md-6">
+                @if (!isCreatingCustomer)
+                {
+                    <div class="job-create-field">
+                        <label for="job-create-customer">@LocalizationService["Customer"] <span class="job-create-required">*</span></label>
+                        <select id="job-create-customer"
+                                class="form-select"
+                                @bind="customerId"
+                                disabled="@TargetQuotationId.HasValue">
+                            <option value="0">@LocalizationService["SelectCustomer"]</option>
+                            @foreach (var customer in customers)
+                            {
+                                <option value="@customer.Id">@customer.Code - @customer.Name</option>
+                            }
+                        </select>
+                        @if (TargetQuotationId.HasValue)
+                        {
+                            <div class="job-create-context">
+                                <i class="bi bi-link-45deg" aria-hidden="true"></i>
+                                @LocalizationService["QuotationCustomerLocked"]
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="job-create-fields-grid">
+                        <div class="job-create-field">
+                            <label for="job-create-code">@LocalizationService["CustomerCode"] <span class="job-create-required">*</span></label>
+                            <InputText id="job-create-code" class="form-control" @bind-Value="newCustomerCode" />
+                        </div>
+                        <div class="job-create-field">
+                            <label for="job-create-name">@LocalizationService["CustomerName"] <span class="job-create-required">*</span></label>
+                            <InputText id="job-create-name" class="form-control" @bind-Value="newCustomerName" />
+                        </div>
+                        <div class="job-create-field">
+                            <label for="job-create-phone">@LocalizationService["Phone"]</label>
+                            <InputText id="job-create-phone" class="form-control" type="tel" @bind-Value="newCustomerPhone" />
+                        </div>
+                        <div class="job-create-field">
+                            <label for="job-create-email">@LocalizationService["Email"]</label>
+                            <InputText id="job-create-email" class="form-control" type="email" @bind-Value="newCustomerEmail" />
+                        </div>
+                        <div class="job-create-field job-create-field-full">
+                            <label for="job-create-address">@LocalizationService["Address"]</label>
+                            <InputText id="job-create-address" class="form-control" @bind-Value="newCustomerAddress" />
+                        </div>
+                    </div>
+                }
+            </section>
 
-                    <label class="form-label">
-                        @LocalizationService["JobType"]
-                    </label>
-
-                    <select class="form-select" @bind="selectedJobType">
-
-                        <option value="@SalesJobType.Roll">
-                            @LocalizationService["RollJob"]
-                        </option>
-
-                        <option value="@SalesJobType.Sheet">
-                            @LocalizationService["SheetJob"]
-                        </option>
-
-                    </select>
-
+            <section class="job-create-panel" aria-labelledby="job-create-type-heading">
+                <div class="job-create-section-heading">
+                    <span class="job-create-section-icon">
+                        <i class="bi bi-printer" aria-hidden="true"></i>
+                    </span>
+                    <div>
+                        <div class="job-create-section-kicker">@LocalizationService["JobSetupStepTwo"]</div>
+                        <h2 id="job-create-type-heading">@LocalizationService["JobType"]</h2>
+                        <p>@LocalizationService["JobTypeSelectionHelp"]</p>
+                    </div>
                 </div>
 
-                <!-- Create Job Button -->
-                <div class="col-12 sales-action-wrapper mt-4">
-
+                <div class="job-create-types" role="group" aria-label="@LocalizationService["JobType"]">
                     <button type="button"
-                            class="btn sales-action-btn sales-create-btn"
-                            @onclick="CreateAsync"
-                            disabled="@isSaving">
-
-                        @if (isSaving)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1"></span>
-                        }
-
-                        <i class="bi bi-plus-circle"></i>
-
-                        @LocalizationService["CreateJob"]
-
+                            class="job-create-type @(selectedJobType == SalesJobType.Roll ? "is-selected" : "")"
+                            aria-pressed="@(selectedJobType == SalesJobType.Roll)"
+                            @onclick="() => selectedJobType = SalesJobType.Roll">
+                        <span class="job-create-type-image job-create-type-roll">
+                            <i class="bi bi-disc" aria-hidden="true"></i>
+                        </span>
+                        <span class="job-create-type-details">
+                            <strong>@LocalizationService["RollJob"]</strong>
+                            <span>@LocalizationService["RollJobSubtitle"]</span>
+                        </span>
+                        <i class="bi @(selectedJobType == SalesJobType.Roll ? "bi-check-circle-fill" : "bi-circle") job-create-type-check"
+                           aria-hidden="true"></i>
                     </button>
 
+                    <button type="button"
+                            class="job-create-type @(selectedJobType == SalesJobType.Sheet ? "is-selected" : "")"
+                            aria-pressed="@(selectedJobType == SalesJobType.Sheet)"
+                            @onclick="() => selectedJobType = SalesJobType.Sheet">
+                        <span class="job-create-type-image job-create-type-sheet">
+                            <i class="bi bi-file-earmark-richtext" aria-hidden="true"></i>
+                        </span>
+                        <span class="job-create-type-details">
+                            <strong>@LocalizationService["SheetJob"]</strong>
+                            <span>@LocalizationService["SheetJobSubtitle"]</span>
+                        </span>
+                        <i class="bi @(selectedJobType == SalesJobType.Sheet ? "bi-check-circle-fill" : "bi-circle") job-create-type-check"
+                           aria-hidden="true"></i>
+                    </button>
                 </div>
-
-            </div>
-
+            </section>
         </div>
 
-    </div>
+        <aside class="job-create-sidebar" aria-label="@LocalizationService["JobSetupSummary"]">
+            <div class="job-create-summary">
+                <div class="job-create-summary-top">
+                    <span class="job-create-summary-icon">
+                        <i class="bi bi-clipboard2-check" aria-hidden="true"></i>
+                    </span>
+                    <div>
+                        <h2>@LocalizationService["JobSetupSummary"]</h2>
+                        <p>@LocalizationService["JobSetupSummaryHelp"]</p>
+                    </div>
+                </div>
 
+                <dl class="job-create-summary-rows" aria-live="polite">
+                    <div class="job-create-summary-row">
+                        <dt>@LocalizationService["Customer"]</dt>
+                        <dd>@GetCustomerSummary()</dd>
+                    </div>
+                    <div class="job-create-summary-row">
+                        <dt>@LocalizationService["JobType"]</dt>
+                        <dd>
+                            <i class="bi @(selectedJobType == SalesJobType.Roll ? "bi-disc" : "bi-file-earmark-richtext")"
+                               aria-hidden="true"></i>
+                            @(selectedJobType == SalesJobType.Roll
+                                ? LocalizationService["RollJob"]
+                                : LocalizationService["SheetJob"])
+                        </dd>
+                    </div>
+                </dl>
+
+                <div class="job-create-next">
+                    <i class="bi bi-arrow-right-circle" aria-hidden="true"></i>
+                    <span>@LocalizationService["JobSetupNextStepHelp"]</span>
+                </div>
+
+                <button type="button"
+                        class="job-create-submit"
+                        @onclick="CreateAsync"
+                        disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-arrow-right-circle" aria-hidden="true"></i>
+                    }
+                    @LocalizationService["ContinueToJobDetails"]
+                </button>
+
+                <p class="job-create-submit-help">@LocalizationService["JobSetupSubmitHelp"]</p>
+            </div>
+        </aside>
+    </div>
 </div>
 
 @code {
+
+    [SupplyParameterFromQuery(Name = "quotationId")]
+    public long? TargetQuotationId { get; set; }
 
     private List<Customer> customers = new();
 
@@ -257,6 +274,21 @@
             .Where(x => x.IsActive)
             .OrderBy(x => x.Name)
             .ToListAsync();
+
+        if (TargetQuotationId.HasValue)
+        {
+            // Reuse the quotation's customer for every newly attached job.
+            var quote = await Db.Quotations.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == TargetQuotationId.Value);
+            if (quote is null ||
+                quote.Status is not (QuotationStatus.Draft or QuotationStatus.RevisionRequired))
+            {
+                errorMessage = LocalizationService["QuotationNotEditable"];
+                return;
+            }
+
+            customerId = quote.CustomerId;
+        }
     }
 
 
@@ -290,6 +322,12 @@
             errorMessage =
                 LocalizationService["SelectExistingOrCreateCustomer"];
 
+            return;
+        }
+
+        if (TargetQuotationId.HasValue && isCreatingCustomer)
+        {
+            errorMessage = LocalizationService["QuotationCustomerMustMatch"];
             return;
         }
 
@@ -358,7 +396,9 @@
                 ? $"/sales/requests/roll/edit/{request.Id}"
                 : $"/sales/requests/sheet/edit/{request.Id}";
 
-            Navigation.NavigateTo(route);
+            Navigation.NavigateTo(TargetQuotationId.HasValue
+                ? $"{route}?quotationId={TargetQuotationId.Value}"
+                : route);
         }
         catch (Exception ex)
         {
@@ -371,9 +411,22 @@
     }
 
 
+    private string GetCustomerSummary()
+    {
+        if (isCreatingCustomer)
+            return string.IsNullOrWhiteSpace(newCustomerName)
+                ? LocalizationService["NewCustomer"]
+                : newCustomerName.Trim();
+
+        return customers.FirstOrDefault(x => x.Id == customerId)?.Name
+            ?? LocalizationService["SelectCustomer"];
+    }
+
     private void GoBack()
     {
-        Navigation.NavigateTo("/sales/requests");
+        Navigation.NavigateTo(TargetQuotationId.HasValue
+            ? $"/sales/quotations/edit/{TargetQuotationId.Value}"
+            : "/sales/quotations");
     }
 
 }

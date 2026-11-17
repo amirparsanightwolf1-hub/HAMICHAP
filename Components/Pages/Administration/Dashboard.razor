@@ -1,26 +1,28 @@
 ﻿@page "/administration"
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
 
 @using Microsoft.AspNetCore.Authorization
 
 @attribute [Authorize(Roles = "Administrator")]
 
-<PageTitle>Administration</PageTitle>
+<PageTitle>@L["Administration"]</PageTitle>
 
 <div class="erp-page-header">
-    <h3 class="erp-page-title">Administration</h3>
+    <h3 class="erp-page-title">@L["Administration"]</h3>
 </div>
 
 <div class="row">
 
     <div class="col-md-4">
         <div class="card p-3 mb-3">
-            <h5>Users</h5>
+            <h5>@L["Users"]</h5>
             <p>
-                Manage employees and user accounts.
+                @L["Manage employees and user accounts."]
             </p>
 
             <a href="/administration/users" class="btn btn-primary">
-                Manage Users
+                @L["Manage Users"]
             </a>
         </div>
     </div>
@@ -28,13 +30,13 @@
 
     <div class="col-md-4">
         <div class="card p-3 mb-3">
-            <h5>Roles</h5>
+            <h5>@L["Roles"]</h5>
             <p>
-                Manage access levels.
+                @L["Manage access levels."]
             </p>
 
             <a href="/administration/roles" class="btn btn-primary">
-                Manage Roles
+                @L["Manage Roles"]
             </a>
         </div>
     </div>
@@ -42,13 +44,13 @@
 
     <div class="col-md-4">
         <div class="card p-3 mb-3">
-            <h5>Permissions</h5>
+            <h5>@L["Permissions"]</h5>
             <p>
-                Control access to system features.
+                @L["Control access to system features."]
             </p>
 
             <a href="/administration/permissions" class="btn btn-primary">
-                Manage Permissions
+                @L["ManagePermissions"]
             </a>
         </div>
     </div>

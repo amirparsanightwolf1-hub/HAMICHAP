@@ -12,9 +12,12 @@
     @LocalizationService["InventoryLots"]
 </PageTitle>
 
-<h3>
-    @LocalizationService["InventoryLots"]
-</h3>
+<div class="inventory-page inventory-lots">
+
+<div class="erp-page-header inventory-hero">
+    <div class="inventory-hero-icon" aria-hidden="true"><i class="bi bi-tags"></i></div>
+    <div><h1 class="erp-page-title">@LocalizationService["InventoryLots"]</h1></div>
+</div>
 
 <div class="card mb-3">
 
@@ -75,6 +78,7 @@
 
 </div>
 
+<div class="inventory-table-scroll">
 <table class="table table-bordered table-hover table-responsive-cards">
 
     <thead>
@@ -193,6 +197,9 @@
     </tbody>
 
 </table>
+</div>
+
+</div>
 
 @code {
 

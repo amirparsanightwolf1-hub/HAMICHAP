@@ -1,0 +1,65 @@
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+
+@inject LocalizationService LocalizationService
+
+@* The finished-product request line is generated from RollJobEdit/SheetJobEdit.
+   It must not be entered independently: quotations still read that saved line. *@
+<div class="card shadow-sm mb-4" id="sales-workflow">
+    <div class="card-header">
+        <strong>@LocalizationService["OrderInformation"]</strong>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">@LocalizationService["Status"]</label>
+                <input class="form-control" value="@LocalizationService.TranslateEnum(Request.Status)" readonly />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@LocalizationService["CreatedBy"]</label>
+                <input class="form-control" value="@UserDisplayName(Request.CreatedByUser)" readonly />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@LocalizationService["AssignedEvaluator"]</label>
+                <input class="form-control" value="@UserDisplayName(Request.AssignedToUser)" readonly />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">@LocalizationService["RequestedDeliveryDate"]</label>
+                @if (IsDraft)
+                {
+                    <InputDate class="form-control" @bind-Value="Request.RequestedDeliveryDate" />
+                }
+                else
+                {
+                    <input class="form-control" value="@(Request.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")" readonly />
+                }
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">@LocalizationService["Notes"]</label>
+                @if (IsDraft)
+                {
+                    <textarea class="form-control" rows="3" @bind="Request.Notes"></textarea>
+                }
+                else
+                {
+                    <textarea class="form-control" rows="3" readonly>@Request.Notes</textarea>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public SalesRequest Request { get; set; } = default!;
+
+    private bool IsDraft => Request.Status == SalesRequestStatus.Draft;
+
+    private static string UserDisplayName(ApplicationUser? user)
+    {
+        if (user is null) return "-";
+        var fullName = $"{user.FirstName} {user.LastName}".Trim();
+        return fullName.Length > 0 ? fullName : user.UserName ?? "-";
+    }
+}

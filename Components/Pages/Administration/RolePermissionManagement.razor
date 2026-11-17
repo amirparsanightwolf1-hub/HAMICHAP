@@ -1,4 +1,6 @@
 ﻿@page "/administration/permissions"
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -13,13 +15,13 @@
 @inject RoleManager<IdentityRole> RoleManager
 @inject ApplicationDbContext Db
 
-<PageTitle>Permission Management</PageTitle>
+<PageTitle>@L["Permission Management"]</PageTitle>
 
-<h3>Permission Management</h3>
+<h3>@L["Permission Management"]</h3>
 
 @if (loading)
 {
-    <p>Loading...</p>
+    <p>@L["Loading"]</p>
 }
 else if (!string.IsNullOrWhiteSpace(errorMessage))
 {
@@ -36,12 +38,11 @@ else
         <div class="card-body">
 
             <h5>
-                Permission Management
+                @L["Permission Management"]
             </h5>
 
             <p class="text-muted mb-0">
-                You can manage permissions only for roles
-                that you are authorized to manage.
+                @L["You can manage permissions only for roles that you are authorized to manage."]
             </p>
 
         </div>
@@ -52,8 +53,7 @@ else
     @if (!targetRoles.Any())
     {
         <div class="alert alert-warning">
-            You are not authorized to manage permissions
-            for any role.
+            @L["You are not authorized to manage permissions for any role."]
         </div>
     }
     else
@@ -61,7 +61,7 @@ else
         <div class="mb-3">
 
             <label class="form-label">
-                Role
+                @L["Role"]
             </label>
 
             <select class="form-select"
@@ -69,7 +69,7 @@ else
                     @bind:after="LoadPermissions">
 
                 <option value="">
-                    -- Select Role --
+                    @L["-- Select Role --"]
                 </option>
 
                 @foreach (var role in targetRoles)
@@ -95,16 +95,14 @@ else
                     </h5>
 
                     <p class="text-muted">
-                        Select the permissions that you are
-                        allowed to manage for this role.
+                        @L["Select the permissions that you are allowed to manage for this role."]
                     </p>
 
 
                     @if (!manageablePermissions.Any())
                     {
                         <div class="alert alert-warning">
-                            You have no delegated permissions
-                            for this role.
+                            @L["You have no delegated permissions for this role."]
                         </div>
                     }
                     else
@@ -118,11 +116,11 @@ else
                                     <tr>
 
                                         <th>
-                                            Permission
+                                            @L["Permission"]
                                         </th>
 
                                         <th class="erp-width-120" >
-                                            Enabled
+                                            @L["Enabled"]
                                         </th>
 
                                     </tr>
@@ -161,7 +159,7 @@ else
                         <button class="btn btn-primary"
                                 @onclick="Save">
 
-                            Save Changes
+                            @L["SaveChanges"]
 
                         </button>
                     }
@@ -227,7 +225,7 @@ private bool loading = true;
             if (principal.Identity?.IsAuthenticated != true)
             {
                 errorMessage =
-                    "You are not authenticated.";
+                    L["You are not authenticated."];
 
                 return;
             }
@@ -240,7 +238,7 @@ private bool loading = true;
             if (currentUser == null)
             {
                 errorMessage =
-                    "Current user could not be found.";
+                    L["Current user could not be found."];
 
                 return;
             }
@@ -346,7 +344,7 @@ private bool loading = true;
                 x.Id == selectedTargetRoleId))
         {
             errorMessage =
-                "You are not authorized to manage this role.";
+                L["You are not authorized to manage this role."];
 
             return;
         }
@@ -472,7 +470,7 @@ private bool loading = true;
             selectedTargetRoleId))
         {
             ShowError(
-                "Please select a role.");
+                L["Please select a role."]);
 
             return;
         }
@@ -497,7 +495,7 @@ private bool loading = true;
                 selectedTargetRoleId))
         {
             ShowError(
-                "You are not authorized to manage this role.");
+                L["You are not authorized to manage this role."]);
 
             return;
         }
@@ -570,7 +568,7 @@ private bool loading = true;
 
 
         ShowSuccess(
-            $"Permissions for '{GetTargetRoleName()}' saved successfully.");
+            String.Format(L["Permissions for '{0}' saved successfully."], GetTargetRoleName()));
     }
 
 

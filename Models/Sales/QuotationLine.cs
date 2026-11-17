@@ -14,6 +14,11 @@ public class QuotationLine : BaseEntity
     public Quotation Quotation { get; set; }
         = null!;
 
+    // The originating Roll/Sheet request (and its independent approval proof).
+    // Nullable for historical quotations until the data migration is applied.
+    public long? SourceRequestId { get; set; }
+    public SalesRequest? SourceRequest { get; set; }
+
 
 
     public int ItemId { get; set; }

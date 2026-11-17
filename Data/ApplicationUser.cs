@@ -15,4 +15,8 @@ public class ApplicationUser : IdentityUser
     public DateTime? HireDate { get; set; }
 
     public bool IsActive { get; set; } = true;
+
+    // Machine operators may execute only jobs booked on this machine.
+    // Administrators can inspect and execute across machines.
+    public int? AssignedMachineId { get; set; }
 }

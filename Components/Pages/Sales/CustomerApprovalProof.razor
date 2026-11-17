@@ -5,12 +5,20 @@
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Services
+@using HamiChap_MES_ERP.Models.Shared.Services
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
+@inject QuotationService QuotationService
+@inject IJSRuntime JS
 
 
+<HeadContent>
+    <link rel="stylesheet" href="css/customerProofPrint.css" />
+</HeadContent>
 
 <div class="page-container proof-page">
     <div class="erp-page-header mb-3 no-print">
@@ -22,11 +30,32 @@
             <button class="btn btn-outline-secondary" @onclick="BackToJob">
                 @LocalizationService["BackToJob"]
             </button>
-            <button class="btn btn-primary" @onclick="PrintProof">
-                <i class="bi bi-printer"></i> @LocalizationService["PrintSaveAsPdf"]
+            <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow" disabled="@isOpeningQuotation">
+                @LocalizationService["ContinueToQuotation"]
+            </button>
+            <button class="btn btn-primary" disabled="@isPreparingPrint" @onclick="PrintProof">
+                @if (isPreparingPrint)
+                {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    @LocalizationService["ProofPreparingHighQualityPdf"]
+                }
+                else
+                {
+                    <i class="bi bi-printer" aria-hidden="true"></i>
+                    @LocalizationService["PrintSaveAsPdf"]
+                }
             </button>
         </div>
     </div>
+
+    @if (!string.IsNullOrWhiteSpace(quotationError))
+    {
+        <div class="alert alert-danger no-print">@quotationError</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(printError))
+    {
+        <div class="alert alert-danger no-print" role="alert">@printError</div>
+    }
 
     @if (isLoading)
     {
@@ -97,39 +126,49 @@
                                 </div>
                             }
 
-                            @if (request.JobType == SalesJobType.Roll)
-                            {
-                                <div class="proof-dimensions">@DimensionsSummary</div>
-                            }
-                            else
-                            {
-                                <div class="proof-dimensions">@DimensionsBeforeCutSummary</div>
-                                <div class="proof-dimensions">@DimensionsAfterCutSummary</div>
-                            }
                         </div>
                     </div>
 
                     @if (request.JobType == SalesJobType.Roll)
                     {
-                        <div class="proof-panel">
-                            <div class="proof-panel-title">@LocalizationService["SelectedRollOrientation"]</div>
-                            <div class="proof-roll-orientation">
-                                @if (int.TryParse(rollOrientation, out var orientationNumber) && orientationNumber >= 1 && orientationNumber <= 8)
+                        <div class="proof-panel proof-orientations-panel">
+                            <div class="proof-panel-title">@LocalizationService["RollOrientationProofAllChoices"]</div>
+                            <div class="proof-panel-body">
+                                <div class="proof-roll-orientation proof-roll-orientation-grid">
+                                    @foreach (var choice in RollOrientationChoices.All)
+                                    {
+                                        var isSelected = rollOrientation == choice.Value;
+                                        <div class="proof-roll-choice @(isSelected ? "is-selected" : "")"
+                                             @key="choice.Value">
+                                            <img src="@choice.ImagePath" alt="@LocalizationService[choice.LocalizationKey]" />
+                                            <div class="proof-roll-choice-caption">
+                                                <span>@LocalizationService[choice.LocalizationKey]</span>
+                                                @if (isSelected)
+                                                {
+                                                    <strong class="proof-roll-selected">
+                                                        @LocalizationService["Selected"]
+                                                    </strong>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                @if (RollOrientationChoices.IsLegacy(rollOrientation))
                                 {
-                                    <img src="@($"/images/roll-orientations/orientation-{orientationNumber}.jpg")"
-                                         alt="@RollOrientationLabel" />
+                                    <div class="proof-roll-legacy">
+                                        <img src="@($"/images/roll-orientations/orientation-{rollOrientation}.jpg")"
+                                             alt="@RollOrientationLabel" />
+                                        <span>@LocalizationService["RollOrientationLegacyProofNotice"] (@RollOrientationLabel)</span>
+                                    </div>
                                 }
-                                else
+                                else if (string.IsNullOrWhiteSpace(rollOrientation))
                                 {
-                                    <span class="proof-muted">@LocalizationService["NoRollOrientationSelected"]</span>
+                                    <div class="proof-muted mt-2">@LocalizationService["NoRollOrientationSelected"]</div>
                                 }
                             </div>
-                            @if (!string.IsNullOrWhiteSpace(rollOrientation))
-                            {
-                                <div class="proof-panel-body text-center proof-muted">@RollOrientationLabel</div>
-                            }
                         </div>
                     }
+
 
                     <div class="proof-panel">
                         <div class="proof-panel-title">@LocalizationService["ProductionNotes"]</div>
@@ -167,6 +206,35 @@
                         </div>
                     </div>
 
+                    <div class="proof-panel proof-dimensions-panel">
+                        <div class="proof-panel-title">@LocalizationService["ProofDimensionsAndSizes"]</div>
+                        <div class="proof-panel-body">
+                            @if (request.JobType == SalesJobType.Roll)
+                            {
+                                <div class="proof-dimensions-grid">
+                                    @foreach (var dimension in rollDimensions)
+                                    {
+                                        <div class="proof-kv proof-dimension-item">
+                                            <span class="proof-kv-label">@dimension.Key</span>
+                                            <strong class="proof-kv-value">@dimension.Value</strong>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="proof-kv">
+                                    <span class="proof-kv-label">@LocalizationService["BeforeCutDimensions"]</span>
+                                    <strong class="proof-kv-value">@DimensionsBeforeCutSummary</strong>
+                                </div>
+                                <div class="proof-kv">
+                                    <span class="proof-kv-label">@LocalizationService["AfterCutDimensions"]</span>
+                                    <strong class="proof-kv-value">@DimensionsAfterCutSummary</strong>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
                     <div class="proof-panel">
                         <div class="proof-panel-title">@LocalizationService["TechnicalSpecifications"]</div>
                         <div class="proof-panel-body">
@@ -196,11 +264,15 @@
                     </div>
 
                     <div class="proof-panel">
-                        <div class="proof-panel-title">@LocalizationService["PrintingColorsFrontBack"]</div>
+                        <div class="proof-panel-title">
+                            @(request.JobType == SalesJobType.Roll ? LocalizationService["RollPrintingColors"] : LocalizationService["PrintingColorsFrontBack"])
+                        </div>
                         <div class="proof-panel-body">
-                            <div class="proof-two-col">
+                            <div class="proof-two-col @(request.JobType == SalesJobType.Roll ? "proof-roll-single-side" : "")">
                                 <div>
-                                    <div class="proof-muted mb-1">@LocalizationService["FrontSide"]</div>
+                                    <div class="proof-muted mb-1">
+                                        @(request.JobType == SalesJobType.Roll ? LocalizationService["RollCmykColors"] : LocalizationService["FrontSide"])
+                                    </div>
                                     <div class="proof-cmyk-grid">
                                         @foreach (var color in CmykColors)
                                         {
@@ -211,30 +283,69 @@
                                         }
                                     </div>
                                 </div>
-                                <div>
-                                    <div class="proof-muted mb-1">@LocalizationService["BackSide"]</div>
-                                    <div class="proof-cmyk-grid">
-                                        @foreach (var color in CmykColors)
+                                @if (request.JobType != SalesJobType.Roll)
+                                {
+                                    <div>
+                                        <div class="proof-muted mb-1">@LocalizationService["BackSide"]</div>
+                                        <div class="proof-cmyk-grid">
+                                            @foreach (var color in CmykColors)
+                                            {
+                                                <div class="proof-cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
+                                                    <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
+                                                    <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            @if (request.JobType == SalesJobType.Roll)
+                            {
+                                <div class="proof-pantone-title">@LocalizationService["RollPantoneColors"]</div>
+                                @if (rollPantoneColors.Count == 0)
+                                {
+                                    <span class="proof-muted">@LocalizationService["RollPantoneNone"]</span>
+                                }
+                                else
+                                {
+                                    <div class="proof-pantone-list">
+                                        @foreach (var spot in rollPantoneColors)
                                         {
-                                            <div class="proof-cmyk-chip @(IsCmykSelected("back", color.Key) ? "active" : "")">
-                                                <div class="proof-cmyk-swatch" style="@($"background:{color.Value};color:{CmykTextColor(color.Key)}")">@color.Key</div>
-                                                <div class="proof-cmyk-name">@LocalizationService[color.ValueName]</div>
+                                            <div class="proof-pantone-chip" @key="spot.Code">
+                                                <span class="proof-pantone-swatch" style="@($"background-color:{spot.SafeHex}")" aria-hidden="true"></span>
+                                                <strong>@spot.Code</strong>
                                             </div>
                                         }
                                     </div>
-                                </div>
-                            </div>
+                                }
+                                <div class="proof-muted mt-1">@LocalizationService["RollPantoneProofDisclaimer"]</div>
+                            }
                             <div class="proof-muted mt-2">@LocalizationService["HighlightedTilesExplain"]</div>
                         </div>
                     </div>
 
                     @if (request.JobType == SalesJobType.Roll)
                     {
+                        <div class="proof-panel proof-uv-panel">
+                            <div class="proof-panel-title">@LocalizationService["ServiceGroupUvCoating"]</div>
+                            <div class="proof-panel-body">
+                                <div class="proof-service-list">
+                                    @foreach (var uv in RollFinishingServices.Groups.First(x => x.TitleKey == "ServiceGroupUvCoating").Services)
+                                    {
+                                        var selected = IsServiceSelected(uv.Value);
+                                        <div class="proof-service @(selected ? "is-selected" : "is-not-selected")">
+                                            <span class="proof-service-indicator">@(selected ? "✓" : "")</span>
+                                            <span>@LocalizationService[uv.LabelKey]</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
                         <div class="proof-panel">
                             <div class="proof-panel-title">@LocalizationService["SelectedServices"]</div>
                             <div class="proof-panel-body">
                                 <div class="proof-service-groups">
-                                    @foreach (var group in RollServiceGroups)
+                                    @foreach (var group in RollFinishingServices.Groups.Where(x => x.TitleKey != "ServiceGroupUvCoating"))
                                     {
                                         <section>
                                             <div class="proof-service-group-title">@LocalizationService[group.TitleKey]</div>
@@ -306,12 +417,16 @@
 
 @code {
     [Parameter] public long RequestId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "quotationId")]
+    public long? TargetQuotationId { get; set; }
     private HamiChap_MES_ERP.Models.Sales.SalesRequest? request;
     private bool isLoading = true;
     private string? errorMessage;
     private string artworkPath = "";
     private string artworkFileName = "";
     private string rollOrientation = "";
+    private List<RollPantoneColor> rollPantoneColors = new();
     private HashSet<string> frontCmyk = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmyk = new(StringComparer.OrdinalIgnoreCase);
     private string frontPantoneColors = "";
@@ -330,7 +445,7 @@
     };
     private string JobTitle = "";
     private string PrintingNotes = "";
-    private string DimensionsSummary = "";
+    private List<KeyValuePair<string, string>> rollDimensions = new();
     private string DimensionsBeforeCutSummary = "";
     private string DimensionsAfterCutSummary = "";
     private List<KeyValuePair<string, string>> technicalDetails = new();
@@ -341,33 +456,6 @@
         string TitleKey,
         (string Value, string LabelKey)[] Services);
 
-    private static readonly ProofServiceGroup[] RollServiceGroups =
-    {
-        new("ServiceGroupUvCoating", new[]
-        {
-            ("یووی روتاری", "ServiceUvRotary"),
-            ("یووی برجسته", "ServiceUvEmbossed"),
-            ("یووی تخت", "ServiceUvFlat"),
-            ("یووی موضعی", "ServiceUvSpot")
-        }),
-        new("ServiceGroupLamination", new[]
-        {
-            ("سلفون مات", "ServiceMatteLamination"),
-            ("سلفون براق", "ServiceGlossLamination")
-        }),
-        new("ServiceGroupFoilStamping", new[]
-        {
-            ("طلاکوب روتاری", "ServiceRotaryFoil"),
-            ("طلاکوب تخت", "ServiceFlatFoil"),
-            ("رنگ فویل", "ServiceFoilColor")
-        }),
-        new("ServiceGroupEmbossingDie", new[]
-        {
-            ("قالب روتاری", "ServiceRotaryDie"),
-            ("قالب تخت", "ServiceFlatDie"),
-            ("دیلن میلن", "ServiceDylanMilan")
-        })
-    };
 
     private static readonly ProofServiceGroup[] SheetServiceGroups =
     {
@@ -381,7 +469,8 @@
         }),
         new("ServiceGroupUvCoating", new[]
         {
-            ("یووی موضعی", "یووی موضعی")
+            ("یووی موضعی", "یووی موضعی"),
+            ("یووی سیلندری", "یووی سیلندری")
         }),
         new("ServiceGroupFoilStamping", new[]
         {
@@ -405,14 +494,16 @@
         selectedServices.Contains(storedValue, StringComparer.OrdinalIgnoreCase);
 
     private string RollOrientationLabel =>
-        int.TryParse(rollOrientation, out var n) && n is >= 1 and <= 8
-            ? $"{LocalizationService["RollOrientationOption"]} {n}"
-            : LocalizationService["NoRollOrientationSelected"];
+        RollOrientationChoices.Find(rollOrientation) is { } current
+            ? LocalizationService[current.LocalizationKey]
+            : int.TryParse(rollOrientation, out var n) && n is >= 1 and <= 8
+                ? $"{LocalizationService["RollOrientationOption"]} {n}"
+                : LocalizationService["NoRollOrientationSelected"];
 
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true; errorMessage = null;
-        DimensionsSummary = LocalizationService["DimensionsNotSpecified"];
+        rollPantoneColors = new();
         request = await Db.SalesRequests.Include(x => x.Customer).FirstOrDefaultAsync(x => x.Id == RequestId);
         if (request is null) { errorMessage = LocalizationService["SalesRequestNotFound"]; isLoading = false; return; }
         try
@@ -426,8 +517,14 @@
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
                 rollOrientation = spec.RollOrientation ?? "";
+                rollPantoneColors = spec.PantoneColors ?? new();
                 LoadCmykSelections(request.JobSpecificationJson);
-                DimensionsSummary = $"{LocalizationService["LabelPull"]}: {Fmt(spec.LabelPull)} mm · {LocalizationService["LabelWidth"]}: {Fmt(spec.LabelWidth)} mm · {LocalizationService["Gap"]}: {Fmt(spec.GapBetweenLabels)} mm";
+                rollDimensions = new()
+                {
+                    new(LocalizationService["LabelPull"], Fmt(spec.LabelPull) + " mm"),
+                    new(LocalizationService["LabelWidth"], Fmt(spec.LabelWidth) + " mm"),
+                    new(LocalizationService["Gap"], Fmt(spec.GapBetweenLabels) + " mm")
+                };
                 technicalDetails = new() {
                     new(LocalizationService["Material"], Empty(spec.PaperType)), new(LocalizationService["Colors"], spec.ColorCount?.ToString() ?? "—"),
                     new(LocalizationService["RollDiameter"], spec.RollDiameter.HasValue ? Fmt(spec.RollDiameter) + " mm" : "—"),
@@ -444,8 +541,8 @@
                 artworkFiles = spec.ArtworkFiles ?? new();
                 if (artworkFiles.Count == 0 && !string.IsNullOrWhiteSpace(artworkPath))
                     artworkFiles.Add(new JobArtworkFile { RelativePath = artworkPath, OriginalFileName = artworkFileName });
-                DimensionsBeforeCutSummary = $"{LocalizationService["BeforeCutDimensions"]}: {LocalizationService["DimensionWidth"]} {Fmt(spec.BeforeCutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.BeforeCutLengthCm)} cm";
-                DimensionsAfterCutSummary = $"{LocalizationService["AfterCutDimensions"]}: {LocalizationService["DimensionWidth"]} {Fmt(spec.CutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.CutLengthCm)} cm";
+                DimensionsBeforeCutSummary = $"{LocalizationService["DimensionWidth"]} {Fmt(spec.BeforeCutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.BeforeCutLengthCm)} cm";
+                DimensionsAfterCutSummary = $"{LocalizationService["DimensionWidth"]} {Fmt(spec.CutWidthCm)} × {LocalizationService["DimensionLength"]} {Fmt(spec.CutLengthCm)} cm";
                 LoadCmykSelections(request.JobSpecificationJson);
                 frontPantoneColors = ReadJsonStringProperty(request.JobSpecificationJson, "FrontPantoneColors");
                 backPantoneColors = ReadJsonStringProperty(request.JobSpecificationJson, "BackPantoneColors");
@@ -574,10 +671,108 @@
     private static string Empty(string? s) => string.IsNullOrWhiteSpace(s) ? "—" : s;
     private static string Fmt(decimal? d) => d.HasValue ? d.Value.ToString("0.##") : "—";
     private static bool IsImage(string path) => new[] { ".png", ".jpg", ".jpeg", ".webp" }.Any(x => path.EndsWith(x, StringComparison.OrdinalIgnoreCase));
-    private void BackToJob() => Navigation.NavigateTo(request?.JobType == SalesJobType.Roll ? $"/sales/requests/roll/edit/{RequestId}" : $"/sales/requests/sheet/edit/{RequestId}");
-    private async Task PrintProof() { await Task.Yield(); await JSPrintFallback(); }
-    [Inject] private Microsoft.JSInterop.IJSRuntime JS { get; set; } = default!;
-    private async Task JSPrintFallback() => await JS.InvokeVoidAsync("window.print");
+    private void BackToJob()
+    {
+        var job = request?.JobType == SalesJobType.Roll ? "roll" : "sheet";
+        Navigation.NavigateTo(TargetQuotationId.HasValue
+            ? $"/sales/requests/{job}/edit/{RequestId}?quotationId={TargetQuotationId.Value}"
+            : $"/sales/requests/{job}/edit/{RequestId}");
+    }
+    private bool isOpeningQuotation;
+    private string? quotationError;
+
+    private async Task ContinueSalesWorkflow()
+    {
+        if (request is null) return;
+
+        quotationError = null;
+        try
+        {
+            isOpeningQuotation = true;
+            // Reuses an existing quote when the job has already been attached.
+            // Draft requests go straight to quoting (no duplicate Submit step).
+            if (TargetQuotationId.HasValue)
+            {
+                await QuotationService.AddRequestToQuotationAsync(
+                    TargetQuotationId.Value, RequestId);
+                Navigation.NavigateTo($"/sales/quotations/edit/{TargetQuotationId.Value}");
+            }
+            else
+            {
+                var quotation = await QuotationService.CreateFromRequestAsync(RequestId);
+                Navigation.NavigateTo($"/sales/quotations/edit/{quotation.Id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            quotationError = ex.Message;
+        }
+        finally
+        {
+            isOpeningQuotation = false;
+        }
+    }
+    private bool isPreparingPrint;
+    private string? printError;
+    private IJSObjectReference? _proofPrintModule;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        try
+        {
+            _proofPrintModule = await JS.InvokeAsync<IJSObjectReference>(
+                "import", Navigation.ToAbsoluteUri("js/customerProofPrint.js").ToString());
+            await _proofPrintModule.InvokeVoidAsync("registerProofPrint");
+        }
+        catch (JSException)
+        {
+            // The Print button retains the normal browser print fallback.
+        }
+    }
+
+    private async Task PrintProof()
+    {
+        if (isPreparingPrint) return;
+        isPreparingPrint = true;
+        printError = null;
+        try
+        {
+            // The Print button must not silently fall back to low-resolution art.
+            if (_proofPrintModule is null)
+            {
+                printError = LocalizationService["ProofPrintQualityFailed"];
+                return;
+            }
+            await _proofPrintModule.InvokeVoidAsync("printProof");
+        }
+        catch (JSException)
+        {
+            printError = LocalizationService["ProofPrintQualityFailed"];
+        }
+        finally
+        {
+            isPreparingPrint = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_proofPrintModule is null)
+            return;
+
+        try
+        {
+            await _proofPrintModule.InvokeVoidAsync("unregisterProofPrint");
+            await _proofPrintModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The interactive circuit may already have closed.
+        }
+    }
     private static bool IsPdf(string path) =>
     path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
 }
