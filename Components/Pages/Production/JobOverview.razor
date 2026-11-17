@@ -136,6 +136,17 @@
             </p>
         }
 
+        <div class="job-overview-view-toggle" role="group" aria-label="@L["JobOverviewViewMode"]">
+            <button type="button" class="job-overview-view-option @(!compactView ? "is-active" : "")"
+                    aria-pressed="@(!compactView)" @onclick="() => compactView = false">
+                <i class="bi bi-card-list" aria-hidden="true"></i> @L["JobOverviewDetailedView"]
+            </button>
+            <button type="button" class="job-overview-view-option @(compactView ? "is-active" : "")"
+                    aria-pressed="@compactView" @onclick="() => compactView = true">
+                <i class="bi bi-table" aria-hidden="true"></i> @L["JobOverviewCompactView"]
+            </button>
+        </div>
+
         @if (VisibleJobs.Count == 0)
         {
             <div class="job-overview-empty">
@@ -146,7 +157,14 @@
         }
         else
         {
-            <div class="job-overview-list">
+            @if (compactView)
+            {
+                <JobOverviewCompactTable Jobs="VisibleJobs"
+                                         SpecificationColumns="SpecificationColumns" />
+            }
+            else
+            {
+                <div class="job-overview-list">
                 @foreach (var job in VisibleJobs)
                 {
                     <article class="job-overview-card" @key="job.RequestId">
@@ -358,7 +376,8 @@
                         </footer>
                     </article>
                 }
-            </div>
+                </div>
+            }
             @if (FilteredJobs.Count > visibleCount)
             {
                 <div class="job-overview-more">
@@ -388,6 +407,14 @@
     private long? loadedRequestId;
     private bool firstLoad = true;
     private int visibleCount = 20;
+    private bool compactView;
+
+    private IReadOnlyList<string> SpecificationColumns => jobs
+        .SelectMany(row => row.SpecificationValues.Keys)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
 
     private List<JobRow> FilteredJobs => jobs.Where(x => statusFilter switch
     {
