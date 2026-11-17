@@ -4806,4 +4806,58 @@
   <data name="ProofDimensionsAndSizes" xml:space="preserve">
     <value>ابعاد و اندازه‌های لیبل</value>
   </data>
+  <data name="JobOverviewViewMode" xml:space="preserve">
+    <value>چیدمان نمای کلی سفارش‌های تولید</value>
+  </data>
+  <data name="JobOverviewDetailedView" xml:space="preserve">
+    <value>نمای کامل</value>
+  </data>
+  <data name="JobOverviewCompactView" xml:space="preserve">
+    <value>نمای فشرده</value>
+  </data>
+  <data name="JobOverviewCompactHint" xml:space="preserve">
+    <value>نمای جدولی: هر سفارش در یک ردیف است. برای دیدن همه مشخصات ذخیره‌شده و جزئیات تولید به‌صورت افقی پیمایش کنید.</value>
+  </data>
+  <data name="JobOverviewCompactRequestStatus" xml:space="preserve">
+    <value>وضعیت درخواست</value>
+  </data>
+  <data name="JobOverviewCompactProductionStatus" xml:space="preserve">
+    <value>وضعیت تولید</value>
+  </data>
+  <data name="JobOverviewCompactCompletedStages" xml:space="preserve">
+    <value>مراحل تکمیل‌شده / کل مراحل</value>
+  </data>
+  <data name="JobOverviewCompactQuantityProgress" xml:space="preserve">
+    <value>پیشرفت تعداد</value>
+  </data>
+  <data name="JobOverviewCompactSharedRoute" xml:space="preserve">
+    <value>مسیر تولید مشترک</value>
+  </data>
+  <data name="JobOverviewCompactVerifiedRoute" xml:space="preserve">
+    <value>عملیات تأییدشده</value>
+  </data>
+  <data name="JobOverviewCompactPlannedStart" xml:space="preserve">
+    <value>شروع برنامه‌ریزی‌شده</value>
+  </data>
+  <data name="JobOverviewCompactActualStart" xml:space="preserve">
+    <value>شروع واقعی</value>
+  </data>
+  <data name="JobOverviewCompactActualEnd" xml:space="preserve">
+    <value>پایان واقعی</value>
+  </data>
+  <data name="JobOverviewCompactItems" xml:space="preserve">
+    <value>اقلام درخواست و تعداد</value>
+  </data>
+  <data name="JobOverviewCompactActions" xml:space="preserve">
+    <value>اقدامات</value>
+  </data>
+  <data name="JobOverviewCompactArtworkPath" xml:space="preserve">
+    <value>مسیر فایل طرح</value>
+  </data>
+  <data name="JobOverviewCompactArtworkName" xml:space="preserve">
+    <value>نام فایل طرح</value>
+  </data>
+  <data name="JobOverviewCompactFinishedItem" xml:space="preserve">
+    <value>شناسه کالای نهایی</value>
+  </data>
 </root>
