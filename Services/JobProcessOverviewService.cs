@@ -42,6 +42,9 @@ public static class JobProcessOverviewService
         public SalesJobType JobType { get; init; }
         public SalesRequestStatus RequestStatus { get; init; }
         public DateTime RequestDate { get; init; }
+        public DateTime? RequestedDeliveryDate { get; init; }
+        public string RequestNotes { get; init; } = "";
+        public string RequestItems { get; init; } = "";
         public decimal? Quantity { get; init; }
         public long? QuotationId { get; init; }
         public long? SalesOrderId { get; init; }
@@ -49,7 +52,15 @@ public static class JobProcessOverviewService
         public long? ProductionOrderId { get; init; }
         public string? ProductionOrderNumber { get; init; }
         public ProductionOrderStatus? ProductionStatus { get; init; }
+        public DateTime? PlannedStart { get; init; }
         public DateTime? PlannedEnd { get; init; }
+        public DateTime? ActualStart { get; init; }
+        public DateTime? ActualEnd { get; init; }
+        public string ProductionNotes { get; init; } = "";
+        // Every saved specification field is retained as a compact table column,
+        // including type-specific and future fields that are not in the card view.
+        public IReadOnlyDictionary<string, string> SpecificationValues { get; init; }
+            = new Dictionary<string, string>();
         public IReadOnlyList<ProcessStage> Stages { get; init; } = Array.Empty<ProcessStage>();
         public bool SharedProductionRoute { get; init; }
         public bool InvalidSpecifications { get; init; }
@@ -80,7 +91,9 @@ public static class JobProcessOverviewService
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var query = db.SalesRequests.AsNoTracking()
-            .Include(r => r.Customer).Include(r => r.Lines)
+            .Include(r => r.Customer)
+            .Include(r => r.Lines).ThenInclude(line => line.Item)
+            .Include(r => r.Lines).ThenInclude(line => line.Unit)
             .AsQueryable();
         if (requestId.HasValue)
         {
@@ -295,6 +308,13 @@ public static class JobProcessOverviewService
                 JobType = request.JobType,
                 RequestStatus = request.Status,
                 RequestDate = request.RequestDate,
+                RequestedDeliveryDate = request.RequestedDeliveryDate,
+                RequestNotes = request.Notes,
+                RequestItems = string.Join(" · ", request.Lines.OrderBy(l => l.Id).Select(l =>
+                    $"{(string.IsNullOrWhiteSpace(l.Item?.Name) ? l.ItemId.ToString() : l.Item.Name)}" +
+                    $" ({l.Item?.Code ?? ""}): {l.Quantity:N0}" +
+                    $" {l.Unit?.Symbol ?? ""}" +
+                    (string.IsNullOrWhiteSpace(l.Notes) ? "" : $" — {l.Notes}"))),
                 Quantity = request.Lines.FirstOrDefault()?.Quantity,
                 QuotationId = quote?.Id,
                 SalesOrderId = salesOrder?.Id,
@@ -302,7 +322,12 @@ public static class JobProcessOverviewService
                 ProductionOrderId = productionOrder?.Id,
                 ProductionOrderNumber = productionOrder?.OrderNumber,
                 ProductionStatus = productionOrder?.Status,
+                PlannedStart = productionOrder?.PlannedStartDate,
                 PlannedEnd = productionOrder?.PlannedEndDate,
+                ActualStart = productionOrder?.ActualStartDate,
+                ActualEnd = productionOrder?.ActualEndDate,
+                ProductionNotes = productionOrder?.Notes ?? "",
+                SpecificationValues = ExtractSpecificationValues(request.JobSpecificationJson),
                 Stages = stages,
                 SharedProductionRoute = shared,
                 InvalidSpecifications = invalidSpec,
@@ -335,6 +360,48 @@ public static class JobProcessOverviewService
             return 0;
         var finished = operations.Count(x => x.Status == ProductionOperationStatus.Completed);
         return (int)decimal.Round(finished * 100m / active, 0);
+    }
+
+    private static IReadOnlyDictionary<string, string> ExtractSpecificationValues(string? json)
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(json))
+            return values;
+
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+                return values;
+
+            foreach (var property in document.RootElement.EnumerateObject())
+                values[property.Name] = FormatSpecificationValue(property.Value);
+        }
+        catch (JsonException)
+        {
+            // The existing InvalidSpecifications marker already flags jobs whose
+            // specification JSON cannot be interpreted for routing.
+        }
+
+        return values;
+    }
+
+    private static string FormatSpecificationValue(JsonElement value)
+    {
+        return value.ValueKind switch
+        {
+            JsonValueKind.String => value.GetString() ?? "",
+            JsonValueKind.Number => value.ToString(),
+            JsonValueKind.True => "✓",
+            JsonValueKind.False => "✕",
+            JsonValueKind.Array => string.Join("; ",
+                value.EnumerateArray().Select(FormatSpecificationValue)
+                    .Where(text => !string.IsNullOrWhiteSpace(text))),
+            JsonValueKind.Object => string.Join("; ",
+                value.EnumerateObject().Select(property =>
+                    $"{property.Name}: {FormatSpecificationValue(property.Value)}")),
+            _ => ""
+        };
     }
 
     private static string ExtractTitle(string? json, string fallback)
