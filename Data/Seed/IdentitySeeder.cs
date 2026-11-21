@@ -31,10 +31,14 @@ public static class IdentitySeeder
 
 
     public static async Task SeedAdminAsync(
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IConfiguration configuration)
     {
-        const string adminEmail = "admin@hamichap.com";
-        const string adminPassword = "Admin123!";
+        var adminEmail = configuration["BootstrapAdmin:Email"];
+        var adminPassword = configuration["BootstrapAdmin:Password"];
+
+        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+            return;
 
         var admin = await userManager.FindByEmailAsync(adminEmail);
 
@@ -56,12 +60,12 @@ public static class IdentitySeeder
                 admin,
                 adminPassword);
 
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(
-                    admin,
-                    "Administrator");
-            }
+            if (!result.Succeeded)
+                throw new InvalidOperationException("Administrator bootstrap failed.");
+
+            var roleResult = await userManager.AddToRoleAsync(admin, "Administrator");
+            if (!roleResult.Succeeded)
+                throw new InvalidOperationException("Administrator role assignment failed.");
         }
     }
 }
