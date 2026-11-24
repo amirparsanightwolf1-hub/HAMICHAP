@@ -15,7 +15,15 @@
 
 @inject LocalizationService L
 
-<div class="job-overview-compact">
+<div class="job-overview-compact @(fullScreen ? "is-fullscreen" : "")"
+     @onkeydown="HandleFullScreenKey">
+    @if (fullScreen)
+    {
+        <div class="job-overview-fullscreen-heading">
+            <strong><i class="bi bi-table" aria-hidden="true"></i> @L["JobOverview"]</strong>
+            <span>@Jobs.Count / @TotalJobs @L["Jobs"]</span>
+        </div>
+    }
     <div class="job-overview-compact-help">
         <i class="bi bi-info-circle" aria-hidden="true"></i>
         @L["JobOverviewCompactHint"]
@@ -30,6 +38,19 @@
         </div>
     }
     <div class="job-overview-column-toolbar">
+        <button type="button" class="btn @(fullScreen ? "btn-primary" : "btn-outline-primary") btn-sm"
+                aria-pressed="@(fullScreen ? "true" : "false")"
+                @onclick="ToggleFullScreen">
+            <i class="bi @(fullScreen ? "bi-fullscreen-exit" : "bi-fullscreen")" aria-hidden="true"></i>
+            @(fullScreen ? T("Exit full screen", "خروج از تمام‌صفحه") : T("Full screen", "تمام‌صفحه"))
+        </button>
+        @if (fullScreen)
+        {
+            <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@Refreshing"
+                    @onclick="() => OnRefresh.InvokeAsync()">
+                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> @L["Refresh"]
+            </button>
+        }
         <button type="button" class="btn btn-outline-primary btn-sm" disabled="@loadingPreferences"
                 aria-expanded="@(showColumnPicker ? "true" : "false")" aria-controls="job-overview-column-picker"
                 @onclick="() => showColumnPicker = !showColumnPicker">
@@ -486,9 +507,32 @@
             </tbody>
         </table>
     </div>
+    @if (fullScreen && Jobs.Count < TotalJobs)
+    {
+        <div class="job-overview-fullscreen-footer">
+            <span>@Jobs.Count / @TotalJobs @L["Jobs"]</span>
+            <button type="button" class="btn btn-outline-primary btn-sm" @onclick="() => OnShowMore.InvokeAsync()">
+                @L["JobOverviewShowMore"]
+            </button>
+        </div>
+    }
 </div>
 
 @code {
+    [Parameter] public int TotalJobs { get; set; }
+    [Parameter] public bool Refreshing { get; set; }
+    [Parameter] public EventCallback OnRefresh { get; set; }
+    [Parameter] public EventCallback OnShowMore { get; set; }
+
+    private bool fullScreen;
+    private void ToggleFullScreen() => fullScreen = !fullScreen;
+
+    private void HandleFullScreenKey(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs args)
+    {
+        if (fullScreen && args.Key == "Escape")
+            fullScreen = false;
+    }
+
     [Parameter, EditorRequired]
     public IReadOnlyList<JobRow> Jobs { get; set; } = Array.Empty<JobRow>();
 

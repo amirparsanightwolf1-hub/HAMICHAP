@@ -778,3 +778,47 @@
 .job-overview-operation-detail,.job-overview-operation-dates,.job-overview-operation-review { font-size:.68rem; line-height:1.5; margin-top:4px; }
 .job-overview-operation-dates { overflow-wrap:normal; font-variant-numeric:tabular-nums; text-align:start; }
 .job-overview-operation-review { color:#92400e; }
+
+/* Table-only full-window mode. Keep the same component and preferences mounted. */
+@media screen {
+    body:has(.job-overview-compact.is-fullscreen) { overflow:hidden; }
+    .app-layout:has(.job-overview-compact.is-fullscreen) :is(.sidebar,.sidebar-backdrop,.mobile-menu-btn,.hc-workspace-toolbar),
+    .job-overview-page:has(.job-overview-compact.is-fullscreen) > :not(.job-overview-compact) {
+        visibility:hidden;
+    }
+    .job-overview-page .job-overview-compact.is-fullscreen {
+        position:fixed; inset:0; z-index:9000; width:100%; max-width:none;
+        height:100vh; height:100dvh; border:0; border-radius:0;
+        display:flex; flex-direction:column; gap:0;
+        padding:10px clamp(8px,1.5vw,20px);
+        background:#fff; overflow:hidden; visibility:visible;
+    }
+    .job-overview-compact.is-fullscreen > :not(.job-overview-compact-scroll) { flex-shrink:0; }
+    .job-overview-fullscreen-heading {
+        display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+        gap:8px; padding:5px 0 10px; color:#254661; border-bottom:1px solid #dce6ef;
+        font-size:.88rem;
+    }
+    .job-overview-fullscreen-heading > span,.job-overview-fullscreen-footer > span { color:#64748b; font-size:.78rem; }
+    .job-overview-compact.is-fullscreen .job-overview-compact-help { display:none; }
+    .job-overview-compact.is-fullscreen .job-overview-operation-legend { margin:8px 0; }
+    .job-overview-compact.is-fullscreen .job-overview-column-toolbar { margin:8px 0; }
+    .job-overview-compact.is-fullscreen .job-overview-column-picker {
+        max-height:48vh; max-height:48dvh; overflow:auto;
+    }
+    .job-overview-compact.is-fullscreen .job-overview-column-groups { max-height:none; overflow:visible; }
+    .job-overview-compact.is-fullscreen .job-overview-compact-scroll {
+        flex:1 1 0; min-height:0; max-height:none; width:100%;
+        border:1px solid #dce6ef; border-radius:8px;
+    }
+    .job-overview-fullscreen-footer {
+        display:flex; align-items:center; justify-content:space-between;
+        gap:10px; padding-top:8px;
+    }
+    @media(max-width:600px) {
+        .job-overview-page .job-overview-compact.is-fullscreen {
+            padding:calc(6px + env(safe-area-inset-top)) 6px calc(6px + env(safe-area-inset-bottom));
+        }
+        .job-overview-compact.is-fullscreen .job-overview-operation-legend { font-size:.68rem; gap:4px 9px; }
+    }
+}

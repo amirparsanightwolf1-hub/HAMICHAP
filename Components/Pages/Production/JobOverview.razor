@@ -161,7 +161,11 @@
             {
                 <JobOverviewCompactTable Jobs="VisibleJobs"
                                          OperationJobs="jobs"
-                                         SpecificationColumns="SpecificationColumns" />
+                                         SpecificationColumns="SpecificationColumns"
+                                         TotalJobs="@FilteredJobs.Count"
+                                         Refreshing="loading"
+                                         OnRefresh="LoadAsync"
+                                         OnShowMore="ShowMore" />
             }
             else
             {
@@ -384,7 +388,7 @@
                 <div class="job-overview-more">
                     <span>@visibleCount / @FilteredJobs.Count @L["Jobs"]</span>
                     <button type="button" class="btn btn-outline-primary"
-                            @onclick="() => visibleCount += 20">
+                            @onclick="ShowMore">
                         @L["JobOverviewShowMore"]
                     </button>
                 </div>
@@ -476,6 +480,8 @@
             loaded = true;
         }
     }
+
+    private void ShowMore() => visibleCount += 20;
 
     private Task SearchAsync() => LoadAsync();
 
