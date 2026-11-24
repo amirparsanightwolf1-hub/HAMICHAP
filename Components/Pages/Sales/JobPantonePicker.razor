@@ -5,23 +5,10 @@
 <section class="roll-pantone-panel">
     <strong>@LocalizationService["RollPantoneColors"]</strong>
     <div class="mt-2">
-        <label class="form-label" for="@(IdPrefix + "-code")">@LocalizationService["RollPantoneReference"]</label>
-        <input id="@(IdPrefix + "-code")" class="form-control" maxlength="64" @bind="code" @bind:event="oninput"
-               placeholder="@LocalizationService["RollPantoneCodeExample"]" />
+        <button type="button" class="btn btn-outline-primary" @onclick="Open">
+            <i class="bi bi-palette" aria-hidden="true"></i> @T("Choose colour", "انتخاب رنگ")
+        </button>
     </div>
-    <div class="d-flex flex-wrap gap-2 align-items-end mt-2">
-        <div><label for="@(IdPrefix + "-c")">C %</label><input id="@(IdPrefix + "-c")" class="form-control" type="number" min="0" max="100" @bind="cyan" @bind:event="oninput" /></div>
-        <div><label for="@(IdPrefix + "-m")">M %</label><input id="@(IdPrefix + "-m")" class="form-control" type="number" min="0" max="100" @bind="magenta" @bind:event="oninput" /></div>
-        <div><label for="@(IdPrefix + "-y")">Y %</label><input id="@(IdPrefix + "-y")" class="form-control" type="number" min="0" max="100" @bind="yellow" @bind:event="oninput" /></div>
-        <div><label for="@(IdPrefix + "-k")">K %</label><input id="@(IdPrefix + "-k")" class="form-control" type="number" min="0" max="100" @bind="black" @bind:event="oninput" /></div>
-        <span class="roll-pantone-swatch" style="@($"background-color:{RollPantoneColor.PreviewHex(cyan, magenta, yellow, black)}")" aria-hidden="true"></span>
-        <button type="button" class="btn btn-outline-primary" @onclick="AddAsync">@LocalizationService["RollPantoneAdd"]</button>
-    </div>
-    @if (error is not null)
-    {
-        <div class="text-danger small" role="alert">@error</div>
-    }
-    <div class="small text-muted mt-2">@LocalizationService["RollPantonePreviewDisclaimer"]</div>
     <ul class="roll-pantone-list">
         @foreach (var color in Colors)
         {
@@ -34,56 +21,170 @@
             </li>
         }
     </ul>
+    @if (isOpen)
+    {
+        <div class="modal show d-block" style="background:rgba(0,0,0,.55);z-index:1080" role="dialog" aria-modal="true" aria-labelledby="@(IdPrefix + "-title")" @onkeydown="HandleKey">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="@(IdPrefix + "-title")">@T("Choose CMYK colour", "انتخاب رنگ CMYK")</h5>
+                        <button type="button" class="btn-close" aria-label="@T("Close", "بستن")" @onclick="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="small text-muted mb-2">@T("Select a swatch, or adjust the ink sliders. No typing required.", "یک نمونه رنگ انتخاب کنید یا نوارهای رنگ را تنظیم کنید. نیازی به تایپ نیست.")</div>
+                        <div dir="ltr" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px">
+                            @foreach (var swatch in Palette)
+                            {
+                                var selected = (cyan, magenta, yellow, black) == swatch;
+                                <button type="button" aria-label="@InkLabel(swatch)" title="@InkLabel(swatch)"
+                                        aria-pressed="@selected"
+                                        style="@SwatchStyle(swatch, selected)" @onclick="() => Select(swatch)"></button>
+                            }
+                        </div>
+                        <div class="row g-3 mt-2" dir="ltr">
+                            <div class="col-sm-4">
+                                <div class="rounded border" style="@($"height:112px;background:{RollPantoneColor.PreviewHex(cyan, magenta, yellow, black)}")"></div>
+                                <div class="text-center small mt-1">@InkLabel((cyan, magenta, yellow, black))</div>
+                            </div>
+                            <div class="col-sm-8">
+                                <label class="d-flex justify-content-between" for="@(IdPrefix + "-c")"><span>C</span><span>@cyan%</span></label>
+                                <input id="@(IdPrefix + "-c")" class="form-range" type="range" min="0" max="100" @bind="cyan" @bind:event="oninput" />
+                                <label class="d-flex justify-content-between" for="@(IdPrefix + "-m")"><span>M</span><span>@magenta%</span></label>
+                                <input id="@(IdPrefix + "-m")" class="form-range" type="range" min="0" max="100" @bind="magenta" @bind:event="oninput" />
+                                <label class="d-flex justify-content-between" for="@(IdPrefix + "-y")"><span>Y</span><span>@yellow%</span></label>
+                                <input id="@(IdPrefix + "-y")" class="form-range" type="range" min="0" max="100" @bind="yellow" @bind:event="oninput" />
+                                <label class="d-flex justify-content-between" for="@(IdPrefix + "-k")"><span>K</span><span>@black%</span></label>
+                                <input id="@(IdPrefix + "-k")" class="form-range" type="range" min="0" max="100" @bind="black" @bind:event="oninput" />
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label" for="@(IdPrefix + "-code")">@T("Pantone reference (optional)", "کد پنتون (اختیاری)")</label>
+                            <input id="@(IdPrefix + "-code")" class="form-control" maxlength="64" @bind="code" @bind:event="oninput"
+                                   placeholder="@T("Automatic CMYK name if empty", "در صورت خالی بودن نام CMYK خودکار است")" />
+                        </div>
+                        <div class="small text-muted mt-2">@T("CMYK swatches are approximate screen previews, not official Pantone matches.", "نمونه‌های CMYK پیش‌نمایش تقریبی صفحه هستند و معادل رسمی پنتون نیستند.")</div>
+                        @if (error is not null)
+                        {
+                            <div class="text-danger small mt-2" role="alert">@error</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Close">@T("Cancel", "انصراف")</button>
+                        <button type="button" class="btn btn-primary" @onclick="AddAsync">@T("Use colour", "تأیید رنگ")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </section>
 
 @code {
     [Parameter, EditorRequired] public List<RollPantoneColor> Colors { get; set; } = new();
     [Parameter, EditorRequired] public string IdPrefix { get; set; } = "";
     [Parameter] public EventCallback Changed { get; set; }
+
+    private bool isOpen;
+    private RollPantoneColor? editing;
     private string code = "";
     private int cyan, magenta, yellow, black;
     private string? error;
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+
+    private static readonly (int C, int M, int Y, int K)[] Hues =
+    {
+        (0,100,100,0), (0,75,100,0), (0,50,100,0), (0,25,100,0),
+        (0,0,100,0), (50,0,100,0), (100,0,100,0), (100,0,50,0),
+        (100,0,0,0), (100,50,0,0), (75,100,0,0), (0,100,0,0)
+    };
+
+    private static readonly (int C, int M, int Y, int K)[] Palette = BuildPalette();
+
+    private static (int C, int M, int Y, int K)[] BuildPalette()
+    {
+        var result = new List<(int C, int M, int Y, int K)>();
+        foreach (var strength in new[] { 20, 40, 60, 80, 100 })
+            foreach (var h in Hues)
+                result.Add((h.C * strength / 100, h.M * strength / 100, h.Y * strength / 100, 0));
+        foreach (var k in new[] { 20, 40, 60 })
+            foreach (var h in Hues)
+                result.Add((h.C, h.M, h.Y, k));
+        for (var i = 0; i < 12; i++)
+            result.Add((0, 0, 0, (int)Math.Round(i * 100.0 / 11)));
+        return result.ToArray();
+    }
+
+    private static string InkLabel((int C, int M, int Y, int K) s) => $"C{s.C} M{s.M} Y{s.Y} K{s.K}";
+
+    private static string SwatchStyle((int C, int M, int Y, int K) s, bool selected) =>
+        $"background:{RollPantoneColor.PreviewHex(s.C,s.M,s.Y,s.K)};aspect-ratio:1;min-height:24px;border-radius:4px;border:1px solid #888;outline:{(selected ? "3px solid #0d6efd" : "none")};outline-offset:1px";
+
+    private void Select((int C, int M, int Y, int K) s) => (cyan, magenta, yellow, black) = s;
+
+    private void Open()
+    {
+        editing = null;
+        code = "";
+        Select((0, 100, 100, 0));
+        error = null;
+        isOpen = true;
+    }
 
     private void Edit(RollPantoneColor color)
     {
         color.EnsureCmyk();
-        code = color.Code;
-        cyan = color.Cyan ?? 0; magenta = color.Magenta ?? 0;
-        yellow = color.Yellow ?? 0; black = color.Black ?? 0;
+        editing = color;
+        code = color.Code == AutomaticName((color.Cyan ?? 0, color.Magenta ?? 0, color.Yellow ?? 0, color.Black ?? 0)) ? "" : color.Code;
+        Select((color.Cyan ?? 0, color.Magenta ?? 0, color.Yellow ?? 0, color.Black ?? 0));
         error = null;
+        isOpen = true;
+    }
+
+    private static string AutomaticName((int C, int M, int Y, int K) s) => "CMYK " + InkLabel(s);
+
+    private void Close()
+    {
+        isOpen = false;
+        editing = null;
+        error = null;
+    }
+
+    private void HandleKey(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape") Close();
     }
 
     private async Task AddAsync()
     {
-        error = null;
-        var reference = code.Trim();
+        var reference = string.IsNullOrWhiteSpace(code) ? AutomaticName((cyan, magenta, yellow, black)) : code.Trim();
         if (reference.Length < 2 || reference.Length > 64)
         {
             error = LocalizationService["RollPantoneInvalidReference"];
             return;
         }
-        if (new[] { cyan, magenta, yellow, black }.Any(v => v < 0 || v > 100))
+        if (new[] { cyan, magenta, yellow, black }.Any(v => v < 0 || v > 100)) return;
+        var existing = Colors.FirstOrDefault(x => string.Equals(x.Code, reference, StringComparison.OrdinalIgnoreCase));
+        if (editing is not null && existing is not null && existing != editing)
         {
-            error = "CMYK: 0–100%";
+            error = T("This colour is already selected.", "این رنگ قبلاً انتخاب شده است.");
             return;
         }
-        var color = Colors.FirstOrDefault(x => string.Equals(x.Code, reference, StringComparison.OrdinalIgnoreCase));
+        var color = editing ?? existing;
         if (color is null)
         {
             if (Colors.Count >= 24) { error = LocalizationService["RollPantoneLimit"]; return; }
-            color = new RollPantoneColor { Code = reference };
+            color = new RollPantoneColor();
             Colors.Add(color);
         }
+        color.Code = reference;
         color.Cyan = cyan; color.Magenta = magenta; color.Yellow = yellow; color.Black = black;
         color.Hex = color.SafeHex;
-        code = "";
+        Close();
         await Changed.InvokeAsync();
     }
 
     private async Task RemoveAsync(RollPantoneColor color)
     {
         Colors.Remove(color);
-        error = null;
         await Changed.InvokeAsync();
     }
 }
