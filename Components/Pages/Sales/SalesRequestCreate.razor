@@ -154,21 +154,6 @@
 
                 <div class="job-create-types" role="group" aria-label="@LocalizationService["JobType"]">
                     <button type="button"
-                            class="job-create-type @(selectedJobType == SalesJobType.Roll ? "is-selected" : "")"
-                            aria-pressed="@(selectedJobType == SalesJobType.Roll)"
-                            @onclick="() => selectedJobType = SalesJobType.Roll">
-                        <span class="job-create-type-image job-create-type-roll">
-                            <i class="bi bi-disc" aria-hidden="true"></i>
-                        </span>
-                        <span class="job-create-type-details">
-                            <strong>@LocalizationService["RollJob"]</strong>
-                            <span>@LocalizationService["RollJobSubtitle"]</span>
-                        </span>
-                        <i class="bi @(selectedJobType == SalesJobType.Roll ? "bi-check-circle-fill" : "bi-circle") job-create-type-check"
-                           aria-hidden="true"></i>
-                    </button>
-
-                    <button type="button"
                             class="job-create-type @(selectedJobType == SalesJobType.Sheet ? "is-selected" : "")"
                             aria-pressed="@(selectedJobType == SalesJobType.Sheet)"
                             @onclick="() => selectedJobType = SalesJobType.Sheet">
@@ -180,6 +165,21 @@
                             <span>@LocalizationService["SheetJobSubtitle"]</span>
                         </span>
                         <i class="bi @(selectedJobType == SalesJobType.Sheet ? "bi-check-circle-fill" : "bi-circle") job-create-type-check"
+                           aria-hidden="true"></i>
+                    </button>
+
+                    <button type="button"
+                            class="job-create-type @(selectedJobType == SalesJobType.Roll ? "is-selected" : "")"
+                            aria-pressed="@(selectedJobType == SalesJobType.Roll)"
+                            @onclick="() => selectedJobType = SalesJobType.Roll">
+                        <span class="job-create-type-image job-create-type-roll">
+                            <i class="bi bi-disc" aria-hidden="true"></i>
+                        </span>
+                        <span class="job-create-type-details">
+                            <strong>@LocalizationService["RollJob"]</strong>
+                            <span>@LocalizationService["RollJobSubtitle"]</span>
+                        </span>
+                        <i class="bi @(selectedJobType == SalesJobType.Roll ? "bi-check-circle-fill" : "bi-circle") job-create-type-check"
                            aria-hidden="true"></i>
                     </button>
                 </div>
