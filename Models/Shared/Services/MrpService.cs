@@ -68,36 +68,34 @@ public class MrpService
 
 
 
-                var available =
-                    await _db.InventoryBalances
-                    .Where(x =>
-                        x.ItemId == material.ItemId &&
-                        x.CustomerId == null)
-                    .SumAsync(x =>
-                        x.OnHandQuantity -
-                        x.ReservedQuantity);
-
-
-
-                plan.Lines.Add(
-                    new MaterialRequirementPlanLine
+                var existing = plan.Lines.FirstOrDefault(x => x.ItemId == material.ItemId);
+                if (existing != null)
+                {
+                    if (existing.UnitId != material.UnitId)
+                        throw new InvalidOperationException($"Material {material.ItemId} has inconsistent BOM units.");
+                    existing.RequiredQuantity += required;
+                }
+                else
+                {
+                    plan.Lines.Add(new MaterialRequirementPlanLine
                     {
-                        ItemId =
-                            material.ItemId,
-
-                        RequiredQuantity =
-                            required,
-
-                        AvailableQuantity =
-                            available,
-
-                        UnitId =
-                            material.UnitId
+                        ItemId = material.ItemId,
+                        RequiredQuantity = required,
+                        UnitId = material.UnitId
                     });
+                }
             }
         }
 
 
+
+        // Compare each material's combined demand with stock only once.
+        foreach (var line in plan.Lines)
+        {
+            line.AvailableQuantity = await _db.InventoryBalances
+                .Where(x => x.ItemId == line.ItemId && x.CustomerId == null)
+                .SumAsync(x => x.OnHandQuantity - x.ReservedQuantity);
+        }
 
         _db.MaterialRequirementPlans.Add(plan);
 

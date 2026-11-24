@@ -35,6 +35,21 @@ public class InventoryReservationService
                 throw new InvalidOperationException(
                     "MRP plan contains no material requirements.");
 
+            // Older plans can contain multiple requirements for the same item.
+            // Aggregate them before subtracting existing reservations or checking stock.
+            var requirements = mrp.Lines.GroupBy(x => x.ItemId).Select(g =>
+            {
+                var units = g.Select(x => x.UnitId).Distinct().ToList();
+                if (units.Count != 1)
+                    throw new InvalidOperationException($"Material {g.Key} has inconsistent MRP units.");
+                return new
+                {
+                    ItemId = g.Key,
+                    UnitId = units[0],
+                    RequiredQuantity = g.Sum(x => x.RequiredQuantity)
+                };
+            }).ToList();
+
             var existingReservations =
                 await _db.ProductionMaterialReservations
                     .Where(x =>
@@ -46,7 +61,7 @@ public class InventoryReservationService
             // First pass: verify that everything can be reserved
             // =====================================================
 
-            foreach (var line in mrp.Lines)
+            foreach (var line in requirements)
             {
                 var alreadyReserved =
                     existingReservations
@@ -79,7 +94,7 @@ public class InventoryReservationService
             // Second pass: reserve from actual inventory balances
             // =====================================================
 
-            foreach (var line in mrp.Lines)
+            foreach (var line in requirements)
             {
                 var alreadyReserved =
                     existingReservations
