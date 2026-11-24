@@ -38,4 +38,6 @@ public sealed class SheetJobSpecification
     // Services, finishings, and print-color choices; pricing workflow remains shared.
     public List<string> SelectedServices { get; set; } = new();
     public Dictionary<string, string> ToolingProviders { get; set; } = new();
+    public Dictionary<string, Dictionary<string, string>> FinishingDetails { get; set; } = new();
+    public JobMaterialPlan MaterialPlan { get; set; } = new();
 }

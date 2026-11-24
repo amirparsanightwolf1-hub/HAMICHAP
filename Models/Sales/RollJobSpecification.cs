@@ -29,6 +29,8 @@ public sealed class RollJobSpecification
     // Service choices are stored as structured values for future costing rules.
     public List<string> SelectedServices { get; set; } = new();
     public Dictionary<string, string> ToolingProviders { get; set; } = new();
+    public Dictionary<string, Dictionary<string, string>> FinishingDetails { get; set; } = new();
+    public JobMaterialPlan MaterialPlan { get; set; } = new();
 }
 
 

@@ -244,6 +244,8 @@
                     <InputText class="form-control" @bind-Value="spec.OrderNumber" />
                 </div>
 
+                <JobMaterialEstimate Sheet="spec" />
+
                 <div class="row g-3 mt-3">
                     <div class="col-lg-6">
                         <div class="cmyk-panel">
@@ -368,6 +370,10 @@
                                                     </select>
                                                 </div>
                                             }
+                                        @if (spec.SelectedServices.Contains(service))
+                                        {
+                                            <JobFinishingDetails Group="@group.Key" Service="@service" IdPrefix="@("sheet-finish-" + service)" Details="spec.FinishingDetails" />
+                                        }
                                     </div>
                                 }
                             </div>
@@ -559,6 +565,8 @@
                     request.JobSpecificationJson) ?? new();
                 spec.SelectedServices ??= new();
                 spec.ToolingProviders ??= new();
+                spec.FinishingDetails ??= new();
+                spec.MaterialPlan ??= new();
 
                 var savedJson = JsonNode.Parse(request.JobSpecificationJson) as JsonObject;
                 frontCmykColors = ReadColorSelection(savedJson?["FrontCmykColors"]);
@@ -628,6 +636,7 @@
         {
             spec.SelectedServices.Remove(service);
             spec.ToolingProviders.Remove(service);
+            spec.FinishingDetails.Remove(service);
         }
     }
 
@@ -868,6 +877,7 @@
                 Db, request, item, orderedQuantity.Value);
 
             RefreshPlateCount();
+            spec.MaterialPlan.Calculate(spec);
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(
                 frontCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());

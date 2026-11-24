@@ -1,0 +1,103 @@
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService LocalizationService
+
+<section class="border rounded p-3 mt-3">
+    <strong>@T("Material consumption estimate", "برآورد مصرف مواد")</strong>
+    <div class="row g-2 mt-2">
+        @if (Roll is not null)
+        {
+            <div class="col-md-4">
+                <label class="form-label">@T("Label dimensions unit", "واحد ابعاد لیبل")</label>
+                <select class="form-select" @bind="Plan.DimensionUnit" @bind:after="Recalculate">
+                    <option value="">@T("Select unit", "انتخاب واحد")</option><option value="mm">mm</option><option value="cm">cm</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@T("Labels across web (lanes)", "تعداد لیبل در عرض")</label>
+                <InputSelect class="form-select" @bind-Value="Plan.Lanes" @bind-Value:after="Recalculate">
+                    <option value="">@T("Select lanes", "انتخاب تعداد")</option>
+                    @for (var i = 1; i <= 20; i++)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@T("Web width (mm)", "عرض رول (میلی‌متر)")</label>
+                <InputNumber class="form-control" min="1" @bind-Value="Plan.WebWidthMm" @bind-Value:after="Recalculate" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@T("Material grammage (g/m²)", "گرماژ مواد")</label>
+                <InputNumber class="form-control" min="1" @bind-Value="Plan.RollGrammage" @bind-Value:after="Recalculate" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@T("Labels per finished roll", "تعداد لیبل در رول نهایی")</label>
+                <InputNumber class="form-control" min="1" @bind-Value="Plan.LabelsPerFinishedRoll" @bind-Value:after="Recalculate" />
+            </div>
+        }
+        else
+        {
+            <div class="col-md-4">
+                <label class="form-label">@T("Finished quantity (optional)", "تعداد محصول نهایی (اختیاری)")</label>
+                <InputNumber class="form-control" min="1" @bind-Value="Plan.FinishedQuantity" @bind-Value:after="Recalculate" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">@T("Products per sheet (optional)", "تعداد محصول در هر شیت (اختیاری)")</label>
+                <InputNumber class="form-control" min="1" @bind-Value="Plan.ProductsPerSheet" @bind-Value:after="Recalculate" />
+            </div>
+        }
+        <div class="col-md-4">
+            <label class="form-label">@T("Extra material allowance (%)", "درصد مواد اضافه برای ضایعات")</label>
+            <InputNumber class="form-control" min="0" max="100" step="1" @bind-Value="Plan.WastePercent" @bind-Value:after="Recalculate" />
+        </div>
+    </div>
+    @if (Plan.GrossQuantity.HasValue)
+    {
+        <div class="row g-2 mt-3">
+            <div class="col-md-4"><div class="small text-muted">@T("Net requirement", "مصرف خالص")</div><strong>@(Plan.NetQuantity?.ToString("N2")) @Unit</strong></div>
+            <div class="col-md-4"><div class="small text-muted">@T("Total including waste", "مصرف کل با ضایعات")</div><strong>@(Plan.GrossQuantity?.ToString("N2")) @Unit</strong></div>
+            @if (Plan.AreaSquareMetres.HasValue)
+            {
+                <div class="col-md-4"><div class="small text-muted">@T("Material area", "مساحت مواد")</div><strong>@(Plan.AreaSquareMetres?.ToString("N2")) m²</strong></div>
+            }
+            @if (Plan.WeightKg.HasValue)
+            {
+                <div class="col-md-4"><div class="small text-muted">@T("Material weight", "وزن مواد")</div><strong>@(Plan.WeightKg?.ToString("N2")) kg</strong></div>
+            }
+            @if (Plan.FinishedRolls.HasValue)
+            {
+                <div class="col-md-4"><div class="small text-muted">@T("Finished rolls / cores", "تعداد رول نهایی / بوبین")</div><strong>@(Plan.FinishedRolls?.ToString("N0"))</strong></div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="small text-muted mt-2">@T("Complete valid planning inputs to calculate material.", "برای محاسبه مصرف، اطلاعات برنامه‌ریزی را تکمیل کنید.")</div>
+    }
+    <div class="small text-muted mt-2">
+        @if (Roll is not null)
+        {
+            @T("Confirm lane count against actual layout, including side gaps and trim. Web width and grammage are needed for area and weight.", "تعداد لیبل در عرض را با چیدمان واقعی و فاصله‌ها کنترل کنید. برای مساحت و وزن، عرض رول و گرماژ لازم است.")
+        }
+        else
+        {
+            @T("Uses print-run sheets as net requirement when both imposition inputs are blank. Confirm that waste is not already included.", "اگر ورودی‌های فرم‌بندی خالی باشند، تیراژ چاپ مبنای مصرف خالص است. بررسی کنید ضایعات قبلاً لحاظ نشده باشد.")
+        }
+        @T("Planning estimate only; no stock is reserved.", "فقط برآورد برنامه‌ریزی؛ موجودی رزرو نمی‌شود.")
+    </div>
+</section>
+
+@code {
+    [Parameter] public RollJobSpecification? Roll { get; set; }
+    [Parameter] public SheetJobSpecification? Sheet { get; set; }
+    private JobMaterialPlan Plan => Roll?.MaterialPlan ?? Sheet!.MaterialPlan;
+    private string Unit => Roll is not null ? "m" : T("sheets", "شیت");
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    protected override void OnParametersSet() => Recalculate();
+    private void Recalculate()
+    {
+        if (Roll is not null) Plan.Calculate(Roll);
+        else if (Sheet is not null) Plan.Calculate(Sheet);
+    }
+}

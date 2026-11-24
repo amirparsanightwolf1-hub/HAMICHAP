@@ -1,0 +1,75 @@
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService LocalizationService
+
+@if (Fields.Count > 0)
+{
+    <div class="d-grid gap-2 mt-2 mb-2">
+        @foreach (var field in Fields)
+        {
+            <div @key="field.Key">
+                <label class="form-label small" for="@(IdPrefix + "-" + field.Key)">@T(field.En, field.Fa)</label>
+                <select id="@(IdPrefix + "-" + field.Key)" class="form-select form-select-sm" value="@Get(field.Key)" @onchange="args => Set(field.Key, args)">
+                    <option value="">@T("Select (optional)", "انتخاب (اختیاری)")</option>
+                    @foreach (var option in field.Options)
+                    {
+                        <option value="@option.Value">@T(option.En, option.Fa)</option>
+                    }
+                </select>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string Group { get; set; } = "";
+    [Parameter] public string Service { get; set; } = "";
+    [Parameter] public string IdPrefix { get; set; } = "";
+    [Parameter] public Dictionary<string, Dictionary<string, string>> Details { get; set; } = new();
+    [Parameter] public bool IsRoll { get; set; }
+
+    private sealed record Option(string Value, string En, string Fa);
+    private sealed record Field(string Key, string En, string Fa, Option[] Options);
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private static readonly Option[] Sides = [new("Front","Front","رو"), new("Back","Back","پشت"), new("Both","Both","دو طرف")];
+    private static readonly Option[] Providers = [new("Factory","Factory","کارخانه"), new("Customer","Customer","مشتری")];
+    private static readonly Option[] Tooling = [new("Existing","Existing","موجود"), new("New","New","جدید")];
+    private IReadOnlyList<Field> Fields
+    {
+        get
+        {
+            var fields = new List<Field>();
+            if (!IsRoll && Group is ("ServiceGroupLamination" or "ServiceGroupUvCoating" or "ServiceGroupFoilStamping"))
+                fields.Add(new("Side", "Side", "سمت", Sides));
+            if (Group == "ServiceGroupLamination")
+                fields.Add(new("FilmThicknessMicron", "Film thickness (µm)", "ضخامت سلفون (میکرون)",
+                    [new("12","12","12"),new("15","15","15"),new("18","18","18"),new("20","20","20"),new("25","25","25"),new("30","30","30"),new("Other","Other / confirm later","سایر / بررسی بعدی")]));
+            if (Group == "ServiceGroupFoilStamping")
+            {
+                fields.Add(new("FoilColour","Foil colour","رنگ فویل",
+                    [new("Gold","Gold","طلایی"),new("Silver","Silver","نقره‌ای"),new("Copper","Copper","مسی"),new("Holographic","Holographic","هولوگرام"),new("Other","Other","سایر")]));
+                if (Service != "رنگ فویل")
+                {
+                    fields.Add(new("ToolingProvider","Tooling provider","تأمین‌کننده کلیشه",Providers));
+                    fields.Add(new("ToolingStatus","Tooling status","وضعیت کلیشه",Tooling));
+                }
+            }
+            if (Group == "ServiceGroupUvCoating" && Service == "یووی موضعی")
+                fields.Add(new("ScreenProvider","Screen provider","تأمین‌کننده شابلون",Providers));
+            if (Group == "ServiceGroupEmbossingDie" && Service is ("قالب" or "برجسته" or "قالب روتاری" or "قالب تخت"))
+                fields.Add(new("ToolingStatus","Die / mould status","وضعیت قالب",Tooling));
+            if (Service == "جعبه‌چسبانی")
+                fields.Add(new("GluingMethod","Gluing method","روش چسبانی",[new("Manual","Manual","دستی"),new("Machine","Machine","ماشینی")]));
+            return fields;
+        }
+    }
+    private string Get(string key) => Details.TryGetValue(Service, out var data) && data.TryGetValue(key, out var value) ? value : "";
+    private void Set(string key, ChangeEventArgs args)
+    {
+        var value = args.Value?.ToString();
+        if (!Details.TryGetValue(Service, out var data))
+            Details[Service] = data = new();
+        if (string.IsNullOrEmpty(value)) data.Remove(key);
+        else if (Fields.Any(f => f.Key == key && f.Options.Any(o => o.Value == value))) data[key] = value;
+        if (data.Count == 0) Details.Remove(Service);
+    }
+}

@@ -302,6 +302,8 @@
             </div>
         </div>
 
+        <div class="card job-section mb-4"><div class="card-body"><JobMaterialEstimate Roll="spec" /></div></div>
+
         <div class="card job-section mb-4" id="job-edit-services">
             <div class="card-header">
                 <span class="job-edit-section-icon"><i class="bi bi-list-check" aria-hidden="true"></i></span>
@@ -344,6 +346,10 @@
                                                         <option value="Customer">@ToolingText("Customer", "مشتری")</option>
                                                     </select>
                                                 </div>
+                                            }
+                                            @if (spec.SelectedServices.Contains(service.Value))
+                                            {
+                                                <JobFinishingDetails Group="@group.TitleKey" Service="@service.Value" IdPrefix="@serviceId" Details="spec.FinishingDetails" IsRoll="true" />
                                             }
                                         </div>
                                     }
@@ -580,6 +586,8 @@
                 spec.PantoneColors ??= new();
                 spec.SelectedServices ??= new();
                 spec.ToolingProviders ??= new();
+                spec.FinishingDetails ??= new();
+                spec.MaterialPlan ??= new();
                 foreach (var color in spec.PantoneColors) color.EnsureCmyk();
                 RefreshColorCount();
             }
@@ -649,6 +657,7 @@
         {
             spec.SelectedServices.Remove(service);
             spec.ToolingProviders.Remove(service);
+            spec.FinishingDetails.Remove(service);
         }
     }
 
@@ -885,6 +894,7 @@
             await SalesJobQuotationLineSync.SyncAsync(
                 Db, request, item, orderedQuantity.Value);
             RefreshColorCount();
+            spec.MaterialPlan.Calculate(spec);
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(frontCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
             var workflowJson = new JsonObject();
