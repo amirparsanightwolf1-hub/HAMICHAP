@@ -6,7 +6,7 @@
     <strong>@LocalizationService["RollPantoneColors"]</strong>
     <div class="mt-2">
         <button type="button" class="btn btn-outline-primary" @onclick="Open">
-            <i class="bi bi-palette" aria-hidden="true"></i> @T("Choose colour", "انتخاب رنگ")
+            <i class="bi bi-eyedropper" aria-hidden="true"></i> @T("Choose colour", "انتخاب رنگ")
         </button>
     </div>
     <ul class="roll-pantone-list">
@@ -31,7 +31,16 @@
                         <button type="button" class="btn-close" aria-label="@T("Close", "بستن")" @onclick="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="small text-muted mb-2">@T("Select a swatch, or adjust the ink sliders. No typing required.", "یک نمونه رنگ انتخاب کنید یا نوارهای رنگ را تنظیم کنید. نیازی به تایپ نیست.")</div>
+                        <div class="small text-muted mb-2">@T("Use the eyedropper to sample a colour anywhere on your screen, or select a swatch.", "با قطره‌چکان از هر جای صفحه رنگ بردارید یا یک نمونه رنگ انتخاب کنید.")</div>
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                            <button type="button" class="btn btn-primary" data-job-eyedropper="@(IdPrefix + "-sample")">
+                                <i class="bi bi-eyedropper" aria-hidden="true"></i> @T("Pick from screen", "برداشت رنگ از صفحه")
+                            </button>
+                            <input type="hidden" id="@(IdPrefix + "-sample")" @onchange="ApplyScreenSample" />
+                            <label for="@(IdPrefix + "-native")" class="small">@T("Browser colour picker", "انتخابگر رنگ مرورگر")</label>
+                            <input type="color" id="@(IdPrefix + "-native")" class="form-control form-control-color"
+                                   value="@RollPantoneColor.PreviewHex(cyan, magenta, yellow, black)" @onchange="ApplyScreenSample" />
+                        </div>
                         <div dir="ltr" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px">
                             @foreach (var swatch in Palette)
                             {
@@ -119,6 +128,21 @@
         $"background:{RollPantoneColor.PreviewHex(s.C,s.M,s.Y,s.K)};aspect-ratio:1;min-height:24px;border-radius:4px;border:1px solid #888;outline:{(selected ? "3px solid #0d6efd" : "none")};outline-offset:1px";
 
     private void Select((int C, int M, int Y, int K) s) => (cyan, magenta, yellow, black) = s;
+
+    private void ApplyScreenSample(ChangeEventArgs args)
+    {
+        var value = args.Value?.ToString();
+        if (value == "unsupported" || value == "failed")
+        {
+            error = T("Screen eyedropper unavailable. Use Chrome or Edge over HTTPS, or use the browser colour picker.", "قطره‌چکان در دسترس نیست. از کروم یا اج با HTTPS یا انتخابگر رنگ مرورگر استفاده کنید.");
+            return;
+        }
+        if (!RollPantoneColor.IsValidHex(value)) return;
+        var sampled = new RollPantoneColor { Hex = value! };
+        sampled.EnsureCmyk();
+        Select((sampled.Cyan ?? 0, sampled.Magenta ?? 0, sampled.Yellow ?? 0, sampled.Black ?? 0));
+        error = null;
+    }
 
     private void Open()
     {
