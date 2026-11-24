@@ -1,4 +1,11 @@
 ﻿@page "/inventory/itemcategories"
+@if (!string.IsNullOrWhiteSpace(securityErrorMessage))
+{
+    <p role="alert">@securityErrorMessage</p>
+}
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Inventory.Categories.View")]
 
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
@@ -139,6 +146,7 @@
 </div>
 
 @code {
+    private string? securityErrorMessage;
 
     private List<ItemCategory> categories = new();
 
@@ -158,6 +166,11 @@
 
     async Task Save()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Categories.Create"))
+        {
+            securityErrorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (string.IsNullOrWhiteSpace(newCategory.Name))
             return;
 
@@ -174,6 +187,11 @@
 
     async Task Delete(int id)
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Categories.Edit"))
+        {
+            securityErrorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         var category =
             await Db.ItemCategories.FindAsync(id);
 

@@ -1,4 +1,7 @@
 ﻿@page "/sales/deliveries/create"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Sales.Deliveries.Create")]
 
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
@@ -477,6 +480,12 @@
 
     private async Task CreateDelivery()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Sales.Deliveries.Create"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            
+            return;
+        }
         if (isSaving)
             return;
 

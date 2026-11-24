@@ -1,4 +1,7 @@
 @page "/customers/create"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Customers.Create|Customers.Edit")]
 @page "/customers/{CustomerId:int}/edit"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
@@ -60,6 +63,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, CustomerId.HasValue ? "Customers.Edit" : "Customers.Create"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            customer = null; loading = false;
+            return;
+        }
         loading = true;
         errorMessage = null;
         customer = CustomerId.HasValue
@@ -71,6 +80,12 @@
 
     private async Task Save()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, CustomerId.HasValue ? "Customers.Edit" : "Customers.Create"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            
+            return;
+        }
         if (isSaving || customer is null) return;
         errorMessage = null;
         if (customer.CustomerType is not (CustomerType.Natural or CustomerType.Legal))

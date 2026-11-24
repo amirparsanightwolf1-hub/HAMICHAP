@@ -1,4 +1,7 @@
 ﻿@page "/production/quality-inspections"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Production.View|Production.Orders.View")]
 
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
@@ -337,6 +340,11 @@
 
     private async Task CreateInspectionAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Production.Edit"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         errorMessage = successMessage = null;
         if (newProductionOrderId <= 0 || newItemId <= 0) { errorMessage = LocalizationService["SelectProductionOrderAndItem"]; return; }
         if (newQuantity <= 0) { errorMessage = LocalizationService["QuantityMustBeGreaterThanZero"]; return; }
@@ -371,6 +379,11 @@
 
     private async Task AddResultAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Production.Edit"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         errorMessage = successMessage = null;
         if (selected == null) return;
         if (string.IsNullOrWhiteSpace(parameterName)) { errorMessage = LocalizationService["ParameterNameRequired"]; return; }
@@ -389,6 +402,11 @@
 
     private async Task CompleteInspectionAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Production.Complete"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         errorMessage = successMessage = null;
         if (selected == null) return;
         if (acceptedQuantity < 0 || rejectedQuantity < 0 || reworkQuantity < 0) { errorMessage = LocalizationService["QuantitiesCannotBeNegative"]; return; }
@@ -407,6 +425,11 @@
 
     private async Task PostQualityResultAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Documents.Post"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         errorMessage = successMessage = null;
         if (selected == null) return;
         if (productionLocationId <= 0 || finishedGoodsLocationId <= 0 || wasteLocationId <= 0 || reworkLocationId <= 0) { errorMessage = LocalizationService["SelectAllPostingLocations"]; return; }

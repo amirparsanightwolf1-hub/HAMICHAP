@@ -48,10 +48,16 @@ internal sealed class IdentityRevalidatingAuthenticationStateProvider(
         var user =
             await userManager.GetUserAsync(principal);
 
-        if (user is null)
+        if (user is null || !user.IsActive)
         {
             return false;
         }
+
+        // A role change invalidates the old interactive circuit rather than retaining stale role claims.
+        var currentRoles = await userManager.GetRolesAsync(user);
+        var claimedRoles = principal.FindAll(options.Value.ClaimsIdentity.RoleClaimType).Select(x => x.Value);
+        if (!currentRoles.ToHashSet(StringComparer.OrdinalIgnoreCase).SetEquals(claimedRoles))
+            return false;
 
         if (!userManager.SupportsUserSecurityStamp)
         {

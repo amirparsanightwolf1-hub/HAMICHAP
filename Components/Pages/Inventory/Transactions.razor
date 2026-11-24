@@ -1,4 +1,5 @@
 ﻿@page "/inventory/transactions"
+@attribute [Authorize(Policy = "Permission:Inventory.Transactions.View")]
 
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data

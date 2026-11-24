@@ -1,5 +1,8 @@
 
 @page "/sales/requests/create"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Sales.Requests.Create")]
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Customers
@@ -303,6 +306,11 @@
 
     private async Task CreateAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Sales.Requests.Create"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         errorMessage = null;
 
         if (!isCreatingCustomer && customerId <= 0)
@@ -350,6 +358,8 @@
 
             if (isCreatingCustomer)
             {
+                if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Customers.Create"))
+                    throw new UnauthorizedAccessException("Customer creation permission required.");
                 var code = await CustomerCodeGenerator.GenerateAsync(Db);
 
                 var newCustomer = new Customer { Code = code, IsActive = true };

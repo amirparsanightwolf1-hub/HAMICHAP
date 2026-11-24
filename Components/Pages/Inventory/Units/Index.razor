@@ -1,4 +1,11 @@
 ﻿@page "/inventory/units"
+@if (!string.IsNullOrWhiteSpace(securityErrorMessage))
+{
+    <p role="alert">@securityErrorMessage</p>
+}
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Inventory.Units.View")]
 
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
@@ -130,6 +137,7 @@
 </div>
 
 @code {
+    private string? securityErrorMessage;
 
     private List<Unit> units = new();
 
@@ -149,6 +157,11 @@
 
     async Task Save()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Units.Create"))
+        {
+            securityErrorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (string.IsNullOrWhiteSpace(newUnit.Name))
             return;
 

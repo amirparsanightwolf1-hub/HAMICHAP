@@ -1,4 +1,11 @@
 ﻿@page "/inventory/locations"
+@if (!string.IsNullOrWhiteSpace(securityErrorMessage))
+{
+    <p role="alert">@securityErrorMessage</p>
+}
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Inventory.Locations.View")]
 
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
@@ -154,6 +161,7 @@
 </div>
 
 @code {
+    private string? securityErrorMessage;
 
     InventoryLocation location = new();
 
@@ -173,6 +181,11 @@
 
     async Task Save()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Locations.Create"))
+        {
+            securityErrorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (string.IsNullOrWhiteSpace(location.Code))
             return;
 

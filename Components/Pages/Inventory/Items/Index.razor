@@ -1,4 +1,7 @@
 ﻿@page "/inventory/items"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Inventory.Items.View")]
 
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
@@ -546,6 +549,11 @@
 
     private async Task Save()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Items.Create"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         errorMessage = null;
 
         newItem.Code = newItem.Code.Trim();
