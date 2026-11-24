@@ -256,7 +256,9 @@
                                     <div>
                                         <label class="form-label" for="roll-pantone-code">@LocalizationService["RollPantoneReference"]</label>
                                         <input id="roll-pantone-code" type="text" class="form-control" maxlength="64"
-                                               @bind="pantoneCode" placeholder="@LocalizationService["RollPantoneCodeExample"]" />
+                                               @bind="pantoneCode" @bind:event="oninput"
+                                               @onkeydown="HandlePantoneKeyDown"
+                                               placeholder="@LocalizationService["RollPantoneCodeExample"]" />
                                     </div>
                                     <div>
                                         <label class="form-label" for="roll-pantone-color">@LocalizationService["RollPantonePreviewColor"]</label>
@@ -547,6 +549,13 @@
     private static void ToggleCmykColor(HashSet<string> selection, string color)
     {
         if (!selection.Add(color)) selection.Remove(color);
+    }
+
+    // Typing a Pantone reference and pressing Enter adds it without another click.
+    private void HandlePantoneKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            AddPantoneColor();
     }
 
     private void AddPantoneColor()
