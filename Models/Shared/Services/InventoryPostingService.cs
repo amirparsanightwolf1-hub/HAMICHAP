@@ -621,12 +621,12 @@ public class InventoryPostingService
         int? customerId,
         decimal quantity)
     {
-        var balance = await _db.InventoryBalances
-            .FirstOrDefaultAsync(x =>
-                x.ItemId == itemId &&
-                x.InventoryLocationId == locationId &&
-                x.InventoryLotId == lotId &&
-                x.CustomerId == customerId);
+        var balance = _db.InventoryBalances.Local.FirstOrDefault(x =>
+                x.ItemId == itemId && x.InventoryLocationId == locationId &&
+                x.InventoryLotId == lotId && x.CustomerId == customerId)
+            ?? await _db.InventoryBalances.FirstOrDefaultAsync(x =>
+                x.ItemId == itemId && x.InventoryLocationId == locationId &&
+                x.InventoryLotId == lotId && x.CustomerId == customerId);
 
         if (balance == null)
         {
@@ -676,11 +676,7 @@ public class InventoryPostingService
                     "Cannot reduce inventory to zero while stock remains reserved.");
             }
 
-            await CloseLotIfEmptyAsync(
-                lotId,
-                itemId,
-                customerId,
-                locationId);
+            // A posting transfers this same lot to the destination; do not close it here.
         }
     }
 
@@ -695,12 +691,12 @@ public class InventoryPostingService
         int? customerId,
         decimal quantity)
     {
-        var balance = await _db.InventoryBalances
-            .FirstOrDefaultAsync(x =>
-                x.ItemId == itemId &&
-                x.InventoryLocationId == locationId &&
-                x.InventoryLotId == lotId &&
-                x.CustomerId == customerId);
+        var balance = _db.InventoryBalances.Local.FirstOrDefault(x =>
+                x.ItemId == itemId && x.InventoryLocationId == locationId &&
+                x.InventoryLotId == lotId && x.CustomerId == customerId)
+            ?? await _db.InventoryBalances.FirstOrDefaultAsync(x =>
+                x.ItemId == itemId && x.InventoryLocationId == locationId &&
+                x.InventoryLotId == lotId && x.CustomerId == customerId);
 
         if (balance == null)
         {
@@ -739,42 +735,6 @@ public class InventoryPostingService
 
         balance.LastUpdated =
             DateTime.Now;
-    }
-
-    // =========================================================
-    // Lot closing
-    // =========================================================
-
-    private async Task CloseLotIfEmptyAsync(
-        long? lotId,
-        int itemId,
-        int? customerId,
-        int locationId)
-    {
-        if (lotId == null)
-            return;
-
-        var remainingQuantity =
-            await _db.InventoryBalances
-                .Where(x =>
-                    x.ItemId == itemId &&
-                    x.InventoryLotId == lotId &&
-                    x.CustomerId == customerId)
-                .SumAsync(x => (decimal?)x.OnHandQuantity)
-                ?? 0;
-
-        if (remainingQuantity > 0)
-            return;
-
-        var lot =
-            await _db.InventoryLots
-                .FirstOrDefaultAsync(x =>
-                    x.Id == lotId.Value);
-
-        if (lot != null)
-        {
-            lot.IsClosed = true;
-        }
     }
 
     // =========================================================

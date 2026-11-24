@@ -87,6 +87,8 @@ public class NumberSeriesService
             NumberSeriesType.ProductionIssue => "PI",
             NumberSeriesType.ProductionReceipt => "PR",
             NumberSeriesType.InventoryAdjustment => "IA",
+            NumberSeriesType.CustomerReturn => "CRT",
+            NumberSeriesType.SupplierReturn => "SRT",
             NumberSeriesType.ProductionOrder => "PO",
             NumberSeriesType.SalesOrder => "SO",
             NumberSeriesType.PurchaseOrder => "PU",

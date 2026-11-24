@@ -21,8 +21,16 @@
             <h3 class="erp-page-title">
                 @LocalizationService["InventoryStock"]
             </h3>
+            <p class="erp-page-subtitle">@(LocalizationService.IsPersian ? "جمع موجودی هر کالا و مالک در همه محل‌ها" : "Totals by item and owner across all locations")</p>
         </div>
 
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <a class="btn btn-primary" href="/inventory/documents/create"><i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["CreateInventoryDocument"]</a>
+        <a class="btn btn-outline-secondary" href="/inventory/stock/warehouse"><i class="bi bi-building" aria-hidden="true"></i> @LocalizationService["WarehouseStock"]</a>
+        <a class="btn btn-outline-secondary" href="/inventory/stock/lots"><i class="bi bi-box-seam" aria-hidden="true"></i> @LocalizationService["StockByLot"]</a>
+        <a class="btn btn-outline-secondary" href="/inventory/transactions"><i class="bi bi-clock-history" aria-hidden="true"></i> @LocalizationService["Transactions"]</a>
     </div>
 
     <!-- =========================================
@@ -192,20 +200,20 @@
                                 @foreach (var stock in balances)
                                 {
                                     var isLowStock =
-                                        IsLowStock(stock.ItemId);
+                                        stock.CustomerId == null && IsLowStock(stock.ItemId);
 
                                     <tr class="@(isLowStock ? "table-warning" : "")">
 
                                         <td>
-                                            @stock.Item.Code
+                                            @stock.ItemCode
                                         </td>
 
                                         <td>
-                                            @stock.Item.Name
+                                            @stock.ItemName
                                         </td>
 
                                         <td>
-                                            @(stock.Customer?.Name
+                                            @(stock.CustomerName
                                                 ?? LocalizationService["CompanyInventory"])
                                         </td>
 
@@ -234,7 +242,7 @@
                                                     @GetThreshold(stock.ItemId)
                                                 </div>
                                             }
-                                            else if (stock.Item.EnableLowStockAlert)
+                                            else if (stock.CustomerId == null && stock.AlertEnabled)
                                             {
                                                 <span class="badge bg-success">
                                                     @LocalizationService["StockOK"]
@@ -311,7 +319,20 @@
 
 @code {
 
-    private List<InventoryBalance>? balances;
+    private sealed class StockSummary
+    {
+        public int ItemId { get; init; }
+        public int? CustomerId { get; init; }
+        public string ItemCode { get; init; } = "";
+        public string ItemName { get; init; } = "";
+        public string? CustomerName { get; init; }
+        public bool AlertEnabled { get; init; }
+        public decimal OnHandQuantity { get; init; }
+        public decimal ReservedQuantity { get; init; }
+        public decimal AvailableQuantity => OnHandQuantity - ReservedQuantity;
+    }
+
+    private List<StockSummary>? balances;
 
     private InventoryOwnerFilter ownerFilter =
         InventoryOwnerFilter.All;
@@ -388,7 +409,23 @@
         // Total record count
         // =========================================
 
-        totalCount = await query.CountAsync();
+        var grouped = query.GroupBy(x => new
+        {
+            x.ItemId, x.Item.Code, x.Item.Name, x.CustomerId,
+            CustomerName = x.Customer == null ? null : x.Customer.Name,
+            x.Item.EnableLowStockAlert
+        }).Select(g => new StockSummary
+        {
+            ItemId = g.Key.ItemId,
+            ItemCode = g.Key.Code,
+            ItemName = g.Key.Name,
+            CustomerId = g.Key.CustomerId,
+            CustomerName = g.Key.CustomerName,
+            AlertEnabled = g.Key.EnableLowStockAlert,
+            OnHandQuantity = g.Sum(x => x.OnHandQuantity),
+            ReservedQuantity = g.Sum(x => x.ReservedQuantity)
+        });
+        totalCount = await grouped.CountAsync();
 
         // =========================================
         // Make sure current page is still valid
@@ -408,9 +445,11 @@
         // Load only current page
         // =========================================
 
-        balances = await query
-            .OrderBy(x => x.Item.Name)
-            .ThenBy(x => x.Customer!.Name)
+        balances = await grouped
+            .OrderBy(x => x.ItemName)
+            .ThenBy(x => x.CustomerName)
+            .ThenBy(x => x.ItemId)
+            .ThenBy(x => x.CustomerId)
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

@@ -8,6 +8,8 @@ public enum NumberSeriesType
     ProductionIssue = 4,
     ProductionReceipt = 5,
     InventoryAdjustment = 6,
+    CustomerReturn = 7,
+    SupplierReturn = 8,
 
     ProductionOrder = 100,
 

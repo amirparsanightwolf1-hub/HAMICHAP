@@ -405,7 +405,7 @@ else
                 <button type="button"
                         class="btn btn-primary"
                         @onclick="Save"
-                        disabled="@isSaving">
+                        disabled="@(isSaving || isPosting)">
 
                     @LocalizationService["SaveChanges"]
 
@@ -414,7 +414,7 @@ else
                 <button type="button"
                         class="btn btn-success"
                         @onclick="Post"
-                        disabled="@isPosting">
+                        disabled="@(isSaving || isPosting)">
 
                     @LocalizationService["PostDocument"]
 
@@ -426,7 +426,7 @@ else
         {
             <div class="alert alert-success mt-4">
 
-                @LocalizationService["DocumentPostedReadOnly"]
+                @(document.Status == InventoryDocumentStatus.Cancelled ? LocalizationService.TranslateEnum(document.Status) : LocalizationService["DocumentPostedReadOnly"])
 
             </div>
         }
@@ -456,7 +456,7 @@ else
     private string? errorMessage;
 
     private bool IsPosted =>
-        document?.Status == InventoryDocumentStatus.Posted;
+        document?.Status is InventoryDocumentStatus.Posted or InventoryDocumentStatus.Cancelled;
 
     // =========================================================
     // Initialization
@@ -620,6 +620,9 @@ else
 
                 return;
             }
+
+            foreach (var line in document.Lines)
+                SetLineUnit(line);
 
             // IMPORTANT:
             // Use the generic posting engine.

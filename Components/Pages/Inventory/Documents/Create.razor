@@ -12,523 +12,297 @@
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
-@inject InventoryPostingService PostingService
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
-@inject NumberSeriesService NumberSeriesService
 @inject LocalizationService LocalizationService
 
-<PageTitle>
-    @LocalizationService["CreateInventoryDocument"]
-</PageTitle>
-
+<PageTitle>@LocalizationService["CreateInventoryDocument"]</PageTitle>
 <div class="page-container inventory-page inventory-documents">
-
     <div class="erp-page-header inventory-hero">
         <div class="inventory-hero-icon" aria-hidden="true"><i class="bi bi-file-earmark-plus"></i></div>
-
         <div>
-            <h3 class="erp-page-title">
-                @LocalizationService["CreateInventoryDocument"]
-            </h3>
-
-            <p class="erp-page-subtitle">
-                @LocalizationService["CreateInventoryDocumentDescription"]
-            </p>
+            <h3 class="erp-page-title">@LocalizationService["CreateInventoryDocument"]</h3>
+            <p class="erp-page-subtitle">@T("Choose a movement, enter items and quantities, then post or save a draft.", "نوع گردش را انتخاب کنید، اقلام و مقدار را وارد کنید و ثبت نهایی یا پیش‌نویس را بزنید.")</p>
         </div>
-
+        <a class="btn btn-outline-secondary ms-auto" href="/inventory/documents"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> @LocalizationService["Back"]</a>
     </div>
 
-    <!-- =========================================
-         Document Information
-         ========================================= -->
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
 
-    <div class="card mb-4">
-
-        <div class="card-body">
-
-            <div class="row g-3">
-
-                <div class="col-md-4">
-
-                    <label class="form-label">
-                        @LocalizationService["DocumentType"]
-                    </label>
-
-                    <select class="form-select"
-                            @bind="document.DocumentType">
-
-                        @foreach (var type in Enum.GetValues<InventoryDocumentType>())
-                        {
-                            <option value="@type">
-                                @LocalizationService.TranslateEnum(type)
-                            </option>
-                        }
-
-                    </select>
-
-                </div>
-
-                <div class="col-md-4">
-
-                    <label class="form-label">
-                        @LocalizationService["Date"]
-                    </label>
-
-                    <input class="form-control"
-                           type="date"
-                           @bind="document.DocumentDate" />
-
-                </div>
-
-                <div class="col-md-4">
-
-                    <label class="form-label">
-                        @LocalizationService["Status"]
-                    </label>
-
-                    <input class="form-control"
-                           value="@LocalizationService.TranslateEnum(document.Status)"
-                           disabled />
-
-                </div>
-
-                <div class="col-md-4">
-
-                    <label class="form-label">
-                        @LocalizationService["From"]
-                    </label>
-
-                    <select class="form-select"
-                            @bind="document.FromLocationId">
-
-                        <option value="">
-                            -- @LocalizationService["SelectSource"] --
-                        </option>
-
-                        @foreach (var location in fromLocations)
-                        {
-                            <option value="@location.Id">
-                                @GetLocationDisplayName(location)
-                            </option>
-                        }
-
-                    </select>
-
-                </div>
-
-                <div class="col-md-4">
-
-                    <label class="form-label">
-                        @LocalizationService["To"]
-                    </label>
-
-                    <select class="form-select"
-                            @bind="document.ToLocationId">
-
-                        <option value="">
-                            -- @LocalizationService["SelectDestination"] --
-                        </option>
-
-                        @foreach (var location in toLocations)
-                        {
-                            <option value="@location.Id">
-                                @GetLocationDisplayName(location)
-                            </option>
-                        }
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <div class="mt-3">
-
-                <label class="form-label">
-                    @LocalizationService["Notes"]
-                </label>
-
-                <textarea class="form-control"
-                          rows="3"
-                          @bind="document.Notes">
-                </textarea>
-
-            </div>
-
+    @if (savedDraftId.HasValue)
+    {
+        <div class="alert alert-warning">
+            @T("The draft was saved. Open it to correct the issue and post it; do not create another document.", "پیش‌نویس ذخیره شده است. برای اصلاح و ثبت نهایی آن را باز کنید؛ سند جدید ایجاد نکنید.")
+            <a class="btn btn-outline-secondary ms-2" href="@($"/inventory/documents/edit/{savedDraftId.Value}")">@T("Open saved draft", "باز کردن پیش‌نویس")</a>
         </div>
+    }
+    else
+    {
+        <fieldset disabled="@isSaving" class="border-0 p-0 m-0 w-100">
+            <div class="card mb-3"><div class="card-body">
+                <div class="inventory-quick-heading"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> @T("Movement type", "نوع گردش")</div>
+                <div class="inventory-quick-types">
+                    @foreach (var choice in QuickTypes)
+                    {
+                        <button type="button" class="inventory-quick-type @(document.DocumentType == choice.Type ? "selected" : "")"
+                                aria-pressed="@(document.DocumentType == choice.Type)" @onclick="() => ChooseType(choice.Type)">
+                            <i class="bi @choice.Icon" aria-hidden="true"></i>
+                            <span>@LocalizationService.TranslateEnum(choice.Type)</span>
+                        </button>
+                    }
+                </div>
+                <div class="row g-3 mt-1 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="movement-type">@T("All manual movement types", "همه انواع گردش دستی")</label>
+                        <select id="movement-type" class="form-select" @bind="document.DocumentType" @bind:after="ApplyDefaults">
+                            @foreach (var type in Enum.GetValues<InventoryDocumentType>().Where(x => x != InventoryDocumentType.SalesDelivery))
+                            {
+                                <option value="@type">@LocalizationService.TranslateEnum(type)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="movement-date"><i class="bi bi-calendar3" aria-hidden="true"></i> @LocalizationService["Date"]</label>
+                        <input id="movement-date" type="date" class="form-control" @bind="document.DocumentDate" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="movement-owner"><i class="bi bi-person" aria-hidden="true"></i> @T("Default owner for new lines", "مالک پیش‌فرض ردیف‌های جدید")</label>
+                        <select id="movement-owner" class="form-select" @bind="defaultCustomerId" @bind:after="ApplyOwnerToBlankLines">
+                            <option value="">@LocalizationService["CompanyInventory"]</option>
+                            @foreach (var customer in customers)
+                            {
+                                <option value="@customer.Id">@customer.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="movement-from">@LocalizationService["From"]</label>
+                        <select id="movement-from" class="form-select" @bind="document.FromLocationId">
+                            <option value="">@LocalizationService["SelectSource"]</option>
+                            @foreach (var location in locations)
+                            {
+                                <option value="@location.Id">@GetLocationDisplayName(location)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="movement-to">@LocalizationService["To"]</label>
+                        <select id="movement-to" class="form-select" @bind="document.ToLocationId">
+                            <option value="">@LocalizationService["SelectDestination"]</option>
+                            @foreach (var location in locations.Where(x => x.Id != document.FromLocationId))
+                            {
+                                <option value="@location.Id">@GetLocationDisplayName(location)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <details class="mt-3">
+                    <summary class="text-muted">@LocalizationService["Notes"]</summary>
+                    <textarea class="form-control mt-2" rows="2" @bind="document.Notes"></textarea>
+                </details>
+                <p class="small text-muted mt-3 mb-0">@T("Sales deliveries are created from the Sales module so order and delivery references stay linked.", "تحویل فروش از بخش فروش ثبت می‌شود تا ارتباط سفارش و تحویل حفظ شود.")</p>
+            </div></div>
 
-    </div>
-
-    <!-- =========================================
-         Document Lines
-         ========================================= -->
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-
-        <h4 class="section-title mb-0">
-            @LocalizationService["Lines"]
-        </h4>
-
-        <button class="btn btn-secondary"
-                @onclick="AddLine">
-
-            + @LocalizationService["AddLine"]
-
-        </button>
-
-    </div>
-
-    <div class="card">
-
-        <div class="card-body p-0">
-
-            <div class="table-responsive">
-
-                <div class="inventory-table-scroll">
-<table class="table table-bordered table-striped table-responsive-cards mb-0">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                @LocalizationService["Item"]
-                            </th>
-
-                            <th>
-                                @LocalizationService["Customer"]
-                            </th>
-
-                            <th>
-                                @LocalizationService["Quantity"]
-                            </th>
-
-                            <th>
-                                @LocalizationService["Unit"]
-                            </th>
-
-                            <th>
-                                @LocalizationService["LotNumber"]
-                            </th>
-
-                            <th>
-                                @LocalizationService["Expiration"]
-                            </th>
-
-                            <th></th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @foreach (var line in document.Lines)
-                        {
-                            <tr>
-
-                                <!-- Item -->
-
-                                <td>
-                                    <SearchableSelect TItem="Item"
-                                                      Items="items"
-                                                      Value="line.ItemId"
-                                                      ValueChanged="@(v => OnItemSelected(line, v))"
-                                                      TextSelector="@(i => i.Name)"
-                                                      ValueSelector="@(i => i.Id)"
-                                                      Placeholder="@LocalizationService["SelectItem"]" />
-                                </td>
-
-                                <!-- Customer -->
-
-                                <td>
-                                    <SearchableSelect TItem="Customer"
-                                                      Items="customers"
-                                                      Value="selectedCustomerId ?? 0"
-                                                      ValueChanged="@(v => selectedCustomerId = v == 0 ? null : v)"
-                                                      TextSelector="@(c => c.Name)"
-                                                      ValueSelector="@(c => c.Id)"
-                                                      Placeholder="@LocalizationService["CompanyInventory"]" />
-                                </td>
-
-                                <!-- Quantity -->
-
-                                <td>
-
-                                    <input class="form-control"
-                                           type="number"
-                                           min="0"
-                                           step="0.01"
-                                           @bind="line.Quantity" />
-
-                                </td>
-
-                                <!-- Unit -->
-
-                                <td>
-
-                                    <input class="form-control"
-                                           value="@GetItemUnitName(line.ItemId)"
-                                           readonly />
-
-                                </td>
-
-                                <!-- Lot -->
-
-                                <td>
-
-                                    @if (GetItem(line.ItemId)?.RequiresLotTracking == true)
-                                    {
-                                        <input class="form-control"
-                                               placeholder="@LocalizationService["LotNumber"]"
-                                               @bind="line.LotNumber" />
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">
-                                            —
-                                        </span>
-                                    }
-
-                                </td>
-
-                                <!-- Expiration -->
-
-                                <td>
-
-                                    @if (GetItem(line.ItemId)?.RequiresLotTracking == true)
-                                    {
-                                        <input class="form-control"
-                                               type="date"
-                                               @bind="line.LotExpirationDate" />
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">
-                                            —
-                                        </span>
-                                    }
-
-                                </td>
-
-                                <!-- Remove -->
-
-                                <td>
-
-                                    <button class="btn btn-danger btn-sm"
-                                            @onclick="() => RemoveLine(line)">
-
-                                        @LocalizationService["Remove"]
-
-                                    </button>
-
-                                </td>
-
-                            </tr>
-                        }
-
-                    </tbody>
-
-                </table>
-</div>
-
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="section-title mb-0"><i class="bi bi-list-ul" aria-hidden="true"></i> @LocalizationService["Lines"]</h4>
+                <button type="button" class="btn btn-outline-primary" @onclick="AddLine"><i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["AddLine"]</button>
             </div>
-
-        </div>
-
-    </div>
-
-    <!-- =========================================
-         Actions
-         ========================================= -->
-
-    <div class="mt-4 d-flex gap-2">
-
-        <button class="btn btn-secondary"
-                @onclick="AddLine">
-
-            + @LocalizationService["AddLine"]
-
-        </button>
-
-        <button class="btn btn-primary"
-                @onclick="Save">
-
-            @LocalizationService["SaveDraft"]
-
-        </button>
-
-    </div>
-
+            <div class="card"><div class="card-body inventory-quick-lines">
+                @foreach (var line in document.Lines)
+                {
+                    <div class="inventory-quick-line" @key="line">
+                        <div class="inventory-quick-item">
+                            <label class="form-label">@LocalizationService["Item"]</label>
+                            <SearchableSelect TItem="Item" Items="items" Value="line.ItemId" ValueChanged="@(v => OnItemSelected(line, v))"
+                                              TextSelector="@(i => i.Code + " — " + i.Name)" ValueSelector="@(i => i.Id)" Placeholder="@LocalizationService["SelectItem"]" />
+                        </div>
+                        <div>
+                            <label class="form-label">@LocalizationService["Quantity"] <span class="text-muted">(@GetItemUnitName(line.ItemId))</span></label>
+                            <input type="number" class="form-control" min="0" step="0.001" @bind="line.Quantity" />
+                        </div>
+                        <div>
+                            <label class="form-label">@LocalizationService["InventoryOwner"]</label>
+                            <select class="form-select" @bind="line.CustomerId">
+                                <option value="">@LocalizationService["CompanyInventory"]</option>
+                                @foreach (var customer in customers)
+                                {
+                                    <option value="@customer.Id">@customer.Name</option>
+                                }
+                            </select>
+                        </div>
+                        @if (GetItem(line.ItemId)?.RequiresLotTracking == true)
+                        {
+                            <div>
+                                <label class="form-label">@LocalizationService["LotNumber"] *</label>
+                                <input class="form-control" @bind="line.LotNumber" />
+                            </div>
+                            <div>
+                                <label class="form-label">@LocalizationService["Expiration"]</label>
+                                <input type="date" class="form-control" @bind="line.LotExpirationDate" />
+                            </div>
+                        }
+                        <button type="button" class="btn btn-outline-danger inventory-quick-remove" title="@LocalizationService["Remove"]" aria-label="@LocalizationService["Remove"]" @onclick="() => RemoveLine(line)">
+                            <i class="bi bi-trash" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                }
+            </div></div>
+            <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
+                <button type="button" class="btn btn-outline-primary" @onclick="() => Save(false)"><i class="bi bi-save" aria-hidden="true"></i> @LocalizationService["SaveDraft"]</button>
+                <button type="button" class="btn btn-success" @onclick="() => Save(true)"><i class="bi bi-check2-circle" aria-hidden="true"></i> @T("Save and post", "ذخیره و ثبت نهایی")</button>
+            </div>
+        </fieldset>
+    }
 </div>
 
 @code {
+    private InventoryDocument document = new() { DocumentType = InventoryDocumentType.GoodsReceipt };
+    private List<Item> items = new();
+    private List<Customer> customers = new();
+    private List<InventoryLocation> locations = new();
+    private int? defaultCustomerId;
+    private bool isSaving;
+    private long? savedDraftId;
+    private string? errorMessage;
 
-    private InventoryDocument document = new()
+    private static readonly (InventoryDocumentType Type, string Icon)[] QuickTypes =
     {
-        DocumentType = InventoryDocumentType.GoodsReceipt
+        (InventoryDocumentType.GoodsReceipt, "bi-box-arrow-in-down"),
+        (InventoryDocumentType.CustomerReceipt, "bi-person-down"),
+        (InventoryDocumentType.MaterialTransfer, "bi-arrow-left-right"),
+        (InventoryDocumentType.InventoryAdjustment, "bi-sliders")
     };
 
-    private List<Item> items = new();
-
-    private List<Customer> customers = new();
-
-    private List<InventoryLocation> fromLocations = new();
-
-    private List<InventoryLocation> toLocations = new();
-
-    private int? selectedCustomerId;
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
 
     protected override async Task OnInitializedAsync()
     {
-        items = await Db.Items
-            .Include(x => x.Unit)
-            .Where(x => x.IsActive)
-            .OrderBy(x => x.Name)
-            .ToListAsync();
-
-        customers = await Db.Customers
-            .Where(x => x.IsActive)
-            .OrderBy(x => x.Name)
-            .ToListAsync();
-
-        fromLocations = await Db.InventoryLocations
-            .Where(x => x.IsActive)
-            .OrderBy(x => x.Name)
-            .ToListAsync();
-
-        toLocations = await Db.InventoryLocations
-            .Where(x => x.IsActive)
-            .OrderBy(x => x.Name)
-            .ToListAsync();
+        items = await Db.Items.AsNoTracking().Include(x => x.Unit).Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        customers = await Db.Customers.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        locations = await Db.InventoryLocations.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        ApplyDefaults();
+        AddLine();
     }
 
+    private void ChooseType(InventoryDocumentType type)
+    {
+        if (document.DocumentType == type) return;
+        document.DocumentType = type;
+        ApplyDefaults();
+    }
+
+    private void ApplyDefaults()
+    {
+        // Prefer the seeded warehouse/supplier only when they are active. No guesses for other movements.
+        document.FromLocationId = null;
+        document.ToLocationId = null;
+        if (document.DocumentType == InventoryDocumentType.GoodsReceipt)
+        {
+            document.FromLocationId = locations.FirstOrDefault(x => x.Code == "SUP01" && x.Type == InventoryLocationType.Supplier)?.Id;
+            document.ToLocationId = locations.FirstOrDefault(x => x.Code == "WH01" && x.Type == InventoryLocationType.Warehouse)?.Id;
+        }
+        else if (document.DocumentType == InventoryDocumentType.CustomerReceipt)
+        {
+            document.ToLocationId = locations.FirstOrDefault(x => x.Code == "WH01" && x.Type == InventoryLocationType.Warehouse)?.Id;
+        }
+        errorMessage = null;
+    }
+
+    private void ApplyOwnerToBlankLines()
+    {
+        foreach (var line in document.Lines.Where(x => x.ItemId == 0))
+            line.CustomerId = defaultCustomerId;
+    }
+
+    private void AddLine() => document.Lines.Add(new InventoryDocumentLine { CustomerId = defaultCustomerId });
+    private void RemoveLine(InventoryDocumentLine line) => document.Lines.Remove(line);
+    private Item? GetItem(int itemId) => items.FirstOrDefault(x => x.Id == itemId);
+    private string GetItemUnitName(int itemId) => GetItem(itemId)?.Unit?.Symbol ?? "";
     private void OnItemSelected(InventoryDocumentLine line, int itemId)
     {
+        if (line.ItemId != itemId)
+        {
+            line.LotNumber = null;
+            line.LotExpirationDate = null;
+            line.InventoryLotId = null;
+        }
         line.ItemId = itemId;
-        SetLineUnit(line);
+        line.UnitId = GetItem(itemId)?.UnitId ?? 0;
     }
-
-    void AddLine()
+    private string GetLocationDisplayName(InventoryLocation location) => location.Code switch
     {
-        document.Lines.Add(
-            new InventoryDocumentLine
-            {
-                CustomerId = selectedCustomerId
-            }
-        );
-    }
+        "WH01" => LocalizationService["MainWarehouse"],
+        "SUP01" => LocalizationService["DefaultSupplier"],
+        _ => location.Name
+    };
 
-    private void RemoveLine(
-        InventoryDocumentLine line)
+    private string? Validate()
     {
-        document.Lines.Remove(line);
-    }
-
-    private Item? GetItem(int itemId)
-    {
-        return items.FirstOrDefault(
-            x => x.Id == itemId);
-    }
-
-    private void SetLineUnit(
-        InventoryDocumentLine line)
-    {
-        var item = GetItem(line.ItemId);
-
-        if (item == null)
-        {
-            line.UnitId = 0;
-            return;
-        }
-
-        line.UnitId = item.UnitId;
-    }
-
-    private string GetLocationDisplayName(InventoryLocation location)
-    {
-        return location.Code switch
-        {
-            "WH01" => LocalizationService["MainWarehouse"],
-            "SUP01" => LocalizationService["DefaultSupplier"],
-            _ => location.Name
-        };
-    }
-
-    private string GetItemUnitName(
-        int itemId)
-    {
-        var item = GetItem(itemId);
-
-        return item?.Unit?.Symbol ?? "";
-    }
-
-    private async Task Save()
-    {
-        if (document.FromLocationId == null)
-        {
-            return;
-        }
-
-        if (document.ToLocationId == null)
-        {
-            return;
-        }
-
+        if (!document.FromLocationId.HasValue || !document.ToLocationId.HasValue || document.FromLocationId == document.ToLocationId)
+            return T("Select two different locations.", "دو محل متفاوت برای مبدأ و مقصد انتخاب کنید.");
         if (document.Lines.Count == 0)
-        {
-            return;
-        }
-
+            return T("Add at least one item.", "حداقل یک قلم کالا اضافه کنید.");
         foreach (var line in document.Lines)
         {
-            // Apply the selected inventory owner to the line.
-            line.CustomerId = selectedCustomerId;
-
-            if (line.ItemId == 0)
-            {
-                return;
-            }
-
-            if (line.Quantity <= 0)
-            {
-                return;
-            }
-
-            // Unit is inherited from the Item.
-            // Make sure it is populated before saving.
-            SetLineUnit(line);
-
-            if (line.UnitId == 0)
-            {
-                return;
-            }
-
             var item = GetItem(line.ItemId);
+            if (item is null || line.Quantity <= 0)
+                return T("Select an item and positive quantity on every line.", "برای هر ردیف کالا و مقدار مثبت وارد کنید.");
+            line.UnitId = item.UnitId;
+            if (item.RequiresLotTracking && string.IsNullOrWhiteSpace(line.LotNumber))
+                return T("Lot number is required for ", "شماره بچ الزامی است برای ") + item.Name;
+            if ((document.DocumentType is InventoryDocumentType.CustomerReceipt or InventoryDocumentType.CustomerReturn) && line.CustomerId is null)
+                return T("Select a customer owner for every line.", "مالک مشتری را برای هر ردیف انتخاب کنید.");
+            if ((document.DocumentType is InventoryDocumentType.ProductionIssue or InventoryDocumentType.ProductionReceipt or InventoryDocumentType.ProductionScrap or InventoryDocumentType.SupplierReturn) && line.CustomerId is not null)
+                return T("This movement requires company-owned stock.", "این گردش فقط برای موجودی متعلق به شرکت مجاز است.");
+        }
+        return null;
+    }
 
-            if (item == null)
+    private async Task Save(bool post)
+    {
+        if (isSaving || savedDraftId.HasValue) return;
+        errorMessage = Validate();
+        if (errorMessage is not null) return;
+        isSaving = true;
+        try
+        {
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(auth.User);
+            if (user is null) throw new InvalidOperationException(T("Authenticated user was not found.", "کاربر احراز هویت شده یافت نشد."));
+            // Separate short-lived contexts keep failed posting changes out of the draft form.
+            await using (var db = await DbFactory.CreateDbContextAsync())
             {
-                return;
+                document.DocumentNumber = await new NumberSeriesService(db).GetNextNumberAsync(InventoryDocumentNumbering.SeriesFor(document.DocumentType));
+                document.UserId = user.Id;
+                db.InventoryDocuments.Add(document);
+                await db.SaveChangesAsync();
+                savedDraftId = document.Id;
             }
-
-            if (item.RequiresLotTracking &&
-                string.IsNullOrWhiteSpace(line.LotNumber))
+            if (post)
             {
-                return;
+                await using var db = await DbFactory.CreateDbContextAsync();
+                await new InventoryPostingService(db).PostAsync(document.Id, user.Id);
+                Navigation.NavigateTo("/inventory/documents");
+            }
+            else Navigation.NavigateTo($"/inventory/documents/edit/{document.Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            if (!savedDraftId.HasValue)
+            {
+                document.Id = 0;
+                foreach (var line in document.Lines)
+                {
+                    line.Id = 0;
+                    line.InventoryDocumentId = 0;
+                }
             }
         }
-
-        document.DocumentNumber =
-            await NumberSeriesService
-                .GetNextNumberAsync(
-                    NumberSeriesType.GoodsReceipt);
-
-        Db.InventoryDocuments.Add(document);
-
-        await Db.SaveChangesAsync();
-
-        Navigation.NavigateTo(
-            $"/inventory/documents/edit/{document.Id}");
+        finally { isSaving = false; }
     }
 }
