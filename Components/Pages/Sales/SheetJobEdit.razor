@@ -197,17 +197,23 @@
                     <label class="form-label job-edit-quantity-label">@LocalizationService["PrintRunSheets"]</label>
                     <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.PrintRunSheets" />
 
-                    <label class="form-label">@LocalizationService["BeforeCutLengthCm"]</label>
-                    <InputNumber class="form-control" @bind-Value="spec.BeforeCutLengthCm" />
+                    <label class="form-label" for="sheet-before-cut-length">@ToolingText("Size before cut (cm)", "ابعاد قبل از برش (سانتی‌متر)")</label>
+                    <div class="input-group" dir="ltr" role="group" aria-label="@ToolingText("Size before cut (cm)", "ابعاد قبل از برش (سانتی‌متر)")">
+                        <InputNumber id="sheet-before-cut-length" class="form-control" style="min-width:0" min="0" step="any"
+                                     placeholder="@ToolingText("Length", "طول")" aria-label="@LocalizationService["BeforeCutLengthCm"]" @bind-Value="spec.BeforeCutLengthCm" />
+                        <span class="input-group-text" aria-hidden="true">*</span>
+                        <InputNumber id="sheet-before-cut-width" class="form-control" style="min-width:0" min="0" step="any"
+                                     placeholder="@ToolingText("Width", "عرض")" aria-label="@LocalizationService["BeforeCutWidthCm"]" @bind-Value="spec.BeforeCutWidthCm" />
+                    </div>
 
-                    <label class="form-label">@LocalizationService["BeforeCutWidthCm"]</label>
-                    <InputNumber class="form-control" @bind-Value="spec.BeforeCutWidthCm" />
-
-                    <label class="form-label">@LocalizationService["CutLengthCm"]</label>
-                    <InputNumber class="form-control" @bind-Value="spec.CutLengthCm" />
-
-                    <label class="form-label">@LocalizationService["CutWidthCm"]</label>
-                    <InputNumber class="form-control" @bind-Value="spec.CutWidthCm" />
+                    <label class="form-label" for="sheet-after-cut-length">@ToolingText("Size after cut (cm)", "ابعاد بعد از برش (سانتی‌متر)")</label>
+                    <div class="input-group" dir="ltr" role="group" aria-label="@ToolingText("Size after cut (cm)", "ابعاد بعد از برش (سانتی‌متر)")">
+                        <InputNumber id="sheet-after-cut-length" class="form-control" style="min-width:0" min="0" step="any"
+                                     placeholder="@ToolingText("Length", "طول")" aria-label="@LocalizationService["CutLengthCm"]" @bind-Value="spec.CutLengthCm" />
+                        <span class="input-group-text" aria-hidden="true">*</span>
+                        <InputNumber id="sheet-after-cut-width" class="form-control" style="min-width:0" min="0" step="any"
+                                     placeholder="@ToolingText("Width", "عرض")" aria-label="@LocalizationService["CutWidthCm"]" @bind-Value="spec.CutWidthCm" />
+                    </div>
 
 
                     <label class="form-label">@LocalizationService["Grammage"]</label>
