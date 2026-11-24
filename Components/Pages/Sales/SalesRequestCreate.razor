@@ -1,5 +1,7 @@
 
 @page "/sales/requests/create"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Sales.Requests.Create")]
+@inject PermissionService Permissions
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Customers
@@ -342,14 +344,21 @@
 
             var user = await UserManager.GetUserAsync(authenticationState.User);
 
-            if (user == null)
+            if (user is not { IsActive: true } ||
+                !await Permissions.HasPermissionAsync(authenticationState.User, "Sales.Requests.Create"))
             {
                 throw new InvalidOperationException(
                     LocalizationService["UserNotAuthenticated"]);
             }
 
+            if (TargetQuotationId.HasValue &&
+                !await Permissions.HasPermissionAsync(authenticationState.User, "Sales.Requests.CreateQuotation"))
+                throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+
             if (isCreatingCustomer)
             {
+                if (!await Permissions.HasPermissionAsync(authenticationState.User, "Customers.Create"))
+                    throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
                 var code = await CustomerCodeGenerator.GenerateAsync(Db);
 
                 var newCustomer = new Customer { Code = code, IsActive = true };

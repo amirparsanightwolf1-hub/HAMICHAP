@@ -27,4 +27,9 @@
 		<Folder Include="Data\Identity\" />
 	</ItemGroup>
 
+    <!-- Runtime customer files must not be part of application publish artifacts. -->
+    <ItemGroup>
+        <Content Remove="wwwroot/uploads/**" />
+        <None Remove="wwwroot/uploads/**" />
+    </ItemGroup>
 </Project>

@@ -201,11 +201,15 @@ public class PermissionService
         if (user.Identity?.IsAuthenticated != true || string.IsNullOrWhiteSpace(permissionName))
             return false;
 
-        if (user.IsInRole(AdministratorRole))
-            return true;
-
         await using var db = await _dbFactory.CreateDbContextAsync();
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId) ||
+            !await db.Users.AnyAsync(x => x.Id == userId && x.IsActive))
+            return false;
+
         var roleIds = await GetCurrentUserRoleIdsAsync(db, user);
+        if (await db.Roles.AnyAsync(x => roleIds.Contains(x.Id) && x.Name == AdministratorRole))
+            return true;
         if (roleIds.Count == 0)
             return false;
 

@@ -84,7 +84,7 @@
                             <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" />
                             <span>@LocalizationService["RememberMe"]</span>
                         </label>
-                        <a href="Account/ForgotPassword">@LocalizationService["ForgotPassword"]</a>
+                        <span>@T("Contact administrator for password recovery", "برای بازیابی رمز عبور با مدیر سیستم تماس بگیرید")</span>
                     </div>
 
                     <button type="submit" class="hc-login-submit">
@@ -100,10 +100,7 @@
                 <ExternalLoginPicker HideWhenEmpty="true" />
 
                 <div class="hc-login-help">
-                    <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
-                        @LocalizationService["RegisterAsNewUser"]
-                    </a>
-                    <a href="Account/ResendEmailConfirmation">@LocalizationService["ResendEmailConfirmation"]</a>
+                    <span>@T("Contact your system administrator for account access.", "برای دسترسی به حساب کاربری با مسئول سیستم تماس بگیرید.")</span>
                 </div>
             </section>
             <footer class="hc-login-footer">HAMICHAP · MES / ERP</footer>
@@ -166,14 +163,12 @@
                 return;
             }
 
-            // This doesn't count login failures towards account lockout.
-            // To enable password failures to trigger account lockout,
-            // set lockoutOnFailure: true.
+            // Count failed password attempts towards account lockout.
             result = await SignInManager.PasswordSignInAsync(
                 Input.Email,
                 Input.Password,
                 Input.RememberMe,
-                lockoutOnFailure: false);
+                lockoutOnFailure: true);
         }
 
         if (result.Succeeded)

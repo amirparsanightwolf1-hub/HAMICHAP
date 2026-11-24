@@ -48,7 +48,7 @@ internal sealed class IdentityRevalidatingAuthenticationStateProvider(
         var user =
             await userManager.GetUserAsync(principal);
 
-        if (user is null)
+        if (user is not { IsActive: true })
         {
             return false;
         }

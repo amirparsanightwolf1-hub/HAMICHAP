@@ -7,6 +7,8 @@ using HamiChap_MES_ERP.Models.Shared.Services;
 using HamiChap_MES_ERP.Services;
 using HamiChap_MES_ERP.Services.Imposition;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +31,13 @@ builder.Services.AddScoped<ImpositionOptimizerService>();
 builder.Services.AddScoped<StockBalanceService>();
 builder.Services.AddScoped<SessionInactivityService>();
 builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<IAuthorizationHandler, EmployeePermissionHandler>();
+builder.Services.AddAuthorization(options =>
+{
+    foreach (var permission in new[] { "Sales.Requests.View", "Sales.Requests.Create" })
+        options.AddPolicy(permission, policy => policy.RequireAuthenticatedUser()
+            .AddRequirements(new EmployeePermissionRequirement(permission)));
+});
 builder.Services.AddScoped<LocalizationService>();
 builder.Services.AddScoped<InventoryAlertService>();
 builder.Services.AddScoped<SalesRequestService>();
@@ -78,12 +87,31 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddSignInManager()
+.AddSignInManager<ActiveEmployeeSignInManager>()
 .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        await SecurityStampValidator.ValidatePrincipalAsync(context);
+        if (context.Principal?.Identity?.IsAuthenticated != true)
+            return;
+        var users = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+        if (await users.GetUserAsync(context.Principal) is not { IsActive: true })
+        {
+            context.RejectPrincipal();
+            await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+        }
+    };
+});
 
 builder.Services.AddScoped<NumberSeriesService>();
 
@@ -113,7 +141,26 @@ else
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
+
+// Legacy upload URLs remain compatible with existing job records. Never serve
+// them to unauthenticated visitors, even if a file is also a static web asset.
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/uploads"))
+    {
+        if (context.User.Identity?.IsAuthenticated != true)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+        context.Response.Headers["Cache-Control"] = "private, no-store";
+        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    }
+    await next();
+});
 
 // PDF artwork previews are rendered locally by Docnet.Core (no external API/CDN).
 app.MapLocalPdfPreview();
@@ -175,7 +222,7 @@ using (var scope = app.Services.CreateScope())
 
     await IdentitySeeder.SeedRolesAsync(roleManager);
 
-    await IdentitySeeder.SeedAdminAsync(userManager);
+    await IdentitySeeder.SeedAdminAsync(userManager, app.Configuration);
 
     await PermissionSeeder.SeedPermissionsAsync(context);
 
