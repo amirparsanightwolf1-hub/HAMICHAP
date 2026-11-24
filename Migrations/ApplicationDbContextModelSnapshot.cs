@@ -2154,6 +2154,26 @@ namespace HamiChap_MES_ERP.Migrations
                     b.ToTable("SalesOrderLines");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesProofRevision", b =>
+                {
+                    b.Property<long>("Id").ValueGeneratedOnAdd().HasColumnType("bigint");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    b.Property<long>("SalesRequestId").HasColumnType("bigint");
+                    b.Property<int>("RevisionNumber").HasColumnType("int");
+                    b.Property<string>("SnapshotJson").IsRequired().HasColumnType("nvarchar(max)");
+                    b.Property<string>("Fingerprint").IsRequired().HasMaxLength(64).HasColumnType("nvarchar(64)");
+                    b.Property<int>("Status").HasColumnType("int");
+                    b.Property<DateTime>("SentAtUtc").HasColumnType("datetime2");
+                    b.Property<string>("SentByUserId").IsRequired().HasMaxLength(450).HasColumnType("nvarchar(450)");
+                    b.Property<DateTime?>("DecisionAtUtc").HasColumnType("datetime2");
+                    b.Property<string>("DecisionByUserId").HasMaxLength(450).HasColumnType("nvarchar(450)");
+                    b.Property<string>("DecisionNotes").IsRequired().HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("RowVersion").IsConcurrencyToken().IsRequired().ValueGeneratedOnAddOrUpdate().HasColumnType("rowversion");
+                    b.HasKey("Id");
+                    b.HasIndex("SalesRequestId", "RevisionNumber").IsUnique();
+                    b.ToTable("SalesProofRevisions");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesRequest", b =>
                 {
                     b.Property<long>("Id")
@@ -3407,6 +3427,16 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Navigation("SalesOrder");
 
                     b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesProofRevision", b =>
+                {
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.SalesRequest", "SalesRequest")
+                        .WithMany()
+                        .HasForeignKey("SalesRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                    b.Navigation("SalesRequest");
                 });
 
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SalesRequest", b =>

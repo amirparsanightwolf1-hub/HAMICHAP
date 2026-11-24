@@ -116,6 +116,15 @@ namespace HamiChap_MES_ERP.Data
 
 
             base.OnModelCreating(builder);
+            builder.Entity<SalesProofRevision>(b =>
+            {
+                b.HasIndex(x => new { x.SalesRequestId, x.RevisionNumber }).IsUnique();
+                b.Property(x => x.Fingerprint).HasMaxLength(64);
+                b.Property(x => x.SentByUserId).HasMaxLength(450);
+                b.Property(x => x.DecisionByUserId).HasMaxLength(450);
+                b.HasOne(x => x.SalesRequest).WithMany().HasForeignKey(x => x.SalesRequestId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             foreach (var entityType in builder.Model.GetEntityTypes())
             {
@@ -735,6 +744,7 @@ namespace HamiChap_MES_ERP.Data
     => Set<RolePermissionManagement>();
 
         public DbSet<SalesRequest> SalesRequests => Set<SalesRequest>();
+        public DbSet<SalesProofRevision> SalesProofRevisions => Set<SalesProofRevision>();
 
         public DbSet<SalesRequestLine> SalesRequestLines => Set<SalesRequestLine>();
 

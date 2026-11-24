@@ -18,6 +18,7 @@
 @inject QuotationService QuotationService
 @inject LocalizationService LocalizationService
 @inject SalesOrderService SalesOrderService
+@inject PermissionService Permissions
 
 <HeadContent>
     <link rel="stylesheet" href="css/quotationEdit.css" />
@@ -122,48 +123,19 @@
                         }
 
                         <i class="bi bi-send"></i>
-                        @LocalizationService["SubmitForApproval"]
+                        @(LocalizationService.IsPersian ? "ثبت ارسال پیش‌فاکتور" : "Mark quotation as sent")
 
                     </button>
                 }
 
-                @if (quotation.Status == QuotationStatus.PendingApproval)
+                @if (quotation.Status is QuotationStatus.PendingApproval or QuotationStatus.Approved or QuotationStatus.ReadyToSend)
                 {
-                    <button type="button"
-                            class="btn btn-success"
-                            @onclick="ApproveAsync"
-                            disabled="@isApproving">
-
-                        @if (isApproving)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1"></span>
-                        }
-
-                        <i class="bi bi-check-circle"></i>
-                        @LocalizationService["Approve"]
-
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-danger"
-                            @onclick="RejectAsync"
-                            disabled="@isRejecting">
-
-                        @if (isRejecting)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1"></span>
-                        }
-
-                        <i class="bi bi-x-circle"></i>
-                        @LocalizationService["Reject"]
-
+                    <button type="button" class="btn btn-primary" disabled="@isSubmitting" @onclick="SubmitForApprovalAsync">
+                        @(LocalizationService.IsPersian ? "ثبت ارسال پیش‌فاکتور" : "Mark quotation as sent")
                     </button>
                 }
 
-
-                @if (quotation.Status == QuotationStatus.Approved ||
-                     quotation.Status == QuotationStatus.ReadyToSend ||
-                     quotation.Status == QuotationStatus.SentToCustomer ||
+                @if (quotation.Status == QuotationStatus.SentToCustomer ||
                      quotation.Status == QuotationStatus.CustomerNegotiation)
                 {
                     <button type="button"
@@ -184,6 +156,12 @@
                         <i class="bi bi-x-circle"></i>
                         @LocalizationService["CustomerRejected"]
 
+                    </button>
+                }
+                @if (quotation.Status is not (QuotationStatus.Accepted or QuotationStatus.Cancelled or QuotationStatus.Rejected or QuotationStatus.Expired))
+                {
+                    <button type="button" class="btn btn-outline-danger" disabled="@isDeciding" @onclick="CancelQuotationAsync">
+                        @(LocalizationService.IsPersian ? "لغو پیش‌فاکتور و سفارش" : "Cancel quotation and jobs")
                     </button>
                 }
 
@@ -623,12 +601,12 @@
     private string GetQuotationWorkflowHint() => quotation?.Status switch
     {
         QuotationStatus.Draft or QuotationStatus.RevisionRequired =>
-            LocalizationService["QuotationEditDraftHint"],
+            LocalizationService.IsPersian ? "قیمت‌ها را تکمیل و پس از تأیید طرح‌های مشتری، پیش‌فاکتور را ارسال کنید." : "Complete pricing and send after all customer proofs are accepted.",
         QuotationStatus.PendingApproval =>
-            LocalizationService["QuotationEditPendingHint"],
+            LocalizationService.IsPersian ? "پس از تأیید طرح‌ها، ارسال پیش‌فاکتور را ثبت کنید." : "Record sending after customer proofs are accepted.",
         QuotationStatus.Approved or QuotationStatus.ReadyToSend or
         QuotationStatus.SentToCustomer or QuotationStatus.CustomerNegotiation =>
-            LocalizationService["QuotationEditApprovedHint"],
+            LocalizationService.IsPersian ? "پاسخ مشتری را ثبت کنید؛ در صورت درخواست تغییر، قیمت‌ها قابل ویرایش می‌شوند." : "Record the customer's response; a requested change returns the quotation to negotiation.",
         _ => LocalizationService["QuotationEditClosedHint"]
     };
 
@@ -779,7 +757,7 @@
 
     private async Task SubmitForApprovalAsync()
     {
-        if (quotation == null || !IsEditable)
+        if (quotation == null || isSubmitting)
             return;
 
         errorMessage = null;
@@ -787,22 +765,20 @@
 
         try
         {
-            ValidateQuotation();
-
-            NormalizeUnitPrices();
-            CalculateFinalAmount();
-
             isSubmitting = true;
-
-            var pricingUser = await GetCurrentUserAsync();
-            await Db.SaveChangesAsync();
-            await QuotationService.AssignPricingUserAsEvaluatorAsync(
-                quotation.Id,
-                pricingUser.Id);
-
-            await QuotationService
-                .SubmitForApprovalAsync(
-                    quotation.Id);
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation"))
+                throw new UnauthorizedAccessException("Quotation permission required.");
+            if (IsEditable)
+            {
+                ValidateQuotation();
+                NormalizeUnitPrices();
+                CalculateFinalAmount();
+                var pricingUser = await GetCurrentUserAsync();
+                await Db.SaveChangesAsync();
+                await QuotationService.AssignPricingUserAsEvaluatorAsync(quotation.Id, pricingUser.Id);
+            }
+            await QuotationService.SendToCustomerAsync(quotation.Id);
 
             await LoadAsync();
         }
@@ -893,6 +869,9 @@
         try
         {
             isDeciding = true;
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation"))
+                throw new UnauthorizedAccessException("Quotation permission required.");
 
             if (accepted)
             {
@@ -922,6 +901,23 @@
         }
     }
 
+
+    private async Task CancelQuotationAsync()
+    {
+        if (quotation == null || isDeciding) return;
+        isDeciding = true;
+        errorMessage = null;
+        try
+        {
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation"))
+                throw new UnauthorizedAccessException("Quotation permission required.");
+            await QuotationService.CancelAsync(quotation.Id);
+            await LoadAsync();
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isDeciding = false; }
+    }
 
     private async Task<ApplicationUser>
         GetCurrentUserAsync()

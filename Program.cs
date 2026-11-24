@@ -29,6 +29,7 @@ builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<LocalizationService>();
 builder.Services.AddScoped<InventoryAlertService>();
 builder.Services.AddScoped<SalesRequestService>();
+builder.Services.AddScoped<SalesProofService>();
 builder.Services.AddScoped<SalesEvaluationService>();
 builder.Services.AddScoped<QuotationService>();
 builder.Services.AddScoped<SalesOrderService>();

@@ -55,6 +55,7 @@ public class SalesOrderService
 
             if (quotation.Status != QuotationStatus.Accepted)
             {
+                await SalesProofService.RequireAcceptedProofsAsync(_db, quotationId);
                 quotation.Status = QuotationStatus.Accepted;
                 await _db.SaveChangesAsync();
             }

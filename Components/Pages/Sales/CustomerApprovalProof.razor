@@ -1,4 +1,9 @@
 @page "/sales/requests/proof/{RequestId:long}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
+@inject SalesProofService ProofService
 @using System.Text.Json
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
@@ -30,7 +35,7 @@
             <button class="btn btn-outline-secondary" @onclick="BackToJob">
                 @LocalizationService["BackToJob"]
             </button>
-            <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow" disabled="@isOpeningQuotation">
+            <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow" disabled="@(isOpeningQuotation || proofState?.Accepted != true)">
                 @LocalizationService["ContinueToQuotation"]
             </button>
             <button class="btn btn-primary" disabled="@isPreparingPrint" @onclick="PrintProof">
@@ -67,6 +72,55 @@
     }
     else if (request is not null)
     {
+        <section class="card mb-3 no-print">
+            <div class="card-header d-flex flex-wrap justify-content-between gap-2">
+                <strong>@T("Customer proof decision", "تصمیم مشتری درباره طرح")</strong>
+                <span class="badge bg-secondary">@ProofStatusLabel</span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">@T("Send the printed/PDF proof to the customer, then record their response here. A changed job needs a new approval.", "طرح چاپی یا PDF را برای مشتری ارسال و پاسخ او را اینجا ثبت کنید. تغییر مشخصات نیاز به تأیید جدید دارد.")</p>
+                @if (canRecordProof && request.Status != SalesRequestStatus.Cancelled && proofState is not null)
+                {
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (!proofState.Accepted && !proofState.AwaitingResponse)
+                        {
+                            <button class="btn btn-primary" disabled="@proofBusy" @onclick="MarkProofSent">@T("Mark proof as sent", "ثبت ارسال طرح")</button>
+                        }
+                        @if (proofState.AwaitingResponse)
+                        {
+                            <button class="btn btn-success" disabled="@proofBusy" @onclick="() => DecideProof(true)">@T("Customer accepted", "تأیید مشتری")</button>
+                            <button class="btn btn-outline-danger" disabled="@proofBusy" @onclick="() => DecideProof(false)">@T("Changes requested", "درخواست اصلاح")</button>
+                        }
+                        @if (canCancelProofJob)
+                        {
+                            <button class="btn btn-outline-danger" disabled="@proofBusy" @onclick="CancelProofJob">@T("Cancel job", "لغو کار")</button>
+                        }
+                    </div>
+                    @if (proofState.AwaitingResponse)
+                    {
+                        <label class="form-label mt-2">@T("Customer response notes", "یادداشت پاسخ مشتری")</label>
+                        <textarea class="form-control" rows="2" @bind="proofNotes"></textarea>
+                    }
+                }
+                @if (proofState?.Revisions.Count > 0)
+                {
+                    <details class="mt-3">
+                        <summary>@T("Proof revision history", "سوابق نسخه‌های طرح")</summary>
+                        <div class="table-responsive mt-2">
+                            <table class="table table-sm">
+                                <thead><tr><th>@T("Revision", "نسخه")</th><th>@T("Sent", "ارسال")</th><th>@T("Decision", "تصمیم")</th><th>@T("Notes", "یادداشت")</th></tr></thead>
+                                <tbody>
+                                @foreach (var revision in proofState.Revisions)
+                                {
+                                    <tr @key="revision.Id"><td>@revision.RevisionNumber</td><td>@revision.SentAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td><td>@RevisionStatus(revision.Status)</td><td>@revision.DecisionNotes</td></tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                }
+            </div>
+        </section>
         <article class="proof-sheet @(request.JobType == SalesJobType.Sheet ? "sheet-proof" : "")" dir="@(LocalizationService.IsPersian ? "rtl" : "ltr")">
             <header class="proof-card-header">
                 <div class="d-flex align-items-center gap-3">
@@ -504,10 +558,15 @@
     {
         isLoading = true; errorMessage = null;
         rollPantoneColors = new();
-        request = await Db.SalesRequests.Include(x => x.Customer).FirstOrDefaultAsync(x => x.Id == RequestId);
+        request = await Db.SalesRequests.AsNoTracking().Include(x => x.Customer).Include(x => x.Lines).FirstOrDefaultAsync(x => x.Id == RequestId);
         if (request is null) { errorMessage = LocalizationService["SalesRequestNotFound"]; isLoading = false; return; }
         try
         {
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
+            canRecordProof = await Permissions.HasPermissionAsync(principal, "Sales.Requests.Edit");
+            canCancelProofJob = canRecordProof && !await Db.Quotations.AsNoTracking().AnyAsync(q => q.SalesRequestId == RequestId || q.Lines.Any(x => x.SourceRequestId == RequestId));
+            proofState = await ProofService.ReadAsync(RequestId);
+            displayedFingerprint = SalesProofService.Fingerprint(request);
             if (request.JobType == SalesJobType.Roll)
             {
                 var spec = JsonSerializer.Deserialize<RollJobSpecification>(request.JobSpecificationJson ?? "{}") ?? new();
@@ -678,12 +737,55 @@
             ? $"/sales/requests/{job}/edit/{RequestId}?quotationId={TargetQuotationId.Value}"
             : $"/sales/requests/{job}/edit/{RequestId}");
     }
+    private SalesProofService.State? proofState;
+    private string displayedFingerprint = "";
+    private bool canRecordProof;
+    private bool canCancelProofJob;
+    private bool proofBusy;
+    private string proofNotes = "";
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private string RevisionStatus(ProofRevisionStatus status) => status switch
+    {
+        ProofRevisionStatus.Accepted => T("Accepted", "تأیید شده"),
+        ProofRevisionStatus.ChangesRequested => T("Changes requested", "درخواست اصلاح"),
+        ProofRevisionStatus.Superseded => T("Superseded", "نسخه جایگزین شده"),
+        _ => T("Awaiting response", "در انتظار پاسخ")
+    };
+    private string ProofStatusLabel => request?.Status == SalesRequestStatus.Cancelled ? T("Cancelled", "لغو شده")
+        : proofState?.Latest is not { } latest ? T("Not sent", "ارسال نشده")
+        : latest.Fingerprint != displayedFingerprint ? T("New revision required", "نیاز به نسخه جدید")
+        : RevisionStatus(latest.Status);
+
+    private async Task MarkProofSent() => await RunProofActionAsync(async principal =>
+        await ProofService.MarkSentAsync(RequestId, displayedFingerprint, principal));
+
+    private async Task DecideProof(bool accepted) => await RunProofActionAsync(async principal =>
+        await ProofService.RecordDecisionAsync(RequestId, displayedFingerprint, accepted, proofNotes, principal));
+
+    private async Task CancelProofJob() => await RunProofActionAsync(async principal =>
+        await ProofService.CancelUnquotedJobAsync(RequestId, principal));
+
+    private async Task RunProofActionAsync(Func<System.Security.Claims.ClaimsPrincipal, Task> action)
+    {
+        if (proofBusy || !canRecordProof) return;
+        proofBusy = true;
+        quotationError = null;
+        try
+        {
+            await action((await Auth.GetAuthenticationStateAsync()).User);
+            proofNotes = "";
+            await OnParametersSetAsync();
+        }
+        catch (Exception ex) { quotationError = ex.Message; }
+        finally { proofBusy = false; }
+    }
+
     private bool isOpeningQuotation;
     private string? quotationError;
 
     private async Task ContinueSalesWorkflow()
     {
-        if (request is null) return;
+        if (request is null || proofState?.Accepted != true) return;
 
         quotationError = null;
         try

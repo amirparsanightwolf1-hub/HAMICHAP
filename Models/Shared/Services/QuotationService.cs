@@ -2,6 +2,7 @@
 using HamiChap_MES_ERP.Models.Sales;
 using HamiChap_MES_ERP.Models.Sales.Enums;
 using HamiChap_MES_ERP.Models.Shared;
+using HamiChap_MES_ERP.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -199,21 +200,38 @@ public class QuotationService
         await _db.SaveChangesAsync();
     }
 
-    public async Task SubmitForApprovalAsync(long quotationId)
+    // A quotation may be prepared internally while proofs are in progress,
+    // but no quotation can be sent until every linked proof is accepted.
+    public Task SubmitForApprovalAsync(long quotationId) => SendToCustomerAsync(quotationId);
+
+    public async Task SendToCustomerAsync(long quotationId)
     {
-        var quotation = await _db.Quotations
-            .FirstOrDefaultAsync(x => x.Id == quotationId);
-
-        if (quotation == null)
-            throw new InvalidOperationException("Quotation not found.");
-
-        if (quotation.Status != QuotationStatus.Draft &&
-            quotation.Status != QuotationStatus.RevisionRequired)
-            throw new InvalidOperationException(
-                "Only draft or revision-required quotations can be submitted for approval.");
-
-        quotation.Status = QuotationStatus.PendingApproval;
+        await using var tx = await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+        var quotation = await _db.Quotations.Include(x => x.Lines).FirstAsync(x => x.Id == quotationId);
+        if (quotation.Status is not (QuotationStatus.Draft or QuotationStatus.RevisionRequired or
+            QuotationStatus.PendingApproval or QuotationStatus.Approved or QuotationStatus.ReadyToSend or QuotationStatus.CustomerNegotiation))
+            throw new InvalidOperationException("This quotation cannot be sent.");
+        if (quotation.Lines.Count == 0 || quotation.Lines.Any(x => x.Quantity <= 0 || x.UnitPrice <= 0))
+            throw new InvalidOperationException("Complete pricing and quantities before sending.");
+        await SalesProofService.RequireAcceptedProofsAsync(_db, quotationId);
+        quotation.Status = QuotationStatus.SentToCustomer;
         await _db.SaveChangesAsync();
+        await tx.CommitAsync();
+    }
+
+    public async Task CancelAsync(long quotationId)
+    {
+        await using var tx = await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+        var quotation = await _db.Quotations.Include(x => x.Lines).FirstAsync(x => x.Id == quotationId);
+        if (quotation.Status == QuotationStatus.Accepted || await _db.SalesOrders.AnyAsync(x => x.QuotationId == quotationId))
+            throw new InvalidOperationException("An accepted sales order cannot be cancelled through quotation negotiation.");
+        quotation.Status = QuotationStatus.Cancelled;
+        var ids = quotation.Lines.Where(x => x.SourceRequestId.HasValue).Select(x => x.SourceRequestId!.Value)
+            .Append(quotation.SalesRequestId).Distinct().ToArray();
+        var requests = await _db.SalesRequests.Where(x => ids.Contains(x.Id)).ToListAsync();
+        foreach (var request in requests) request.Status = SalesRequestStatus.Cancelled;
+        await _db.SaveChangesAsync();
+        await tx.CommitAsync();
     }
 
     public async Task ApproveAsync(long quotationId, string userId, string comment = "")
@@ -295,9 +313,9 @@ public class QuotationService
         // A customer rejection is a request to revise the price, not the end
         // of the quotation workflow. Return it to Draft so pricing can be
         // updated and submitted for internal approval again.
-        quotation.Status = accepted
-            ? QuotationStatus.Accepted
-            : QuotationStatus.Draft;
+        if (accepted)
+            throw new InvalidOperationException("Record acceptance through sales order creation.");
+        quotation.Status = QuotationStatus.RevisionRequired;
 
         await _db.SaveChangesAsync();
     }
