@@ -807,3 +807,501 @@
     .job-edit-page .job-section,
     .job-edit-page #sales-workflow { break-inside: avoid; box-shadow: none !important; }
 }
+
+
+/* 2026 compact editing pass. Keep all form bindings and workflow actions intact.
+   Overrides are intentionally scoped to the Roll/Sheet job editors only. */
+.job-edit-page {
+    max-width: 1600px;
+    padding-bottom: 74px;
+}
+.job-edit-page .job-edit-hero {
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 13px 17px;
+    border-radius: 12px;
+}
+.job-edit-page .job-edit-hero-intro { gap: 12px; }
+.job-edit-page .job-edit-hero-icon {
+    width: 43px;
+    height: 43px;
+    flex-basis: 43px;
+    border-radius: 10px;
+    font-size: 20px;
+    box-shadow: none;
+}
+.job-edit-page .job-edit-eyebrow {
+    font-size: .63rem;
+    letter-spacing: .06em;
+    margin-bottom: 1px;
+}
+.job-edit-page .job-edit-hero h1 {
+    font-size: clamp(1.2rem, 1.7vw, 1.5rem);
+    margin: 0 0 2px;
+}
+.job-edit-page .job-edit-hero p {
+    font-size: .73rem;
+    line-height: 1.3;
+}
+.job-edit-page .job-edit-back {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: .75rem;
+}
+.job-edit-page .job-edit-context {
+    margin-bottom: 9px;
+    border-radius: 10px;
+    box-shadow: none;
+}
+.job-edit-page .job-edit-context-field,
+.job-edit-page .job-edit-context-status {
+    padding: 8px 11px;
+    gap: 2px;
+}
+.job-edit-page .job-edit-context-field > span,
+.job-edit-page .job-edit-context-status > span {
+    font-size: .61rem;
+    letter-spacing: 0;
+}
+.job-edit-page .job-edit-context-field > strong {
+    font-size: .78rem;
+    line-height: 1.3;
+}
+.job-edit-page .job-edit-context-date {
+    color: var(--je-muted);
+    font-size: .68rem;
+    font-weight: 550;
+    white-space: nowrap;
+}
+.job-edit-page .job-edit-context-status { min-width: 0; }
+.job-edit-page .job-edit-context-status > strong { font-size: .68rem; padding: 3px 8px; }
+
+.job-edit-page .job-edit-jump-nav {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    gap: 5px;
+    margin-bottom: 10px;
+    padding: 7px 3px;
+    border: 1px solid #dce7ee;
+    border-radius: 10px;
+    background: rgba(248, 251, 254, .97);
+    box-shadow: 0 3px 12px rgba(30, 56, 78, .06);
+    backdrop-filter: blur(10px);
+}
+.job-edit-page .job-edit-jump-nav a {
+    gap: 5px;
+    padding: 7px 9px;
+    border-radius: 7px;
+    font-size: .72rem;
+    scroll-snap-align: none;
+}
+.job-edit-page .job-edit-jump-nav i { font-size: .84rem; }
+.job-edit-page .job-edit-nav-save {
+    position: sticky;
+    inset-inline-end: 0;
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1px solid var(--je-accent-strong);
+    border-radius: 8px;
+    background: var(--je-accent-strong);
+    color: #fff;
+    font-size: .73rem;
+    font-weight: 750;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.job-edit-page .job-edit-nav-save:hover:not(:disabled) { background: var(--je-accent); }
+.job-edit-page .job-edit-nav-save:disabled { opacity: .6; cursor: wait; }
+.job-edit-page .job-edit-anchor,
+.job-edit-page [id^="job-edit-"],
+.job-edit-page #sales-workflow { scroll-margin-top: 72px; }
+
+.job-edit-page .job-edit-anchor > .card,
+.job-edit-page .job-section,
+.job-edit-page #sales-workflow {
+    border-radius: 11px !important;
+    box-shadow: 0 2px 9px rgba(25, 55, 81, .035) !important;
+    margin-bottom: 10px !important;
+}
+.job-edit-page .job-edit-anchor > .card > .card-header,
+.job-edit-page .job-section > .card-header,
+.job-edit-page #sales-workflow > .card-header {
+    padding: 9px 13px;
+    gap: 8px;
+    font-size: .84rem;
+}
+.job-edit-page .job-edit-anchor > .card > .card-body,
+.job-edit-page .job-section > .card-body,
+.job-edit-page #sales-workflow > .card-body {
+    padding: 12px 14px;
+}
+.job-edit-page .job-edit-section-icon {
+    height: 27px;
+    width: 27px;
+    flex-basis: 27px;
+    border-radius: 7px;
+    font-size: .82rem;
+}
+.job-edit-page .job-edit-section-hint,
+.job-edit-page .job-section > .card-header > .text-muted {
+    font-size: .66rem;
+}
+.job-edit-page .order-info-grid {
+    grid-template-columns: minmax(105px, .55fr) minmax(150px, 1fr) minmax(105px, .55fr) minmax(150px, 1fr);
+    gap: 7px 11px;
+    align-items: center;
+}
+.job-edit-page .order-info-grid .form-label,
+.job-edit-page .label-specification-field > label,
+.job-edit-page .workflow-field > label,
+.job-edit-page #sales-workflow .form-label {
+    font-size: .73rem;
+    line-height: 1.25;
+}
+.job-edit-page .form-control,
+.job-edit-page .form-select {
+    min-height: 34px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    font-size: .8rem;
+}
+.job-edit-page .order-info-grid .btn-link {
+    font-size: .7rem;
+    line-height: 1.3;
+    padding-top: 3px !important;
+}
+.job-edit-page .order-info-grid small,
+.job-edit-page .label-specification-field small {
+    display: block;
+    margin-top: 3px;
+    font-size: .65rem;
+    line-height: 1.3;
+}
+.job-edit-page .label-specifications-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+}
+.job-edit-page .label-specification-field,
+.job-edit-page .workflow-field {
+    gap: 5px;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+.job-edit-page .label-specifications-grid > [class*="col-"] { width: auto; }
+.job-edit-page .workflow-fields-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+}
+.job-edit-page .label-specification-field > label,
+.job-edit-page .workflow-field > label { line-height: 1.2; }
+.job-edit-page .form-check { margin-bottom: 0; }
+.job-edit-page .form-check-input { cursor: pointer; }
+.job-edit-page .form-check-label { font-size: .75rem; line-height: 1.35; cursor: pointer; }
+.job-edit-page .cmyk-panel {
+    padding: 10px;
+    border-radius: 9px;
+}
+.job-edit-page .cmyk-panel .mb-3 { margin-bottom: 7px !important; }
+.job-edit-page .cmyk-panel .mt-2 { margin-top: 5px !important; }
+.job-edit-page .cmyk-options { gap: 5px; }
+.job-edit-page .cmyk-option {
+    min-height: 39px;
+    border-radius: 7px;
+    padding: 4px 6px;
+    font-size: .73rem;
+}
+.job-edit-page .cmyk-letter {
+    font-size: .81rem;
+}
+.job-edit-page.job-edit-roll .roll-colors-layout { gap: 8px; }
+.job-edit-page.job-edit-roll .roll-pantone-panel {
+    padding: 10px;
+    border-radius: 9px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-inputs {
+    grid-template-columns: minmax(0, 1fr) 60px auto;
+    gap: 7px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-inputs label { font-size: .7rem; }
+.job-edit-page.job-edit-roll .roll-pantone-picker {
+    min-height: 34px;
+    height: 34px;
+    padding: 3px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-add {
+    grid-column: auto;
+    min-height: 34px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    font-size: .73rem;
+    white-space: nowrap;
+}
+.job-edit-page.job-edit-roll .roll-pantone-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 7px;
+    gap: 5px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-entry {
+    padding: 5px 6px;
+    gap: 5px;
+    border-radius: 6px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-swatch {
+    width: 23px;
+    height: 23px;
+    flex-basis: 23px;
+    border-radius: 5px;
+}
+.job-edit-page.job-edit-roll .roll-pantone-name { font-size: .75rem; }
+.job-edit-page.job-edit-roll .roll-pantone-hex { font-size: .67rem; }
+.job-edit-page.job-edit-roll .roll-pantone-entry .btn {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 3px;
+}
+
+.job-edit-page.job-edit-roll .orientation-grid-four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-option {
+    min-height: 0;
+    padding: 6px;
+    gap: 4px;
+    border-radius: 8px;
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-picture {
+    display: block;
+    width: 100%;
+    height: clamp(80px, 8vw, 118px);
+    max-width: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+    object-fit: contain;
+    border-radius: 5px;
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-caption {
+    font-size: .72rem;
+    line-height: 1.2;
+}
+.job-edit-page.job-edit-roll .orientation-grid-four .orientation-check {
+    font-size: .66rem;
+}
+.job-edit-page.job-edit-roll .label-specifications-grid > .col-md-4 {
+    grid-column: span 2;
+    align-self: center;
+}
+.job-edit-page .job-edit-toggle-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+    padding: 9px 11px;
+    border: 1px solid var(--je-accent-border);
+    border-radius: 8px;
+    background: var(--je-accent-soft);
+    cursor: pointer;
+}
+.job-edit-page .job-edit-toggle-chip .form-check-input {
+    float: none;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.job-edit-page.job-edit-roll #job-edit-services .row.g-3 {
+    --bs-gutter-x: .55rem;
+    --bs-gutter-y: .5rem;
+}
+.job-edit-page.job-edit-roll #job-edit-services .row > [class*="col-"] > section.border {
+    padding: 10px !important;
+    border-radius: 9px !important;
+}
+.job-edit-page.job-edit-roll #job-edit-services section .mb-3 { margin-bottom: 8px !important; }
+.job-edit-page.job-edit-roll #job-edit-services .form-check-label { font-size: .74rem; }
+
+.job-edit-page.job-edit-sheet .order-info-grid.mt-3 { margin-top: 9px !important; }
+.job-edit-page.job-edit-sheet .row.g-3 { --bs-gutter-x: .6rem; --bs-gutter-y: .55rem; }
+.job-edit-page .job-edit-service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+.job-edit-page .job-edit-service-group {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid #e0e8ef;
+    border-radius: 9px;
+    background: #f9fbfe;
+}
+.job-edit-page .job-edit-service-group-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 7px;
+    margin-bottom: 7px;
+    border-bottom: 1px solid #e1e9f0;
+    color: #304965;
+    font-size: .78rem;
+}
+.job-edit-page .job-edit-service-count {
+    flex-shrink: 0;
+    border: 1px solid var(--je-accent-border);
+    background: var(--je-accent-soft);
+    border-radius: 6px;
+    padding: 2px 5px;
+    color: var(--je-accent-strong);
+    font-size: .66rem;
+    font-variant-numeric: tabular-nums;
+}
+.job-edit-page .job-edit-service-choices {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 5px;
+}
+.job-edit-page .job-edit-service-chip {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    max-width: 100%;
+    padding: 5px 8px;
+    border: 1px solid #dfe6ee;
+    border-radius: 7px;
+    background: #fff;
+    color: #445771;
+    cursor: pointer;
+    font-size: .72rem;
+    line-height: 1.3;
+    user-select: none;
+}
+.job-edit-page .job-edit-service-chip:hover,
+.job-edit-page .job-edit-service-chip.is-selected {
+    border-color: var(--je-accent-border);
+    background: var(--je-accent-soft);
+    color: var(--je-accent-strong);
+}
+.job-edit-page .job-edit-service-chip .form-check-input {
+    flex-shrink: 0;
+    float: none;
+    margin: 0;
+}
+
+.job-edit-page .artwork-upload-box {
+    min-height: 92px;
+    padding: 12px;
+    border-radius: 10px;
+}
+.job-edit-page .artwork-upload-box input[type="file"] {
+    padding: 5px 7px;
+    border-radius: 6px;
+}
+.job-edit-page .artwork-file-row {
+    padding: 7px 10px;
+    gap: 7px;
+    border-radius: 7px;
+}
+.job-edit-page #sales-workflow { margin-bottom: 11px !important; }
+.job-edit-page #sales-workflow textarea.form-control { min-height: 64px; }
+.job-edit-page .job-edit-save-bar {
+    bottom: 7px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.job-edit-page .job-edit-save-message { gap: 8px; }
+.job-edit-page .job-edit-save-message > i {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+    font-size: 1rem;
+    border-radius: 8px;
+}
+.job-edit-page .job-edit-save-message strong { font-size: .77rem; }
+.job-edit-page .job-edit-save-message span { font-size: .67rem; }
+.job-edit-page .job-edit-save-button {
+    min-height: 38px;
+    padding: 7px 12px;
+    font-size: .75rem;
+    border-radius: 8px;
+}
+
+@media (max-width: 1260px) {
+    .job-edit-page .job-edit-service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1100px) {
+    .job-edit-page .label-specifications-grid,
+    .job-edit-page .workflow-fields-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .job-edit-page.job-edit-roll .orientation-grid-four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .job-edit-page .order-info-grid {
+        grid-template-columns: minmax(110px, .5fr) minmax(0, 1fr);
+    }
+    .job-edit-page.job-edit-roll .label-specifications-grid > .col-md-4 { grid-column: span 1; }
+}
+@media (max-width: 800px) {
+    .job-edit-page .job-edit-hero { padding: 12px; }
+    .job-edit-page .job-edit-anchor > .card > .card-body,
+    .job-edit-page .job-section > .card-body,
+    .job-edit-page #sales-workflow > .card-body { padding: 10px; }
+    .job-edit-page .label-specifications-grid,
+    .job-edit-page .workflow-fields-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .job-edit-page .order-info-grid {
+        grid-template-columns: minmax(100px, .48fr) minmax(0, 1fr);
+        gap: 6px 8px;
+    }
+    .job-edit-page .order-info-grid .form-label:not(:first-child) { margin-top: 0; }
+    .job-edit-page.job-edit-roll .roll-pantone-inputs {
+        grid-template-columns: minmax(0, 1fr) 58px auto;
+    }
+    .job-edit-page .job-edit-save-bar { bottom: 6px; }
+}
+@media (max-width: 640px) {
+    .job-edit-page .job-edit-context { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .job-edit-page .job-edit-context-field,
+    .job-edit-page .job-edit-context-status {
+        padding: 8px;
+        border-top: 0;
+    }
+    .job-edit-page .job-edit-context-field:nth-child(n + 3),
+    .job-edit-page .job-edit-context-status { border-top: 1px solid var(--je-line); }
+    .job-edit-page .job-edit-context-status { align-items: flex-start; }
+    .job-edit-page .job-edit-service-grid { grid-template-columns: minmax(0, 1fr); }
+    .job-edit-page.job-edit-roll .roll-pantone-list { grid-template-columns: minmax(0, 1fr); }
+    .job-edit-page .job-edit-save-message { display: none; }
+    .job-edit-page .job-edit-save-button { width: 100%; min-height: 42px; }
+    .job-edit-page .cmyk-options { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .job-edit-page .cmyk-option { min-height: 41px; }
+}
+@media (max-width: 480px) {
+    .job-edit-page .job-edit-hero p { display: none; }
+    .job-edit-page .job-edit-context { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .job-edit-page .job-edit-back { width: auto; }
+    .job-edit-page .order-info-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+    }
+    .job-edit-page .order-info-grid .form-label:not(:first-child) { margin-top: 4px; }
+    .job-edit-page .label-specifications-grid,
+    .job-edit-page .workflow-fields-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .job-edit-page .job-edit-section-hint { display: none; }
+    .job-edit-page.job-edit-roll .roll-pantone-inputs {
+        grid-template-columns: minmax(0, 1fr) 56px;
+    }
+    .job-edit-page.job-edit-roll .roll-pantone-add { grid-column: 1 / -1; }
+    .job-edit-page.job-edit-roll .orientation-grid-four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .job-edit-page.job-edit-roll .orientation-grid-four .orientation-picture { height: 90px; }
+    .job-edit-page .job-edit-save-bar { padding: 8px; }
+}
+@media (max-width: 360px) {
+    .job-edit-page .label-specifications-grid,
+    .job-edit-page .workflow-fields-grid { grid-template-columns: minmax(0, 1fr); }
+}
