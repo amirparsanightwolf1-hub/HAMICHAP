@@ -1,0 +1,48 @@
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Authorization
+@using HamiChap_MES_ERP.Services
+@inject WarehouseRequestService Requests
+@inject AuthenticationStateProvider Auth
+@inject LocalizationService L
+@inject ILogger<WarehouseRequestIndicator> Logger
+
+@if (count > 0)
+{
+    <a href="/inventory/material-requests" class="btn btn-outline-primary btn-sm" title="@Label" aria-label="@Label" role="status">
+        <i class="bi bi-bell" aria-hidden="true"></i> <span class="badge bg-primary">@count</span>
+    </a>
+}
+@code {
+    private readonly CancellationTokenSource stop = new();
+    private int count;
+    private string Label => L.IsPersian ? $"درخواست‌های مواد: {count}" : $"Open material requests: {count}";
+
+    protected override Task OnInitializedAsync()
+    {
+        _ = PollAsync(stop.Token);
+        return Task.CompletedTask;
+    }
+
+    private async Task PollAsync(CancellationToken token)
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+            do
+            {
+                try
+                {
+                    var user = (await Auth.GetAuthenticationStateAsync()).User;
+                    var next = await Requests.PendingCountAsync(user, token);
+                    if (!token.IsCancellationRequested && next != count)
+                        await InvokeAsync(() => { count = next; StateHasChanged(); });
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { break; }
+                catch (Exception ex) { Logger.LogWarning(ex, "Could not check warehouse request count"); }
+            } while (await timer.WaitForNextTickAsync(token));
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    public void Dispose() { stop.Cancel(); stop.Dispose(); }
+}

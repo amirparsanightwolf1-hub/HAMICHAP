@@ -1,0 +1,150 @@
+@page "/inventory/material-requests"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using HamiChap_MES_ERP.Services
+@using static HamiChap_MES_ERP.Services.WarehouseRequestService
+@inject WarehouseRequestService Requests
+@inject AuthenticationStateProvider Auth
+@inject LocalizationService L
+@inject ILogger<MaterialRequests> Logger
+
+<PageTitle>@T("Material requests", "درخواست‌های مواد")</PageTitle>
+<div class="page-container inventory-page">
+    <header class="erp-page-header hc-standard-header">
+        <div class="hc-heading-content">
+            <span class="hc-heading-icon"><i class="bi bi-inbox" aria-hidden="true"></i></span>
+            <div><h1 class="erp-page-title">@T("Warehouse work queue", "صف کار انبار")</h1>
+                <p class="erp-page-subtitle">@T("Issue requested materials directly to the production floor.", "مواد درخواستی را مستقیماً به سالن تولید تحویل دهید.")</p></div>
+        </div>
+        <button type="button" class="btn btn-outline-primary" disabled="@busy" @onclick="RefreshAsync"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> @L["Refresh"]</button>
+    </header>
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert @(failed ? "alert-danger" : "alert-success")" role="status">@message</div>
+    }
+    @if (loading)
+    {
+        <p role="status">@L["Loading"]</p>
+    }
+    else if (!canView)
+    {
+        <div class="alert alert-warning">@L["AccessDenied"]</div>
+    }
+    else
+    {
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button type="button" class="btn @(!history ? "btn-primary" : "btn-outline-secondary")" disabled="@busy" @onclick="() => ChangeViewAsync(false)">@T("Open requests", "درخواست‌های باز") (@openCount)</button>
+            <button type="button" class="btn @(history ? "btn-primary" : "btn-outline-secondary")" disabled="@busy" @onclick="() => ChangeViewAsync(true)">@T("History", "سوابق")</button>
+            <a class="btn btn-outline-secondary" href="/inventory/stock">@L["InventoryStock"]</a>
+            <a class="btn btn-outline-secondary" href="/inventory/documents">@L["Documents"]</a>
+        </div>
+        <div class="alert alert-info small">@T("Company-owned materials only. Stock reserved for this job is included; other jobs' reservations, expired lots and production-floor stock are excluded. Issuing is all-or-nothing.", "فقط مواد متعلق به شرکت. رزرو همین کار لحاظ می‌شود؛ رزرو سایر کارها، بچ‌های منقضی و موجودی سالن تولید لحاظ نمی‌شوند. تحویل به صورت کامل انجام می‌شود.")</div>
+        @if (rows.Count == 0)
+        {
+            <div class="card"><div class="card-body text-muted">@T("No requests in this view.", "درخواستی در این نما وجود ندارد.")</div></div>
+        }
+        @foreach (var row in rows)
+        {
+            <article class="card mb-3" @key="row.Id">
+                <div class="card-header d-flex flex-wrap align-items-start justify-content-between gap-2">
+                    <div><strong>@row.JobTitle</strong><div class="small text-muted">@row.Operation · @row.RequestedBy · @row.RequestedDate.ToString("yyyy-MM-dd HH:mm")</div><div class="small text-muted">@row.JobReference · #@row.Id</div></div>
+                    <span class="badge @(row.Status == Issued ? "bg-success" : row.Closed ? "bg-secondary" : row.CanIssue ? "bg-primary" : "bg-warning text-dark")">
+                        @(row.Status == Issued ? T("Issued", "تحویل شده") : row.Closed ? T("Job closed", "کار بسته شده") : row.Status != Requested ? row.Status : row.CanIssue ? T("Ready to issue", "آماده تحویل") : T("Stock shortage", "کسری موجودی"))
+                    </span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead><tr><th>@L["Item"]</th><th>@L["Quantity"]</th>@if (!history) { <th>@L["Available"]</th> }<th>@L["Notes"]</th></tr></thead>
+                        <tbody>
+                            @foreach (var line in row.Lines)
+                            {
+                                <tr><td>@line.Item</td><td>@line.Required.ToString("0.###") @line.Unit</td>@if (!history) { <td class="@(line.Available < line.Required ? "text-danger fw-semibold" : "text-success")">@line.Available.ToString("0.###") @line.Unit</td> }<td>@line.Notes</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @if (!history && canIssue && row.CanIssue)
+                {
+                    <div class="card-footer d-flex flex-wrap gap-2 align-items-center justify-content-end">
+                        @if (confirmId == row.Id)
+                        {
+                            <span class="small">@T("Confirm that these materials are being handed to production.", "تحویل این مواد به تولید را تأیید کنید.")</span>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@busy" @onclick="() => confirmId = null">@L["Cancel"]</button>
+                            <button type="button" class="btn btn-success btn-sm" disabled="@busy" @onclick="() => IssueAsync(row.Id)">@T("Confirm issue", "تأیید تحویل")</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-primary btn-sm" disabled="@busy" @onclick="() => confirmId = row.Id"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> @T("Issue materials", "تحویل مواد")</button>
+                        }
+                    </div>
+                }
+            </article>
+        }
+    }
+</div>
+
+@code {
+    private IReadOnlyList<RequestRow> rows = Array.Empty<RequestRow>();
+    private bool loading = true, busy, canView, canIssue, history, failed;
+    private int openCount;
+    private long? confirmId;
+    private string? message;
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
+
+    protected override Task OnInitializedAsync() => RefreshAsync();
+
+    private async Task ChangeViewAsync(bool value)
+    {
+        if (busy) return;
+        history = value;
+        confirmId = null;
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        if (busy) return;
+        busy = true;
+        try { await LoadAsync(); }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not load warehouse material requests");
+            message = T("Unable to load requests. Refresh to retry.", "بارگذاری درخواست‌ها انجام نشد. دوباره تلاش کنید.");
+            failed = true;
+        }
+        finally { loading = busy = false; }
+    }
+
+    private async Task LoadAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        canView = await Requests.CanViewAsync(user);
+        canIssue = canView && await Requests.CanIssueAsync(user);
+        if (!canView) { rows = Array.Empty<RequestRow>(); return; }
+        rows = await Requests.ReadAsync(user, history);
+        openCount = await Requests.PendingCountAsync(user);
+    }
+
+    private async Task IssueAsync(long id)
+    {
+        if (busy || !canIssue || confirmId != id) return;
+        busy = true;
+        message = null;
+        try
+        {
+            var user = (await Auth.GetAuthenticationStateAsync()).User;
+            var numbers = await Requests.IssueAsync(id, user);
+            message = T("Materials issued. Posted documents: ", "مواد تحویل شد. اسناد ثبت‌شده: ") + string.Join(", ", numbers);
+            failed = false;
+            confirmId = null;
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Warehouse issue action failed for request {RequestId}", id);
+            message = ex is InvalidOperationException ? ex.Message : T("Could not issue materials. Refresh and retry.", "تحویل مواد انجام نشد. صفحه را تازه کنید.");
+            failed = true;
+        }
+        finally { busy = false; }
+    }
+}

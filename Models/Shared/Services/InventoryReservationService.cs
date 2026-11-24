@@ -75,7 +75,7 @@ public class InventoryReservationService
                     continue;
 
                 var available =
-                    await _db.InventoryBalances
+                    await _db.InventoryBalances.UsableMaterials(DateTime.Today)
                         .Where(x =>
                             x.ItemId == line.ItemId &&
                             x.CustomerId == null)
@@ -108,7 +108,7 @@ public class InventoryReservationService
                     continue;
 
                 var balances =
-                    await _db.InventoryBalances
+                    await _db.InventoryBalances.UsableMaterials(DateTime.Today)
                         .Include(x => x.InventoryLocation)
                         .Include(x => x.InventoryLot)
                         .Where(x =>

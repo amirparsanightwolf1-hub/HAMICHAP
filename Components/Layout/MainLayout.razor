@@ -140,6 +140,12 @@
                     @if (canViewInventory)
                     {
                         <div class="menu-group-label"><i class="bi bi-boxes" aria-hidden="true"></i> @LocalizationService["Inventory"]</div>
+                        @if (canViewDocuments && canViewStock)
+                        {
+                            <a class="@NavClass("/inventory/material-requests")" href="/inventory/material-requests" @onclick="CloseMenu">
+                                <i class="bi bi-inbox" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "درخواست‌های مواد" : "Material requests")</span>
+                            </a>
+                        }
                         @if (canViewDocuments)
                         {
                             <a class="@NavClass("/inventory/documents")" href="/inventory/documents" @onclick="CloseMenu">
@@ -270,6 +276,7 @@
         </button>
 
     </div>
+            <WarehouseRequestIndicator />
             <AuthorizeView>
                 <Authorized>
                     <a class="hc-account-link" href="/Account/Manage" aria-label="@(LocalizationService.IsPersian ? "حساب کاربری" : "My account")"><i class="bi bi-person-circle" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "حساب کاربری" : "My account")</span></a>

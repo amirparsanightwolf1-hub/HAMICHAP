@@ -34,7 +34,7 @@ public class InventoryAlertService
             .Select(x => x.Id)
             .ToList();
 
-        var balances = await db.InventoryBalances
+        var balances = await db.InventoryBalances.UsableStock(DateTime.Today)
             .AsNoTracking()
             .Where(x =>
                 x.CustomerId == null &&
@@ -90,7 +90,7 @@ public class InventoryAlertService
         if (item == null || !item.EnableLowStockAlert)
             return false;
 
-        var availableQuantity = await db.InventoryBalances
+        var availableQuantity = await db.InventoryBalances.UsableStock(DateTime.Today)
             .Where(x =>
                 x.ItemId == itemId &&
                 x.CustomerId == null)
@@ -108,7 +108,7 @@ public class InventoryAlertService
         await using var db =
             await _dbFactory.CreateDbContextAsync(cancellationToken);
 
-        return await db.InventoryBalances
+        return await db.InventoryBalances.UsableStock(DateTime.Today)
             .Where(x =>
                 x.ItemId == itemId &&
                 x.CustomerId == null)

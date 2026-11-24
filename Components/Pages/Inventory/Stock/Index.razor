@@ -21,13 +21,14 @@
             <h3 class="erp-page-title">
                 @LocalizationService["InventoryStock"]
             </h3>
-            <p class="erp-page-subtitle">@(LocalizationService.IsPersian ? "جمع موجودی هر کالا و مالک در همه محل‌ها" : "Totals by item and owner across all locations")</p>
+            <p class="erp-page-subtitle">@(LocalizationService.IsPersian ? "موجودی انبارهای فعال و محصول نهایی به تفکیک کالا و مالک" : "Stock in active warehouse and finished-goods storage, by item and owner")</p>
         </div>
 
     </div>
 
     <div class="d-flex flex-wrap gap-2 mb-3">
-        <a class="btn btn-primary" href="/inventory/documents/create"><i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["CreateInventoryDocument"]</a>
+        <a class="btn btn-primary" href="/inventory/material-requests"><i class="bi bi-inbox" aria-hidden="true"></i> @(LocalizationService.IsPersian ? "درخواست‌های مواد" : "Material requests")</a>
+        <a class="btn btn-outline-primary" href="/inventory/documents/create"><i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["CreateInventoryDocument"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/stock/warehouse"><i class="bi bi-building" aria-hidden="true"></i> @LocalizationService["WarehouseStock"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/stock/lots"><i class="bi bi-box-seam" aria-hidden="true"></i> @LocalizationService["StockByLot"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/transactions"><i class="bi bi-clock-history" aria-hidden="true"></i> @LocalizationService["Transactions"]</a>
@@ -368,7 +369,7 @@
 
     private async Task LoadBalances()
     {
-        var query = Db.InventoryBalances
+        var query = Db.InventoryBalances.Stored()
             .Include(x => x.Item)
             .Include(x => x.Customer)
             .Where(x => x.OnHandQuantity > 0)
@@ -462,7 +463,7 @@
         // Low-stock alerts are based on COMPANY inventory,
         // regardless of the currently selected owner filter.
 
-        var companyBalances = await Db.InventoryBalances
+        var companyBalances = await Db.InventoryBalances.UsableStock(DateTime.Today)
             .Include(x => x.Item)
             .Where(x =>
                 x.CustomerId == null &&

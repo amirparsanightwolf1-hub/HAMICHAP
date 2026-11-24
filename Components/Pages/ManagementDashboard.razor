@@ -194,9 +194,10 @@
                 nextKpis.Add(new("ManagerWarehouseOpenRequests", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested")));
                 nextKpis.Add(new("ManagerWarehouseDraftDocuments", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Draft)));
                 nextKpis.Add(new("ManagerWarehousePostedDocuments", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Posted)));
-                nextAlerts.Add(new("ManagerWarehouseRequestsToProcess", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested"), "/inventory/documents"));
+                nextAlerts.Add(new("ManagerWarehouseRequestsToProcess", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested"), "/inventory/material-requests"));
                 nextAlerts.Add(new("ManagerWarehouseDocumentsToPost", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Draft), "/inventory/documents"));
                 nextShortcuts.AddRange(new[] {
+                    new Shortcut("ManagerWarehouseRequestsToProcess", "/inventory/material-requests"),
                     new Shortcut("Documents", "/inventory/documents"),
                     new Shortcut("InventoryStock", "/inventory/stock"),
                     new Shortcut("Items", "/inventory/items"),

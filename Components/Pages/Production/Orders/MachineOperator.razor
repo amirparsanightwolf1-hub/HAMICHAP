@@ -163,6 +163,18 @@
                         }
                         <details class="operator-action-details">
                             <summary>@L["OperatorWarehouseRequest"]</summary>
+                            @if (materialRequests.TryGetValue(step.Id, out var requestedMaterials))
+                            {
+                                <div class="operator-detail-body">
+                                    @foreach (var material in requestedMaterials)
+                                    {
+                                        <div class="operator-log-row">
+                                            <strong>@(material.Status == "Issued" ? (L.IsPersian ? "تحویل شده" : "Issued") : material.Status == "Requested" ? (L.IsPersian ? "در انتظار انبار" : "Awaiting warehouse") : material.Status)</strong>
+                                            <span>@string.Join(" · ", material.Lines.Select(x => x.Item.Name + ": " + x.Quantity.ToString("0.###") + " " + x.Unit.Symbol))</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
                             <div class="operator-detail-body">
                                 <label for="@($"item-{step.Id}")">@L["OperatorItemOrTool"]</label>
                                 <select id="@($"item-{step.Id}")" class="form-select" @bind="requestItemIds[step.Id]">
@@ -224,6 +236,42 @@
                         </div>
                         <small>@(BookingFor(step.Id)?.PlannedStart.ToString("yyyy-MM-dd HH:mm") ?? "—")</small>
                         <p>@StartBlockedReason(step)</p>
+                        @if (assignedMachineId.HasValue && BookingFor(step.Id)?.MachineId == assignedMachineId.Value)
+                        {
+                        <details class="operator-action-details">
+                            <summary>@L["OperatorWarehouseRequest"]</summary>
+                            @if (materialRequests.TryGetValue(step.Id, out var requestedMaterials))
+                            {
+                                <div class="operator-detail-body">
+                                    @foreach (var material in requestedMaterials)
+                                    {
+                                        <div class="operator-log-row">
+                                            <strong>@(material.Status == "Issued" ? (L.IsPersian ? "تحویل شده" : "Issued") : material.Status == "Requested" ? (L.IsPersian ? "در انتظار انبار" : "Awaiting warehouse") : material.Status)</strong>
+                                            <span>@string.Join(" · ", material.Lines.Select(x => x.Item.Name + ": " + x.Quantity.ToString("0.###") + " " + x.Unit.Symbol))</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            <div class="operator-detail-body">
+                                <label for="@($"item-{step.Id}")">@L["OperatorItemOrTool"]</label>
+                                <select id="@($"item-{step.Id}")" class="form-select" @bind="requestItemIds[step.Id]">
+                                    <option value="0">@L["OperatorChooseItem"]</option>
+                                    @foreach (var item in items)
+                                    {
+                                        <option value="@item.Id">@item.Name (@item.Code)</option>
+                                    }
+                                </select>
+                                <label for="@($"quantity-{step.Id}")">@L["Quantity"]</label>
+                                <input id="@($"quantity-{step.Id}")" type="number" min="0.001" step="any"
+                                       class="form-control" @bind="requestQuantities[step.Id]" />
+                                <label for="@($"notes-{step.Id}")">@L["Notes"]</label>
+                                <input id="@($"notes-{step.Id}")" class="form-control" @bind="requestNotes[step.Id]" />
+                                <button type="button" class="btn btn-outline-primary operator-touch-button"
+                                        disabled="@busy" @onclick="() => RequestItemAsync(step.Id)">@L["OperatorSubmitWarehouseRequest"]</button>
+                            </div>
+                        </details>
+
+                        }
                     </div>
                 }
             </section>
@@ -269,6 +317,7 @@
     private List<ProductionOperation> operations = new();
     private List<ProductionOrder> visibleOrders = new();
     private Dictionary<long, List<ProductionOperationEvent>> eventsByOperation = new();
+    private Dictionary<long, List<ProductionMaterialRequest>> materialRequests = new();
     private Dictionary<long, string> pauseReasons = new();
     private Dictionary<long, int> requestItemIds = new();
     private Dictionary<long, decimal> requestQuantities = new();
@@ -304,6 +353,8 @@
     {
         if (BookingFor(step.Id) == null) return L["OperatorAwaitingSchedule"];
         if (!PreviousCompleted(step)) return L["OperatorWaitingPrevious"];
+        if (materialRequests.GetValueOrDefault(step.Id)?.Any(x => x.Status == "Requested") == true)
+            return L.IsPersian ? "در انتظار تحویل مواد از انبار" : "Awaiting warehouse material issue";
         return L["OperatorWaitingMachine"];
     }
 
@@ -501,6 +552,11 @@
                 .OrderByDescending(x => x.OccurredAtUtc).ToListAsync())
                 .GroupBy(x => x.ProductionOperationId)
                 .ToDictionary(x => x.Key, x => x.ToList());
+            materialRequests = (await db.ProductionMaterialRequests.AsNoTracking().Include(x => x.Lines).ThenInclude(x => x.Item)
+                .Include(x => x.Lines).ThenInclude(x => x.Unit)
+                .Where(x => x.ProductionOperationId.HasValue && operationIds.Contains(x.ProductionOperationId.Value))
+                .OrderByDescending(x => x.RequestedDate).ToListAsync())
+                .GroupBy(x => x.ProductionOperationId!.Value).ToDictionary(x => x.Key, x => x.ToList());
             executionSchemaReady = true;
         }
         catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 208)
@@ -509,6 +565,7 @@
             // Keep the dashboard viewable without allowing unaudited actions.
             executionSchemaReady = false;
             eventsByOperation = new();
+            materialRequests = new();
         }
         foreach (var step in operations)
         {
@@ -594,6 +651,8 @@
             string reason = "";
             if (action == "Started")
             {
+                if (await db.ProductionMaterialRequests.AnyAsync(x => x.ProductionOperationId == operationId && x.Status == "Requested"))
+                    throw new InvalidOperationException(L.IsPersian ? "ابتدا مواد درخواستی باید تحویل شوند." : "Requested materials must be issued before starting.");
                 if (step.Status is not (ProductionOperationStatus.Pending or ProductionOperationStatus.Ready))
                     throw new InvalidOperationException(L["OperatorErrAlreadyStarted"]);
                 var now = DateTime.Now;
@@ -803,6 +862,7 @@
             message = L["OperatorWarehouseSubmitted"];
             isError = false;
             requestNotes[operationId] = "";
+            await ReloadAsync();
         }
         catch (Exception ex)
         {
