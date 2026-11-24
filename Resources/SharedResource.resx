@@ -3758,4 +3758,7 @@
   <data name="JobOverviewCompactFinishedItem" xml:space="preserve">
     <value>Finished product item ID</value>
   </data>
+  <data name="JobEditorQuickSave" xml:space="preserve">
+    <value>Save &amp; preview proof</value>
+  </data>
 </root>
