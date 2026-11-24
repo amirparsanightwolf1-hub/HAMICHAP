@@ -7,6 +7,9 @@ using HamiChap_MES_ERP.Models.Shared.Services;
 using HamiChap_MES_ERP.Services;
 using HamiChap_MES_ERP.Services.Imposition;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -78,12 +81,46 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = true;
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddSignInManager()
+.AddSignInManager<EmployeeSignInManager>()
 .AddDefaultTokenProviders();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .AddRequirements(new EmployeeAccessRequirement(null))
+        .Build();
+});
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, EmployeePolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, EmployeeAccessHandler>();
+
+// Keep Identity's security-stamp validator and immediately reject disabled accounts.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        await SecurityStampValidator.ValidatePrincipalAsync(context);
+        var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var factory = context.HttpContext.RequestServices.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+        await using var db = await factory.CreateDbContextAsync(context.HttpContext.RequestAborted);
+        if (userId is null || !await db.Users.AnyAsync(x => x.Id == userId && x.IsActive, context.HttpContext.RequestAborted))
+        {
+            context.RejectPrincipal();
+            await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+        }
+    };
+});
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+    options.ValidationInterval = TimeSpan.FromMinutes(1));
 
 builder.Services.AddScoped<NumberSeriesService>();
 
@@ -113,6 +150,8 @@ else
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 // PDF artwork previews are rendered locally by Docnet.Core (no external API/CDN).

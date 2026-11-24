@@ -1,51 +1,5 @@
 @page "/Account/ConfirmEmail"
-@using HamiChap_MES_ERP.Services
-@inject LocalizationService L
-
-@using System.Text
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
-@using HamiChap_MES_ERP.Data
-
-@inject UserManager<ApplicationUser> UserManager
-@inject IdentityRedirectManager RedirectManager
-
-<PageTitle>@L["Confirm email"]</PageTitle>
-
-<h1>@L["Confirm email"]</h1>
-<StatusMessage Message="@statusMessage" />
-
-@code {
-    private string? statusMessage;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromQuery]
-    private string? UserId { get; set; }
-
-    [SupplyParameterFromQuery]
-    private string? Code { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (UserId is null || Code is null)
-        {
-            RedirectManager.RedirectTo("");
-            return;
-        }
-
-        var user = await UserManager.FindByIdAsync(UserId);
-        if (user is null)
-        {
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = $"Error loading user with ID {UserId}";
-        }
-        else
-        {
-            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
-            var result = await UserManager.ConfirmEmailAsync(user, code);
-            statusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
-        }
-    }
-}
+@inject HamiChap_MES_ERP.Services.LocalizationService L
+<PageTitle>Account assistance</PageTitle>
+<p role="status">@(L.IsPersian ? "این سامانه مخصوص کارکنان است. برای ایجاد یا بازیابی حساب با مدیر سیستم تماس بگیرید." : "This ERP is for employees. Contact your administrator for account creation or recovery.")</p>
+<a href="/Account/Login">@L["Login"]</a>

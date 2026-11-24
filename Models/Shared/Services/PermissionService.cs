@@ -38,7 +38,7 @@ public class PermissionService
 
         await using var db = await _dbFactory.CreateDbContextAsync();
 
-        if (user.IsInRole(AdministratorRole))
+        if (await IsActiveAdministratorAsync(db, user))
         {
             return await db.Roles
                 .OrderBy(x => x.Name)
@@ -70,10 +70,9 @@ public class PermissionService
         if (user.Identity?.IsAuthenticated != true || string.IsNullOrWhiteSpace(targetRoleId))
             return false;
 
-        if (user.IsInRole(AdministratorRole))
-            return true;
-
         await using var db = await _dbFactory.CreateDbContextAsync();
+        if (await IsActiveAdministratorAsync(db, user))
+            return true;
         var managerRoleIds = await GetCurrentUserRoleIdsAsync(db, user);
         if (managerRoleIds.Count == 0)
             return false;
@@ -96,7 +95,7 @@ public class PermissionService
 
         await using var db = await _dbFactory.CreateDbContextAsync();
 
-        if (user.IsInRole(AdministratorRole))
+        if (await IsActiveAdministratorAsync(db, user))
         {
             return await db.Permissions
                 .OrderBy(x => x.Name)
@@ -201,10 +200,9 @@ public class PermissionService
         if (user.Identity?.IsAuthenticated != true || string.IsNullOrWhiteSpace(permissionName))
             return false;
 
-        if (user.IsInRole(AdministratorRole))
-            return true;
-
         await using var db = await _dbFactory.CreateDbContextAsync();
+        if (await IsActiveAdministratorAsync(db, user))
+            return true;
         var roleIds = await GetCurrentUserRoleIdsAsync(db, user);
         if (roleIds.Count == 0)
             return false;
@@ -222,12 +220,23 @@ public class PermissionService
     /// own DbContext. This avoids UserManager/RoleManager sharing the circuit's
     /// scoped Identity DbContext with other concurrent component operations.
     /// </summary>
+    private static async Task<bool> IsActiveAdministratorAsync(ApplicationDbContext db, ClaimsPrincipal user)
+    {
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId)) return false;
+        return await (from account in db.Users
+                      join membership in db.UserRoles on account.Id equals membership.UserId
+                      join role in db.Roles on membership.RoleId equals role.Id
+                      where account.Id == userId && account.IsActive && role.NormalizedName == "ADMINISTRATOR"
+                      select account.Id).AnyAsync();
+    }
+
     private static async Task<List<string>> GetCurrentUserRoleIdsAsync(
         ApplicationDbContext db,
         ClaimsPrincipal user)
     {
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrWhiteSpace(userId))
+        if (string.IsNullOrWhiteSpace(userId) || !await db.Users.AnyAsync(x => x.Id == userId && x.IsActive))
             return new List<string>();
 
         var roleIds = await db.UserRoles
