@@ -64,7 +64,9 @@
                             <tr>
                                 <th>@LocalizationService["Code"]</th>
                                 <th>@LocalizationService["Name"]</th>
+                                <th>@T("Type", "نوع")</th>
                                 <th>@LocalizationService["Phone"]</th>
+                                <th>@T("Mobile", "همراه")</th>
                                 <th>@LocalizationService["Status"]</th>
                                 <th>@LocalizationService["Inventory"]</th>
                             </tr>
@@ -88,8 +90,10 @@
                                     </td>
 
                                     <td>
-                                        @customer.Phone
+                                        @TypeLabel(customer.CustomerType)
                                     </td>
+                                    <td>@customer.Phone</td>
+                                    <td>@customer.Mobile</td>
 
                                     <td>
 
@@ -110,6 +114,7 @@
 
                                     <td>
 
+                                        <a class="btn btn-sm btn-outline-secondary me-1" href="@($"/customers/{customer.Id}/edit")">@T("Edit", "ویرایش")</a>
                                         <button type="button"
                                                 class="btn btn-sm btn-primary"
                                                 @onclick="() => OpenInventory(customer.Id)">
@@ -179,6 +184,14 @@
 </div>
 
 @code {
+
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private string TypeLabel(CustomerType type) => type switch
+    {
+        CustomerType.Natural => T("Individual", "حقیقی"),
+        CustomerType.Legal => T("Company", "حقوقی"),
+        _ => T("Not classified", "تعیین نشده")
+    };
 
     private const int pageSize = 20;
 

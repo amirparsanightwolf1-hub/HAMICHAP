@@ -3,6 +3,7 @@
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Components.Pages.Customers
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Services
 @using Microsoft.EntityFrameworkCore
@@ -119,24 +120,7 @@
                 }
                 else
                 {
-                    <div class="job-create-fields-grid">
-                        <div class="job-create-field">
-                            <label for="job-create-name">@LocalizationService["CustomerName"] <span class="job-create-required">*</span></label>
-                            <InputText id="job-create-name" class="form-control" @bind-Value="newCustomerName" />
-                        </div>
-                        <div class="job-create-field">
-                            <label for="job-create-phone">@LocalizationService["Phone"]</label>
-                            <InputText id="job-create-phone" class="form-control" type="tel" @bind-Value="newCustomerPhone" />
-                        </div>
-                        <div class="job-create-field">
-                            <label for="job-create-email">@LocalizationService["Email"]</label>
-                            <InputText id="job-create-email" class="form-control" type="email" @bind-Value="newCustomerEmail" />
-                        </div>
-                        <div class="job-create-field job-create-field-full">
-                            <label for="job-create-address">@LocalizationService["Address"]</label>
-                            <InputText id="job-create-address" class="form-control" @bind-Value="newCustomerAddress" />
-                        </div>
-                    </div>
+                    <CustomerProfileFields Profile="newCustomerProfile" IdPrefix="sales-new-customer" Changed="StateHasChanged" />
                 }
             </section>
 
@@ -255,10 +239,7 @@
     private bool isSaving;
     private bool isCreatingCustomer;
 
-    private string newCustomerName = "";
-    private string newCustomerPhone = "";
-    private string newCustomerEmail = "";
-    private string newCustomerAddress = "";
+    private Customer newCustomerProfile = new() { CustomerType = CustomerType.Natural };
 
     private string? errorMessage;
 
@@ -291,10 +272,7 @@
     {
         isCreatingCustomer = true;
 
-        newCustomerName = "";
-        newCustomerPhone = "";
-        newCustomerEmail = "";
-        newCustomerAddress = "";
+        newCustomerProfile = new Customer { CustomerType = CustomerType.Natural };
 
         errorMessage = null;
     }
@@ -325,7 +303,13 @@
             return;
         }
 
-        if (isCreatingCustomer && string.IsNullOrWhiteSpace(newCustomerName))
+        if (isCreatingCustomer && newCustomerProfile.CustomerType is not (CustomerType.Natural or CustomerType.Legal))
+        {
+            errorMessage = LocalizationService.IsPersian ? "نوع مشتری را انتخاب کنید." : "Select customer type.";
+            return;
+        }
+
+        if (isCreatingCustomer && string.IsNullOrWhiteSpace(newCustomerProfile.Name))
         {
             errorMessage =
                 LocalizationService["CustomerNameIsRequired"];
@@ -352,15 +336,8 @@
             {
                 var code = await CustomerCodeGenerator.GenerateAsync(Db);
 
-                var newCustomer = new Customer
-                {
-                    Code = code,
-                    Name = newCustomerName.Trim(),
-                    Phone = newCustomerPhone.Trim(),
-                    Email = newCustomerEmail.Trim(),
-                    Address = newCustomerAddress.Trim(),
-                    IsActive = true
-                };
+                var newCustomer = new Customer { Code = code, IsActive = true };
+                newCustomerProfile.CopyProfileTo(newCustomer);
 
                 Db.Customers.Add(newCustomer);
 
@@ -400,9 +377,9 @@
     private string GetCustomerSummary()
     {
         if (isCreatingCustomer)
-            return string.IsNullOrWhiteSpace(newCustomerName)
+            return string.IsNullOrWhiteSpace(newCustomerProfile.Name)
                 ? LocalizationService["NewCustomer"]
-                : newCustomerName.Trim();
+                : newCustomerProfile.Name.Trim();
 
         return customers.FirstOrDefault(x => x.Id == customerId)?.Name
             ?? LocalizationService["SelectCustomer"];

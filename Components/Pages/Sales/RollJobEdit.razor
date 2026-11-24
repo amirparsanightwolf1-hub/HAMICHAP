@@ -4,6 +4,7 @@
 @using System.Text.Json.Nodes
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Components.Pages.Customers
 @using HamiChap_MES_ERP.Models.Sales
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using Microsoft.EntityFrameworkCore
@@ -72,7 +73,7 @@
             </div>
             <div class="job-edit-context-field">
                 <span>@LocalizationService["Customer"]</span>
-                <strong>@(isCreatingCustomer ? newCustomerName : customers.FirstOrDefault(c => c.Id == selectedCustomerId)?.Name ?? request.Customer?.Name ?? "—")</strong>
+                <strong>@(isCreatingCustomer ? newCustomerProfile.Name : customers.FirstOrDefault(c => c.Id == selectedCustomerId)?.Name ?? request.Customer?.Name ?? "—")</strong>
             </div>
             <div class="job-edit-context-field">
                 <span>@LocalizationService["JobTitle"]</span>
@@ -136,17 +137,7 @@
 
                     @if (isCreatingCustomer)
                     {
-                        <label class="form-label">@LocalizationService["CustomerNameRequired"]</label>
-                        <InputText class="form-control" @bind-Value="newCustomerName" />
-
-                        <label class="form-label">@LocalizationService["Phone"]</label>
-                        <InputText class="form-control" @bind-Value="newCustomerPhone" />
-
-                        <label class="form-label">@LocalizationService["Email"]</label>
-                        <InputText class="form-control" @bind-Value="newCustomerEmail" />
-
-                        <label class="form-label">@LocalizationService["Address"]</label>
-                        <InputText class="form-control" @bind-Value="newCustomerAddress" />
+                        <div style="grid-column:1 / -1"><CustomerProfileFields Profile="newCustomerProfile" IdPrefix="roll-new-customer" Changed="StateHasChanged" /></div>
                     }
 
                     <label class="form-label">@LocalizationService["JobTitle"]</label>
@@ -461,10 +452,7 @@
     private List<Customer> customers = new();
     private int selectedCustomerId;
     private bool isCreatingCustomer;
-    private string newCustomerName = "";
-    private string newCustomerPhone = "";
-    private string newCustomerEmail = "";
-    private string newCustomerAddress = "";
+    private Customer newCustomerProfile = new() { CustomerType = CustomerType.Natural };
     private RollJobSpecification spec = new();
     private bool isLoading = true;
     private bool isSaving;
@@ -613,10 +601,7 @@
     {
 
         isCreatingCustomer = true;
-        newCustomerName = "";
-        newCustomerPhone = "";
-        newCustomerEmail = "";
-        newCustomerAddress = "";
+        newCustomerProfile = new Customer { CustomerType = CustomerType.Natural };
         errorMessage = null;
     }
 
@@ -838,20 +823,15 @@
 
             if (isCreatingCustomer)
             {
-                if (string.IsNullOrWhiteSpace(newCustomerName))
+                if (newCustomerProfile.CustomerType is not (CustomerType.Natural or CustomerType.Legal))
+                    throw new InvalidOperationException(LocalizationService.IsPersian ? "نوع مشتری را انتخاب کنید." : "Select customer type.");
+                if (string.IsNullOrWhiteSpace(newCustomerProfile.Name))
                     throw new InvalidOperationException(LocalizationService["CustomerNameIsRequired"]);
 
                 var code = await CustomerCodeGenerator.GenerateAsync(Db);
 
-                var newCustomer = new Customer
-                {
-                    Code = code,
-                    Name = newCustomerName.Trim(),
-                    Phone = newCustomerPhone.Trim(),
-                    Email = newCustomerEmail.Trim(),
-                    Address = newCustomerAddress.Trim(),
-                    IsActive = true
-                };
+                var newCustomer = new Customer { Code = code, IsActive = true };
+                newCustomerProfile.CopyProfileTo(newCustomer);
 
                 Db.Customers.Add(newCustomer);
                 await Db.SaveChangesAsync();

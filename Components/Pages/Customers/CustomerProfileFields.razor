@@ -1,0 +1,80 @@
+@using HamiChap_MES_ERP.Models.Customers
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService LocalizationService
+
+<div class="row g-3">
+    <div class="col-12">
+        <label class="form-label" for="@(IdPrefix + "-type")">@T("Customer type", "نوع مشتری") *</label>
+        <InputSelect id="@(IdPrefix + "-type")" class="form-select" @bind-Value="Profile.CustomerType">
+            <option value="@CustomerType.Unspecified">@T("Select customer type", "انتخاب نوع مشتری")</option>
+            <option value="@CustomerType.Natural">@T("Individual / Natural person", "شخص حقیقی")</option>
+            <option value="@CustomerType.Legal">@T("Company / Legal entity", "شخص حقوقی")</option>
+        </InputSelect>
+    </div>
+    <div class="col-12">
+        <label class="form-label" for="@(IdPrefix + "-name")">@(Profile.CustomerType == CustomerType.Legal ? T("Registered company name", "نام ثبتی شرکت") : T("Full name", "نام و نام خانوادگی")) *</label>
+        <input id="@(IdPrefix + "-name")" class="form-control" @bind="Profile.Name" @bind:event="oninput" @bind:after="NotifyChanged" />
+    </div>
+    @if (Profile.CustomerType == CustomerType.Natural)
+    {
+        <div class="col-md-6">
+            <label class="form-label" for="@(IdPrefix + "-national-id")">@T("National ID number", "کد ملی")</label>
+            <InputText id="@(IdPrefix + "-national-id")" class="form-control" dir="ltr" inputmode="numeric" @bind-Value="Profile.NationalId" />
+        </div>
+    }
+    else if (Profile.CustomerType == CustomerType.Legal)
+    {
+        <div class="col-md-6">
+            <label class="form-label" for="@(IdPrefix + "-national-code")">@T("National code / company ID", "شناسه ملی")</label>
+            <InputText id="@(IdPrefix + "-national-code")" class="form-control" dir="ltr" inputmode="numeric" @bind-Value="Profile.NationalCode" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="@(IdPrefix + "-economic-code")">@T("Financial / economic code", "کد اقتصادی")</label>
+            <InputText id="@(IdPrefix + "-economic-code")" class="form-control" dir="ltr" @bind-Value="Profile.EconomicCode" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="@(IdPrefix + "-registration")">@T("Registration number", "شماره ثبت")</label>
+            <InputText id="@(IdPrefix + "-registration")" class="form-control" dir="ltr" @bind-Value="Profile.RegistrationNumber" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="@(IdPrefix + "-contact")">@T("Contact person", "نام رابط شرکت")</label>
+            <InputText id="@(IdPrefix + "-contact")" class="form-control" @bind-Value="Profile.ContactPerson" />
+        </div>
+    }
+    <div class="col-md-6">
+        <label class="form-label" for="@(IdPrefix + "-phone")">@T("Landline phone", "تلفن ثابت")</label>
+        <InputText id="@(IdPrefix + "-phone")" class="form-control" type="tel" dir="ltr" @bind-Value="Profile.Phone" />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" for="@(IdPrefix + "-mobile")">@T("Mobile number", "تلفن همراه")</label>
+        <InputText id="@(IdPrefix + "-mobile")" class="form-control" type="tel" dir="ltr" @bind-Value="Profile.Mobile" />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" for="@(IdPrefix + "-email")">@T("Email address", "ایمیل")</label>
+        <InputText id="@(IdPrefix + "-email")" class="form-control" type="email" dir="ltr" @bind-Value="Profile.Email" />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" for="@(IdPrefix + "-postal")">@T("Postal / ZIP code", "کد پستی")</label>
+        <InputText id="@(IdPrefix + "-postal")" class="form-control" dir="ltr" @bind-Value="Profile.PostalCode" />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" for="@(IdPrefix + "-province")">@T("Province / state", "استان")</label>
+        <InputText id="@(IdPrefix + "-province")" class="form-control" @bind-Value="Profile.Province" />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" for="@(IdPrefix + "-city")">@T("City", "شهر")</label>
+        <InputText id="@(IdPrefix + "-city")" class="form-control" @bind-Value="Profile.City" />
+    </div>
+    <div class="col-12">
+        <label class="form-label" for="@(IdPrefix + "-address")">@T("Full address", "نشانی کامل")</label>
+        <InputText id="@(IdPrefix + "-address")" class="form-control" @bind-Value="Profile.Address" />
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Customer Profile { get; set; } = new();
+    [Parameter] public string IdPrefix { get; set; } = "customer";
+    [Parameter] public EventCallback Changed { get; set; }
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private Task NotifyChanged() => Changed.InvokeAsync();
+}

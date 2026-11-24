@@ -1,103 +1,109 @@
-﻿@page "/customers/create"
-
+@page "/customers/create"
+@page "/customers/{CustomerId:int}/edit"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Models.Customers
 @using HamiChap_MES_ERP.Data
-
 @attribute [Authorize]
-
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
 
-<PageTitle>@LocalizationService["CreateCustomer"]</PageTitle>
-
-<h3>@LocalizationService["CreateCustomer"]</h3>
-
-<EditForm Model="customer"
-          OnValidSubmit="Save">
-
-    <DataAnnotationsValidator />
-
-    <p class="text-muted small">@(LocalizationService.IsPersian ? "کد مشتری هنگام ذخیره به صورت خودکار ایجاد می‌شود." : "Customer code is generated automatically when saved.")</p>
+<PageTitle>@Heading</PageTitle>
+<div class="page-container">
+    <h3>@Heading</h3>
     @if (errorMessage is not null)
     {
         <div class="alert alert-danger" role="alert">@errorMessage</div>
     }
-
-    <div class="mb-3">
-        <label class="form-label">
-            @LocalizationService["Name"]
-        </label>
-
-        <InputText class="form-control"
-                   @bind-Value="customer.Name" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">
-            @LocalizationService["Phone"]
-        </label>
-
-        <InputText class="form-control"
-                   @bind-Value="customer.Phone" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">
-            @LocalizationService["Email"]
-        </label>
-
-        <InputText class="form-control"
-                   @bind-Value="customer.Email" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">
-            @LocalizationService["Address"]
-        </label>
-
-        <InputText class="form-control"
-                   @bind-Value="customer.Address" />
-    </div>
-
-    <button type="submit"
-            class="btn btn-primary" disabled="@isSaving">
-        @LocalizationService["SaveCustomer"]
-    </button>
-
-</EditForm>
+    @if (loading)
+    {
+        <p>@LocalizationService["Loading"]</p>
+    }
+    else if (customer is not null)
+    {
+        <EditForm Model="customer" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+            <div class="card mb-3"><div class="card-body">
+                @if (CustomerId.HasValue)
+                {
+                    <p class="small text-muted">@LocalizationService["Code"]: @customer.Code</p>
+                }
+                else
+                {
+                    <p class="small text-muted">@T("Customer code is generated automatically when saved.", "کد مشتری هنگام ذخیره به صورت خودکار ایجاد می‌شود.")</p>
+                }
+                <CustomerProfileFields Profile="customer" IdPrefix="customer-profile" />
+            </div></div>
+            <button type="submit" class="btn btn-primary" disabled="@isSaving">@LocalizationService["SaveCustomer"]</button>
+            <a href="/customers" class="btn btn-outline-secondary">@T("Cancel", "انصراف")</a>
+        </EditForm>
+    }
+</div>
 
 @code {
-
-    private Customer customer = new();
+    [Parameter] public int? CustomerId { get; set; }
+    private Customer? customer;
+    private bool loading = true;
     private bool isSaving;
     private string? errorMessage;
+    private string Heading => CustomerId.HasValue ? T("Edit customer", "ویرایش مشتری") : LocalizationService["CreateCustomer"];
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        loading = true;
+        errorMessage = null;
+        customer = CustomerId.HasValue
+            ? await Db.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == CustomerId.Value)
+            : new Customer { CustomerType = CustomerType.Natural };
+        if (customer is null) errorMessage = T("Customer not found.", "مشتری یافت نشد.");
+        loading = false;
+    }
 
     private async Task Save()
     {
-        if (isSaving) return;
+        if (isSaving || customer is null) return;
         errorMessage = null;
+        if (customer.CustomerType is not (CustomerType.Natural or CustomerType.Legal))
+        {
+            errorMessage = T("Select customer type.", "نوع مشتری را انتخاب کنید.");
+            return;
+        }
         if (string.IsNullOrWhiteSpace(customer.Name))
         {
             errorMessage = LocalizationService["CustomerNameIsRequired"];
             return;
         }
+        Customer? target = null;
         try
         {
             isSaving = true;
-            customer.Name = customer.Name.Trim();
-            customer.Code = await CustomerCodeGenerator.GenerateAsync(Db);
-            Db.Customers.Add(customer);
+            if (CustomerId.HasValue)
+            {
+                target = await Db.Customers.FirstOrDefaultAsync(x => x.Id == CustomerId.Value);
+                if (target is null) throw new InvalidOperationException(T("Customer not found.", "مشتری یافت نشد."));
+                Db.Entry(target).Property(x => x.RowVersion).OriginalValue = customer.RowVersion;
+            }
+            else
+            {
+                target = new Customer { Code = await CustomerCodeGenerator.GenerateAsync(Db) };
+                Db.Customers.Add(target);
+            }
+            customer.CopyProfileTo(target);
             await Db.SaveChangesAsync();
             Navigation.NavigateTo("/customers");
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (target is not null) Db.Entry(target).State = EntityState.Detached;
+            errorMessage = T("Customer was changed elsewhere. Reload before editing.", "اطلاعات مشتری تغییر کرده است. صفحه را دوباره بارگذاری کنید.");
+        }
         catch (Exception)
         {
-            Db.Entry(customer).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
-            errorMessage = LocalizationService.IsPersian ? "ذخیره مشتری انجام نشد. دوباره تلاش کنید." : "Customer could not be saved. Please try again.";
+            if (target is not null) Db.Entry(target).State = EntityState.Detached;
+            errorMessage = T("Customer could not be saved. Please try again.", "ذخیره مشتری انجام نشد. دوباره تلاش کنید.");
         }
         finally { isSaving = false; }
     }
-
 }
