@@ -77,7 +77,7 @@
                         @foreach (var order in salesOrders)
                         {
                             <option value="@order.Id">
-                                @HamiChap_MES_ERP.Models.Sales.JobReferences.Display(order.Quotation) (@order.OrderNumber) -
+                                @HamiChap_MES_ERP.Models.Sales.JobReferences.Label(order.Quotation, order.OrderNumber) (@order.OrderNumber) -
                                 @order.Customer?.Name
                             </option>
                         }

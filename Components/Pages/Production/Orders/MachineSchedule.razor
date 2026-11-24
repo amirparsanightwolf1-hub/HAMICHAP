@@ -70,7 +70,7 @@
                             <div class="queue-order @(selectedOrderId == order.Id ? "queue-order-selected" : "")"
                                  @onclick="() => SelectOrder(order.Id)">
                                 <div class="d-flex justify-content-between gap-2">
-                                    <strong>@order.OrderNumber</strong>
+                                    <strong>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(order)<small class="text-muted d-block">@order.OrderNumber</small></strong>
                                     <small>@(IsSequenceConfirmed(order) && order.PlannedStartDate.HasValue ? L["Scheduled"] : L["Unscheduled"])</small>
                                 </div>
                                 <div class="small text-muted">@order.SalesOrder?.Customer?.Name</div>
@@ -106,7 +106,7 @@
                     <div class="card mb-3">
                         <div class="card-header"><strong>@L["SplitOrderIntoOperations"]</strong></div>
                         <div class="card-body">
-                            <strong>@orderForEdit.OrderNumber</strong>
+                            <strong>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(orderForEdit)</strong><small class="text-muted d-block">@orderForEdit.OrderNumber</small>
                             <div class="small text-muted mt-2">@L["CeoWindow"]: @FormatDateTime(orderForEdit.PlannedStartDate) – @FormatDateTime(orderForEdit.PlannedEndDate)</div>
                             <div class="manager-duration-budget mt-2">
                                 <div>@L["MachineDuration"]: <strong>@DurationLabel(AllocatedMinutes)</strong></div>
@@ -298,7 +298,7 @@
                             @if (SelectedOperation is ProductionOperation selected)
                             {
                                 <strong>@L["SelectedOperation"]:</strong>
-                                <span>@selected.ProductionOrder.OrderNumber · @selected.Name · @(selected.IsOutsourced ? L["OutsourcedOperation"] : MachineName(selected))</span>
+                                <span>@QueueJobTitle(selected.ProductionOrder) · @selected.Name · @(selected.IsOutsourced ? L["OutsourcedOperation"] : MachineName(selected))</span>
                                 <span class="small text-muted">(@DurationLabel(OperationMinutes(selected)))</span>
                             }
                             else
@@ -328,7 +328,7 @@
                                                  title="@OrderTooltip(order)"
                                                  @onclick:stopPropagation="true"
                                                  @onclick="() => SelectOrder(order.Id)">
-                                                @order.OrderNumber
+                                                @HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(order)
                                             </div>
                                         }
                                         @foreach (var schedule in SchedulesForDate(date))
@@ -337,7 +337,7 @@
                                                  title="@OperationTooltip(schedule)"
                                                  @onclick:stopPropagation="true"
                                                  @onclick="() => SelectOperation(schedule.ProductionOperationId)">
-                                                @schedule.ProductionOperation.ProductionOrder.OrderNumber
+                                                @QueueJobTitle(schedule.ProductionOperation.ProductionOrder)
                                                 · #@schedule.ProductionOperation.Sequence
                                                 · @schedule.Machine.Name
                                                 · @schedule.ProductionOperation.Name
@@ -375,7 +375,7 @@
                                                          @onclick:stopPropagation="true"
                                                          @onclick="() => SelectOrder(order.Id)"
                                                          title="@OrderTooltip(order)">
-                                                        @order.OrderNumber
+                                                        @HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(order)
                                                     </div>
                                                 }
                                                 @foreach (var schedule in SchedulesForHour(date, hour))
@@ -384,7 +384,7 @@
                                                          @onclick:stopPropagation="true"
                                                          @onclick="() => SelectOperation(schedule.ProductionOperationId)"
                                                          title="@OperationTooltip(schedule)">
-                                                        @schedule.ProductionOperation.ProductionOrder.OrderNumber · #@schedule.ProductionOperation.Sequence · @schedule.Machine.Name
+                                                        @QueueJobTitle(schedule.ProductionOperation.ProductionOrder) · #@schedule.ProductionOperation.Sequence · @schedule.Machine.Name
                                                         <small>@schedule.ProductionOperation.Name · @DurationLabel(OperationMinutes(schedule.ProductionOperation))</small>
                                                     </div>
                                                 }
@@ -434,7 +434,7 @@
                                                         <button type="button" class="machine-workload-chip"
                                                                 title="@OperationTooltip(booking)"
                                                                 @onclick="() => SelectOperation(booking.ProductionOperationId)">
-                                                            <strong>@booking.ProductionOperation.ProductionOrder.OrderNumber</strong>
+                                                            <strong>@QueueJobTitle(booking.ProductionOperation.ProductionOrder)</strong>
                                                             <span>@booking.ProductionOperation.Name</span>
                                                             @if (viewMode == CalendarView.Day)
                                                             {
@@ -863,11 +863,14 @@
     private string ScheduleColor(ProductionSchedule schedule) =>
         "order-" + ShiftClass(schedule.PlannedStart.Hour);
 
+    private string QueueJobTitle(ProductionOrder order) =>
+        HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(orders.FirstOrDefault(x => x.Id == order.Id) ?? order);
+
     private string OrderTooltip(ProductionOrder order) =>
-        order.OrderNumber + " | " + order.SalesOrder?.Customer?.Name +
+        HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(order) + " | " + order.OrderNumber + " | " + order.SalesOrder?.Customer?.Name +
         " | " + FormatDateTime(order.PlannedStartDate) + " – " + FormatDateTime(order.PlannedEndDate);
     private string OperationTooltip(ProductionSchedule schedule) =>
-        schedule.ProductionOperation.Name + " | " + schedule.Machine.Name + " | " +
+        QueueJobTitle(schedule.ProductionOperation.ProductionOrder) + " | " + schedule.ProductionOperation.ProductionOrder.OrderNumber + " | " + schedule.ProductionOperation.Name + " | " + schedule.Machine.Name + " | " +
         FormatDateTime(schedule.PlannedStart) + " – " + FormatDateTime(schedule.PlannedEnd);
 
     private IEnumerable<ProductionOrder> OrdersForDate(DateTime date) =>
@@ -1155,7 +1158,7 @@
                 if (stageList.Count == 0 || stageList.Where((step, index) => step.Sequence != index + 1).Any() ||
                     stageList.Any(x => x.PlannedHours <= 0 || string.IsNullOrWhiteSpace(x.Name)))
                 {
-                    ShowError(order.OrderNumber + ": " + L["InvalidOperationSequence"]);
+                    ShowError(HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(order) + ": " + L["InvalidOperationSequence"]);
                     return;
                 }
                 var deadline = DeliveryDeadline(order);
@@ -1170,7 +1173,7 @@
                             CompatibleWithStage, out var laterPlan, out _, now, horizon))
                         extra = " " + T("Earliest feasible finish with this queue:", "زودترین پایان ممکن با این صف:") +
                             " " + FormatDateTime(laterPlan.Max(x => x.End));
-                    ShowError(order.OrderNumber + ": " + T("Cannot fit the queue. Review estimates, priorities or negotiate delivery.", "صف قابل زمان‌بندی نیست. زمان‌ها، اولویت‌ها یا تاریخ تحویل را بررسی کنید.") + extra + " " + error);
+                    ShowError(HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(order) + ": " + T("Cannot fit the queue. Review estimates, priorities or negotiate delivery.", "صف قابل زمان‌بندی نیست. زمان‌ها، اولویت‌ها یا تاریخ تحویل را بررسی کنید.") + extra + " " + error);
                     return;
                 }
                 plans.Add((order, stageList, plan));

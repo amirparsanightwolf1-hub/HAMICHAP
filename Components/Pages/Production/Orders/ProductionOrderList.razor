@@ -88,7 +88,7 @@
 
                         <thead>
                             <tr>
-                                <th>@(LocalizationService.IsPersian ? "شماره کار" : "Job number") / @L["OrderNumber"]</th>
+                                <th>@L["JobTitle"] / @L["OrderNumber"]</th>
                                 <th>@L["SalesOrder"]</th>
                                 <th>@L["Status"]</th>
                                 <th>@L["Created"]</th>
@@ -111,7 +111,7 @@
 
                                     <td data-label="@L["OrderNumber"]">
                                         <strong>
-                                            <div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(order.SalesOrder?.Quotation)</div><small class="text-muted d-block">@order.OrderNumber</small>
+                                            <div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(order)</div><small class="text-muted d-block">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(order.SalesOrder?.Quotation) · @order.OrderNumber</small>
                                         </strong>
                                     </td>
 
@@ -180,7 +180,7 @@
         .Where(x => (string.IsNullOrWhiteSpace(statusFilter) || x.Status.ToString() == statusFilter) &&
             (string.IsNullOrWhiteSpace(searchText) || x.OrderNumber.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
              (x.SalesOrder?.OrderNumber?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
-             HamiChap_MES_ERP.Models.Sales.JobReferences.Display(x.SalesOrder?.Quotation).Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase)))
+             HamiChap_MES_ERP.Models.Sales.JobReferences.Label(x.SalesOrder?.Quotation).Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase)))
         .ToList();
 
     private void ClearFilters() { searchText = ""; statusFilter = ""; }

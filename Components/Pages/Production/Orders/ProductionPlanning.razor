@@ -59,7 +59,7 @@
                                  @ondragstart="() => StartDrag(order.Id)"
                                  @onclick="() => SelectOrder(order.Id)">
                                 <div class="d-flex justify-content-between gap-2">
-                                    <strong>@order.OrderNumber</strong>
+                                    <strong>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(order)<small class="text-muted d-block">@order.OrderNumber</small></strong>
                                     <small>@(order.PlannedStartDate.HasValue ? "Scheduled" : "Unscheduled")</small>
                                 </div>
                                 <div class="small text-muted">@order.SalesOrder?.Customer?.Name</div>
@@ -84,7 +84,7 @@
                         else
                         {
                             <div class="mb-3">
-                                <strong>@selectedOrder.OrderNumber</strong>
+                                <strong>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(selectedOrder)</strong><small class="text-muted d-block">@selectedOrder.OrderNumber</small>
                                 <label class="form-label mt-2">@L["Estimated duration (hours)"]</label>
                                 <input type="number" class="form-control" min="0.25" step="0.25" @bind="estimatedDurationHours" />
                             </div>
@@ -151,7 +151,7 @@
                                          @ondragstart="() => StartDrag(order.Id)"
                                          @onclick:stopPropagation="true"
                                          @onclick="() => SelectOrder(order.Id)">
-                                        @order.OrderNumber
+                                        @HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(order)
                                     </div>
                                 }
                             </div>
@@ -192,7 +192,7 @@
                                                  @ondragstart="() => StartDrag(order.Id)"
                                                  @onclick:stopPropagation="true"
                                                  @onclick="() => SelectOrder(order.Id)">
-                                                @order.OrderNumber
+                                                @HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(order)
                                             </div>
                                         }
                                     </div>
@@ -494,6 +494,8 @@
     {
         orderQueue = await Db.ProductionOrders.AsNoTracking()
             .Include(x => x.SalesOrder).ThenInclude(x => x.Customer)
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest).AsSplitQuery()
             .Where(x => x.Status != ProductionOrderStatus.Cancelled)
             .OrderBy(x => x.PlannedStartDate == null ? 0 : 1)
             .ThenBy(x => x.PlannedStartDate)
@@ -554,7 +556,7 @@
     }
 
     private string OrderTooltip(ProductionOrder order) =>
-        $"{order.OrderNumber} | {order.SalesOrder?.Customer?.Name} | {FormatJalaliDateTime(order.PlannedStartDate)} – {FormatJalaliDateTime(order.PlannedEndDate)}";
+        $"{HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(order)} | {order.OrderNumber} | {order.SalesOrder?.Customer?.Name} | {FormatJalaliDateTime(order.PlannedStartDate)} – {FormatJalaliDateTime(order.PlannedEndDate)}";
 
     private enum CalendarView { Month, Week, Day }
 }

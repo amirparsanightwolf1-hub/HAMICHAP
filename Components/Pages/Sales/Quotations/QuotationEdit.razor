@@ -57,7 +57,7 @@
                     <div class="quotation-workspace-eyebrow">@LocalizationService["QuotationEditorTitle"]</div>
                     <h1>@LocalizationService["Quotation"]</h1>
                     <div class="quotation-workspace-hero-meta">
-                        <span class="quotation-workspace-number">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(quotation)</span><small class="text-muted">@quotation.QuotationNumber</small>
+                        <span class="quotation-workspace-number">@HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(quotation, quotation.QuotationNumber)</span><small class="text-muted">@quotation.QuotationNumber</small>
                         <span class="quotation-workspace-meta-separator" aria-hidden="true"></span>
                         <span>@GetCustomerName()</span>
                     </div>
@@ -354,7 +354,7 @@
                             <div>
                                 <strong>@GetRequestTitle(job)</strong>
                                 <div class="text-muted small">
-                                    @job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)
+                                    @HamiChap_MES_ERP.Models.Sales.JobReferences.Title(job) · @job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)
                                 </div>
                             </div>
                         </div>

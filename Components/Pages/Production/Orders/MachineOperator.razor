@@ -96,9 +96,9 @@
                     <article class="operator-operation-card" @key="step.Id">
                         <div class="operator-operation-top">
                             <div>
-                                <span class="operator-order-number">@L["OperatorOrder"] @step.ProductionOrder.OrderNumber</span>
-                                <h3>@step.Name</h3>
-                                <div class="operator-step">@L["OperatorStep"] @step.Sequence</div>
+                                <h3>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(step.ProductionOrder)</h3>
+                                <div class="operator-step">@step.Name · @L["OperatorStep"] @step.Sequence</div>
+                                <span class="operator-order-number">@step.ProductionOrder.OrderNumber</span>
                             </div>
                             <span class="operator-status @(paused ? "operator-status-paused" : step.Status == ProductionOperationStatus.Running ? "operator-status-active" : "operator-status-ready")">
                                 @(paused ? L["OperatorPaused"] : step.Status == ProductionOperationStatus.Running ? L["OperatorInProgress"] : L["OperatorAvailableNow"])
@@ -219,8 +219,8 @@
                 {
                     <div class="operator-waiting-row" @key="step.Id">
                         <div class="operator-waiting-heading">
-                            <strong>@step.Name</strong>
-                            <span>@step.ProductionOrder.OrderNumber</span>
+                            <strong>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(step.ProductionOrder)</strong>
+                            <span>@step.Name · @step.ProductionOrder.OrderNumber</span>
                         </div>
                         <small>@(BookingFor(step.Id)?.PlannedStart.ToString("yyyy-MM-dd HH:mm") ?? "—")</small>
                         <p>@StartBlockedReason(step)</p>
@@ -242,7 +242,7 @@
                 @foreach (var step in recent)
                 {
                     <div class="operator-waiting-row">
-                        <div class="operator-waiting-heading"><strong>@step.Name</strong><span>@step.ProductionOrder.OrderNumber</span></div>
+                        <div class="operator-waiting-heading"><strong>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(step.ProductionOrder)</strong><span>@step.Name · @step.ProductionOrder.OrderNumber</span></div>
                         <small>@(eventsByOperation.GetValueOrDefault(step.Id)?
                             .FirstOrDefault(e => e.EventType == "Finished")?.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")</small>
                     </div>
@@ -476,7 +476,9 @@
             .OrderBy(x => x.PlannedStartDate).ToListAsync();
         var allIds = allOpenOrders.Select(x => x.Id).ToList();
         var allOperations = await db.ProductionOperations.AsNoTracking()
-            .Include(x => x.ProductionOrder).Include(x => x.WorkCenter)
+            .Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
+            .Include(x => x.WorkCenter).AsSplitQuery()
             .Where(x => allIds.Contains(x.ProductionOrderId) && !x.IsOutsourced)
             .ToListAsync();
         var machine = machines.FirstOrDefault(x => x.Id == machineId);

@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="erp-page-subtitle">
-                    @HamiChap_MES_ERP.Models.Sales.JobReferences.Display(delivery.SalesOrder?.Quotation)
+                    @HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(delivery.SalesOrder?.Quotation, delivery.DeliveryNumber)
                     <small class="text-muted d-block">@delivery.DeliveryNumber</small>
                 </div>
             </div>

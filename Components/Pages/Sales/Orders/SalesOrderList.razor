@@ -76,7 +76,7 @@
                     <table class="table table-hover align-middle mb-0 operational-table">
                         <thead class="table-light">
                             <tr>
-                                <th>@(LocalizationService.IsPersian ? "شماره کار" : "Job number") / @LocalizationService["OrderNumber"]</th>
+                                <th>@LocalizationService["JobTitle"] / @LocalizationService["OrderNumber"]</th>
                                 <th>@LocalizationService["Customer"]</th>
                                 <th>@LocalizationService["OrderDate"]</th>
                                 <th>@LocalizationService["DeliveryDate"]</th>
@@ -101,7 +101,7 @@
                                 {
                                     <tr @key="order.Id">
                                         <td data-label="@LocalizationService["OrderNumber"]" class="fw-semibold">
-                                            <div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(order.Quotation)</div><small class="text-muted d-block">@order.OrderNumber</small>
+                                            <div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(order.Quotation, order.OrderNumber)</div><small class="text-muted d-block">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(order.Quotation) · @order.OrderNumber</small>
                                         </td>
 
                                         <td data-label="@LocalizationService["Customer"]">
@@ -221,7 +221,8 @@
                 var term = searchText.Trim();
                 query = query.Where(x => x.OrderNumber.Contains(term) || x.Customer.Name.Contains(term) ||
                     x.Quotation.SalesRequest.RequestNumber.Contains(term) ||
-                    x.Quotation.Lines.Any(l => l.SourceRequest != null && l.SourceRequest.RequestNumber.Contains(term)));
+                    x.Quotation.SalesRequest.JobSpecificationJson.Contains(term) ||
+                    x.Quotation.Lines.Any(l => l.SourceRequest != null && (l.SourceRequest.RequestNumber.Contains(term) || l.SourceRequest.JobSpecificationJson.Contains(term))));
             }
             if (!string.IsNullOrWhiteSpace(statusFilter) &&
                 Enum.TryParse<SalesOrderStatus>(statusFilter, out var selectedStatus))
