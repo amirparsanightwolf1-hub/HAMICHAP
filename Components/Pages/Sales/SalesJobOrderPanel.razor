@@ -16,11 +16,12 @@
 @inject LocalizationService LocalizationService
 @inject NavigationManager Navigation
 
-<section class="card shadow-sm mb-4" aria-labelledby="order-items-heading">
+<section class="card shadow-sm mb-4 job-order-items" aria-labelledby="order-items-heading">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <div>
+        <div class="job-order-items-heading">
+            <span class="job-edit-section-icon"><i class="bi bi-layers" aria-hidden="true"></i></span>
             <strong id="order-items-heading">@LocalizationService["ItemsInThisOrder"]</strong>
-            <span class="badge bg-secondary ms-2">@jobs.Count</span>
+            <span class="job-order-items-count">@jobs.Count</span>
         </div>
         @if (linkedQuotationId.HasValue && !canAdd)
         {
@@ -35,41 +36,45 @@
         @foreach (var job in jobs)
         {
             var isCurrent = job.Id == RequestId;
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom py-3"
-                 @key="job.Id">
-                <div>
-                    <strong>@GetJobTitle(job)</strong>
-                    @if (isCurrent)
-                    {
-                        <span class="badge bg-light text-dark border ms-2">@LocalizationService["CurrentItem"]</span>
-                    }
-                    <div class="small text-muted mt-1">
-                        @job.RequestNumber · @LocalizationService.TranslateEnum(job.JobType)
-                        · @LocalizationService["Quantity"]: @GetQuantity(job)
+            <article class="job-order-item @(isCurrent ? "is-current" : "")" @key="job.Id">
+                <div class="job-order-item-main">
+                    <span class="job-order-item-icon"><i class="bi @(job.JobType == SalesJobType.Roll ? "bi-disc" : "bi-file-earmark-richtext")" aria-hidden="true"></i></span>
+                    <div class="job-order-item-title">
+                        <div class="job-order-item-name">
+                            <strong>@GetJobTitle(job)</strong>
+                            @if (isCurrent)
+                            {
+                                <span class="job-order-current"><i class="bi bi-check-circle" aria-hidden="true"></i> @LocalizationService["CurrentItem"]</span>
+                            }
+                        </div>
+                        <div class="job-order-item-meta">
+                            <a href="@($"/jobs/{job.Id}")" dir="ltr">@job.RequestNumber</a>
+                            <span>@LocalizationService.TranslateEnum(job.JobType)</span>
+                        </div>
+                    </div>
+                    <div class="job-order-item-quantity">
+                        <span>@LocalizationService["Quantity"]</span>
+                        <strong dir="ltr">@GetQuantity(job)</strong>
                     </div>
                 </div>
-                <div class="d-flex gap-2 flex-wrap">
+                <div class="job-order-item-actions">
                     <a class="btn btn-sm btn-outline-secondary" href="@GetEditUrl(job)">
-                        @LocalizationService["OpenJob"]
+                        <i class="bi bi-pencil" aria-hidden="true"></i> @LocalizationService["OpenJob"]
                     </a>
-                    <a class="btn btn-sm btn-outline-secondary"
-                       href="@($"/production/jobs?requestId={job.Id}")">
-                        <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>
-                        @LocalizationService["JobOverview"]
+                    <a class="btn btn-sm btn-outline-secondary" href="@($"/production/jobs?requestId={job.Id}")">
+                        <i class="bi bi-diagram-3" aria-hidden="true"></i> @LocalizationService["JobOverview"]
                     </a>
-                    @if (!string.IsNullOrWhiteSpace(job.JobSpecificationJson) &&
-                         job.Lines.Any(x => x.Quantity > 0))
+                    @if (!string.IsNullOrWhiteSpace(job.JobSpecificationJson) && job.Lines.Any(x => x.Quantity > 0))
                     {
                         <a class="btn btn-sm btn-outline-primary" href="@GetProofUrl(job)">
-                            @LocalizationService["OpenApprovalProof"]
+                            <i class="bi bi-file-earmark-check" aria-hidden="true"></i> @LocalizationService["OpenApprovalProof"]
                         </a>
-                        <button type="button" class="btn btn-sm btn-outline-success" disabled="@busy"
-                                @onclick="() => SelectRepeatJob(job.Id)">
-                            @LocalizationService["RepeatThisItem"]
+                        <button type="button" class="btn btn-sm btn-outline-success" disabled="@busy" @onclick="() => SelectRepeatJob(job.Id)">
+                            <i class="bi bi-arrow-repeat" aria-hidden="true"></i> @LocalizationService["RepeatThisItem"]
                         </button>
                     }
                 </div>
-            </div>
+            </article>
             @if (repeatSourceId == job.Id)
             {
                 <div class="rounded border p-3 my-2 bg-light">
@@ -97,18 +102,20 @@
 
         @if (canAdd)
         {
-            <div class="d-flex gap-2 flex-wrap mt-3">
-                <button type="button" class="btn btn-outline-primary"
-                        disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Roll)">
-                    <i class="bi bi-plus-circle me-1"></i> @LocalizationService["AddRollItem"]
-                </button>
-                <button type="button" class="btn btn-outline-primary"
-                        disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Sheet)">
-                    <i class="bi bi-plus-circle me-1"></i> @LocalizationService["AddSheetItem"]
-                </button>
-                <button type="button" class="btn btn-primary"
+            <div class="job-order-items-footer">
+                <div class="job-order-add-actions">
+                    <button type="button" class="btn btn-outline-primary"
+                            disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Sheet)">
+                        <i class="bi bi-file-earmark-plus" aria-hidden="true"></i> @LocalizationService["AddSheetItem"]
+                    </button>
+                    <button type="button" class="btn btn-outline-primary"
+                            disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Roll)">
+                        <i class="bi bi-disc" aria-hidden="true"></i> @LocalizationService["AddRollItem"]
+                    </button>
+                </div>
+                <button type="button" class="btn btn-primary job-order-continue"
                         disabled="@busy" @onclick="OpenQuotationAsync">
-                    @LocalizationService["ContinueToQuotation"]
+                    <i class="bi bi-receipt" aria-hidden="true"></i> @LocalizationService["ContinueToQuotation"]
                 </button>
             </div>
             <p class="form-text mt-2 mb-0">@LocalizationService["AddItemSavesCurrentJob"]</p>

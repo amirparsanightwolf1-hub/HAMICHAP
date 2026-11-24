@@ -1305,3 +1305,38 @@
     .job-edit-page .label-specifications-grid,
     .job-edit-page .workflow-fields-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Order information and item list: compact, responsive, language-neutral. */
+.job-edit-page .job-order-info { display:grid; gap:14px; min-width:0; }
+.job-edit-page .job-order-customer { display:grid; gap:8px; min-width:0; }
+.job-edit-page .job-order-field-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.job-edit-page .job-order-field-heading label, .job-edit-page .job-order-field label { font-size:.84rem; font-weight:650; color:#41536c; margin:0; }
+.job-edit-page .job-order-details { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:12px; padding-top:12px; border-top:1px solid #e2e8f0; }
+.job-edit-page .job-order-details-single { grid-template-columns:minmax(0,1fr); }
+.job-edit-page .job-order-field { display:grid; gap:6px; min-width:0; }
+.job-edit-page .job-order-existing { grid-column:1/-1; min-width:0; }
+.job-edit-page .job-order-new-customer { padding:10px; border-radius:10px; border:1px solid #dce6f0; background:#f8fafc; min-width:0; }
+.job-edit-page .job-order-info .form-control, .job-edit-page .job-order-info .form-select { min-width:0; }
+.job-edit-page .job-order-items-heading { display:flex; align-items:center; gap:9px; }
+.job-edit-page .job-order-items-count { font-size:.78rem; padding:3px 8px; border-radius:999px; background:#e8f0f9; color:#395d87; }
+.job-edit-page .job-order-item { border:1px solid #dce5ef; border-radius:10px; margin-bottom:9px; padding:12px; background:#fff; min-width:0; }
+.job-edit-page .job-order-item.is-current { border-inline-start:3px solid #3875b5; background:#f7fbff; }
+.job-edit-page .job-order-item-main { display:flex; align-items:center; gap:10px; min-width:0; }
+.job-edit-page .job-order-item-icon { display:grid; place-items:center; width:38px; height:38px; flex:0 0 38px; border-radius:9px; background:#eaf2fb; color:#376799; font-size:1.15rem; }
+.job-edit-page .job-order-item-title { flex:1; min-width:0; }
+.job-edit-page .job-order-item-name { display:flex; flex-wrap:wrap; align-items:center; gap:7px; overflow-wrap:anywhere; }
+.job-edit-page .job-order-item-meta { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:.77rem; color:#64748b; margin-top:4px; }
+.job-edit-page .job-order-current { font-size:.72rem; font-weight:600; color:#2b658c; }
+.job-edit-page .job-order-item-quantity { display:grid; gap:2px; text-align:end; min-width:72px; }
+.job-edit-page .job-order-item-quantity span { font-size:.75rem; color:#64748b; }
+.job-edit-page .job-order-item-quantity strong { font-size:1rem; }
+.job-edit-page .job-order-item-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; padding-top:9px; border-top:1px solid #e3eaf1; }
+.job-edit-page .job-order-item-actions .btn { display:inline-flex; align-items:center; gap:5px; }
+.job-edit-page .job-order-items-footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; align-items:center; margin-top:14px; }
+.job-edit-page .job-order-add-actions { display:flex; flex-wrap:wrap; gap:8px; }
+@media (max-width:680px) {
+    .job-edit-page .job-order-details { grid-template-columns:minmax(0,1fr); }
+    .job-edit-page .job-order-items-footer { align-items:stretch; flex-direction:column; }
+    .job-edit-page .job-order-add-actions > .btn { flex:1 1 130px; }
+    .job-edit-page .job-order-item-actions > .btn { flex:1 1 135px; justify-content:center; }
+}

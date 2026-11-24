@@ -108,48 +108,55 @@
                 <strong>@LocalizationService["OrderInformation"]</strong>
             </div>
             <div class="card-body">
-                <div class="order-info-grid">
-                    <label class="form-label"><i class="bi bi-person app-field-icon" aria-hidden="true"></i> @LocalizationService["Customer"]</label>
-                    <div>
+                <div class="job-order-info">
+                    <div class="job-order-customer">
+                        <div class="job-order-field-heading">
+                            <label for="roll-order-customer"><i class="bi bi-person app-field-icon" aria-hidden="true"></i> @LocalizationService["Customer"]</label>
+                            @if (!isCreatingCustomer)
+                            {
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                        disabled="@(TargetQuotationId.HasValue || request.Status != SalesRequestStatus.Draft)"
+                                        @onclick="StartNewCustomer">
+                                    <i class="bi bi-person-plus" aria-hidden="true"></i> @LocalizationService["CreateNewCustomer"]
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="SelectExistingCustomer">
+                                    <i class="bi bi-people" aria-hidden="true"></i> @LocalizationService["SelectExisting"]
+                                </button>
+                            }
+                        </div>
                         @if (!isCreatingCustomer)
                         {
-                            <select class="form-select" @bind="selectedCustomerId" disabled="@(TargetQuotationId.HasValue || request.Status != SalesRequestStatus.Draft)">
-                                <option value="0">@LocalizationService["SelectExistingCustomerPrompt"]</option>
+                            <select id="roll-order-customer" class="form-select" @bind="selectedCustomerId" disabled="@(TargetQuotationId.HasValue || request.Status != SalesRequestStatus.Draft)">
+                                <option value="0">@LocalizationService["SelectExistingCustomer"]</option>
                                 @foreach (var customer in customers)
                                 {
                                     <option value="@customer.Id">@customer.Code - @customer.Name</option>
                                 }
                             </select>
-                            <button type="button" class="btn btn-link px-0" disabled="@(TargetQuotationId.HasValue || request.Status != SalesRequestStatus.Draft)" @onclick="StartNewCustomer">
-                                @LocalizationService["CreateNewCustomer"]
-                            </button>
                         }
                         else
                         {
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="form-control bg-light">@LocalizationService["NewCustomer"]</span>
-                                <button type="button" class="btn btn-outline-secondary text-nowrap" @onclick="SelectExistingCustomer">
-                                    @LocalizationService["SelectExisting"]
-                                </button>
+                            <div class="job-order-new-customer">
+                                <CustomerProfileFields Profile="newCustomerProfile" IdPrefix="roll-new-customer" Changed="StateHasChanged" />
                             </div>
                         }
                     </div>
-
-                    @if (isCreatingCustomer)
-                    {
-                        <div style="grid-column:1 / -1"><CustomerProfileFields Profile="newCustomerProfile" IdPrefix="roll-new-customer" Changed="StateHasChanged" /></div>
-                    }
-
-                    <label class="form-label"><i class="bi bi-tag app-field-icon" aria-hidden="true"></i> @LocalizationService["JobTitle"]</label>
-                    <InputText class="form-control" @bind-Value="spec.JobTitle" />
-                    <div style="grid-column: 1 / -1;">
-                        <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
-                                                CustomerId="@(isCreatingCustomer ? 0 : selectedCustomerId)"
-                                                JobType="SalesJobType.Roll"
-                                                JobTitle="@spec.JobTitle"
-                                                TargetQuotationId="@TargetQuotationId" />
+                    <div class="job-order-details job-order-details-single">
+                        <div class="job-order-field">
+                            <label for="roll-order-title"><i class="bi bi-tag app-field-icon" aria-hidden="true"></i> @LocalizationService["JobTitle"]</label>
+                            <InputText id="roll-order-title" class="form-control" @bind-Value="spec.JobTitle" />
+                        </div>
+                        <div class="job-order-existing">
+                            <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
+                                                    CustomerId="@(isCreatingCustomer ? 0 : selectedCustomerId)"
+                                                    JobType="SalesJobType.Roll"
+                                                    JobTitle="@spec.JobTitle"
+                                                    TargetQuotationId="@TargetQuotationId" />
+                        </div>
                     </div>
-
                 </div>
             </div>
         </div>
