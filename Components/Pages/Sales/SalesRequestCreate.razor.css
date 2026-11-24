@@ -489,3 +489,64 @@
     .job-create-type-check { position: static; margin-inline-start: auto; }
     .job-create-type-details { padding-inline-end: 0; }
 }
+
+/* User-selectable overview position. The same summary instance is retained. */
+.job-create-layout.overview-below {
+    grid-template-columns: minmax(0, 1fr);
+}
+.job-create-layout.overview-below .job-create-summary {
+    position: static;
+}
+.job-create-summary-heading {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.job-create-overview-position {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 34px;
+    padding: 6px 8px;
+    border: 1px solid #dce5ef;
+    border-radius: 8px;
+    background: #f6f9fd;
+    color: #315786;
+    font-size: .73rem;
+    font-weight: 650;
+    line-height: 1.3;
+}
+.job-create-overview-position:hover {
+    border-color: #a8c5eb;
+    background: #eaf2fd;
+}
+.job-create-overview-position i { font-size: .95rem; }
+.job-create-layout:not(.overview-below) .job-create-summary-top {
+    flex-wrap: wrap;
+}
+.job-create-layout:not(.overview-below) .job-create-overview-position {
+    margin-inline-start: auto;
+}
+.job-create-layout.overview-below .job-create-summary-rows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+.job-create-layout.overview-below .job-create-submit {
+    max-width: 320px;
+    margin-inline-start: auto;
+    display: flex;
+}
+.job-create-layout.overview-below .job-create-submit-help {
+    text-align: end;
+}
+@media (max-width: 850px) {
+    /* Narrow layouts already show the overview below the job type. */
+    .job-create-overview-position { display: none; }
+}
+@media (max-width: 540px) {
+    .job-create-layout.overview-below .job-create-summary-rows { grid-template-columns: 1fr; gap: 0; }
+    .job-create-layout.overview-below .job-create-submit { max-width: none; }
+    .job-create-layout.overview-below .job-create-submit-help { text-align: center; }
+}

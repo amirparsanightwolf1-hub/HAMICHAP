@@ -61,7 +61,7 @@
         </div>
     }
 
-    <div class="job-create-layout">
+    <div class="job-create-layout @(overviewBelowJobType ? "overview-below" : "")">
         <div class="job-create-main">
             <section class="job-create-panel" aria-labelledby="job-create-customer-heading">
                 <div class="job-create-section-heading">
@@ -176,10 +176,18 @@
                     <span class="job-create-summary-icon">
                         <i class="bi bi-clipboard2-check" aria-hidden="true"></i>
                     </span>
-                    <div>
+                    <div class="job-create-summary-heading">
                         <h2>@LocalizationService["JobSetupSummary"]</h2>
                         <p>@LocalizationService["JobSetupSummaryHelp"]</p>
                     </div>
+                    <button type="button"
+                            class="job-create-overview-position"
+                            title="@OverviewPositionLabel"
+                            aria-label="@OverviewPositionLabel"
+                            @onclick="ToggleOverviewPosition">
+                        <i class="bi @(overviewBelowJobType ? "bi-layout-sidebar-inset-reverse" : "bi-layout-text-window-reverse")" aria-hidden="true"></i>
+                        <span>@OverviewPositionLabel</span>
+                    </button>
                 </div>
 
                 <dl class="job-create-summary-rows" aria-live="polite">
@@ -235,6 +243,14 @@
     private int customerId;
 
     private SalesJobType selectedJobType = SalesJobType.Roll;
+
+    private bool overviewBelowJobType;
+
+    private string OverviewPositionLabel => overviewBelowJobType
+        ? (LocalizationService.IsPersian ? "انتقال به کنار" : "Move to side")
+        : (LocalizationService.IsPersian ? "انتقال به پایین" : "Move below");
+
+    private void ToggleOverviewPosition() => overviewBelowJobType = !overviewBelowJobType;
 
     private bool isSaving;
     private bool isCreatingCustomer;
