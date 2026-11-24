@@ -333,6 +333,18 @@
                                                     @LocalizationService[service.LabelKey]
                                                 </label>
                                             </div>
+                                            @if (RequiresTooling(service.Value) && spec.SelectedServices.Contains(service.Value))
+                                            {
+                                                <div class="mt-2 mb-2">
+                                                    <label class="form-label small" for="@(serviceId + "-provider")">@ToolingText("Who provides the die / mould?", "تأمین‌کننده قالب")</label>
+                                                    <select id="@(serviceId + "-provider")" class="form-select form-select-sm" value="@GetToolingProvider(service.Value)"
+                                                            @onchange="args => SetToolingProvider(service.Value, args)">
+                                                        <option value="">@ToolingText("Select provider", "انتخاب تأمین‌کننده")</option>
+                                                        <option value="Factory">@ToolingText("Factory", "کارخانه")</option>
+                                                        <option value="Customer">@ToolingText("Customer", "مشتری")</option>
+                                                    </select>
+                                                </div>
+                                            }
                                         </div>
                                     }
                                 </div>
@@ -567,6 +579,7 @@
                 frontCmykColors = ReadColorSelection(savedJson?["FrontCmykColors"]);
                 spec.PantoneColors ??= new();
                 spec.SelectedServices ??= new();
+                spec.ToolingProviders ??= new();
                 foreach (var color in spec.PantoneColors) color.EnsureCmyk();
                 RefreshColorCount();
             }
@@ -610,13 +623,33 @@
         errorMessage = null;
     }
 
+    private static bool RequiresTooling(string service) => service is "قالب روتاری" or "قالب تخت";
+    private string ToolingText(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private string GetToolingProvider(string service) =>
+        spec.ToolingProviders.TryGetValue(service, out var provider) ? provider : "";
+
+    private void SetToolingProvider(string service, ChangeEventArgs args)
+    {
+        var provider = args.Value?.ToString();
+        if (spec.SelectedServices.Contains(service) && RequiresTooling(service) && (provider is "Factory" or "Customer"))
+            spec.ToolingProviders[service] = provider;
+        else
+            spec.ToolingProviders.Remove(service);
+    }
+
+    private bool HasMissingToolingProvider() => spec.SelectedServices.Any(service =>
+        RequiresTooling(service) && GetToolingProvider(service) is not ("Factory" or "Customer"));
+
     private void ToggleService(string service, ChangeEventArgs args)
     {
         var selected = args.Value is bool value && value;
         if (selected && !spec.SelectedServices.Contains(service))
             spec.SelectedServices.Add(service);
         else if (!selected)
+        {
             spec.SelectedServices.Remove(service);
+            spec.ToolingProviders.Remove(service);
+        }
     }
 
     private async Task SaveArtworkFileAsync()
@@ -736,6 +769,12 @@
     private async Task SaveAsync()
     {
         if (request is null || !canEditSpecifications) return;
+
+        if (HasMissingToolingProvider())
+        {
+            errorMessage = ToolingText("Select a factory or customer tooling provider for each selected die / embossing service.", "برای هر خدمت قالب یا برجسته‌کاری انتخاب‌شده، تأمین‌کننده قالب (کارخانه یا مشتری) را مشخص کنید.");
+            return;
+        }
 
         if (request.Status == SalesRequestStatus.QuotationCreated &&
             (isCreatingCustomer || selectedCustomerId != request.CustomerId))

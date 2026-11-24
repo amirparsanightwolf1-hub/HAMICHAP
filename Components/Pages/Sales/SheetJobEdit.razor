@@ -194,12 +194,6 @@
                     <label class="form-label">@LocalizationService["Zinc"]</label>
                     <input class="form-control" value="@PlateCount" readonly />
 
-                    <label class="form-label">@LocalizationService["DieCut"]</label>
-                    <InputText class="form-control" @bind-Value="spec.Die" />
-
-                    <label class="form-label">@LocalizationService["Cliche"]</label>
-                    <InputText class="form-control" @bind-Value="spec.Cliche" />
-
                     <label class="form-label job-edit-quantity-label">@LocalizationService["PrintRunSheets"]</label>
                     <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.PrintRunSheets" />
 
@@ -355,13 +349,26 @@
                             <div class="job-edit-service-choices">
                                 @foreach (var service in group.Value)
                                 {
-                                    <label class="job-edit-service-chip @(spec.SelectedServices.Contains(service) ? "is-selected" : "")"
-                                           @key="service">
-                                        <input class="form-check-input" type="checkbox"
-                                               checked="@spec.SelectedServices.Contains(service)"
-                                               @onchange="args => ToggleService(service, args)" />
-                                        <span>@service</span>
-                                    </label>
+                                    <div @key="service">
+                                        <label class="job-edit-service-chip @(spec.SelectedServices.Contains(service) ? "is-selected" : "")">
+                                            <input class="form-check-input" type="checkbox"
+                                                   checked="@spec.SelectedServices.Contains(service)"
+                                                   @onchange="args => ToggleService(service, args)" />
+                                            <span>@service</span>
+                                        </label>
+                                        @if (RequiresTooling(service) && spec.SelectedServices.Contains(service))
+                                            {
+                                                <div class="mt-2 mb-2">
+                                                    <label class="form-label small" for="@("sheet-tooling-" + service)">@ToolingText("Who provides the die / mould?", "تأمین‌کننده قالب")</label>
+                                                    <select id="@("sheet-tooling-" + service)" class="form-select form-select-sm" value="@GetToolingProvider(service)"
+                                                            @onchange="args => SetToolingProvider(service, args)">
+                                                        <option value="">@ToolingText("Select provider", "انتخاب تأمین‌کننده")</option>
+                                                        <option value="Factory">@ToolingText("Factory", "کارخانه")</option>
+                                                        <option value="Customer">@ToolingText("Customer", "مشتری")</option>
+                                                    </select>
+                                                </div>
+                                            }
+                                    </div>
                                 }
                             </div>
                         </section>
@@ -550,6 +557,8 @@
             {
                 spec = JsonSerializer.Deserialize<SheetJobSpecification>(
                     request.JobSpecificationJson) ?? new();
+                spec.SelectedServices ??= new();
+                spec.ToolingProviders ??= new();
 
                 var savedJson = JsonNode.Parse(request.JobSpecificationJson) as JsonObject;
                 frontCmykColors = ReadColorSelection(savedJson?["FrontCmykColors"]);
@@ -593,13 +602,33 @@
         errorMessage = null;
     }
 
+    private static bool RequiresTooling(string service) => service is "برجسته" or "قالب";
+    private string ToolingText(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private string GetToolingProvider(string service) =>
+        spec.ToolingProviders.TryGetValue(service, out var provider) ? provider : "";
+
+    private void SetToolingProvider(string service, ChangeEventArgs args)
+    {
+        var provider = args.Value?.ToString();
+        if (spec.SelectedServices.Contains(service) && RequiresTooling(service) && (provider is "Factory" or "Customer"))
+            spec.ToolingProviders[service] = provider;
+        else
+            spec.ToolingProviders.Remove(service);
+    }
+
+    private bool HasMissingToolingProvider() => spec.SelectedServices.Any(service =>
+        RequiresTooling(service) && GetToolingProvider(service) is not ("Factory" or "Customer"));
+
     private void ToggleService(string service, ChangeEventArgs args)
     {
         var selected = args.Value is bool value && value;
         if (selected && !spec.SelectedServices.Contains(service))
             spec.SelectedServices.Add(service);
         else if (!selected)
+        {
             spec.SelectedServices.Remove(service);
+            spec.ToolingProviders.Remove(service);
+        }
     }
 
     private async Task SaveArtworkFileAsync()
@@ -719,6 +748,12 @@
     private async Task SaveAsync()
     {
         if (request is null || !canEditSpecifications) return;
+
+        if (HasMissingToolingProvider())
+        {
+            errorMessage = ToolingText("Select a factory or customer tooling provider for each selected die / embossing service.", "برای هر خدمت قالب یا برجسته‌کاری انتخاب‌شده، تأمین‌کننده قالب (کارخانه یا مشتری) را مشخص کنید.");
+            return;
+        }
 
         if (request.Status == SalesRequestStatus.QuotationCreated &&
             (isCreatingCustomer || selectedCustomerId != request.CustomerId))
