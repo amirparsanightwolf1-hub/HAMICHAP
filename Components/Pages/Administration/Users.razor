@@ -17,8 +17,12 @@
 
 <PageTitle>@L["Users"]</PageTitle>
 
-<div class="erp-page-header">
-    <h3 class="erp-page-title">@L["Users Management"]</h3>
+<div class="page-container hc-admin-page">
+<div class="erp-page-header hc-standard-header">
+    <div class="hc-heading-content">
+        <span class="hc-heading-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
+        <div><h1 class="erp-page-title">@L["Users Management"]</h1><p class="erp-page-subtitle">@(L.IsPersian ? "حساب‌های کارکنان، نقش‌ها و دستگاه‌ها" : "Employee accounts, roles and assigned machines.")</p></div>
+    </div>
     <button class="btn btn-primary" @onclick="@(() => Nav.NavigateTo("/administration/users/create"))">
         @L["Add Employee"]
     </button>
@@ -35,7 +39,7 @@
 }
 else
 {
-    <table class="table table-striped">
+    <div class="table-responsive"><table class="table table-striped table-hover">
 
         <thead>
             <tr>
@@ -101,9 +105,9 @@ else
 
         </tbody>
 
-    </table>
+    </table></div>
 }
-
+</div>
 
 @code {
 

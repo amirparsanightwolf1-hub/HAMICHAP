@@ -16,6 +16,7 @@
 
 <PageTitle>@L["Roles"]</PageTitle>
 
+<div class="page-container hc-admin-page">
 @if (loading)
 {
     <p>@L["Loading"]</p>
@@ -28,9 +29,12 @@ else if (!canViewRoles)
 }
 else
 {
-    <div class="erp-page-header">
-        <h3 class="erp-page-title">@L["Roles"]</h3>
+<header class="erp-page-header hc-standard-header">
+    <div class="hc-heading-content">
+        <span class="hc-heading-icon"><i class="bi bi-person-badge" aria-hidden="true"></i></span>
+        <div><h1 class="erp-page-title">@L["Roles"]</h1><p class="erp-page-subtitle">@(L.IsPersian ? "مدیریت نقش‌ها و سطوح دسترسی" : "Manage roles and their access levels.")</p></div>
     </div>
+</header>
 
     @if (canCreateRoles)
     {
@@ -187,7 +191,7 @@ else
         </div>
     }
 }
-
+</div>
 
 @code {
 

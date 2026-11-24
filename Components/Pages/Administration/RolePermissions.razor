@@ -18,7 +18,13 @@
 
 <PageTitle>@L["Role Permissions"]</PageTitle>
 
-<h3>@L["Role Permissions"]</h3>
+<div class="page-container hc-admin-page">
+<header class="erp-page-header hc-standard-header">
+    <div class="hc-heading-content">
+        <span class="hc-heading-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+        <div><h1 class="erp-page-title">@L["Role Permissions"]</h1><p class="erp-page-subtitle">@(L.IsPersian ? "بررسی و مدیریت دسترسی‌های مجاز" : "Review and manage authorized permissions.")</p></div>
+    </div>
+</header>
 
 @if (loading)
 {
@@ -120,6 +126,7 @@ else
         </button>
     }
 }
+</div>
 
 @code {
 

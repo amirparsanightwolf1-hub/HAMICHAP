@@ -17,13 +17,19 @@
     @LocalizationService["CreateEmployee"]
 </PageTitle>
 
-<h3>
-    @LocalizationService["CreateEmployee"]
-</h3>
+<div class="page-container hc-admin-page">
+<header class="erp-page-header hc-standard-header">
+    <div class="hc-heading-content">
+        <span class="hc-heading-icon"><i class="bi bi-person-plus" aria-hidden="true"></i></span>
+        <div><h1 class="erp-page-title">@LocalizationService["CreateEmployee"]</h1><p class="erp-page-subtitle">@(LocalizationService.IsPersian ? "ایجاد حساب کارمند و تعیین نقش‌ها" : "Create an employee account and assign roles.")</p></div>
+    </div>
+</header>
 
+<div class="card hc-admin-form"><div class="card-body">
 <EditForm Model="employee">
 
     <DataAnnotationsValidator />
+    <div class="hc-admin-field-grid">
 
     <div class="mb-3">
         <label>
@@ -89,11 +95,12 @@
                    @bind-Value="employee.Password" />
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3 hc-admin-roles">
         <label>
             @LocalizationService["Roles"]
         </label>
 
+        <div class="hc-admin-role-grid">
         @foreach (var role in roles)
         {
             <div class="form-check">
@@ -109,15 +116,20 @@
 
             </div>
         }
+        </div>
+    </div>
     </div>
 
+    <div class="d-flex flex-wrap gap-2 mt-3">
     <button type="button"
             class="btn btn-primary"
             @onclick="CreateEmployee">
         @LocalizationService["CreateEmployee"]
     </button>
-
+    <a class="btn btn-outline-secondary" href="/administration/users">@LocalizationService["Back"]</a>
+    </div>
 </EditForm>
+</div></div>
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -125,6 +137,7 @@
         @message
     </div>
 }
+</div>
 
 @code {
 

@@ -13,7 +13,15 @@
 @inject LocalizationService LocalizationService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<h3>@LocalizationService["SalesEvaluation"]</h3>
+<PageTitle>@LocalizationService["SalesEvaluation"]</PageTitle>
+
+<div class="page-container hc-evaluation-page">
+<header class="erp-page-header hc-standard-header">
+    <div class="hc-heading-content">
+        <span class="hc-heading-icon"><i class="bi bi-calculator" aria-hidden="true"></i></span>
+        <div><h1 class="erp-page-title">@LocalizationService["SalesEvaluation"]</h1><p class="erp-page-subtitle">@(LocalizationService.IsPersian ? "بررسی مشخصات کار و برآورد هزینه‌ها" : "Review job specifications and estimated costs.")</p></div>
+    </div>
+</header>
 
 @if (loading)
 {
@@ -61,7 +69,7 @@ else
 
         <div class="card-body p-0">
 
-            <table class="table table-striped mb-0">
+            <div class="table-responsive"><table class="table table-striped mb-0">
 
                 <thead>
                     <tr>
@@ -122,7 +130,7 @@ else
 
                 </tbody>
 
-            </table>
+            </table></div>
 
         </div>
     </div>
@@ -218,6 +226,7 @@ else
 
     </div>
 }
+</div>
 
 @code {
 
