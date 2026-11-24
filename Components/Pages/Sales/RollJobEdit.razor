@@ -68,7 +68,7 @@
         <div class="job-edit-context" aria-label="@LocalizationService["JobEditorOverview"]">
             <div class="job-edit-context-field">
                 <span>@LocalizationService["RequestNumber"]</span>
-                <strong>@request.RequestNumber</strong>
+                <strong>@request.RequestNumber <span class="job-edit-context-date">· @request.RequestDate.ToString("yyyy-MM-dd")</span></strong>
             </div>
             <div class="job-edit-context-field">
                 <span>@LocalizationService["Customer"]</span>
@@ -85,18 +85,20 @@
         </div>
 
         <nav class="job-edit-jump-nav" aria-label="@LocalizationService["JobEditorSections"]">
-            <a href="@GetSectionHref("job-edit-items")"><i class="bi bi-layers" aria-hidden="true"></i> @LocalizationService["ItemsInThisOrder"]</a>
             <a href="@GetSectionHref("job-edit-information")"><i class="bi bi-person-vcard" aria-hidden="true"></i> @LocalizationService["OrderInformation"]</a>
             <a href="@GetSectionHref("job-edit-specifications")"><i class="bi bi-sliders" aria-hidden="true"></i> @LocalizationService["LabelSpecifications"]</a>
-            <a href="@GetSectionHref("job-edit-artwork")"><i class="bi bi-images" aria-hidden="true"></i> @LocalizationService["ArtworkFiles"]</a>
             <a href="@GetSectionHref("job-edit-services")"><i class="bi bi-list-check" aria-hidden="true"></i> @LocalizationService["AdditionalServices"]</a>
+            <a href="@GetSectionHref("job-edit-artwork")"><i class="bi bi-images" aria-hidden="true"></i> @LocalizationService["ArtworkFiles"]</a>
+            <a href="@GetSectionHref("job-edit-items")"><i class="bi bi-layers" aria-hidden="true"></i> @LocalizationService["ItemsInThisOrder"]</a>
             <a href="@GetSectionHref("job-edit-production")"><i class="bi bi-diagram-3" aria-hidden="true"></i> @LocalizationService["RollWorkflowInfo"]</a>
+            <button type="button" class="job-edit-nav-save" disabled="@isSaving"
+                    @onclick="SaveAndOpenProofAsync">
+                <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
+                @((canEditSpecifications || canEditArtwork)
+                    ? LocalizationService["JobEditorQuickSave"]
+                    : LocalizationService["CustomerApprovalProof"])
+            </button>
         </nav>
-
-        <div id="job-edit-items" class="job-edit-anchor">
-            <SalesJobOrderPanel RequestId="@RequestId" TargetQuotationId="@TargetQuotationId"
-                                SaveCurrentAsync="@SaveCurrentForOrderAsync" />
-        </div>
 
         <fieldset class="border-0 p-0 m-0 w-100" disabled="@(!canEditSpecifications)">
         <div class="card job-section mb-4" id="job-edit-information">
@@ -106,12 +108,6 @@
             </div>
             <div class="card-body">
                 <div class="order-info-grid">
-                    <label class="form-label">@LocalizationService["Date"]</label>
-                    <input class="form-control" value="@request.RequestDate.ToString("yyyy-MM-dd")" readonly />
-
-                    <label class="form-label">@LocalizationService["RequestNumber"]</label>
-                    <input class="form-control" value="@request.RequestNumber" readonly />
-
                     <label class="form-label">@LocalizationService["Customer"]</label>
                     <div>
                         @if (!isCreatingCustomer)
@@ -171,21 +167,6 @@
         </div>
 
         </fieldset>
-
-        <div class="card job-section mb-4" id="job-edit-artwork">
-            <div class="card-header">
-                <span class="job-edit-section-icon"><i class="bi bi-images" aria-hidden="true"></i></span>
-                <strong>@LocalizationService["ArtworkFiles"]</strong>
-                <span class="job-edit-section-hint">@LocalizationService["JobEditorArtworkHint"]</span>
-            </div>
-            <div class="card-body">
-                <JobArtworkEditor @ref="artworkEditor"
-                                  SavedFiles="@spec.ArtworkFiles"
-                                  LegacyPath="@spec.ArtworkRelativePath"
-                                  LegacyName="@spec.ArtworkOriginalFileName"
-                                  CanEdit="@canEditArtwork" />
-            </div>
-        </div>
 
         <fieldset class="border-0 p-0 m-0 w-100" disabled="@(!canEditSpecifications)">
 
@@ -445,6 +426,26 @@
         </div>
 
         </fieldset>
+
+        <div class="card job-section mb-4" id="job-edit-artwork">
+            <div class="card-header">
+                <span class="job-edit-section-icon"><i class="bi bi-images" aria-hidden="true"></i></span>
+                <strong>@LocalizationService["ArtworkFiles"]</strong>
+                <span class="job-edit-section-hint">@LocalizationService["JobEditorArtworkHint"]</span>
+            </div>
+            <div class="card-body">
+                <JobArtworkEditor @ref="artworkEditor"
+                                  SavedFiles="@spec.ArtworkFiles"
+                                  LegacyPath="@spec.ArtworkRelativePath"
+                                  LegacyName="@spec.ArtworkOriginalFileName"
+                                  CanEdit="@canEditArtwork" />
+            </div>
+        </div>
+
+        <div id="job-edit-items" class="job-edit-anchor">
+            <SalesJobOrderPanel RequestId="@RequestId" TargetQuotationId="@TargetQuotationId"
+                                SaveCurrentAsync="@SaveCurrentForOrderAsync" />
+        </div>
 
         <SalesRequestWorkflowPanel Request="request" />
 
