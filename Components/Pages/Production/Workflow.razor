@@ -77,7 +77,7 @@
                         var produced = order.Lines.Sum(x => x.ProducedQuantity);
                         var progress = planned > 0 ? (int)Math.Clamp(decimal.ToDouble(produced / planned * 100m), 0d, 100d) : 0;
                         <tr>
-                            <td><div class="fw-semibold">@order.OrderNumber</div><div class="small text-muted">@order.Lines.Count @T("Workflow_Lines", "line(s)")</div></td>
+                            <td><div class="fw-semibold">@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(order)</div><div class="small text-muted">@order.OrderNumber</div><div class="small text-muted">@order.Lines.Count @T("Workflow_Lines", "line(s)")</div></td>
                             <td><span class="badge @StatusBadgeClass(order.Status)">@StatusLabel(order.Status)</span></td>
                         <td class="erp-min-width-150" ><div class="d-flex justify-content-between small mb-1"><span>@produced.ToString("0.###") / @planned.ToString("0.###")</span><span>@progress%</span></div><div class="progress erp-height-6 operational-progress" role="progressbar" aria-label="@T("Workflow_ProductionProgress", "Production progress")" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" ><div class="progress-bar" style="@($"width: {progress}%")"></div></div></td>
                             <td>@(order.PlannedEndDate?.ToString("yyyy-MM-dd") ?? "—")</td>
@@ -113,7 +113,7 @@
             if (!string.IsNullOrWhiteSpace(searchText))
             {
                 var term = searchText.Trim();
-                query = query.Where(x => x.OrderNumber.Contains(term, StringComparison.OrdinalIgnoreCase) || x.Notes.Contains(term, StringComparison.OrdinalIgnoreCase) || StatusLabel(x.Status).Contains(term, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(x => x.OrderNumber.Contains(term, StringComparison.OrdinalIgnoreCase) || HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(x).Contains(term, StringComparison.OrdinalIgnoreCase) || x.Notes.Contains(term, StringComparison.OrdinalIgnoreCase) || StatusLabel(x.Status).Contains(term, StringComparison.OrdinalIgnoreCase));
             }
             return query.OrderBy(x => x.Status == ProductionOrderStatus.Completed || x.Status == ProductionOrderStatus.Cancelled).ThenBy(x => x.PlannedEndDate ?? DateTime.MaxValue).ThenByDescending(x => x.CreatedDate).ToList();
         }
@@ -132,7 +132,8 @@
         loadError = null;
         try
         {
-            orders = await Db.ProductionOrders.AsNoTracking().Include(x => x.Lines).OrderByDescending(x => x.CreatedDate).ToListAsync();
+            orders = await Db.ProductionOrders.AsNoTracking().Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest).AsSplitQuery().Include(x => x.Lines).OrderByDescending(x => x.CreatedDate).ToListAsync();
         }
         catch (Exception ex)
         {

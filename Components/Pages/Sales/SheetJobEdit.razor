@@ -39,7 +39,7 @@
                     <i class="bi bi-printer" aria-hidden="true"></i>
                     @LocalizationService["JobEditorEyebrow"]
                 </div>
-                <h1>@LocalizationService["SheetJob"]</h1>
+                <h1>@(string.IsNullOrWhiteSpace(spec.JobTitle) ? LocalizationService["SheetJob"] : spec.JobTitle)</h1>
                 <p>@LocalizationService["SheetJobSubtitle"]</p>
             </div>
         </div>

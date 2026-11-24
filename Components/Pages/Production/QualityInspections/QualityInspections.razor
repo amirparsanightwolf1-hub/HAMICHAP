@@ -59,7 +59,7 @@
                             <option value="0">@LocalizationService["SelectProductionOrder"]</option>
                             @foreach (var order in productionOrders)
                             {
-                                <option value="@order.Id">@order.OrderNumber</option>
+                                <option value="@order.Id">@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(order) (@order.OrderNumber)</option>
                             }
                         </InputSelect>
                     </div>
@@ -115,6 +115,7 @@
         var filtered = inspections.Where(x =>
             (string.IsNullOrWhiteSpace(searchText) ||
              x.ProductionOrder.OrderNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+             HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(x.ProductionOrder).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
              ItemLabel(x.ItemId).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
              x.Id.ToString().Contains(searchText, StringComparison.OrdinalIgnoreCase)) &&
             (string.IsNullOrWhiteSpace(statusFilter) || x.Status.ToString() == statusFilter)).ToList();
@@ -148,7 +149,7 @@
                                 {
                                     <tr>
                                         <td><strong>QC-@inspection.Id</strong></td>
-                                        <td>@inspection.ProductionOrder.OrderNumber</td>
+                                        <td><strong>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(inspection.ProductionOrder)</strong><small class="text-muted d-block">@inspection.ProductionOrder.OrderNumber</small></td>
                                         <td>@ItemLabel(inspection.ItemId)</td>
                                         <td>@inspection.InspectionDate.ToString("yyyy-MM-dd HH:mm")</td>
                                         <td>@inspection.InspectedQuantity.ToString("0.###")</td>
@@ -172,7 +173,7 @@
         <div class="operational-hero-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></div>
             <div>
                 <h3 class="erp-page-title">@LocalizationService["QualityInspectionDetails"] — QC-@selected.Id</h3>
-                <p class="erp-page-subtitle">@selected.ProductionOrder?.OrderNumber · @ItemLabel(selected.ItemId)</p>
+                <p class="erp-page-subtitle">@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(selected.ProductionOrder) · @ItemLabel(selected.ItemId)</p>
             </div>
             <span class="@StatusClass(selected.Status)">@LocalizationService[selected.Status.ToString()]</span>
         </div>
@@ -318,7 +319,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        productionOrders = await Db.ProductionOrders.OrderByDescending(x => x.CreatedDate).ToListAsync();
+        productionOrders = await Db.ProductionOrders.Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest).AsSplitQuery().OrderByDescending(x => x.CreatedDate).ToListAsync();
         items = await Db.Items.OrderBy(x => x.Name).ToListAsync();
         itemLabels = items.ToDictionary(x => x.Id, x => $"{x.Code} - {x.Name}");
         locations = await Db.InventoryLocations.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
@@ -327,7 +329,8 @@
 
     private async Task LoadInspectionsAsync()
     {
-        inspections = await Db.QualityInspections.AsNoTracking().Include(x => x.ProductionOrder).OrderByDescending(x => x.InspectionDate).ToListAsync();
+        inspections = await Db.QualityInspections.AsNoTracking().Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest).AsSplitQuery().OrderByDescending(x => x.InspectionDate).ToListAsync();
     }
 
     private string ItemLabel(int itemId) => itemLabels.TryGetValue(itemId, out var value) ? value : $"#{itemId}";
@@ -353,7 +356,8 @@
     private async Task SelectInspectionAsync(long id)
     {
         errorMessage = successMessage = null;
-        selected = await Db.QualityInspections.Include(x => x.ProductionOrder).Include(x => x.Results).FirstOrDefaultAsync(x => x.Id == id);
+        selected = await Db.QualityInspections.Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest).AsSplitQuery().Include(x => x.Results).FirstOrDefaultAsync(x => x.Id == id);
         qualityResultAlreadyPosted = selected != null && await Db.InventoryDocuments
             .AsNoTracking()
             .AnyAsync(x => x.QualityInspectionId == id && x.Status == InventoryDocumentStatus.Posted);

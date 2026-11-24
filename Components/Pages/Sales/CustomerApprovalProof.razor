@@ -28,7 +28,7 @@
 <div class="page-container proof-page">
     <div class="erp-page-header mb-3 no-print">
         <div>
-            <div class="erp-page-title">@LocalizationService["CustomerApprovalProof"]</div>
+            <div class="erp-page-title">@(request is null ? LocalizationService["CustomerApprovalProof"] : HamiChap_MES_ERP.Models.Sales.JobReferences.Title(request))</div>
             <div class="erp-page-subtitle">@LocalizationService["ReviewProofPrintSavePdf"]</div>
         </div>
         <div class="d-flex flex-wrap gap-2">

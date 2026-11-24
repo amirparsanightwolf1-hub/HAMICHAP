@@ -271,7 +271,7 @@
     }
 
     private string GetRequestNumber(long id) =>
-        linkedRequests.FirstOrDefault(x => x.Id == id)?.RequestNumber ?? $"#{id}";
+        linkedRequests.FirstOrDefault(x => x.Id == id) is { } job ? HamiChap_MES_ERP.Models.Sales.JobReferences.Title(job) + " · " + job.RequestNumber : $"#{id}";
 
     private static string GetJobTitle(SalesRequest job)
     {

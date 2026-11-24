@@ -76,8 +76,8 @@
                                 @onclick="() => OpenInvoice(invoice.Id)">
 
                                 <td class="fw-semibold">
-                                    @invoice.InvoiceNumber
-                                    <small class="text-muted d-block">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(invoice.Quotation)</small>
+                                    <div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(invoice.Quotation, invoice.InvoiceNumber)</div>
+                                    <small class="text-muted d-block">@invoice.InvoiceNumber · @HamiChap_MES_ERP.Models.Sales.JobReferences.Display(invoice.Quotation)</small>
                                 </td>
 
                                 <td>

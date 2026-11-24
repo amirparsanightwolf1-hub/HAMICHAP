@@ -53,7 +53,7 @@
             <hr />
 
             <section class="info-grid">
-                <div><h2>@(LocalizationService.IsPersian ? "شماره‌های کار مرتبط" : "Related job numbers")</h2><p class="info-value">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(invoice.Quotation)</p></div>
+                <div><h2>@(LocalizationService.IsPersian ? "کارهای مرتبط" : "Related jobs")</h2><p class="info-value">@HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(invoice.Quotation)</p><p class="small text-muted">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(invoice.Quotation)</p></div>
                 <div>
                     <h2>@T("Customer")</h2>
                     <p class="info-value">@(invoice.Customer?.Name ?? "—")</p>
