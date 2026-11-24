@@ -1,107 +1,211 @@
-﻿
 @page "/"
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
+@implements IDisposable
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject HamiChap_MES_ERP.Services.PermissionService PermissionService
 @inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
 @inject NavigationManager Navigation
 
-<div class="home-page">
+<PageTitle>@LocalizationService["AppTitle"]</PageTitle>
 
-    <div class="home-content">
-
-        <img src="/images/Logo Wings navy blue.png"
-             alt="Company Logo"
-             class="company-logo" />
-
-        <div class="home-actions">
-
-            @if (!isAuthenticated)
+<div class="hc-home" aria-busy="@loading">
+    <header class="hc-home-hero">
+        <div class="hc-home-hero-content">
+            <div class="hc-home-kicker"><span></span> HAMICHAP · MES / ERP</div>
+            <h1>@T("Your work, connected.", "کار شما، در یک سامانه یکپارچه.")</h1>
+            <p>@T("Manage print and packaging jobs from sales through production and delivery.", "سفارش‌های چاپ و بسته‌بندی را از فروش تا تولید و تحویل مدیریت کنید.")</p>
+            @if (!loading)
             {
-                <a class="login-button" href="/Account/Login">
-                    @LocalizationService["Login"]
-                </a>
+                <div class="hc-home-hero-actions">
+                    @if (!isAuthenticated)
+                    {
+                        <a class="hc-home-primary" href="/Account/Login"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> @LocalizationService["Login"]</a>
+                    }
+                    else
+                    {
+                        @if (canCreateSalesRequest)
+                        {
+                            <a class="hc-home-primary" href="/sales/requests/create"><i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["NewOrder"]</a>
+                        }
+                        @if (canFindJob)
+                        {
+                            <a class="hc-home-secondary" href="/production/jobs"><i class="bi bi-search" aria-hidden="true"></i> @T("Find job", "جستجوی کار")</a>
+                        }
+                    }
+                </div>
             }
-            else
-            {
-                @if (showSalesDashboard)
-                {
-                    <a class="login-button" href="/dashboard/sales"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> @LocalizationService["ManagerSalesDashboard"]</a>
-                }
-                @if (showWarehouseDashboard)
-                {
-                    <a class="login-button" href="/dashboard/warehouse"><i class="bi bi-box-seam" aria-hidden="true"></i> @LocalizationService["ManagerWarehouseDashboard"]</a>
-                }
-                @if (showCeoDashboard)
-                {
-                    <a class="login-button" href="/dashboard/ceo"><i class="bi bi-bar-chart-line" aria-hidden="true"></i> @LocalizationService["ManagerCeoDashboard"]</a>
-                }
-                @if (showProductionDashboard)
-                {
-                    <a class="login-button" href="/dashboard/production"><i class="bi bi-kanban" aria-hidden="true"></i> @LocalizationService["ManagerProductionDashboard"]</a>
-                }
-                @if (showOperatorDashboard)
-                {
-                    <a class="login-button" href="/production/machine-operator"><i class="bi bi-play-circle" aria-hidden="true"></i> @LocalizationService["OperatorDashboardTitle"]</a>
-                }
-            }
-
-            @if (canCreateSalesRequest)
-            {
-                <button type="button"
-                        class="login-button"
-                        @onclick="CreateNewOrder">
-                    <i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["NewOrder"]
-                </button>
-            }
-
         </div>
+        <div class="hc-home-brand" aria-hidden="true">
+            <div class="hc-home-logo"><img src="images/Logo%20Wings%20navy%20blue.png" alt="" /></div>
+            <strong>HAMICHAP</strong>
+            <span>MES / ERP</span>
+        </div>
+    </header>
 
-    </div>
+    @if (loading)
+    {
+        <div class="hc-home-loading" role="status"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span> @LocalizationService["Loading"]</div>
+    }
+    else if (isAuthenticated)
+    {
+        @if (error)
+        {
+            <div class="alert alert-warning" role="alert">@T("Some workspace permissions could not be loaded. Refresh the page to try again.", "برخی دسترسی‌های فضای کاری بارگذاری نشدند. صفحه را دوباره بارگذاری کنید.")</div>
+        }
 
+        @if (dashboards.Count > 0)
+        {
+            <section class="hc-home-section" aria-labelledby="home-dashboards">
+                <div class="hc-home-section-heading">
+                    <div><h2 id="home-dashboards">@T("Your dashboards", "داشبوردهای شما")</h2><p>@T("Open the workspace for your department.", "فضای کاری بخش خود را باز کنید.")</p></div>
+                </div>
+                <div class="hc-home-dashboard-grid">
+                    @foreach (var tile in dashboards)
+                    {
+                        <a class="hc-home-dashboard" href="@tile.Url" @key="tile.Url">
+                            <div class="hc-home-tile-top">
+                                <span class="hc-home-tile-icon @tile.Tone"><i class="bi @tile.Icon" aria-hidden="true"></i></span>
+                                <i class="bi @(LocalizationService.IsPersian ? "bi-arrow-left" : "bi-arrow-right") hc-home-tile-arrow" aria-hidden="true"></i>
+                            </div>
+                            <h3>@tile.Title</h3>
+                            <p>@tile.Description</p>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (shortcuts.Count > 0)
+        {
+            <section class="hc-home-section" aria-labelledby="home-shortcuts">
+                <div class="hc-home-section-heading">
+                    <div><h2 id="home-shortcuts">@T("Quick access", "دسترسی سریع")</h2><p>@T("Go straight to your day-to-day tasks.", "دسترسی مستقیم به کارهای روزانه.")</p></div>
+                </div>
+                <div class="hc-home-shortcut-grid">
+                    @foreach (var tile in shortcuts)
+                    {
+                        <a class="hc-home-shortcut" href="@tile.Url" @key="tile.Url">
+                            <span class="hc-home-shortcut-icon @tile.Tone"><i class="bi @tile.Icon" aria-hidden="true"></i></span>
+                            <div><strong>@tile.Title</strong><span>@tile.Description</span></div>
+                            <i class="bi @(LocalizationService.IsPersian ? "bi-chevron-left" : "bi-chevron-right") hc-home-tile-arrow" aria-hidden="true"></i>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+
+        @if (dashboards.Count == 0 && shortcuts.Count == 0 && !canCreateSalesRequest && !error)
+        {
+            <div class="hc-home-empty"><i class="bi bi-shield-check" aria-hidden="true"></i><div><strong>@T("Your workspace is ready", "فضای کاری شما آماده است")</strong><p>@T("Your available modules depend on your assigned permissions.", "بخش‌های قابل دسترسی به مجوزهای تخصیص‌یافته بستگی دارند.")</p></div></div>
+        }
+    }
+    <footer class="hc-home-footer"><span>HAMICHAP · MES / ERP</span><span><i class="bi bi-shield-lock" aria-hidden="true"></i> @T("Employee workspace", "فضای کاری کارکنان")</span></footer>
 </div>
 
 @code {
+    private sealed record Tile(string Title, string Description, string Icon, string Tone, string Url);
+    private readonly List<Tile> dashboards = new();
+    private readonly List<Tile> shortcuts = new();
+    private bool loading = true;
     private bool isAuthenticated;
-    private bool showSalesDashboard;
-    private bool showWarehouseDashboard;
-    private bool showCeoDashboard;
-    private bool showProductionDashboard;
-    private bool showOperatorDashboard;
     private bool canCreateSalesRequest;
+    private bool canFindJob;
+    private bool error;
+    private bool disposed;
+    private int loadVersion;
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState =
-            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationChanged;
+        await LoadAsync(AuthenticationStateProvider.GetAuthenticationStateAsync());
+    }
 
-        if (authState.User.Identity?.IsAuthenticated == true)
+    private void OnAuthenticationChanged(Task<AuthenticationState> state)
+    {
+        if (!disposed)
+            _ = InvokeAsync(async () => { await LoadAsync(state); if (!disposed) StateHasChanged(); });
+    }
+
+    private async Task LoadAsync(Task<AuthenticationState> state)
+    {
+        var version = ++loadVersion;
+        loading = true;
+        isAuthenticated = false;
+        error = false;
+        canCreateSalesRequest = false;
+        canFindJob = false;
+        dashboards.Clear();
+        shortcuts.Clear();
+        var newDashboards = new List<Tile>();
+        var newShortcuts = new List<Tile>();
+        try
         {
-            isAuthenticated = true;
-            var user = authState.User;
-            showSalesDashboard = user.IsInRole("Administrator") || user.IsInRole("Sales") ||
-                user.IsInRole("SalesManager") || user.IsInRole("Sales Manager");
-            showWarehouseDashboard = user.IsInRole("Administrator") || user.IsInRole("Warehouse") ||
-                user.IsInRole("WarehouseManager") || user.IsInRole("Warehouse Manager");
-            showCeoDashboard = user.IsInRole("Administrator") || user.IsInRole("CEO") ||
-                user.IsInRole("Ceo") || user.IsInRole("Manager");
-            showProductionDashboard = user.IsInRole("Administrator") ||
-                user.IsInRole("ProductionManager") || user.IsInRole("Production Manager") ||
-                user.IsInRole("FloorManager") || user.IsInRole("Floor Manager") ||
-                user.IsInRole("Production") || user.IsInRole("Manager");
-            showOperatorDashboard = user.IsInRole("Operator") || user.IsInRole("Production");
-            canCreateSalesRequest =
-                await PermissionService.HasPermissionAsync(
-                    authState.User,
-                    "Sales.Requests.Create");
+            var user = (await state).User;
+            if (disposed || version != loadVersion) return;
+            isAuthenticated = user.Identity?.IsAuthenticated == true;
+            if (!isAuthenticated) return;
+
+            bool Role(params string[] names) => names.Any(user.IsInRole);
+            // Retain the original home dashboard role checks.
+            if (Role("Administrator", "Sales", "SalesManager", "Sales Manager"))
+                newDashboards.Add(new(LocalizationService["ManagerSalesDashboard"], T("Requests, quotations and sales performance", "درخواست‌ها، پیش‌فاکتورها و عملکرد فروش"), "bi-graph-up-arrow", "tone-blue", "/dashboard/sales"));
+            if (Role("Administrator", "Warehouse", "WarehouseManager", "Warehouse Manager"))
+                newDashboards.Add(new(LocalizationService["ManagerWarehouseDashboard"], T("Stock, materials and warehouse movements", "موجودی، مواد و گردش انبار"), "bi-box-seam", "tone-teal", "/dashboard/warehouse"));
+            if (Role("Administrator", "ProductionManager", "Production Manager", "FloorManager", "Floor Manager", "Production", "Manager"))
+                newDashboards.Add(new(LocalizationService["ManagerProductionDashboard"], T("Production planning and job progress", "برنامه‌ریزی و پیشرفت تولید"), "bi-kanban", "tone-indigo", "/dashboard/production"));
+            if (Role("Administrator", "CEO", "Ceo", "Manager"))
+                newDashboards.Add(new(LocalizationService["ManagerCeoDashboard"], T("Business performance and management overview", "عملکرد کسب‌وکار و نمای مدیریتی"), "bi-bar-chart-line", "tone-navy", "/dashboard/ceo"));
+            if (Role("Operator", "Production"))
+                newDashboards.Add(new(LocalizationService["OperatorDashboardTitle"], T("Machine tasks and daily production", "وظایف ماشین و تولید روزانه"), "bi-play-circle", "tone-teal", "/production/machine-operator"));
+
+            var create = await PermissionService.HasPermissionAsync(user, "Sales.Requests.Create");
+            var requests = await PermissionService.HasPermissionAsync(user, "Sales.Requests.View");
+            var production = await PermissionService.HasPermissionAsync(user, "Production.Orders.View");
+            if (requests)
+            {
+                newShortcuts.Add(new(LocalizationService["SalesRequests"], T("Manage customer requests", "مدیریت درخواست مشتریان"), "bi-clipboard-check", "tone-blue", "/sales/requests"));
+                newShortcuts.Add(new(LocalizationService["SalesQuotations"], T("Review and prepare quotations", "بررسی و آماده‌سازی پیش‌فاکتورها"), "bi-receipt", "tone-blue", "/sales/quotations"));
+            }
+            if (requests || production)
+                newShortcuts.Add(new(T("Job overview", "نمای کلی کار"), T("Search using the universal job number", "جستجو با شماره یکتای کار"), "bi-search", "tone-indigo", "/production/jobs"));
+            if (await PermissionService.HasPermissionAsync(user, "Sales.Orders.View"))
+                newShortcuts.Add(new(LocalizationService["SalesOrders"], T("Review confirmed orders", "بررسی سفارش‌های تأییدشده"), "bi-bag-check", "tone-blue", "/sales/orders"));
+            if (await PermissionService.HasPermissionAsync(user, "Inventory.Stock.View"))
+                newShortcuts.Add(new(LocalizationService["InventoryStock"], T("Check available materials", "بررسی مواد موجود"), "bi-boxes", "tone-teal", "/inventory/stock"));
+            if (await PermissionService.HasPermissionAsync(user, "Inventory.Documents.View"))
+                newShortcuts.Add(new(LocalizationService["CreateInventoryDocument"], T("Receive or transfer stock", "ورود یا انتقال موجودی"), "bi-arrow-left-right", "tone-teal", "/inventory/documents"));
+            if (production)
+                newShortcuts.Add(new(LocalizationService["ProductionOrders"], T("Open production orders", "باز کردن سفارش‌های تولید"), "bi-gear", "tone-indigo", "/production/orders"));
+            if (await PermissionService.HasPermissionAsync(user, "Customers.View"))
+                newShortcuts.Add(new(LocalizationService["Customers"], T("View customer records", "مشاهده پرونده مشتریان"), "bi-people", "tone-navy", "/customers"));
+
+            if (disposed || version != loadVersion) return;
+            dashboards.AddRange(newDashboards);
+            shortcuts.AddRange(newShortcuts);
+            canCreateSalesRequest = create;
+            canFindJob = requests || production;
+        }
+        catch
+        {
+            if (!disposed && version == loadVersion)
+            {
+                dashboards.AddRange(newDashboards);
+                error = true;
+            }
+        }
+        finally
+        {
+            if (!disposed && version == loadVersion) loading = false;
         }
     }
 
-    private void CreateNewOrder()
+    public void Dispose()
     {
-        Navigation.NavigateTo("/sales/requests/create");
+        disposed = true;
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationChanged;
     }
 }
