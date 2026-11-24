@@ -1,0 +1,12 @@
+.customer-editor { max-width: 1000px; margin-inline: auto; }
+.customer-editor-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-block-end: 20px; }
+.customer-editor-heading h3 { font-weight: 750; color: #263d59; margin: 0 0 5px; }
+.customer-editor-heading p { font-size: .87rem; color: #6a7890; margin: 0; }
+.customer-editor-card { border: 1px solid #dfe6ef; border-radius: 14px; box-shadow: 0 5px 20px #152d4f09; }
+.customer-editor-card .card-body { padding: clamp(14px, 2.5vw, 24px); }
+.customer-editor-actions { display:flex; justify-content: flex-end; gap: 10px; margin-block-start: 14px; }
+.customer-editor-actions .btn { min-width: 112px; }
+@media (max-width: 540px) {
+    .customer-editor-heading { flex-wrap: wrap; }
+    .customer-editor-actions > * { flex: 1; min-width: 0; }
+}

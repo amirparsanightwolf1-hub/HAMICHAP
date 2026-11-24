@@ -10,8 +10,14 @@
 @inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
 
 <PageTitle>@Heading</PageTitle>
-<div class="page-container">
-    <h3>@Heading</h3>
+<div class="page-container customer-editor">
+    <header class="customer-editor-heading">
+        <div>
+            <h3>@Heading</h3>
+            <p>@T("Manage customer identity, contact and address details.", "مدیریت اطلاعات هویتی، تماس و نشانی مشتری.")</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="/customers"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> @LocalizationService["Customers"]</a>
+    </header>
     @if (errorMessage is not null)
     {
         <div class="alert alert-danger" role="alert">@errorMessage</div>
@@ -24,7 +30,7 @@
     {
         <EditForm Model="customer" OnValidSubmit="Save">
             <DataAnnotationsValidator />
-            <div class="card mb-3"><div class="card-body">
+            <div class="card customer-editor-card mb-3"><div class="card-body">
                 @if (CustomerId.HasValue)
                 {
                     <p class="small text-muted">@LocalizationService["Code"]: @customer.Code</p>
@@ -35,8 +41,10 @@
                 }
                 <CustomerProfileFields Profile="customer" IdPrefix="customer-profile" />
             </div></div>
-            <button type="submit" class="btn btn-primary" disabled="@isSaving">@LocalizationService["SaveCustomer"]</button>
-            <a href="/customers" class="btn btn-outline-secondary">@T("Cancel", "انصراف")</a>
+            <div class="customer-editor-actions">
+                <a href="/customers" class="btn btn-outline-secondary">@T("Cancel", "انصراف")</a>
+                <button type="submit" class="btn btn-primary" disabled="@isSaving"><i class="bi bi-check2" aria-hidden="true"></i> @LocalizationService["SaveCustomer"]</button>
+            </div>
         </EditForm>
     }
 </div>
