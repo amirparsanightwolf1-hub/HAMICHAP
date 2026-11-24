@@ -70,7 +70,7 @@ public sealed class RollPantoneColor
     }
 
     public static List<RollPantoneColor> FromLegacyReferences(string references) =>
-        references.Split(new[] { ',', ';', '\\n', '\\r', '،' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        references.Split(new[] { ',', ';', '\n', '\r', '،' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Distinct(StringComparer.OrdinalIgnoreCase).Select(code => new RollPantoneColor { Code = code, Hex = "#808080" }).ToList();
 
     public static bool IsValidHex(string? value) =>
