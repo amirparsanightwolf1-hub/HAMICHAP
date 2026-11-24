@@ -1,4 +1,7 @@
 @page "/production/planning"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Production.View|Production.Orders.View")]
 @inject LocalizationService L
 
 @using System.Globalization
@@ -295,6 +298,11 @@
 
     private async Task SaveOrderSettings()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Production.Edit"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (selectedOrderId == null || estimatedDurationHours < 0.25m) return;
 
         errorMessage = null;
@@ -376,6 +384,11 @@
 
     private async Task ScheduleOrderAsync(long orderId, DateTime requestedStart)
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Production.Edit"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         try
         {
             errorMessage = null;

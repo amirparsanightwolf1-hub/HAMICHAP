@@ -1,4 +1,5 @@
 ﻿@page "/production/workflow"
+@attribute [Authorize(Policy = "Permission:Production.View|Production.Orders.View")]
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Production
