@@ -2365,6 +2365,9 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<int>("UnitId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("ActualConsumedQuantity").HasPrecision(18, 3).HasColumnType("decimal(18,3)");
+                    b.Property<decimal>("ReturnedQuantity").HasPrecision(18, 3).HasColumnType("decimal(18,3)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");

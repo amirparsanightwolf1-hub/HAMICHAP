@@ -116,6 +116,8 @@ namespace HamiChap_MES_ERP.Data
 
 
             base.OnModelCreating(builder);
+            builder.Entity<InventoryDocumentLine>().Property(x => x.ActualConsumedQuantity).HasPrecision(18, 3);
+            builder.Entity<InventoryDocumentLine>().Property(x => x.ReturnedQuantity).HasPrecision(18, 3);
             builder.Entity<SalesProofRevision>(b =>
             {
                 b.HasIndex(x => new { x.SalesRequestId, x.RevisionNumber }).IsUnique();

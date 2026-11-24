@@ -96,6 +96,7 @@ public class NumberSeriesService
             NumberSeriesType.Job => "J",
             NumberSeriesType.Quotation => "QT",
             NumberSeriesType.ProductionScrap => "PS",
+            NumberSeriesType.ProductionConsumption => "PC",
             NumberSeriesType.SalesDelivery => "SD",
             NumberSeriesType.SalesInvoice => "SI",
 

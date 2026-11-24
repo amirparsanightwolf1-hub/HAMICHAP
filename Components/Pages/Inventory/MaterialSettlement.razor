@@ -1,0 +1,91 @@
+@page "/inventory/material-settlement"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using HamiChap_MES_ERP.Services
+@using static HamiChap_MES_ERP.Services.MaterialSettlementService
+@inject MaterialSettlementService Settlement
+@inject WarehouseRequestService Access
+@inject AuthenticationStateProvider Auth
+@inject LocalizationService L
+@inject ILogger<MaterialSettlement> Logger
+<PageTitle>@T("Material usage & returns", "مصرف و برگشت مواد")</PageTitle>
+<div class="page-container inventory-page">
+    <header class="erp-page-header hc-standard-header">
+        <div class="hc-heading-content"><span class="hc-heading-icon"><i class="bi bi-arrow-return-left"></i></span><div>
+            <h1 class="erp-page-title">@T("Material usage & returns", "مصرف و برگشت مواد")</h1>
+            <p class="erp-page-subtitle">@T("Record actual usage and return leftovers to the original warehouse.", "مصرف واقعی و برگشت باقی‌مانده به انبار مبدأ را ثبت کنید.")</p>
+        </div></div>
+        <a class="btn btn-outline-primary" href="/inventory/material-requests">@T("Warehouse requests", "درخواست‌های انبار")</a>
+    </header>
+    @if (!string.IsNullOrEmpty(message)) { <div class="alert @(failed ? "alert-danger" : "alert-success")">@message</div> }
+    @if (loading) { <p>@L["Loading"]</p> }
+    else if (!canView) { <div class="alert alert-warning">@L["AccessDenied"]</div> }
+    else
+    {
+        <div class="d-flex gap-2 mb-3"><input type="search" class="form-control" placeholder="@T("Search job or material", "جستجوی کار یا مواد")" @bind="search" @bind:event="oninput" /><button class="btn btn-outline-secondary" disabled="@busy" @onclick="RefreshAsync">@L["Refresh"]</button></div>
+        @foreach (var row in rows.Where(x => x.Job.Contains(search, StringComparison.OrdinalIgnoreCase) || x.Item.Contains(search, StringComparison.OrdinalIgnoreCase) || x.Number.Contains(search, StringComparison.OrdinalIgnoreCase)))
+        {
+            <article class="card mb-3" @key="row.Id">
+                <div class="card-header"><strong>@row.Job</strong><div class="small text-muted">@row.Number · @row.Item · @row.Lot</div></div>
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col"><small>@T("Issued", "تحویل شده")</small><div class="fw-semibold">@row.Issued.ToString("0.###") @row.Unit</div></div>
+                        <div class="col"><small>@T("Used", "مصرف شده")</small><div>@row.Consumed.ToString("0.###")</div></div>
+                        <div class="col"><small>@T("Returned", "برگشت شده")</small><div>@row.Returned.ToString("0.###")</div></div>
+                        <div class="col"><small>@T("Remaining", "مانده")</small><div class="fw-semibold">@row.Remaining.ToString("0.###")</div></div>
+                    </div>
+                    @if (canIssue)
+                    {
+                        var entry = entries[row.Id];
+                        <div class="row g-2 align-items-end">
+                            <div class="col-sm"><label class="form-label">@T("Actual used", "مصرف واقعی")</label><input type="number" step="0.001" min="0" max="@row.Remaining" class="form-control" @bind="entry.Used" disabled="@busy" /></div>
+                            <div class="col-sm"><label class="form-label">@T("Return unused", "برگشت باقی‌مانده")</label><input type="number" step="0.001" min="0" max="@row.Remaining" class="form-control" @bind="entry.Returned" disabled="@busy" /></div>
+                            <div class="col-sm-auto"><button class="btn btn-outline-secondary" disabled="@busy" @onclick="() => entry.Returned = Math.Max(0, row.Remaining - entry.Used)">@T("Return remainder", "برگشت مانده")</button></div>
+                            <div class="col-sm-auto"><button class="btn btn-success" disabled="@(busy || entry.Used < 0 || entry.Returned < 0 || entry.Used + entry.Returned <= 0 || entry.Used + entry.Returned > row.Remaining)" @onclick="() => SaveAsync(row.Id)">@T("Confirm usage & return", "تأیید مصرف و برگشت")</button></div>
+                        </div>
+                    }
+                </div>
+            </article>
+        }
+        @if (rows.Count == 0) { <div class="card"><div class="card-body">@T("No unsettled material issues.", "تحویل مواد تسویه‌نشده وجود ندارد.")</div></div> }
+    }
+</div>
+@code {
+    private sealed class Entry { public decimal Used { get; set; } public decimal Returned { get; set; } }
+    private List<IssueRow> rows = new();
+    private Dictionary<long, Entry> entries = new();
+    private bool loading = true, busy, canView, canIssue, failed;
+    private string search = "";
+    private string? message;
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
+    protected override Task OnInitializedAsync() => RefreshAsync();
+    private async Task LoadAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        canView = await Access.CanViewAsync(user);
+        canIssue = canView && await Access.CanIssueAsync(user);
+        rows = canView ? await Settlement.ReadAsync(user) : new();
+        entries = rows.ToDictionary(x => x.Id, x => new Entry());
+    }
+    private async Task RefreshAsync()
+    {
+        if (busy) return;
+        busy = true;
+        try { await LoadAsync(); }
+        catch (Exception ex) { Logger.LogError(ex, "Material settlement load failed"); failed = true; message = T("Could not load issues.", "بارگذاری تحویل‌ها انجام نشد."); }
+        finally { busy = loading = false; }
+    }
+    private async Task SaveAsync(long id)
+    {
+        if (busy || !canIssue || !entries.TryGetValue(id, out var entry)) return;
+        busy = true;
+        try
+        {
+            await Settlement.SettleAsync(id, entry.Used, entry.Returned, (await Auth.GetAuthenticationStateAsync()).User);
+            message = T("Usage and returns posted.", "مصرف و برگشت ثبت شد."); failed = false;
+            await LoadAsync();
+        }
+        catch (Exception ex) { Logger.LogWarning(ex, "Material settlement failed"); failed = true; message = ex is InvalidOperationException ? ex.Message : T("Could not post settlement.", "ثبت انجام نشد."); }
+        finally { busy = false; }
+    }
+}

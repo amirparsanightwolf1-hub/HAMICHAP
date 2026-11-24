@@ -15,6 +15,7 @@ public static class InventoryDocumentNumbering
         InventoryDocumentType.SupplierReturn => NumberSeriesType.SupplierReturn,
         InventoryDocumentType.ProductionScrap => NumberSeriesType.ProductionScrap,
         InventoryDocumentType.SalesDelivery => NumberSeriesType.SalesDelivery,
+        InventoryDocumentType.ProductionConsumption => NumberSeriesType.ProductionConsumption,
         _ => throw new ArgumentOutOfRangeException(nameof(type))
     };
 }

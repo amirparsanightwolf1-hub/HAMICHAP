@@ -59,7 +59,7 @@
                     <div class="col-md-4">
                         <label class="form-label" for="movement-type">@T("All manual movement types", "همه انواع گردش دستی")</label>
                         <select id="movement-type" class="form-select" @bind="document.DocumentType" @bind:after="ApplyDefaults">
-                            @foreach (var type in Enum.GetValues<InventoryDocumentType>().Where(x => x != InventoryDocumentType.SalesDelivery))
+                            @foreach (var type in Enum.GetValues<InventoryDocumentType>().Where(x => x != InventoryDocumentType.SalesDelivery && x != InventoryDocumentType.ProductionConsumption))
                             {
                                 <option value="@type">@LocalizationService.TranslateEnum(type)</option>
                             }

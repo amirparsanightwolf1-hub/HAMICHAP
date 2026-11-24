@@ -20,7 +20,7 @@ public class InventoryPostingService
     public async Task PostAsync(
     long documentId,
     string userId,
-    bool useTransaction = true)
+    bool useTransaction = true, bool allowProductionConsumption = false)
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new InvalidOperationException(
@@ -28,9 +28,7 @@ public class InventoryPostingService
 
         if (!useTransaction)
         {
-            await PostInternalAsync(
-                documentId,
-                userId);
+            await PostInternalAsync(documentId, userId, allowProductionConsumption);
 
             return;
         }
@@ -40,9 +38,7 @@ public class InventoryPostingService
 
         try
         {
-            await PostInternalAsync(
-                documentId,
-                userId);
+            await PostInternalAsync(documentId, userId, allowProductionConsumption);
 
             await transaction.CommitAsync();
         }
@@ -62,16 +58,15 @@ public class InventoryPostingService
         }
     }
 
-    private async Task PostInternalAsync(
-    long documentId,
-    string userId)
+    private async Task PostInternalAsync(long documentId, string userId, bool allowProductionConsumption)
     {
         var document =
             await LoadDocumentAsync(
                 documentId);
 
-        ValidateDocument(
-            document);
+        ValidateDocument(document);
+        if (document.DocumentType == InventoryDocumentType.ProductionConsumption && !allowProductionConsumption)
+            throw new InvalidOperationException("Use the material usage and return workflow.");
 
         var locations =
             await LoadLocationsAsync(
@@ -364,7 +359,8 @@ public class InventoryPostingService
                 quantity: line.Quantity);
         }
 
-        await IncreaseInventoryBalanceAsync(
+        if (document.DocumentType != InventoryDocumentType.ProductionConsumption)
+            await IncreaseInventoryBalanceAsync(
                 itemId: line.ItemId,
                 locationId: toLocation.Id,
                 lotId: lot?.Id,
@@ -452,6 +448,13 @@ public class InventoryPostingService
             case InventoryDocumentType.MaterialTransfer:
 
                 // Ownership is preserved.
+                break;
+
+            case InventoryDocumentType.ProductionConsumption:
+                if (line.CustomerId != null || line.FromCustomerId != null || line.ToCustomerId != null ||
+                    fromLocation.Type is not (InventoryLocationType.Production or InventoryLocationType.Machine) ||
+                    toLocation.Code != "CONSUMED" || toLocation.Type != InventoryLocationType.External || !document.ProductionOrderId.HasValue)
+                    throw new InvalidOperationException("Invalid consumption movement.");
                 break;
 
             case InventoryDocumentType.ProductionIssue:
@@ -757,6 +760,8 @@ public class InventoryPostingService
                 InventoryTransactionType.Transfer,
 
             InventoryDocumentType.ProductionIssue =>
+                InventoryTransactionType.Transfer,
+            InventoryDocumentType.ProductionConsumption =>
                 InventoryTransactionType.Consume,
 
             InventoryDocumentType.ProductionReceipt =>
@@ -801,8 +806,8 @@ public class InventoryPostingService
             InventoryDocumentType.MaterialTransfer =>
                 true,
 
-            InventoryDocumentType.ProductionIssue =>
-                true,
+            InventoryDocumentType.ProductionIssue => true,
+            InventoryDocumentType.ProductionConsumption => true,
 
             InventoryDocumentType.ProductionReceipt =>
                 true,

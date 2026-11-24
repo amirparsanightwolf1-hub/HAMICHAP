@@ -9,5 +9,6 @@
     CustomerReturn = 7,
     SupplierReturn = 8,
     ProductionScrap = 9,
-    SalesDelivery = 10
+    SalesDelivery = 10,
+    ProductionConsumption = 11
 }

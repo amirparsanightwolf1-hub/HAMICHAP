@@ -21,5 +21,6 @@ public enum NumberSeriesType
     Job = 205,
     PurchaseOrder = 300,
 
-    ProductionScrap = 500
+    ProductionScrap = 500,
+    ProductionConsumption = 501
 }

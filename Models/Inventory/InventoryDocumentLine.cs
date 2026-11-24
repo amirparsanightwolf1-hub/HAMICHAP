@@ -29,6 +29,8 @@ public class InventoryDocumentLine : BaseEntity
 
 
     public decimal Quantity { get; set; }
+    public decimal ActualConsumedQuantity { get; set; }
+    public decimal ReturnedQuantity { get; set; }
 
 
     public int UnitId { get; set; }
