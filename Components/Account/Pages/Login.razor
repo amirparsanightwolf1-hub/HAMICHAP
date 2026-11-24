@@ -1,4 +1,5 @@
 ﻿@page "/Account/Login"
+@layout LoginLayout
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
@@ -14,130 +15,108 @@
 
 <PageTitle>@LocalizationService["Login"]</PageTitle>
 
-<h1>@LocalizationService["Login"]</h1>
-
-<div class="row">
-    <div class="col-lg-6">
-        <section>
-            <StatusMessage Message="@errorMessage" />
-
-            <EditForm EditContext="editContext"
-                      method="post"
-                      OnSubmit="LoginUser"
-                      FormName="login">
-
-                <DataAnnotationsValidator />
-
-                <h2>@LocalizationService["UseLocalAccountToLogin"]</h2>
-                <hr />
-
-                <ValidationSummary class="text-danger" role="alert" />
-
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email"
-                               id="Input.Email"
-                               class="form-control"
-                               autocomplete="username webauthn"
-                               aria-required="true"
-                               placeholder="name@example.com" />
-
-                    <label for="Input.Email" class="form-label">
-                        @LocalizationService["Email"]
-                    </label>
-
-                    <ValidationMessage For="() => Input.Email"
-                                       class="text-danger" />
+<div class="hc-login">
+    <div class="hc-login-shell">
+        <aside class="hc-login-brand" aria-label="HAMICHAP">
+            <div class="hc-login-brand-top">
+                <div class="hc-login-logo"><img src="images/Logo%20Wings%20navy%20blue.png" alt="HAMICHAP" /></div>
+                <div class="hc-login-brand-name">HAMICHAP<span>MES / ERP</span></div>
+            </div>
+            <div class="hc-login-brand-copy">
+                <div class="hc-login-kicker"><span></span> @T("PRINT & PACKAGING OPERATIONS", "مدیریت عملیات چاپ و بسته‌بندی")</div>
+                <h2>@T("Every job. One workspace.", "هر سفارش، یک فضای کاری.")</h2>
+                <p>@T("Manage your orders, materials and production from one connected system.", "سفارش‌ها، مواد اولیه و تولید را در یک سامانه یکپارچه مدیریت کنید.")</p>
+                <div class="hc-login-modules">
+                    <div><i class="bi bi-clipboard-check" aria-hidden="true"></i><span>@T("Sales & orders", "فروش و سفارش‌ها")</span></div>
+                    <div><i class="bi bi-boxes" aria-hidden="true"></i><span>@T("Inventory", "انبار و موجودی")</span></div>
+                    <div><i class="bi bi-gear" aria-hidden="true"></i><span>@T("Production", "تولید")</span></div>
+                </div>
+            </div>
+            <div class="hc-login-brand-footer"><i class="bi bi-shield-lock" aria-hidden="true"></i> @T("Employee workspace", "فضای کاری کارکنان")</div>
+        </aside>
+        <main class="hc-login-main">
+            <nav class="hc-login-language" aria-label="@T("Language", "زبان")">
+                <a class="@(!LocalizationService.IsPersian ? "is-active" : null)" href="@CultureUrl("en-US")" lang="en" aria-current="@(!LocalizationService.IsPersian ? "true" : null)">English</a>
+                <a class="@(LocalizationService.IsPersian ? "is-active" : null)" href="@CultureUrl("fa-IR")" lang="fa" aria-current="@(LocalizationService.IsPersian ? "true" : null)">فارسی</a>
+            </nav>
+            <section class="hc-login-form-area" aria-labelledby="hc-login-heading">
+                <div class="hc-login-intro">
+                    <div class="hc-login-form-icon"><i class="bi bi-person-lock" aria-hidden="true"></i></div>
+                    <h1 id="hc-login-heading">@T("Sign in to your workspace", "ورود به فضای کاری")</h1>
+                    <p>@T("Enter your account details to continue.", "برای ادامه، اطلاعات حساب خود را وارد کنید.")</p>
                 </div>
 
-                <div class="form-floating mb-3">
-                    <InputText type="password"
-                               @bind-Value="Input.Password"
-                               id="Input.Password"
-                               class="form-control"
-                               autocomplete="current-password"
-                               aria-required="true"
-                               placeholder="password" />
+                <StatusMessage Message="@(errorMessage is null ? null : string.Empty)" />
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger hc-login-error" role="alert">@errorMessage</div>
+                }
 
-                    <label for="Input.Password" class="form-label">
-                        @LocalizationService["Password"]
-                    </label>
+                <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger hc-login-validation" role="alert" />
 
-                    <ValidationMessage For="() => Input.Password"
-                                       class="text-danger" />
-                </div>
+                    <div class="hc-login-field">
+                        <label for="Input.Email">@LocalizationService["Email"]</label>
+                        <div class="hc-login-input">
+                            <i class="bi bi-envelope" aria-hidden="true"></i>
+                            <InputText @bind-Value="Input.Email" id="Input.Email"
+                                       class="form-control" dir="ltr" inputmode="email"
+                                       autocomplete="username webauthn" aria-required="true"
+                                       placeholder="name@example.com" />
+                        </div>
+                        <ValidationMessage For="() => Input.Email" class="text-danger" />
+                    </div>
 
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe"
-                                       class="darker-border-checkbox form-check-input" />
-                        @LocalizationService["RememberMe"]
-                    </label>
-                </div>
+                    <div class="hc-login-field">
+                        <label for="Input.Password">@LocalizationService["Password"]</label>
+                        <div class="hc-login-input">
+                            <i class="bi bi-lock" aria-hidden="true"></i>
+                            <InputText type="password" @bind-Value="Input.Password" id="Input.Password"
+                                       class="form-control" dir="ltr" autocomplete="current-password"
+                                       aria-required="true" placeholder="@T("Enter password", "رمز عبور")" />
+                        </div>
+                        <ValidationMessage For="() => Input.Password" class="text-danger" />
+                    </div>
 
-                <div>
-                    <button type="submit"
-                            class="w-100 btn btn-lg btn-primary">
-                        @LocalizationService["Login"]
+                    <div class="hc-login-options">
+                        <label class="hc-login-remember">
+                            <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" />
+                            <span>@LocalizationService["RememberMe"]</span>
+                        </label>
+                        <a href="Account/ForgotPassword">@LocalizationService["ForgotPassword"]</a>
+                    </div>
+
+                    <button type="submit" class="hc-login-submit">
+                        <span>@LocalizationService["Login"]</span><i class="bi @(LocalizationService.IsPersian ? "bi-arrow-left" : "bi-arrow-right")" aria-hidden="true"></i>
                     </button>
-                </div>
 
-                <hr />
-
-                <div class="d-flex flex-column">
-                    <span class="text-secondary mx-auto mt-2">
-                        @LocalizationService["Or"]
-                    </span>
-
-                    <PasskeySubmit Operation="PasskeyOperation.Request"
-                                   Name="Input.Passkey"
-                                   EmailName="Input.Email"
-                                   class="btn btn-link mx-auto">
-                        @LocalizationService["LoginWithPasskey"]
+                    <div class="hc-login-divider"><span>@LocalizationService["Or"]</span></div>
+                    <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email" class="hc-login-passkey">
+                        <i class="bi bi-fingerprint" aria-hidden="true"></i><span>@LocalizationService["LoginWithPasskey"]</span>
                     </PasskeySubmit>
+                </EditForm>
+
+                <ExternalLoginPicker HideWhenEmpty="true" />
+
+                <div class="hc-login-help">
+                    <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
+                        @LocalizationService["RegisterAsNewUser"]
+                    </a>
+                    <a href="Account/ResendEmailConfirmation">@LocalizationService["ResendEmailConfirmation"]</a>
                 </div>
-
-                <hr />
-
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">
-                            @LocalizationService["ForgotPassword"]
-                        </a>
-                    </p>
-
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters(
-                                                       "Account/Register",
-                                                       new Dictionary<string, object?>
-                                                       {
-                                                           ["ReturnUrl"] = ReturnUrl
-                                                       }))">
-                            @LocalizationService["RegisterAsNewUser"]
-                        </a>
-                    </p>
-
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">
-                            @LocalizationService["ResendEmailConfirmation"]
-                        </a>
-                    </p>
-                </div>
-
-            </EditForm>
-        </section>
-    </div>
-
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>@LocalizationService["UseAnotherServiceToLogin"]</h3>
-            <hr />
-
-            <ExternalLoginPicker />
-        </section>
+            </section>
+            <footer class="hc-login-footer">HAMICHAP · MES / ERP</footer>
+        </main>
     </div>
 </div>
 
 @code {
+    private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+
+    private string CultureUrl(string culture) =>
+        $"/Culture/Set?culture={Uri.EscapeDataString(culture)}&redirectUri={Uri.EscapeDataString(new Uri(NavigationManager.Uri).PathAndQuery)}";
+
     private string? errorMessage;
     private EditContext editContext = default!;
 

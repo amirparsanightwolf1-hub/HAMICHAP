@@ -1,0 +1,91 @@
+/* Standalone login; deliberately scoped away from the application shell. */
+.hc-login {
+    min-height:100vh; min-height:100dvh; display:grid; place-items:center;
+    padding:32px; background:radial-gradient(ellipse at 12% 18%,#e1edf7 0,transparent 48%),#f3f6fa;
+}
+.hc-login-shell {
+    display:grid; grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);
+    width:min(100%,1080px); min-height:650px; overflow:hidden;
+    background:#fff; border:1px solid #dfe6ee; border-radius:22px;
+    box-shadow:0 18px 60px rgba(15,42,70,.12);
+}
+.hc-login-brand {
+    position:relative; isolation:isolate; overflow:hidden; color:#fff;
+    background:linear-gradient(145deg,#102d4a,#0b416b 68%,#0c568d);
+    display:flex; flex-direction:column; justify-content:space-between; gap:42px; padding:38px;
+}
+.hc-login-brand::before {
+    content:""; position:absolute; z-index:-1; inset:0;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+    background-size:36px 36px; mask-image:linear-gradient(145deg,transparent 8%,#000);
+}
+.hc-login-brand::after { content:""; position:absolute; z-index:-1; width:420px; height:420px; inset-inline-end:-210px; bottom:-170px; border:1px solid rgba(255,255,255,.18); border-radius:50%; box-shadow:0 0 0 36px rgba(255,255,255,.035),0 0 0 72px rgba(255,255,255,.025); }
+.hc-login-brand-top { display:flex; gap:13px; align-items:center; }
+.hc-login-logo { display:grid; place-items:center; width:64px; height:64px; flex:0 0 64px; border-radius:14px; background:#fff; padding:8px; }
+.hc-login-logo img { width:100%; height:100%; object-fit:contain; }
+.hc-login-brand-name { font-family:'Yekan Bakh',sans-serif; font-size:1.18rem; font-weight:750; letter-spacing:.055em; line-height:1.2; direction:ltr; }
+.hc-login-brand-name span { display:block; margin-top:6px; color:#bed3e7; font-size:.71rem; font-weight:500; letter-spacing:.18em; }
+.hc-login-brand-copy { max-width:390px; }
+.hc-login-kicker { display:flex; gap:8px; align-items:center; font-size:.68rem; letter-spacing:.09em; color:#bcd9f1; font-weight:650; }
+.hc-login-kicker > span { display:block; width:7px; height:7px; border-radius:50%; background:#9ed3f6; flex:0 0 7px; }
+.hc-login-brand-copy h2 { font-size:clamp(1.7rem,3.5vw,2.5rem); color:#fff; line-height:1.25; margin:15px 0; letter-spacing:-.025em; font-weight:750; }
+.hc-login-brand-copy p { color:#d0e0ee; font-size:.95rem; line-height:1.75; margin:0; }
+.hc-login-modules { display:grid; gap:11px; margin-top:30px; }
+.hc-login-modules > div { display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid rgba(255,255,255,.15); border-radius:9px; background:rgba(255,255,255,.06); font-size:.88rem; }
+.hc-login-modules i { font-size:1.1rem; color:#beddf5; }
+.hc-login-brand-footer { display:flex; align-items:center; gap:8px; color:#c8d9e8; font-size:.8rem; }
+.hc-login-main { display:flex; flex-direction:column; min-width:0; padding:25px clamp(28px,4vw,62px) 22px; }
+.hc-login-language { display:flex; align-self:flex-end; gap:3px; padding:3px; border:1px solid #dfe6ee; border-radius:9px; background:#f6f8fb; }
+.hc-login-language a { color:#64748b; padding:5px 10px; border-radius:6px; text-decoration:none; font-size:.78rem; line-height:1.5; }
+.hc-login-language a.is-active { background:white; color:#0c568d; font-weight:700; box-shadow:0 1px 4px rgba(15,42,70,.12); }
+.hc-login-form-area { width:100%; max-width:415px; margin:auto; padding:23px 0; }
+.hc-login-intro { margin-bottom:26px; }
+.hc-login-form-icon { display:grid; place-items:center; width:44px; height:44px; border-radius:12px; background:#eaf3fa; color:#0c568d; font-size:1.28rem; margin-bottom:13px; }
+.hc-login-intro h1 { margin:0 0 7px; color:#172e45; font-weight:750; font-size:clamp(1.45rem,2.6vw,1.85rem); line-height:1.3; letter-spacing:-.025em; }
+.hc-login-intro p { color:#64748b; margin:0; font-size:.9rem; line-height:1.6; }
+.hc-login-field { display:grid; gap:7px; margin-bottom:16px; }
+.hc-login-field > label { font-weight:650; font-size:.86rem; color:#30465e; }
+.hc-login-input { position:relative; }
+.hc-login-input > i { position:absolute; inset-inline-start:14px; top:50%; transform:translateY(-50%); color:#71849a; pointer-events:none; font-size:1rem; }
+.hc-login-input .form-control { width:100%; min-height:49px; border:1px solid #ced9e5; border-radius:9px; background:#fff; color:#1f2937; font-family:inherit; font-size:.95rem; padding:12px 14px; padding-inline-start:42px; outline:none; }
+[dir=rtl] .hc-login-input .form-control[dir=ltr] { padding-left:14px; padding-right:42px; }
+.hc-login-input .form-control:focus { border-color:#327cac; box-shadow:0 0 0 3px rgba(12,86,141,.12); }
+.hc-login-input .form-control.invalid { border-color:#c53b46; }
+.hc-login-validation:empty { display:none; }
+.hc-login-validation ul { padding-inline-start:20px; margin:0 0 12px; font-size:.82rem; }
+.hc-login-field .validation-message { font-size:.78rem; color:#b4232e; }
+.hc-login-error { border-radius:9px; margin-bottom:15px; font-size:.87rem; }
+.hc-login-options { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin:4px 0 20px; font-size:.82rem; }
+.hc-login-remember { display:flex; align-items:center; gap:7px; color:#475569; cursor:pointer; }
+.hc-login-remember input { width:16px; height:16px; margin:0; accent-color:#0c568d; }
+.hc-login-options a,.hc-login-help a { color:#0c568d; font-weight:600; text-decoration:none; }
+.hc-login-options a:hover,.hc-login-help a:hover { text-decoration:underline; }
+.hc-login-submit,.hc-login-passkey { display:flex; width:100%; align-items:center; justify-content:center; gap:10px; min-height:48px; padding:12px 16px; border-radius:9px; border:1px solid #0c568d; background:#0c568d; color:#fff; font:inherit; font-weight:650; cursor:pointer; transition:background .15s,border-color .15s; }
+.hc-login-submit:hover { background:#08446f; border-color:#08446f; }
+.hc-login-passkey { background:#fff; color:#30465e; border-color:#ced9e5; font-size:.88rem; }
+.hc-login-passkey:hover { background:#f3f7fb; border-color:#8ba9c1; }
+.hc-login-submit:focus-visible,.hc-login-passkey:focus-visible { outline:3px solid #72acd1; outline-offset:3px; }
+.hc-login-divider { display:flex; align-items:center; gap:12px; font-size:.76rem; color:#718198; margin:16px 0; }
+.hc-login-divider::before,.hc-login-divider::after { content:""; height:1px; background:#e0e7ef; flex:1; }
+.hc-login-main .form-horizontal { margin-top:12px; }
+.hc-login-main .form-horizontal p { display:flex; flex-wrap:wrap; gap:8px; margin:0; }
+.hc-login-main .form-horizontal button { flex:1; }
+.hc-login-help { display:flex; flex-wrap:wrap; justify-content:center; gap:10px 18px; margin-top:22px; padding-top:18px; border-top:1px solid #e7edf3; font-size:.78rem; text-align:center; }
+.hc-login-footer { text-align:center; font-size:.7rem; color:#718198; letter-spacing:.06em; direction:ltr; }
+[dir=rtl] .hc-login-brand-name { text-align:right; }
+[dir=rtl] .hc-login-kicker,[dir=rtl] .hc-login-brand-copy h2,[dir=rtl] .hc-login-intro h1 { letter-spacing:normal; }
+@media(max-width:800px) {
+    .hc-login { padding:20px; align-items:start; }
+    .hc-login-shell { grid-template-columns:1fr; max-width:550px; min-height:0; border-radius:16px; }
+    .hc-login-brand { gap:0; padding:19px 25px; }
+    .hc-login-logo { width:46px; height:46px; flex-basis:46px; border-radius:10px; padding:6px; }
+    .hc-login-brand-copy,.hc-login-brand-footer { display:none; }
+    .hc-login-main { padding:18px 25px 22px; }
+    .hc-login-form-area { padding:18px 0 26px; }
+}
+@media(max-width:380px) {
+    .hc-login { padding:10px; }
+    .hc-login-main { padding-inline:18px; }
+    .hc-login-options { align-items:flex-start; }
+}
+@media(prefers-reduced-motion:reduce) { .hc-login * { transition:none!important; } }
