@@ -212,13 +212,11 @@
                     </div>
                     <div class="label-specification-field">
                         <label>@LocalizationService["ColorCount"]</label>
-                        <InputSelect class="form-select" @bind-Value="spec.ColorCount">
-                            <option value="">@LocalizationService["SelectColorCount"]</option>
-                            @for (var color = 1; color <= 10; color++)
-                            {
-                                <option value="@color">@color</option>
-                            }
-                        </InputSelect>
+                        <input class="form-control" value="@PlateCount" readonly />
+                    </div>
+                    <div class="label-specification-field">
+                        <label>@LocalizationService["Zinc"]</label>
+                        <input class="form-control" value="@PlateCount" readonly />
                     </div>
                     <div class="label-specification-field">
                         <label>@LocalizationService["PrintingNotes"]</label>
@@ -247,53 +245,7 @@
                                 </div>
                             </section>
 
-                            <section class="roll-pantone-panel" aria-label="@LocalizationService["RollPantoneColors"]">
-                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                                    <strong>@LocalizationService["RollPantoneColors"]</strong>
-                                    <span class="text-muted small">@LocalizationService["RollPantoneMultipleHint"]</span>
-                                </div>
-                                <div class="roll-pantone-inputs">
-                                    <div>
-                                        <label class="form-label" for="roll-pantone-code">@LocalizationService["RollPantoneReference"]</label>
-                                        <input id="roll-pantone-code" type="text" class="form-control" maxlength="64"
-                                               @bind="pantoneCode" @bind:event="oninput"
-                                               @onkeydown="HandlePantoneKeyDown"
-                                               placeholder="@LocalizationService["RollPantoneCodeExample"]" />
-                                    </div>
-                                    <div>
-                                        <label class="form-label" for="roll-pantone-color">@LocalizationService["RollPantonePreviewColor"]</label>
-                                        <input id="roll-pantone-color" type="color" class="form-control form-control-color roll-pantone-picker"
-                                               @bind="pantoneHex" />
-                                    </div>
-                                    <button type="button" class="btn btn-outline-primary roll-pantone-add"
-                                            @onclick="AddPantoneColor">
-                                        <i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["RollPantoneAdd"]
-                                    </button>
-                                </div>
-                                @if (!string.IsNullOrWhiteSpace(pantoneError))
-                                {
-                                    <div class="text-danger small mt-2" role="alert">@pantoneError</div>
-                                }
-                                <div class="small text-muted mt-2">@LocalizationService["RollPantonePreviewDisclaimer"]</div>
-                                @if (spec.PantoneColors is { Count: > 0 })
-                                {
-                                    <ul class="roll-pantone-list">
-                                        @foreach (var color in spec.PantoneColors)
-                                        {
-                                            <li class="roll-pantone-entry" @key="color">
-                                                <span class="roll-pantone-swatch" style="@($"background-color:{color.SafeHex}")" aria-hidden="true"></span>
-                                                <span class="roll-pantone-name">@color.Code</span>
-                                                <span class="roll-pantone-hex">@color.SafeHex</span>
-                                                <button type="button" class="btn btn-sm btn-outline-danger"
-                                                        aria-label="@($"{LocalizationService["RollPantoneRemove"]}: {color.Code}")"
-                                                        @onclick="() => RemovePantoneColor(color)">
-                                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
-                                                </button>
-                                            </li>
-                                        }
-                                    </ul>
-                                }
-                            </section>
+                            <JobPantonePicker Colors="spec.PantoneColors" IdPrefix="roll-pantone" Changed="RefreshColorCount" />
                         </div>
                     </div>
                     <div class="label-specification-field">
@@ -537,69 +489,21 @@
     private bool canEditArtwork;
     private bool canEditSpecifications;
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
-    private string pantoneCode = "";
-    private string pantoneHex = "#DB2635";
-    private string? pantoneError;
+    private int PlateCount => frontCmykColors.Count + (spec.PantoneColors?.Count ?? 0);
+    private void RefreshColorCount() { spec.ColorCount = PlateCount; spec.Zinc = PlateCount.ToString(System.Globalization.CultureInfo.InvariantCulture); }
     private static readonly (string Key, string LocalizationKey, string Css)[] CmykColors =
     {
         ("C", "CmykCyan", "cmyk-c"), ("M", "CmykMagenta", "cmyk-m"),
         ("Y", "CmykYellow", "cmyk-y"), ("K", "CmykBlack", "cmyk-k")
     };
 
-    private static void ToggleCmykColor(HashSet<string> selection, string color)
+    private void ToggleCmykColor(HashSet<string> selection, string color)
     {
         if (!selection.Add(color)) selection.Remove(color);
+        RefreshColorCount();
     }
 
-    // Typing a Pantone reference and pressing Enter adds it without another click.
-    private void HandlePantoneKeyDown(KeyboardEventArgs args)
-    {
-        if (args.Key == "Enter")
-            AddPantoneColor();
-    }
 
-    private void AddPantoneColor()
-    {
-        pantoneError = null;
-        var reference = pantoneCode.Trim();
-        if (reference.Length < 2 || reference.Length > 64)
-        {
-            pantoneError = LocalizationService["RollPantoneInvalidReference"];
-            return;
-        }
-        if (!RollPantoneColor.IsValidHex(pantoneHex))
-        {
-            pantoneError = LocalizationService["RollPantoneInvalidSwatch"];
-            return;
-        }
-        spec.PantoneColors ??= new();
-        var existing = spec.PantoneColors.FirstOrDefault(x =>
-            string.Equals(x.Code, reference, StringComparison.OrdinalIgnoreCase));
-        if (existing is not null)
-        {
-            existing.Hex = pantoneHex.ToUpperInvariant();
-        }
-        else
-        {
-            if (spec.PantoneColors.Count >= 24)
-            {
-                pantoneError = LocalizationService["RollPantoneLimit"];
-                return;
-            }
-            spec.PantoneColors.Add(new RollPantoneColor
-            {
-                Code = reference,
-                Hex = pantoneHex.ToUpperInvariant()
-            });
-        }
-        pantoneCode = "";
-    }
-
-    private void RemovePantoneColor(RollPantoneColor color)
-    {
-        spec.PantoneColors.Remove(color);
-        pantoneError = null;
-    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -663,8 +567,8 @@
                 frontCmykColors = ReadColorSelection(savedJson?["FrontCmykColors"]);
                 spec.PantoneColors ??= new();
                 spec.SelectedServices ??= new();
-                pantoneCode = "";
-                pantoneError = null;
+                foreach (var color in spec.PantoneColors) color.EnsureCmyk();
+                RefreshColorCount();
             }
             catch (JsonException)
             {
@@ -941,6 +845,7 @@
             // Update only this job's quotation line, preserving per-item proofs.
             await SalesJobQuotationLineSync.SyncAsync(
                 Db, request, item, orderedQuantity.Value);
+            RefreshColorCount();
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(frontCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
             var workflowJson = new JsonObject();

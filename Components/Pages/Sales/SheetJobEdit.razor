@@ -192,7 +192,7 @@
                     </div>
 
                     <label class="form-label">@LocalizationService["Zinc"]</label>
-                    <InputText class="form-control" @bind-Value="spec.Zinc" />
+                    <input class="form-control" value="@PlateCount" readonly />
 
                     <label class="form-label">@LocalizationService["DieCut"]</label>
                     <InputText class="form-control" @bind-Value="spec.Die" />
@@ -301,10 +301,10 @@
 
                 <div class="order-info-grid mt-3">
                     <label class="form-label" for="front-pantone-colors">@LocalizationService["FrontPantoneColors"]</label>
-                    <InputText id="front-pantone-colors" class="form-control" @bind-Value="frontPantoneColors" placeholder="@LocalizationService["EnterFrontPantoneColors"]" />
+                    <JobPantonePicker Colors="frontPantoneColors" IdPrefix="front-pantone" Changed="RefreshPlateCount" />
 
                     <label class="form-label" for="back-pantone-colors">@LocalizationService["BackPantoneColors"]</label>
-                    <InputText id="back-pantone-colors" class="form-control" @bind-Value="backPantoneColors" placeholder="@LocalizationService["EnterBackPantoneColors"]" />
+                    <JobPantonePicker Colors="backPantoneColors" IdPrefix="back-pantone" Changed="RefreshPlateCount" />
 
                     <label class="form-label" for="mixed-front-colors">@LocalizationService["MixedFrontColors"]</label>
                     <InputText id="mixed-front-colors" class="form-control" @bind-Value="mixedFrontColors" placeholder="@LocalizationService["EnterMixedFrontColors"]" />
@@ -452,8 +452,10 @@
     private bool canEditSpecifications;
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> backCmykColors = new(StringComparer.OrdinalIgnoreCase);
-    private string frontPantoneColors = string.Empty;
-    private string backPantoneColors = string.Empty;
+    private List<RollPantoneColor> frontPantoneColors = new();
+    private List<RollPantoneColor> backPantoneColors = new();
+    private int PlateCount => frontCmykColors.Count + backCmykColors.Count + frontPantoneColors.Count + backPantoneColors.Count;
+    private void RefreshPlateCount() => spec.Zinc = PlateCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
     private string mixedFrontColors = string.Empty;
     private string mixedBackColors = string.Empty;
     private string finishType = string.Empty;
@@ -552,8 +554,12 @@
                 var savedJson = JsonNode.Parse(request.JobSpecificationJson) as JsonObject;
                 frontCmykColors = ReadColorSelection(savedJson?["FrontCmykColors"]);
                 backCmykColors = ReadColorSelection(savedJson?["BackCmykColors"]);
-                frontPantoneColors = savedJson?["FrontPantoneColors"]?.GetValue<string>() ?? string.Empty;
-                backPantoneColors = savedJson?["BackPantoneColors"]?.GetValue<string>() ?? string.Empty;
+                frontPantoneColors = savedJson?["FrontPantoneSwatches"]?.Deserialize<List<RollPantoneColor>>()
+                    ?? RollPantoneColor.FromLegacyReferences(savedJson?["FrontPantoneColors"]?.GetValue<string>() ?? "");
+                backPantoneColors = savedJson?["BackPantoneSwatches"]?.Deserialize<List<RollPantoneColor>>()
+                    ?? RollPantoneColor.FromLegacyReferences(savedJson?["BackPantoneColors"]?.GetValue<string>() ?? "");
+                foreach (var color in frontPantoneColors.Concat(backPantoneColors)) color.EnsureCmyk();
+                RefreshPlateCount();
                 mixedFrontColors = savedJson?["MixedFrontColors"]?.GetValue<string>() ?? string.Empty;
                 mixedBackColors = savedJson?["MixedBackColors"]?.GetValue<string>() ?? string.Empty;
                 finishType = savedJson?["FinishType"]?.GetValue<string>() ?? string.Empty;
@@ -826,13 +832,16 @@
             await SalesJobQuotationLineSync.SyncAsync(
                 Db, request, item, orderedQuantity.Value);
 
+            RefreshPlateCount();
             var savedSpec = JsonNode.Parse(JsonSerializer.Serialize(spec)) as JsonObject ?? new JsonObject();
             savedSpec["FrontCmykColors"] = new JsonArray(
                 frontCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
             savedSpec["BackCmykColors"] = new JsonArray(
                 backCmykColors.OrderBy(c => c).Select(c => (JsonNode?)JsonValue.Create(c)).ToArray());
-            savedSpec["FrontPantoneColors"] = frontPantoneColors;
-            savedSpec["BackPantoneColors"] = backPantoneColors;
+            savedSpec["FrontPantoneColors"] = string.Join(", ", frontPantoneColors.Select(c => c.Code));
+            savedSpec["BackPantoneColors"] = string.Join(", ", backPantoneColors.Select(c => c.Code));
+            savedSpec["FrontPantoneSwatches"] = JsonSerializer.SerializeToNode(frontPantoneColors);
+            savedSpec["BackPantoneSwatches"] = JsonSerializer.SerializeToNode(backPantoneColors);
             savedSpec["MixedFrontColors"] = mixedFrontColors;
             savedSpec["MixedBackColors"] = mixedBackColors;
             savedSpec["FinishType"] = finishType;

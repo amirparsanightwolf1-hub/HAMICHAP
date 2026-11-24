@@ -1,0 +1,89 @@
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Shared.Services
+@inject LocalizationService LocalizationService
+
+<section class="roll-pantone-panel">
+    <strong>@LocalizationService["RollPantoneColors"]</strong>
+    <div class="mt-2">
+        <label class="form-label" for="@(IdPrefix + "-code")">@LocalizationService["RollPantoneReference"]</label>
+        <input id="@(IdPrefix + "-code")" class="form-control" maxlength="64" @bind="code" @bind:event="oninput"
+               placeholder="@LocalizationService["RollPantoneCodeExample"]" />
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-items-end mt-2">
+        <div><label for="@(IdPrefix + "-c")">C %</label><input id="@(IdPrefix + "-c")" class="form-control" type="number" min="0" max="100" @bind="cyan" @bind:event="oninput" /></div>
+        <div><label for="@(IdPrefix + "-m")">M %</label><input id="@(IdPrefix + "-m")" class="form-control" type="number" min="0" max="100" @bind="magenta" @bind:event="oninput" /></div>
+        <div><label for="@(IdPrefix + "-y")">Y %</label><input id="@(IdPrefix + "-y")" class="form-control" type="number" min="0" max="100" @bind="yellow" @bind:event="oninput" /></div>
+        <div><label for="@(IdPrefix + "-k")">K %</label><input id="@(IdPrefix + "-k")" class="form-control" type="number" min="0" max="100" @bind="black" @bind:event="oninput" /></div>
+        <span class="roll-pantone-swatch" style="@($"background-color:{RollPantoneColor.PreviewHex(cyan, magenta, yellow, black)}")" aria-hidden="true"></span>
+        <button type="button" class="btn btn-outline-primary" @onclick="AddAsync">@LocalizationService["RollPantoneAdd"]</button>
+    </div>
+    @if (error is not null)
+    {
+        <div class="text-danger small" role="alert">@error</div>
+    }
+    <div class="small text-muted mt-2">@LocalizationService["RollPantonePreviewDisclaimer"]</div>
+    <ul class="roll-pantone-list">
+        @foreach (var color in Colors)
+        {
+            <li class="roll-pantone-entry" @key="color">
+                <span class="roll-pantone-swatch" style="@($"background-color:{color.SafeHex}")" aria-hidden="true"></span>
+                <span class="roll-pantone-name">@color.Code</span>
+                <span dir="ltr">C @color.Cyan / M @color.Magenta / Y @color.Yellow / K @color.Black</span>
+                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => Edit(color)">@LocalizationService["Edit"]</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => RemoveAsync(color)">@LocalizationService["RollPantoneRemove"]</button>
+            </li>
+        }
+    </ul>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public List<RollPantoneColor> Colors { get; set; } = new();
+    [Parameter, EditorRequired] public string IdPrefix { get; set; } = "";
+    [Parameter] public EventCallback Changed { get; set; }
+    private string code = "";
+    private int cyan, magenta, yellow, black;
+    private string? error;
+
+    private void Edit(RollPantoneColor color)
+    {
+        color.EnsureCmyk();
+        code = color.Code;
+        cyan = color.Cyan ?? 0; magenta = color.Magenta ?? 0;
+        yellow = color.Yellow ?? 0; black = color.Black ?? 0;
+        error = null;
+    }
+
+    private async Task AddAsync()
+    {
+        error = null;
+        var reference = code.Trim();
+        if (reference.Length < 2 || reference.Length > 64)
+        {
+            error = LocalizationService["RollPantoneInvalidReference"];
+            return;
+        }
+        if (new[] { cyan, magenta, yellow, black }.Any(v => v < 0 || v > 100))
+        {
+            error = "CMYK: 0–100%";
+            return;
+        }
+        var color = Colors.FirstOrDefault(x => string.Equals(x.Code, reference, StringComparison.OrdinalIgnoreCase));
+        if (color is null)
+        {
+            if (Colors.Count >= 24) { error = LocalizationService["RollPantoneLimit"]; return; }
+            color = new RollPantoneColor { Code = reference };
+            Colors.Add(color);
+        }
+        color.Cyan = cyan; color.Magenta = magenta; color.Yellow = yellow; color.Black = black;
+        color.Hex = color.SafeHex;
+        code = "";
+        await Changed.InvokeAsync();
+    }
+
+    private async Task RemoveAsync(RollPantoneColor color)
+    {
+        Colors.Remove(color);
+        error = null;
+        await Changed.InvokeAsync();
+    }
+}
