@@ -8,42 +8,55 @@
    It must not be entered independently: quotations still read that saved line. *@
 <div class="card shadow-sm mb-4" id="sales-workflow">
     <div class="card-header">
+        <span class="job-edit-section-icon"><i class="bi bi-clipboard-check" aria-hidden="true"></i></span>
         <strong>@LocalizationService["OrderInformation"]</strong>
     </div>
     <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label">@LocalizationService["Status"]</label>
-                <input class="form-control" value="@LocalizationService.TranslateEnum(Request.Status)" readonly />
+        <dl class="job-workflow-summary">
+            <div class="job-workflow-fact">
+                <span class="job-workflow-fact-icon"><i class="bi bi-activity" aria-hidden="true"></i></span>
+                <div>
+                    <dt>@LocalizationService["Status"]</dt>
+                    <dd>@LocalizationService.TranslateEnum(Request.Status)</dd>
+                </div>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">@LocalizationService["CreatedBy"]</label>
-                <input class="form-control" value="@UserDisplayName(Request.CreatedByUser)" readonly />
+            <div class="job-workflow-fact">
+                <span class="job-workflow-fact-icon"><i class="bi bi-person-plus" aria-hidden="true"></i></span>
+                <div>
+                    <dt>@LocalizationService["CreatedBy"]</dt>
+                    <dd>@UserDisplayName(Request.CreatedByUser)</dd>
+                </div>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">@LocalizationService["AssignedEvaluator"]</label>
-                <input class="form-control" value="@UserDisplayName(Request.AssignedToUser)" readonly />
+            <div class="job-workflow-fact">
+                <span class="job-workflow-fact-icon"><i class="bi bi-person-check" aria-hidden="true"></i></span>
+                <div>
+                    <dt>@LocalizationService["AssignedEvaluator"]</dt>
+                    <dd>@UserDisplayName(Request.AssignedToUser)</dd>
+                </div>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">@LocalizationService["RequestedDeliveryDate"]</label>
+        </dl>
+
+        <div class="job-workflow-fields">
+            <div class="job-workflow-field">
+                <label class="form-label" for="job-workflow-delivery"><i class="bi bi-calendar-event app-field-icon" aria-hidden="true"></i> @LocalizationService["RequestedDeliveryDate"]</label>
                 @if (IsDraft)
                 {
-                    <InputDate class="form-control" @bind-Value="Request.RequestedDeliveryDate" />
+                    <InputDate id="job-workflow-delivery" class="form-control" @bind-Value="Request.RequestedDeliveryDate" />
                 }
                 else
                 {
-                    <input class="form-control" value="@(Request.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")" readonly />
+                    <input id="job-workflow-delivery" class="form-control" value="@(Request.RequestedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")" readonly />
                 }
             </div>
-            <div class="col-md-12">
-                <label class="form-label">@LocalizationService["Notes"]</label>
+            <div class="job-workflow-field">
+                <label class="form-label" for="job-workflow-notes"><i class="bi bi-chat-left-text app-field-icon" aria-hidden="true"></i> @LocalizationService["Notes"]</label>
                 @if (IsDraft)
                 {
-                    <textarea class="form-control" rows="3" @bind="Request.Notes"></textarea>
+                    <textarea id="job-workflow-notes" class="form-control" rows="3" @bind="Request.Notes"></textarea>
                 }
                 else
                 {
-                    <textarea class="form-control" rows="3" readonly>@Request.Notes</textarea>
+                    <textarea id="job-workflow-notes" class="form-control" rows="3" readonly>@Request.Notes</textarea>
                 }
             </div>
         </div>
