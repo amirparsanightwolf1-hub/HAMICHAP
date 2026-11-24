@@ -429,28 +429,28 @@
     align-items: start;
     gap: 15px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-panel {
+.job-edit-page .roll-pantone-panel {
     min-width: 0;
     background: #f9fbfd;
     border: 1px solid var(--je-accent-border);
     border-radius: 13px;
     padding: 19px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-panel strong {
+.job-edit-page .roll-pantone-panel strong {
     color: var(--je-accent-strong);
 }
-.job-edit-page.job-edit-roll .roll-pantone-inputs {
+.job-edit-page .roll-pantone-inputs {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(110px, 150px);
     gap: 10px;
     align-items: end;
 }
-.job-edit-page.job-edit-roll .roll-pantone-inputs label {
+.job-edit-page .roll-pantone-inputs label {
     font-size: .8rem;
     font-weight: 650;
     color: var(--je-ink);
 }
-.job-edit-page.job-edit-roll .roll-pantone-picker {
+.job-edit-page .roll-pantone-picker {
     display: block;
     width: 100%;
     min-height: 44px;
@@ -458,19 +458,19 @@
     cursor: pointer;
     border-radius: 9px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-add {
+.job-edit-page .roll-pantone-add {
     grid-column: 1 / -1;
     min-height: 44px;
     font-weight: 650;
 }
-.job-edit-page.job-edit-roll .roll-pantone-list {
+.job-edit-page .roll-pantone-list {
     list-style: none;
     margin: 12px 0 0;
     padding: 0;
     display: grid;
     gap: 7px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-entry {
+.job-edit-page .roll-pantone-entry {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -480,7 +480,7 @@
     border: 1px solid #dce5ed;
     border-radius: 9px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-swatch {
+.job-edit-page .roll-pantone-swatch {
     display: block;
     flex: 0 0 30px;
     width: 30px;
@@ -488,19 +488,19 @@
     border: 1px solid rgba(0,0,0,.18);
     border-radius: 7px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-name {
+.job-edit-page .roll-pantone-name {
     flex: 1;
     min-width: 0;
     overflow-wrap: anywhere;
     font-size: .89rem;
     font-weight: 650;
 }
-.job-edit-page.job-edit-roll .roll-pantone-hex {
+.job-edit-page .roll-pantone-hex {
     font-size: .74rem;
     font-variant-numeric: tabular-nums;
     color: #6b7b91;
 }
-.job-edit-page.job-edit-roll .roll-pantone-entry .btn {
+.job-edit-page .roll-pantone-entry .btn {
     flex: 0 0 auto;
     min-height: 36px;
     min-width: 36px;
@@ -511,13 +511,13 @@
     }
 }
 @media (max-width: 390px) {
-    .job-edit-page.job-edit-roll .roll-pantone-panel {
+    .job-edit-page .roll-pantone-panel {
         padding: 13px;
     }
-    .job-edit-page.job-edit-roll .roll-pantone-inputs {
+    .job-edit-page .roll-pantone-inputs {
         grid-template-columns: minmax(0, 1fr);
     }
-    .job-edit-page.job-edit-roll .roll-pantone-add {
+    .job-edit-page .roll-pantone-add {
         grid-column: auto;
     }
 }
@@ -1019,21 +1019,21 @@
     font-size: .81rem;
 }
 .job-edit-page.job-edit-roll .roll-colors-layout { gap: 8px; }
-.job-edit-page.job-edit-roll .roll-pantone-panel {
+.job-edit-page .roll-pantone-panel {
     padding: 10px;
     border-radius: 9px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-inputs {
+.job-edit-page .roll-pantone-inputs {
     grid-template-columns: minmax(0, 1fr) 60px auto;
     gap: 7px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-inputs label { font-size: .7rem; }
-.job-edit-page.job-edit-roll .roll-pantone-picker {
+.job-edit-page .roll-pantone-inputs label { font-size: .7rem; }
+.job-edit-page .roll-pantone-picker {
     min-height: 34px;
     height: 34px;
     padding: 3px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-add {
+.job-edit-page .roll-pantone-add {
     grid-column: auto;
     min-height: 34px;
     padding: 5px 9px;
@@ -1041,26 +1041,26 @@
     font-size: .73rem;
     white-space: nowrap;
 }
-.job-edit-page.job-edit-roll .roll-pantone-list {
+.job-edit-page .roll-pantone-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-top: 7px;
     gap: 5px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-entry {
+.job-edit-page .roll-pantone-entry {
     padding: 5px 6px;
     gap: 5px;
     border-radius: 6px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-swatch {
+.job-edit-page .roll-pantone-swatch {
     width: 23px;
     height: 23px;
     flex-basis: 23px;
     border-radius: 5px;
 }
-.job-edit-page.job-edit-roll .roll-pantone-name { font-size: .75rem; }
-.job-edit-page.job-edit-roll .roll-pantone-hex { font-size: .67rem; }
-.job-edit-page.job-edit-roll .roll-pantone-entry .btn {
+.job-edit-page .roll-pantone-name { font-size: .75rem; }
+.job-edit-page .roll-pantone-hex { font-size: .67rem; }
+.job-edit-page .roll-pantone-entry .btn {
     min-width: 28px;
     min-height: 28px;
     padding: 3px;
@@ -1259,7 +1259,7 @@
         gap: 6px 8px;
     }
     .job-edit-page .order-info-grid .form-label:not(:first-child) { margin-top: 0; }
-    .job-edit-page.job-edit-roll .roll-pantone-inputs {
+    .job-edit-page .roll-pantone-inputs {
         grid-template-columns: minmax(0, 1fr) 58px auto;
     }
     .job-edit-page .job-edit-save-bar { bottom: 6px; }
@@ -1275,7 +1275,7 @@
     .job-edit-page .job-edit-context-status { border-top: 1px solid var(--je-line); }
     .job-edit-page .job-edit-context-status { align-items: flex-start; }
     .job-edit-page .job-edit-service-grid { grid-template-columns: minmax(0, 1fr); }
-    .job-edit-page.job-edit-roll .roll-pantone-list { grid-template-columns: minmax(0, 1fr); }
+    .job-edit-page .roll-pantone-list { grid-template-columns: minmax(0, 1fr); }
     .job-edit-page .job-edit-save-message { display: none; }
     .job-edit-page .job-edit-save-button { width: 100%; min-height: 42px; }
     .job-edit-page .cmyk-options { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -1293,10 +1293,10 @@
     .job-edit-page .label-specifications-grid,
     .job-edit-page .workflow-fields-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .job-edit-page .job-edit-section-hint { display: none; }
-    .job-edit-page.job-edit-roll .roll-pantone-inputs {
+    .job-edit-page .roll-pantone-inputs {
         grid-template-columns: minmax(0, 1fr) 56px;
     }
-    .job-edit-page.job-edit-roll .roll-pantone-add { grid-column: 1 / -1; }
+    .job-edit-page .roll-pantone-add { grid-column: 1 / -1; }
     .job-edit-page.job-edit-roll .orientation-grid-four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .job-edit-page.job-edit-roll .orientation-grid-four .orientation-picture { height: 90px; }
     .job-edit-page .job-edit-save-bar { padding: 8px; }
