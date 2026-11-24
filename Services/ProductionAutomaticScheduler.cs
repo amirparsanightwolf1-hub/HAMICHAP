@@ -3,9 +3,9 @@ using HamiChap_MES_ERP.Models.Production;
 namespace HamiChap_MES_ERP.Services;
 
 /// <summary>
-/// Deterministic, sequential, earliest-feasible schedule of one CEO order.
+/// Deterministic, sequential, earliest-feasible schedule of one production order.
 /// Caller holds a serializable DB transaction and persists all results atomically.
-/// Production time skips CEO-disallowed shifts and lunch; a busy machine is never
+/// Production time skips disallowed shifts and lunch; a busy machine is never
 /// assigned a second operation during any intersecting interval.
 /// </summary>
 public static class ProductionAutomaticScheduler
@@ -20,14 +20,16 @@ public static class ProductionAutomaticScheduler
         IReadOnlyCollection<BusyInterval> existing,
         Func<ProductionOperation, Machine, bool> isCandidate,
         out List<Placement> plan,
-        out string error)
+        out string error,
+        DateTime? earliestStart = null,
+        DateTime? searchEnd = null)
     {
         plan = new List<Placement>();
         error = "";
-        if (order.PlannedStartDate is not DateTime windowStart ||
-            order.PlannedEndDate is not DateTime windowEnd || windowEnd <= windowStart)
+        if ((earliestStart ?? order.PlannedStartDate) is not DateTime windowStart ||
+            (searchEnd ?? order.PlannedEndDate) is not DateTime windowEnd || windowEnd <= windowStart)
         {
-            error = "The CEO has not assigned a valid production time window.";
+            error = "A valid scheduling search interval is required.";
             return false;
         }
         if (steps.Count == 0) { error = "This order has no operations."; return false; }
@@ -51,7 +53,7 @@ public static class ProductionAutomaticScheduler
                     order.AvoidOvertime, order.AvoidNightShift);
                 if (end > windowEnd)
                 {
-                    error = "Outsourced operation '" + step.Name + "' exceeds the CEO window.";
+                    error = "Outsourced operation '" + step.Name + "' exceeds the scheduling search interval.";
                     plan.Clear();
                     return false;
                 }
@@ -101,7 +103,7 @@ public static class ProductionAutomaticScheduler
             if (earliest == null)
             {
                 error = "The operation '" + step.Name +
-                    "' cannot be completed within the CEO window without double-booking a machine.";
+                    "' cannot be completed within the scheduling search interval without double-booking a machine.";
                 plan.Clear();
                 return false;
             }

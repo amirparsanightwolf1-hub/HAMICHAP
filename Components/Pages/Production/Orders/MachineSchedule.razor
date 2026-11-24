@@ -59,7 +59,7 @@
                                  @onclick="() => SelectOrder(order.Id)">
                                 <div class="d-flex justify-content-between gap-2">
                                     <strong>@order.OrderNumber</strong>
-                                    <small>@(order.PlannedStartDate.HasValue ? L["Scheduled"] : L["CeoPlanRequired"])</small>
+                                    <small>@(IsSequenceConfirmed(order) && order.PlannedStartDate.HasValue ? L["Scheduled"] : L["Unscheduled"])</small>
                                 </div>
                                 <div class="small text-muted">@order.SalesOrder?.Customer?.Name</div>
                                 <div class="small">@L["CeoDuration"]: @DurationLabel(order.EstimatedDurationMinutes)</div>
@@ -81,14 +81,9 @@
                             <strong>@orderForEdit.OrderNumber</strong>
                             <div class="small text-muted mt-2">@L["CeoWindow"]: @FormatDateTime(orderForEdit.PlannedStartDate) – @FormatDateTime(orderForEdit.PlannedEndDate)</div>
                             <div class="manager-duration-budget mt-2">
-                                <div>@L["CeoDuration"]: <strong>@DurationLabel(orderForEdit.EstimatedDurationMinutes)</strong></div>
                                 <div>@L["MachineDuration"]: <strong>@DurationLabel(AllocatedMinutes)</strong></div>
-                                <div class="@(RemainingMinutes < 0 ? "text-danger" : "text-success")">@L["RemainingDuration"]: <strong>@DurationLabel(RemainingMinutes)</strong></div>
                             </div>
-                            @if (RemainingMinutes >= 0 && SelectedOperations.Count > 0)
-                            {
-                                <div class="small text-success mt-2">@L["OperationTotalWithinCeo"]</div>
-                            }
+                            <div class="small text-muted mt-2">@L["DirectProductionSchedulingHelp"]</div>
 
                             <div class="manager-sequence-approval mt-3">
                                 @if (IsSequenceConfirmed(orderForEdit))
@@ -478,7 +473,6 @@
     private List<ProductionOperation> SelectedOperations => operations
         .Where(x => x.ProductionOrderId == selectedOrderId).OrderBy(x => x.Sequence).ToList();
     private int AllocatedMinutes => SelectedOperations.Sum(OperationMinutes);
-    private int RemainingMinutes => (SelectedOrder?.EstimatedDurationMinutes ?? 0) - AllocatedMinutes;
     private bool CanReorderSelectedOrder =>
         SelectedOrder != null && !schedules.Any(x => x.ProductionOperation.ProductionOrderId == SelectedOrder.Id &&
             x.Status != ScheduleStatus.Planned)
@@ -519,7 +513,7 @@
 
     private sealed record WorkloadSlot(DateTime Start, DateTime End, string Label);
 
-    // The machine matrix shares the exact month/week/day range displayed by the CEO calendar.
+    // The machine matrix shares the exact month/week/day range displayed by the production planning calendar.
     private List<WorkloadSlot> WorkloadSlots => viewMode switch
     {
         CalendarView.Day => Enumerable.Range(0, 24)
@@ -660,11 +654,12 @@
                 Logger.LogWarning(ex, "Malformed Sales job specifications for production order {OrderId}", order.Id);
                 continue;
             }
-            if (proposed.Count == 0 || order.EstimatedDurationMinutes < proposed.Count)
+            if (proposed.Count == 0)
                 continue;
 
+            // Initial estimates are editable suggestions, not an approved budget.
             var minutes = ProductionPlanningTime.AllocateOperationMinutes(
-                order.EstimatedDurationMinutes, proposed.Select(_ => 1m).ToArray());
+                Math.Max(order.EstimatedDurationMinutes, proposed.Count), proposed.Select(_ => 1m).ToArray());
 
             for (var i = 0; i < proposed.Count; i++)
             {
@@ -1008,16 +1003,14 @@
                 ShowError(L["InvalidOperationSequence"]);
                 return;
             }
-            if (steps.Sum(OperationMinutes) > order.EstimatedDurationMinutes)
-            {
-                ShowError(L["StageDurationTotalMismatch"]);
-                return;
-            }
-            if (!order.PlannedStartDate.HasValue || !order.PlannedEndDate.HasValue)
-            {
-                ShowError(L["CeoPlanRequired"]);
-                return;
-            }
+            // The production manager sets the stage durations directly.
+            // An optional future planned start is honored, but no separate
+            // approval or preassigned end date is necessary.
+            var totalMinutes = steps.Sum(OperationMinutes);
+            var now = DateTime.Now;
+            var earliestStart = order.PlannedStartDate is DateTime requestedStart && requestedStart > now
+                ? requestedStart : now;
+            var searchEnd = earliestStart.AddDays(365);
 
             var ids = steps.Select(x => x.Id).ToList();
             var current = await db.ProductionSchedules
@@ -1039,14 +1032,15 @@
             var busy = await db.ProductionSchedules
                 .Where(x => !ids.Contains(x.ProductionOperationId) &&
                     x.Status != ScheduleStatus.Cancelled &&
-                    x.PlannedStart < order.PlannedEndDate.Value &&
-                    x.PlannedEnd > order.PlannedStartDate.Value)
+                    x.PlannedStart < searchEnd &&
+                    x.PlannedEnd > earliestStart)
                 .Select(x => new ProductionAutomaticScheduler.BusyInterval(
                     x.MachineId, x.PlannedStart, x.PlannedEnd))
                 .ToListAsync();
 
             if (!ProductionAutomaticScheduler.TryBuild(order, steps,
-                availableMachines, busy, CompatibleWithStage, out var plan, out var error))
+                availableMachines, busy, CompatibleWithStage, out var plan, out var error,
+                earliestStart, searchEnd))
             {
                 ShowError(L["AutoScheduleCannotFit"] + " " + error);
                 return;
@@ -1078,6 +1072,9 @@
                 });
             }
 
+            order.EstimatedDurationMinutes = totalMinutes;
+            order.PlannedStartDate = plan.Min(x => x.Start);
+            order.PlannedEndDate = plan.Max(x => x.End);
             order.OperationsSequenceSignature =
                 OperationSequenceSignature(order.EstimatedDurationMinutes, steps);
             order.OperationsSequenceConfirmedAt = DateTime.UtcNow;

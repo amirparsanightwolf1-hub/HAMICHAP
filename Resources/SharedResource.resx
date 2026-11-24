@@ -2427,7 +2427,7 @@
     <value>View uploaded artwork</value>
   </data>
   <data name="CeoDeadlineCalendar" xml:space="preserve">
-    <value>CEO deadline calendar</value>
+    <value>Production calendar</value>
   </data>
   <data name="CeoDeadlineHelp" xml:space="preserve">
     <value>Set the required completion date for each production order. Machine assignments are managed separately.</value>
@@ -2509,7 +2509,7 @@
   <data name="MachineMismatch" xml:space="preserve"><value>This operation is not compatible with the selected machine. Choose a suggested machine or review its routing.</value></data>
   <data name="DropScheduledStepHere" xml:space="preserve"><value>Drop a scheduled step here to return it (and any dependent planned steps) to the unscheduled list.</value></data>
   <data name="NoUnscheduledSteps" xml:space="preserve"><value>No unscheduled steps. Drag a machine operation from the calendar here to return it.</value></data>
-  <data name="CeoDuration" xml:space="preserve"><value>CEO plan total</value></data>
+  <data name="CeoDuration" xml:space="preserve"><value>Estimated order duration</value></data>
   <data name="MachineDuration" xml:space="preserve"><value>Machine steps total</value></data>
   <data name="MachineStepCount" xml:space="preserve"><value>steps</value></data>
   <data name="ReturnWholeOrder" xml:space="preserve"><value>Return all order steps to list</value></data>
@@ -2519,7 +2519,7 @@
   <data name="DurationTooShortForSteps" xml:space="preserve"><value>The CEO production duration is too short for the number of operation steps.</value></data>
   <data name="UnscheduleBeforeAdding" xml:space="preserve"><value>Return all scheduled steps of this order to the list before adding an operation and redistributing durations.</value></data>
   <data name="OperationsRebalanced" xml:space="preserve"><value>Machine-step durations redistributed to match the CEO production duration.</value></data>
-  <data name="CeoPlanRequired" xml:space="preserve"><value>Set an order start and end in the CEO Production Planning calendar before scheduling machine operations.</value></data>
+  <data name="CeoPlanRequired" xml:space="preserve"><value>Not scheduled yet</value></data>
   <data name="MachineDurationMismatch" xml:space="preserve"><value>Machine-step durations do not add up to the CEO total. Use Generate Operations to synchronize unscheduled steps.</value></data>
   <data name="MachineOutsideCeoWindow" xml:space="preserve"><value>The selected date is outside the CEO-approved start/end dates. Choose a date within that window.</value></data>
   <data name="CannotChangeActiveSchedule" xml:space="preserve"><value>Released, running and completed machine schedules cannot be moved.</value></data>
@@ -2534,8 +2534,8 @@
   <data name="Day" xml:space="preserve"><value>Day</value></data>
   <data name="NewStepRelativeHours" xml:space="preserve"><value>Relative duration weight (hours)</value></data>
   <data name="NewStepWeightHelp" xml:space="preserve"><value>The CEO total is fixed. This value determines this step's share; all stages are rebalanced.</value></data>
-  <data name="CeoProductionOrders" xml:space="preserve"><value>CEO production orders</value></data>
-  <data name="CeoWindow" xml:space="preserve"><value>CEO date window</value></data>
+  <data name="CeoProductionOrders" xml:space="preserve"><value>Production orders</value></data>
+  <data name="CeoWindow" xml:space="preserve"><value>Production schedule</value></data>
   <data name="NoOperationsGenerated" xml:space="preserve"><value>No machine operations yet. Use Generate Operations or add a step manually.</value></data>
   <data name="ShowCeoWindow" xml:space="preserve"><value>Show CEO date range</value></data>
   <data name="NoProductionOrders" xml:space="preserve"><value>No production orders have been created yet.</value></data>
@@ -2548,7 +2548,7 @@
   <data name="DragOrderToCompatibleMachine" xml:space="preserve"><value>Drag to a compatible machine calendar date to assign the next operation.</value></data>
   <data name="ExistingBookingOutsideCeo" xml:space="preserve"><value>Existing booking is outside the CEO-approved date window; move or return it.</value></data>
   <data name="AdvancedDurationSettings" xml:space="preserve"><value>Advanced duration details (optional)</value></data>
-  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>Same calendar as the CEO plan. Sales specifications suggest machines and stages; the Production Manager estimates durations, orders the stages and confirms to schedule everything automatically.</value></data>
+  <data name="ManagerCalendarInstructions" xml:space="preserve"><value>Sales specifications suggest machines and stages. The Production Manager estimates durations, orders the stages and confirms automatic scheduling directly.</value></data>
   <data name="SelectOrderToSplit" xml:space="preserve"><value>Select a production order to review and split it into machine operations.</value></data>
   <data name="Scheduled" xml:space="preserve"><value>Scheduled</value></data>
   <data name="SplitOrderIntoOperations" xml:space="preserve"><value>Split order into operations</value></data>
@@ -2579,7 +2579,7 @@
   <data name="BookedTasks" xml:space="preserve"><value>booked tasks</value></data>
   <data name="SequenceConfirmed" xml:space="preserve"><value>Operation sequence confirmed by Production Manager</value></data>
   <data name="SequencePendingConfirmation" xml:space="preserve"><value>Operation sequence awaiting confirmation</value></data>
-  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>Review the operation order, machine choices and estimated durations; confirm to automatically generate bookings inside the CEO's production window.</value></data>
+  <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve"><value>Review operation order, machine choices and estimated durations, then confirm to schedule automatically.</value></data>
   <data name="ConfirmOperationSequence" xml:space="preserve"><value>Confirm operation sequence</value></data>
   <data name="SequenceChangeNeedsReconfirmation" xml:space="preserve"><value>Changing a stage or its position cancels approval; confirm the updated sequence again.</value></data>
   <data name="MoveOperationUp" xml:space="preserve"><value>Move up</value></data>
@@ -2604,7 +2604,7 @@
   <data name="AutoRoutingOperationInstructions" xml:space="preserve"><value>Stages are suggested automatically from the Sales job. Adjust the estimated durations and sequence, then confirm to populate the calendar.</value></data>
   <data name="MachineSuggestions" xml:space="preserve"><value>Compatible machine choices</value></data>
   <data name="OperationsAutomaticallyShownAfterConfirmation" xml:space="preserve"><value>Calendar bookings appear automatically after the Production Manager confirms the stages and their durations.</value></data>
-  <data name="AutomaticManagerMonthHelp" xml:space="preserve"><value>Machine operations appear on the CEO-style month calendar automatically after the route is confirmed. Dates and shift colors match Production Planning.</value></data>
+  <data name="AutomaticManagerMonthHelp" xml:space="preserve"><value>Machine operations appear on the calendar automatically after the route is confirmed. Dates and shift colors match Production Planning.</value></data>
   <data name="AutomaticManagerTimelineHelp" xml:space="preserve"><value>The weekly and daily calendar displays automatically calculated machine bookings. Edit the stage durations and reconfirm to recalculate.</value></data>
   <data name="AddOperationOnlyIfNeeded" xml:space="preserve"><value>Add an additional operation (only if needed)</value></data>
   <data name="ChooseMachineForUnmappedStep" xml:space="preserve"><value>Manual machine selection required</value></data>
@@ -2797,10 +2797,10 @@
   <data name="Night 22:00–08:00" xml:space="preserve"><value>Night 22:00–08:00</value></data>
   <data name="In Month view, click or drop an order on a date to schedule it from 08:00. Use Week or Day view to choose a specific start time." xml:space="preserve"><value>In Month view, click or drop an order on a date to schedule it from 08:00. Use Week or Day view to choose a specific start time.</value></data>
   <data name="Click a time slot or drop an order onto it to set the start time. Multiple orders may occupy the same time slot." xml:space="preserve"><value>Click a time slot or drop an order onto it to set the start time. Multiple orders may occupy the same time slot.</value></data>
-  <data name="This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions." xml:space="preserve"><value>This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions.</value></data>
-  <data name="The CEO duration must allow at least one minute for each machine operation." xml:space="preserve"><value>The CEO duration must allow at least one minute for each machine operation.</value></data>
-  <data name="CEO duration, machine-step allocations and permitted shifts are consistent." xml:space="preserve"><value>CEO duration, machine-step allocations and permitted shifts are consistent.</value></data>
-  <data name="This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar." xml:space="preserve"><value>This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar.</value></data>
+  <data name="This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions." xml:space="preserve"><value>This order has scheduled machine operations. Unschedule them before changing duration or shift restrictions.</value></data>
+  <data name="The CEO duration must allow at least one minute for each machine operation." xml:space="preserve"><value>The estimated duration must allow at least one minute for each operation.</value></data>
+  <data name="CEO duration, machine-step allocations and permitted shifts are consistent." xml:space="preserve"><value>Order duration, operation allocations and permitted shifts are consistent.</value></data>
+  <data name="This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar." xml:space="preserve"><value>Unschedule machine operations before moving this order on the production calendar.</value></data>
   <data name="No production operations have been defined for this production order yet." xml:space="preserve"><value>No production operations have been defined for this production order yet.</value></data>
   <data name="No production schedule has been created for this production order yet." xml:space="preserve"><value>No production schedule has been created for this production order yet.</value></data>
   <data name="Material Request" xml:space="preserve"><value>Material Request</value></data>
@@ -3231,7 +3231,7 @@
     <value>hours</value>
   </data>
   <data name="OperatorOutsideCeoWindow" xml:space="preserve">
-    <value>The revised finish exceeds the CEO-approved window; manager review is required.</value>
+    <value>The revised finish exceeds the planned production window; manager review is required.</value>
   </data>
   <data name="OperatorStart" xml:space="preserve">
     <value>Start operation</value>
@@ -3345,13 +3345,13 @@
     <value>The production manager must confirm the operation sequence.</value>
   </data>
   <data name="OperatorBlockedCeoPlan" xml:space="preserve">
-    <value>CEO approval of the production window is required.</value>
+    <value>The production order must be scheduled first.</value>
   </data>
   <data name="OperatorBlockedBeforeStart" xml:space="preserve">
-    <value>The CEO-approved production start time has not arrived.</value>
+    <value>The scheduled production start time has not arrived.</value>
   </data>
   <data name="OperatorBlockedAfterEnd" xml:space="preserve">
-    <value>The CEO-approved production window has ended.</value>
+    <value>The planned production window has ended.</value>
   </data>
   <data name="OperatorBlockedShift" xml:space="preserve">
     <value>The current time is outside the approved production shift.</value>
@@ -3399,7 +3399,7 @@
     <value>This operation has already started.</value>
   </data>
   <data name="OperatorErrCeoWindow" xml:space="preserve">
-    <value>This time or shift is not approved by the CEO.</value>
+    <value>This time or shift is outside the production schedule.</value>
   </data>
   <data name="OperatorErrBookingNotReady" xml:space="preserve">
     <value>The machine booking cannot be started yet.</value>
@@ -3540,13 +3540,13 @@
     <value>Active production orders</value>
   </data>
   <data name="ManagerCeoApprovedWindows" xml:space="preserve">
-    <value>Production windows set</value>
+    <value>Production windows scheduled</value>
   </data>
   <data name="ManagerCeoOpenWarehouse" xml:space="preserve">
     <value>Open material requests</value>
   </data>
   <data name="ManagerCeoUnplannedOrders" xml:space="preserve">
-    <value>Orders without approved dates</value>
+    <value>Orders without scheduled dates</value>
   </data>
   <data name="ManagerCeoOverdueProduction" xml:space="preserve">
     <value>Overdue production orders</value>
@@ -3760,5 +3760,8 @@
   </data>
   <data name="JobEditorQuickSave" xml:space="preserve">
     <value>Save &amp; preview proof</value>
+  </data>
+  <data name="DirectProductionSchedulingHelp" xml:space="preserve">
+    <value>Set stage durations and confirm. The system finds the earliest compatible machine slots and sets the production dates automatically.</value>
   </data>
 </root>

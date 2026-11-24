@@ -6,7 +6,7 @@ namespace HamiChap_MES_ERP.Services;
 
 /// <summary>
 /// Pulls subsequent PLANNED steps of a production order forward after a predecessor
-/// finishes early. Keeps each machine free of conflicting bookings, respects CEO
+/// finishes early. Keeps each machine free of conflicting bookings, respects production
 /// start and shift restrictions, and never modifies other orders or active steps.
 /// Caller owns a serializable transaction and saves the changes.
 /// </summary>

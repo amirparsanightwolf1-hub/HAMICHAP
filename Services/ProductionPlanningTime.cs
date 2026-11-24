@@ -1,7 +1,7 @@
 namespace HamiChap_MES_ERP.Services;
 
 /// <summary>
-/// Shared CEO / machine planner calculations. All durations are productive minutes:
+/// Shared production / machine planner calculations. All durations are productive minutes:
 /// 13:00-14:00 and excluded shifts do not contribute to the planned time.
 /// </summary>
 public static class ProductionPlanningTime
@@ -129,12 +129,12 @@ public static class ProductionPlanningTime
     public static int OperationMinutes(decimal plannedHours) =>
         Math.Max(1, (int)Math.Round(plannedHours * 60m, MidpointRounding.AwayFromZero));
 
-    /// <summary>Allocate every minute of the CEO's total, preserving relative operation weights.</summary>
+    /// <summary>Allocate every minute of the estimated order total, preserving relative operation weights.</summary>
     public static int[] AllocateOperationMinutes(int totalMinutes, IReadOnlyList<decimal> weights)
     {
         if (weights.Count == 0) return Array.Empty<int>();
         if (totalMinutes < weights.Count)
-            throw new InvalidOperationException("The CEO duration must allow at least one minute per operation.");
+            throw new InvalidOperationException("The production duration must allow at least one minute per operation.");
 
         var normalized = weights.Select(w => Math.Max(0.01m, w)).ToArray();
         var sum = normalized.Sum();

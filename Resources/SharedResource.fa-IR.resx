@@ -2518,7 +2518,7 @@
     <value>مشاهده فایل طرح بارگذاری‌شده</value>
   </data>
   <data name="CeoDeadlineCalendar" xml:space="preserve">
-    <value>تقویم مهلت سفارش‌ها برای مدیرعامل</value>
+    <value>تقویم تولید</value>
   </data>
   <data name="CeoDeadlineHelp" xml:space="preserve">
     <value>تاریخ تکمیل موردنیاز هر سفارش تولید را تعیین کنید. تخصیص دستگاه‌ها جداگانه انجام می‌شود.</value>
@@ -2635,7 +2635,7 @@
     <value>عملیات بدون زمان‌بندی وجود ندارد. یک عملیات را از تقویم به این قسمت بکشید.</value>
   </data>
   <data name="CeoDuration" xml:space="preserve">
-    <value>مجموع زمان برنامه مدیرعامل</value>
+    <value>مدت تخمینی سفارش</value>
   </data>
   <data name="MachineDuration" xml:space="preserve">
     <value>مجموع زمان مراحل دستگاه‌ها</value>
@@ -2665,7 +2665,7 @@
     <value>زمان مراحل دستگاه‌ها مطابق زمان تولید برنامه مدیرعامل دوباره تقسیم شد.</value>
   </data>
   <data name="CeoPlanRequired" xml:space="preserve">
-    <value>قبل از زمان‌بندی عملیات دستگاه، زمان شروع و پایان سفارش را در تقویم تولید مدیرعامل تعیین کنید.</value>
+    <value>هنوز زمان‌بندی نشده</value>
   </data>
   <data name="MachineDurationMismatch" xml:space="preserve">
     <value>مجموع زمان مراحل دستگاه‌ها با زمان برنامه مدیرعامل برابر نیست. برای هماهنگ‌سازی مراحل بدون زمان‌بندی از ایجاد عملیات استفاده کنید.</value>
@@ -2710,10 +2710,10 @@
     <value>مجموع زمان مدیرعامل ثابت است. این مقدار سهم مرحله جدید را مشخص می‌کند و زمان همه مراحل تنظیم می‌شود.</value>
   </data>
   <data name="CeoProductionOrders" xml:space="preserve">
-    <value>سفارش‌های تولید مدیرعامل</value>
+    <value>سفارش‌های تولید</value>
   </data>
   <data name="CeoWindow" xml:space="preserve">
-    <value>بازه تاریخی مدیرعامل</value>
+    <value>بازه زمان‌بندی تولید</value>
   </data>
   <data name="NoOperationsGenerated" xml:space="preserve">
     <value>هنوز عملیات دستگاه برای این سفارش ایجاد نشده است. از ایجاد عملیات استفاده کنید یا مرحله‌ای دستی اضافه کنید.</value>
@@ -2752,7 +2752,7 @@
     <value>جزئیات پیشرفته زمان (اختیاری)</value>
   </data>
   <data name="ManagerCalendarInstructions" xml:space="preserve">
-    <value>همان تقویم برنامه مدیرعامل. مشخصات فروش مراحل و دستگاه‌ها را پیشنهاد می‌کند؛ مدیر تولید زمان‌ها و ترتیب را تعیین کرده و برای زمان‌بندی خودکار همه مراحل تأیید می‌کند.</value>
+    <value>مشخصات فروش مراحل و دستگاه‌ها را پیشنهاد می‌کند. مدیر تولید زمان‌ها و ترتیب مراحل را تعیین و زمان‌بندی خودکار را مستقیماً تأیید می‌کند.</value>
   </data>
   <data name="SelectOrderToSplit" xml:space="preserve">
     <value>برای بررسی و تقسیم به مراحل دستگاه‌ها، یک سفارش تولید را انتخاب کنید.</value>
@@ -2845,7 +2845,7 @@
     <value>ترتیب عملیات در انتظار تأیید</value>
   </data>
   <data name="ConfirmSequenceBeforeScheduling" xml:space="preserve">
-    <value>ترتیب مراحل، دستگاه‌های پیشنهادی و زمان‌های تخمینی را بررسی و برای ایجاد خودکار زمان‌بندی در بازه مدیرعامل تأیید کنید.</value>
+    <value>ترتیب مراحل، دستگاه‌ها و زمان‌های تخمینی را بررسی و برای زمان‌بندی خودکار تأیید کنید.</value>
   </data>
   <data name="ConfirmOperationSequence" xml:space="preserve">
     <value>تأیید ترتیب عملیات</value>
@@ -2920,7 +2920,7 @@
     <value>پس از تأیید مراحل و زمان آن‌ها توسط مدیر تولید، زمان‌بندی دستگاه‌ها به‌طور خودکار در تقویم نمایش داده می‌شود.</value>
   </data>
   <data name="AutomaticManagerMonthHelp" xml:space="preserve">
-    <value>پس از تأیید مسیر تولید، عملیات دستگاه‌ها به صورت خودکار در تقویم ماهانه مشابه مدیرعامل نمایش داده می‌شوند. تاریخ‌ها و رنگ شیفت‌ها مطابق برنامه‌ریزی تولید است.</value>
+    <value>پس از تأیید مسیر تولید، عملیات دستگاه‌ها خودکار در تقویم نمایش داده می‌شوند. تاریخ‌ها و رنگ شیفت‌ها مطابق برنامه‌ریزی تولید است.</value>
   </data>
   <data name="AutomaticManagerTimelineHelp" xml:space="preserve">
     <value>تقویم هفتگی و روزانه زمان‌بندی خودکار دستگاه‌ها را نشان می‌دهد. برای محاسبه مجدد، زمان مراحل را تغییر داده و دوباره تأیید کنید.</value>
@@ -3493,16 +3493,16 @@
     <value>برای تعیین زمان شروع، روی یک بازه کلیک کنید یا سفارش را روی آن رها کنید. ممکن است چند سفارش در یک بازه قرار داشته باشند.</value>
   </data>
   <data name="This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions." xml:space="preserve">
-    <value>برای این سفارش عملیات دستگاه زمان‌بندی شده است. پیش از تغییر مدت زمان یا محدودیت شیفت مدیرعامل، آن‌ها را در برنامه دستگاه‌ها لغو زمان‌بندی کنید.</value>
+    <value>برای این سفارش عملیات دستگاه زمان‌بندی شده است. پیش از تغییر مدت زمان یا محدودیت شیفت، زمان‌بندی را لغو کنید.</value>
   </data>
   <data name="The CEO duration must allow at least one minute for each machine operation." xml:space="preserve">
-    <value>مدت تعیین‌شده توسط مدیرعامل باید برای هر مرحله دستگاه دست‌کم یک دقیقه باشد.</value>
+    <value>مدت تخمینی باید برای هر مرحله دست‌کم یک دقیقه باشد.</value>
   </data>
   <data name="CEO duration, machine-step allocations and permitted shifts are consistent." xml:space="preserve">
-    <value>مدت سفارش مدیرعامل، زمان مراحل دستگاه‌ها و شیفت‌های مجاز هماهنگ هستند.</value>
+    <value>مدت سفارش، زمان مراحل و شیفت‌های مجاز هماهنگ هستند.</value>
   </data>
   <data name="This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar." xml:space="preserve">
-    <value>این سفارش دارای عملیات دستگاه زمان‌بندی‌شده است. پیش از جابه‌جایی آن در تقویم مدیرعامل، زمان‌بندی مراحل دستگاه را لغو کنید.</value>
+    <value>پیش از جابه‌جایی سفارش در تقویم تولید، زمان‌بندی مراحل دستگاه را لغو کنید.</value>
   </data>
   <data name="No production operations have been defined for this production order yet." xml:space="preserve">
     <value>هنوز عملیاتی برای این سفارش تولید تعریف نشده است.</value>
@@ -4333,7 +4333,7 @@
     <value>ساعت</value>
   </data>
   <data name="OperatorOutsideCeoWindow" xml:space="preserve">
-    <value>زمان پایان اصلاح‌شده از بازه تأییدشده مدیرعامل عبور کرده و نیازمند بررسی مدیر تولید است.</value>
+    <value>زمان پایان اصلاح‌شده از بازه برنامه تولید عبور کرده و نیازمند بررسی مدیر تولید است.</value>
   </data>
   <data name="OperatorStart" xml:space="preserve">
     <value>شروع عملیات</value>
@@ -4447,13 +4447,13 @@
     <value>مدیر تولید باید ترتیب عملیات را تأیید کند.</value>
   </data>
   <data name="OperatorBlockedCeoPlan" xml:space="preserve">
-    <value>بازه زمانی تولید باید توسط مدیرعامل تأیید شود.</value>
+    <value>ابتدا سفارش تولید باید زمان‌بندی شود.</value>
   </data>
   <data name="OperatorBlockedBeforeStart" xml:space="preserve">
-    <value>زمان شروع تأییدشده مدیرعامل هنوز فرا نرسیده است.</value>
+    <value>زمان شروع برنامه‌ریزی‌شده تولید هنوز فرا نرسیده است.</value>
   </data>
   <data name="OperatorBlockedAfterEnd" xml:space="preserve">
-    <value>بازه زمانی تأییدشده مدیرعامل به پایان رسیده است.</value>
+    <value>بازه برنامه‌ریزی‌شده تولید به پایان رسیده است.</value>
   </data>
   <data name="OperatorBlockedShift" xml:space="preserve">
     <value>زمان فعلی خارج از شیفت تولید مجاز است.</value>
@@ -4501,7 +4501,7 @@
     <value>این عملیات قبلاً شروع شده است.</value>
   </data>
   <data name="OperatorErrCeoWindow" xml:space="preserve">
-    <value>این زمان یا شیفت توسط مدیرعامل تأیید نشده است.</value>
+    <value>این زمان یا شیفت خارج از برنامه تولید است.</value>
   </data>
   <data name="OperatorErrBookingNotReady" xml:space="preserve">
     <value>برنامه دستگاه هنوز قابل شروع نیست.</value>
@@ -4642,13 +4642,13 @@
     <value>سفارش‌های تولید فعال</value>
   </data>
   <data name="ManagerCeoApprovedWindows" xml:space="preserve">
-    <value>بازه‌های تعیین‌شده تولید</value>
+    <value>بازه‌های زمان‌بندی‌شده تولید</value>
   </data>
   <data name="ManagerCeoOpenWarehouse" xml:space="preserve">
     <value>درخواست‌های باز انبار</value>
   </data>
   <data name="ManagerCeoUnplannedOrders" xml:space="preserve">
-    <value>سفارش‌های بدون تاریخ تأییدشده</value>
+    <value>سفارش‌های بدون تاریخ زمان‌بندی</value>
   </data>
   <data name="ManagerCeoOverdueProduction" xml:space="preserve">
     <value>سفارش‌های تولید معوق</value>
@@ -4862,5 +4862,8 @@
   </data>
   <data name="JobEditorQuickSave" xml:space="preserve">
     <value>ذخیره و پیش‌نمایش نمونه</value>
+  </data>
+  <data name="DirectProductionSchedulingHelp" xml:space="preserve">
+    <value>زمان مراحل را تعیین و تأیید کنید. سامانه اولین زمان‌های آزاد دستگاه‌های سازگار را یافته و تاریخ‌های تولید را خودکار تعیین می‌کند.</value>
   </data>
 </root>
