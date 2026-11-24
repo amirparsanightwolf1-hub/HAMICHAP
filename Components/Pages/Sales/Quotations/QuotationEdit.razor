@@ -479,7 +479,7 @@
                                     </td>
 
                                     <td class="text-end fw-semibold">
-                                        @FormatWholeAmount(line.TotalPrice)
+                                        @FormatVatTotal(quotation.CurrencyCode == null ? line.TotalPrice : InvoiceVat.Net(line, quotation.CurrencyCode))
                                     </td>
 
                                     <td style="min-width:210px">

@@ -153,8 +153,8 @@
                                         <td class="hc-quote-description">@(string.IsNullOrWhiteSpace(line.Notes) ? "—" : line.Notes)</td>
                                         <td class="hc-quote-num">@FormatAmount(line.Quantity)</td>
                                         <td class="hc-quote-unit">@(line.Item?.Unit?.Name ?? "عدد")</td>
-                                        <td class="hc-quote-num">@FormatAmount(line.UnitPrice)</td>
-                                        <td class="hc-quote-num"><strong>@FormatAmount(line.TotalPrice)</strong>@if (line.VatRate.HasValue) { <div class="small">VAT @line.VatRate.Value.ToString("0.##")% · @InvoiceVat.Tax(line, quotation.CurrencyCode).ToString("N2")</div> }</td>
+                                        <td class="hc-quote-num">@FormatMoney(line.UnitPrice)</td>
+                                        <td class="hc-quote-num"><strong>@FormatMoney(quotation.CurrencyCode == null ? line.TotalPrice : InvoiceVat.Net(line, quotation.CurrencyCode))</strong>@if (line.VatRate.HasValue) { <div class="small">VAT @line.VatRate.Value.ToString("0.##")% · @FormatMoney(InvoiceVat.Tax(line, quotation.CurrencyCode))</div> }</td>
                                     </tr>
                                 }
                             }
@@ -166,11 +166,11 @@
             <section class="hc-quote-total-area">
                 @if (!string.IsNullOrWhiteSpace(quotation.CurrencyCode))
                 {
-                    <div class="small"><strong>@(LocalizationService.IsPersian ? "مبلغ خالص" : "Net amount"):</strong> @InvoiceVat.Subtotal(quotation).ToString("N2") @quotation.CurrencyCode<br /><strong>@(LocalizationService.IsPersian ? "ارزش افزوده" : "VAT"):</strong> @InvoiceVat.TotalTax(quotation).ToString("N2") @quotation.CurrencyCode</div>
+                    <div class="small"><strong>@(LocalizationService.IsPersian ? "مبلغ خالص" : "Net amount"):</strong> @FormatMoney(InvoiceVat.Subtotal(quotation)) @quotation.CurrencyCode<br /><strong>@(LocalizationService.IsPersian ? "ارزش افزوده" : "VAT"):</strong> @FormatMoney(InvoiceVat.TotalTax(quotation)) @quotation.CurrencyCode</div>
                 }
                 <div class="hc-quote-total">
                     <span class="hc-quote-total-label">@T("TotalAmount")</span>
-                    <strong class="hc-quote-total-amount">@FormatAmount(quotation.FinalAmount)</strong>
+                    <strong class="hc-quote-total-amount">@FormatMoney(quotation.FinalAmount) @quotation.CurrencyCode</strong>
                 </div>
             </section>
 
@@ -313,6 +313,8 @@
 
         return value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     }
+
+    private string FormatMoney(decimal value) => quotation?.CurrencyCode is null or "IRR" ? FormatAmount(value) : value.ToString("N2", CultureInfo.CurrentCulture);
 
     private static string FormatAmount(decimal value) =>
         decimal.Round(value, 0, MidpointRounding.AwayFromZero)

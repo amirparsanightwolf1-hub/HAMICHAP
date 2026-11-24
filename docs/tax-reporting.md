@@ -12,7 +12,7 @@ This is an internal sales VAT and reporting preparation workflow. It is not a ce
    - TaxReporting__RegistrationNumber
    - TaxReporting__Address
    - TaxReporting__PostalCode
-   - TaxReporting__TaxMemoryId (required for preparing Iran packages)
+   - TaxReporting__TaxMemoryId (required before issuing Iran invoices)
 3. Apply migrations and grant Sales.Invoices.TaxReporting only to responsible accounting employees.
 4. Set actual currency, official goods/service identifier, verified VAT percentage and any zero-rate justification before sending a quotation. Unit prices exclude VAT. Rounding is whole rials for IRR, otherwise two decimals. Confirm this is suitable for your currency and authority. Partial invoice amounts allocate cumulative rounded net and VAT.
 5. Invoices created before this change remain unclassified for VAT/reporting. Previously accepted quotations without tax data are blocked from new invoicing; accounting must reconcile and obtain customer agreement for any revised pricing. Never infer missing VAT or add it after acceptance.

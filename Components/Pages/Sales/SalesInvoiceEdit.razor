@@ -48,6 +48,7 @@
                         <div class="small @(invoice.PaidAtUtc.HasValue ? "text-success" : "text-muted")">@(invoice.SalesDelivery.Status == SalesDeliveryStatus.Posted ? PaymentText("Shipment posted", "ارسال ثبت شده") : invoice.PaidAtUtc.HasValue ? PaymentText("Fully paid · ready for shipment", "پرداخت کامل · آماده ارسال") : PaymentText("Awaiting payment", "در انتظار پرداخت"))</div>
                         @if (invoice.PaidAtUtc.HasValue) { <div class="small">@invoice.PaymentReference · @invoice.PaidAtUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div> }
                     </div>
+                    @if (canReportTax) { <a class="btn btn-outline-primary btn-sm" href="/sales/tax-reporting">@PaymentText("Tax reporting", "گزارش مالیاتی")</a> }
                     <a class="btn btn-outline-primary btn-sm" href="@($"/sales/deliveries/edit/{invoice.SalesDeliveryId}")">@PaymentText("Shipment", "ارسال")</a>
                 </div>
                 @if (canConfirm && invoice.Status == SalesInvoiceStatus.Issued && invoice.SalesDelivery.Status == SalesDeliveryStatus.Draft && !invoice.PaidAtUtc.HasValue)
@@ -58,6 +59,7 @@
                     </div>
                     <p class="small text-muted mt-2 mb-0">@PaymentText("Confirm only after verifying receipt of the entire invoice amount.", "تنها پس از بررسی دریافت کل مبلغ فاکتور تأیید کنید.")</p>
                 }
+                @if (canReportTax) { <div class="small text-muted mt-2">@PaymentText("Tax report status", "وضعیت گزارش مالیاتی"): @(invoice.TaxReportStatus ?? PaymentText("Legacy — unclassified", "قدیمی — نامشخص"))</div> }
                 @if (!string.IsNullOrWhiteSpace(paymentError)) { <div class="alert alert-danger mt-2 mb-0">@paymentError</div> }
             </div>
         </section>
@@ -206,7 +208,7 @@
     private InvoiceBuyerProfile? buyerProfile;
     private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
     private bool isLoading = true;
-    private bool canConfirm, paymentBusy;
+    private bool canConfirm, canReportTax, paymentBusy;
     private string paymentReference = "";
     private string? paymentError;
     private string PaymentText(string en, string fa) => LocalizationService.IsPersian ? fa : en;
@@ -225,7 +227,8 @@
         isLoading = true;
         var user = (await Auth.GetAuthenticationStateAsync()).User;
         canConfirm = await Permissions.HasPermissionAsync(user, "Sales.Invoices.ConfirmPayment");
-        if (!canConfirm && !await Permissions.HasPermissionAsync(user, "Sales.Invoices.View")) { invoice = null; isLoading = false; return; }
+        canReportTax = await Permissions.HasPermissionAsync(user, "Sales.Invoices.TaxReporting");
+        if (!canConfirm && !canReportTax && !await Permissions.HasPermissionAsync(user, "Sales.Invoices.View")) { invoice = null; isLoading = false; return; }
         invoice = await Db.SalesInvoices.AsNoTracking()
             .Include(x => x.Customer)
             .Include(x => x.Quotation).ThenInclude(x => x.SalesRequest)
@@ -240,7 +243,7 @@
 
     private string T(string key) => LocalizationService[key];
     private static string FormatDate(DateTime date) => date.ToString("yyyy-MM-dd");
-    private static string FormatAmount(decimal amount) => amount.ToString("N2");
+    private string FormatAmount(decimal amount) => amount.ToString(invoice?.CurrencyCode == "IRR" ? "N0" : "N2");
     private void BackToInvoices() => Navigation.NavigateTo("/sales/invoices");
     private async Task PrintInvoice() => await JS.InvokeVoidAsync("window.print");
 }

@@ -58,7 +58,8 @@ public sealed record TaxSellerProfile(string Jurisdiction, string CurrencyCode, 
         if (profile.Jurisdiction.Length != 2 || profile.CurrencyCode.Length != 3 ||
             string.IsNullOrWhiteSpace(profile.LegalName) || string.IsNullOrWhiteSpace(profile.NationalId) ||
             string.IsNullOrWhiteSpace(profile.EconomicCode) || string.IsNullOrWhiteSpace(profile.Address) ||
-            string.IsNullOrWhiteSpace(profile.PostalCode))
+            string.IsNullOrWhiteSpace(profile.PostalCode) ||
+            (profile.Jurisdiction == "IR" && string.IsNullOrWhiteSpace(profile.TaxMemoryId)))
             throw new InvalidOperationException("Configure the registered seller, jurisdiction, currency and tax identification in TaxReporting before issuing new invoices.");
         return profile;
     }
