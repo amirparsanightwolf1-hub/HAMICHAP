@@ -1,4 +1,7 @@
 ﻿@page "/inventory/documents/edit/{Id:long}"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Inventory.Documents.View|Inventory.Documents.Edit|Inventory.Documents.Post")]
 
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
@@ -558,6 +561,11 @@ else
 
     private async Task Save()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Documents.Edit"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (document == null || IsPosted)
             return;
 
@@ -593,6 +601,11 @@ else
 
     private async Task Post()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Documents.Post") || !await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Documents.Edit"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (document == null || IsPosted)
             return;
 

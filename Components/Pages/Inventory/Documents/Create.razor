@@ -1,4 +1,7 @@
 ﻿@page "/inventory/documents/create"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Inventory.Documents.Create")]
 
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
@@ -266,6 +269,11 @@
 
     private async Task Save(bool post)
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Documents.Create") || (post && !await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Inventory.Documents.Post")))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (isSaving || savedDraftId.HasValue) return;
         errorMessage = Validate();
         if (errorMessage is not null) return;
