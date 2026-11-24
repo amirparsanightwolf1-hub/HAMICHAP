@@ -25,6 +25,10 @@
     </button>
 </div>
 
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-outline-primary" href="/inventory/material-requests"><i class="bi bi-inbox" aria-hidden="true"></i> @(LocalizationService.IsPersian ? "درخواست‌های مواد" : "Material requests")</a>
+    <a class="btn btn-outline-secondary" href="/inventory/stock"><i class="bi bi-boxes" aria-hidden="true"></i> @LocalizationService["InventoryStock"]</a>
+</div>
 <div class="card mb-3">
     <div class="card-body">
         <div class="erp-search-bar">

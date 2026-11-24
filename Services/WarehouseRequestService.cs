@@ -53,8 +53,12 @@ public sealed class WarehouseRequestService(IDbContextFactory<ApplicationDbConte
         if (!await CanViewAsync(user)) throw new UnauthorizedAccessException();
         await using var db = await factory.CreateDbContextAsync();
         var query = Requests(db).AsNoTracking();
-        if (history) query = query.Where(x => x.Status != Requested);
-        else query = query.Where(x => x.Status == Requested);
+        if (history) query = query.Where(x => x.Status != Requested ||
+            x.ProductionOrder.Status == ProductionOrderStatus.Completed || x.ProductionOrder.Status == ProductionOrderStatus.Cancelled ||
+            (x.ProductionOperation != null && (x.ProductionOperation.Status == ProductionOperationStatus.Completed || x.ProductionOperation.Status == ProductionOperationStatus.Cancelled)));
+        else query = query.Where(x => x.Status == Requested &&
+            x.ProductionOrder.Status != ProductionOrderStatus.Completed && x.ProductionOrder.Status != ProductionOrderStatus.Cancelled &&
+            (x.ProductionOperation == null || (x.ProductionOperation.Status != ProductionOperationStatus.Completed && x.ProductionOperation.Status != ProductionOperationStatus.Cancelled)));
         var requests = await query.OrderBy(x => x.RequestedDate).ThenBy(x => x.Id).ToListAsync();
         var itemIds = requests.SelectMany(x => x.Lines).Select(x => x.ItemId).Distinct().ToArray();
         var orderIds = requests.Select(x => x.ProductionOrderId).Distinct().ToArray();

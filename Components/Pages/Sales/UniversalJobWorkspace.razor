@@ -138,6 +138,16 @@
                 var reservations = await db.ProductionMaterialReservations.AsNoTracking().Include(x => x.Item).Include(x => x.Unit)
                     .Where(x => productionIds.Contains(x.ProductionOrderId)).OrderByDescending(x => x.Id).ToListAsync();
                 sections.Add(new(T("Material reservations (order level)", "رزرو مواد در سطح سفارش"), "bi-boxes", reservations.Select(x => new DocumentRow(x.Item.Name, $"{x.Quantity} {x.Unit.Symbol} · {Date(x.ReservedDate)}", L.TranslateEnum(x.Status), $"/production/orders/edit/{x.ProductionOrderId}")).ToList()));
+                var materialRequests = await db.ProductionMaterialRequests.AsNoTracking()
+                    .Include(x => x.ProductionOperation).Include(x => x.Lines).ThenInclude(x => x.Item)
+                    .Include(x => x.Lines).ThenInclude(x => x.Unit)
+                    .Where(x => productionIds.Contains(x.ProductionOrderId)).OrderByDescending(x => x.RequestedDate).ToListAsync();
+                sections.Add(new(T("Warehouse material requests (order level)", "درخواست‌های مواد انبار در سطح سفارش"), "bi-inbox",
+                    materialRequests.Select(x => new DocumentRow(
+                        x.ProductionOperation?.Name ?? T("Material request", "درخواست مواد"),
+                        string.Join(" · ", x.Lines.Select(l => $"{l.Item.Name}: {l.Quantity} {l.Unit.Symbol}")) + " · " + Date(x.RequestedDate),
+                        x.Status == "Issued" ? T("Issued", "تحویل شده") : x.Status == "Requested" ? T("Awaiting warehouse", "در انتظار انبار") : x.Status,
+                        canInventory ? "/inventory/material-requests" : null)).ToList()));
                 var inspections = await db.Set<QualityInspection>().AsNoTracking().Where(x => productionIds.Contains(x.ProductionOrderId)).OrderByDescending(x => x.Id).ToListAsync();
                 sections.Add(new(T("Quality inspections (order level)", "کنترل کیفیت در سطح سفارش"), "bi-patch-check", inspections.Select(x => new DocumentRow($"QC-{x.Id}", Date(x.InspectionDate), L.TranslateEnum(x.Status), $"/production/orders/edit/{x.ProductionOrderId}")).ToList()));
             }

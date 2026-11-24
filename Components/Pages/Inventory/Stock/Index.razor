@@ -34,6 +34,13 @@
         <a class="btn btn-outline-secondary" href="/inventory/transactions"><i class="bi bi-clock-history" aria-hidden="true"></i> @LocalizationService["Transactions"]</a>
     </div>
 
+    <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="@(LocalizationService.IsPersian ? "نوع موجودی" : "Stock area")">
+        <button type="button" class="btn @(stockArea == "storage" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => ChangeStockArea("storage")'>@(LocalizationService.IsPersian ? "موجودی انبار" : "Stored stock")</button>
+        <button type="button" class="btn @(stockArea == "materials" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => ChangeStockArea("materials")'>@(LocalizationService.IsPersian ? "مواد اولیه و ملزومات" : "Materials & supplies")</button>
+        <button type="button" class="btn @(stockArea == "finished" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => ChangeStockArea("finished")'>@(LocalizationService.IsPersian ? "محصول نهایی" : "Finished goods")</button>
+        <button type="button" class="btn @(stockArea == "production" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => ChangeStockArea("production")'>@(LocalizationService.IsPersian ? "موجودی سالن تولید" : "Production floor")</button>
+    </div>
+
     <!-- =========================================
          Low Stock Alert Summary
          ========================================= -->
@@ -170,7 +177,7 @@
                                 </th>
 
                                 <th class="text-end">
-                                    @LocalizationService["Available"]
+                                    @(LocalizationService.IsPersian ? "موجودی قابل استفاده" : "Usable available")
                                 </th>
 
                                 <th>
@@ -201,7 +208,7 @@
                                 @foreach (var stock in balances)
                                 {
                                     var isLowStock =
-                                        stock.CustomerId == null && IsLowStock(stock.ItemId);
+                                        stockArea != "production" && stock.CustomerId == null && IsLowStock(stock.ItemId);
 
                                     <tr class="@(isLowStock ? "table-warning" : "")">
 
@@ -243,7 +250,7 @@
                                                     @GetThreshold(stock.ItemId)
                                                 </div>
                                             }
-                                            else if (stock.CustomerId == null && stock.AlertEnabled)
+                                            else if (stockArea != "production" && stock.CustomerId == null && stock.AlertEnabled)
                                             {
                                                 <span class="badge bg-success">
                                                     @LocalizationService["StockOK"]
@@ -330,10 +337,12 @@
         public bool AlertEnabled { get; init; }
         public decimal OnHandQuantity { get; init; }
         public decimal ReservedQuantity { get; init; }
-        public decimal AvailableQuantity => OnHandQuantity - ReservedQuantity;
+        public decimal AvailableQuantity { get; init; }
     }
 
     private List<StockSummary>? balances;
+
+    private string stockArea = "storage";
 
     private InventoryOwnerFilter ownerFilter =
         InventoryOwnerFilter.All;
@@ -369,11 +378,21 @@
 
     private async Task LoadBalances()
     {
-        var query = Db.InventoryBalances.Stored()
+        var day = DateTime.Today;
+        var query = Db.InventoryBalances.AsNoTracking()
             .Include(x => x.Item)
             .Include(x => x.Customer)
             .Where(x => x.OnHandQuantity > 0)
             .AsQueryable();
+
+        query = stockArea switch
+        {
+            "materials" => query.Where(x => x.InventoryLocation.IsActive && x.InventoryLocation.Type == InventoryLocationType.Warehouse),
+            "finished" => query.Where(x => x.InventoryLocation.IsActive && x.InventoryLocation.Type == InventoryLocationType.FinishedGoods),
+            "production" => query.Where(x => x.InventoryLocation.IsActive &&
+                (x.InventoryLocation.Type == InventoryLocationType.Production || x.InventoryLocation.Type == InventoryLocationType.Machine)),
+            _ => query.Stored()
+        };
 
         // =========================================
         // Inventory Owner Filter
@@ -424,7 +443,10 @@
             CustomerName = g.Key.CustomerName,
             AlertEnabled = g.Key.EnableLowStockAlert,
             OnHandQuantity = g.Sum(x => x.OnHandQuantity),
-            ReservedQuantity = g.Sum(x => x.ReservedQuantity)
+            ReservedQuantity = g.Sum(x => x.ReservedQuantity),
+            AvailableQuantity = g.Sum(x => x.Item.IsActive && (!x.Item.RequiresLotTracking ||
+                (x.InventoryLot != null && !x.InventoryLot.IsClosed && (!x.InventoryLot.ExpirationDate.HasValue || x.InventoryLot.ExpirationDate.Value >= day)))
+                ? x.OnHandQuantity - x.ReservedQuantity : 0m)
         });
         totalCount = await grouped.CountAsync();
 
@@ -458,6 +480,13 @@
         await LoadLowStockAlerts();
     }
 
+    private async Task ChangeStockArea(string area)
+    {
+        stockArea = area;
+        currentPage = 1;
+        await LoadBalances();
+    }
+
     private async Task LoadLowStockAlerts()
     {
         // Low-stock alerts are based on COMPANY inventory,
@@ -478,11 +507,10 @@
                     x.OnHandQuantity -
                     x.ReservedQuantity));
 
-        thresholdByItem = companyBalances
-            .GroupBy(x => x.ItemId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.First().Item.LowStockThreshold);
+        thresholdByItem = await Db.Items.AsNoTracking().Where(x => x.IsActive && x.EnableLowStockAlert)
+            .ToDictionaryAsync(x => x.Id, x => x.LowStockThreshold);
+        foreach (var itemId in thresholdByItem.Keys)
+            companyAvailableByItem.TryAdd(itemId, 0m);
 
         lowStockItems = thresholdByItem
             .Where(x =>

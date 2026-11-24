@@ -191,10 +191,10 @@
             else if (targetSection == "warehouse")
             {
                 nextKpis.Add(new("ManagerWarehouseItems", await db.Items.CountAsync(x => x.IsActive)));
-                nextKpis.Add(new("ManagerWarehouseOpenRequests", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested")));
+                nextKpis.Add(new("ManagerWarehouseOpenRequests", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested" && x.ProductionOrder.Status != ProductionOrderStatus.Completed && x.ProductionOrder.Status != ProductionOrderStatus.Cancelled && (x.ProductionOperation == null || (x.ProductionOperation.Status != ProductionOperationStatus.Completed && x.ProductionOperation.Status != ProductionOperationStatus.Cancelled)))));
                 nextKpis.Add(new("ManagerWarehouseDraftDocuments", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Draft)));
                 nextKpis.Add(new("ManagerWarehousePostedDocuments", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Posted)));
-                nextAlerts.Add(new("ManagerWarehouseRequestsToProcess", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested"), "/inventory/material-requests"));
+                nextAlerts.Add(new("ManagerWarehouseRequestsToProcess", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested" && x.ProductionOrder.Status != ProductionOrderStatus.Completed && x.ProductionOrder.Status != ProductionOrderStatus.Cancelled && (x.ProductionOperation == null || (x.ProductionOperation.Status != ProductionOperationStatus.Completed && x.ProductionOperation.Status != ProductionOperationStatus.Cancelled))), "/inventory/material-requests"));
                 nextAlerts.Add(new("ManagerWarehouseDocumentsToPost", await db.InventoryDocuments.CountAsync(x => x.Status == InventoryDocumentStatus.Draft), "/inventory/documents"));
                 nextShortcuts.AddRange(new[] {
                     new Shortcut("ManagerWarehouseRequestsToProcess", "/inventory/material-requests"),
@@ -212,7 +212,7 @@
                     x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled)));
                 nextKpis.Add(new("ManagerCeoApprovedWindows", await db.ProductionOrders.CountAsync(x =>
                     x.PlannedStartDate.HasValue && x.PlannedEndDate.HasValue)));
-                nextKpis.Add(new("ManagerCeoOpenWarehouse", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested")));
+                nextKpis.Add(new("ManagerCeoOpenWarehouse", await db.ProductionMaterialRequests.CountAsync(x => x.Status == "Requested" && x.ProductionOrder.Status != ProductionOrderStatus.Completed && x.ProductionOrder.Status != ProductionOrderStatus.Cancelled && (x.ProductionOperation == null || (x.ProductionOperation.Status != ProductionOperationStatus.Completed && x.ProductionOperation.Status != ProductionOperationStatus.Cancelled)))));
                 nextAlerts.Add(new("ManagerCeoUnplannedOrders", await db.ProductionOrders.CountAsync(x =>
                     x.Status != ProductionOrderStatus.Completed && x.Status != ProductionOrderStatus.Cancelled &&
                     (!x.PlannedStartDate.HasValue || !x.PlannedEndDate.HasValue)), "/production/planning"));
