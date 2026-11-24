@@ -86,7 +86,11 @@ public static class JobProcessOverviewService
         string? search = null,
         SalesJobType? jobType = null,
         long? requestId = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        DateTime? requestFrom = null,
+        DateTime? requestTo = null,
+        DateTime? deliveryFrom = null,
+        DateTime? deliveryTo = null)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
@@ -111,6 +115,35 @@ public static class JobProcessOverviewService
                     r.Customer.Name.Contains(term) ||
                     r.JobSpecificationJson.Contains(term));
             }
+        }
+
+        // Apply date filters before the recent-results limit. Both endpoints
+        // include their entire calendar day, and missing delivery dates are
+        // excluded only when the employee filters by delivery date.
+        if (requestFrom is DateTime rf)
+        {
+            var from = rf.Date;
+            query = query.Where(r => r.RequestDate >= from);
+        }
+        if (requestTo is DateTime rt && rt.Date < DateTime.MaxValue.Date)
+        {
+            var until = rt.Date.AddDays(1);
+            query = query.Where(r => r.RequestDate < until);
+        }
+        if (deliveryFrom is DateTime df)
+        {
+            var from = df.Date;
+            query = query.Where(r => r.RequestedDeliveryDate.HasValue && r.RequestedDeliveryDate.Value >= from);
+        }
+        if (deliveryTo is DateTime dt)
+        {
+            if (dt.Date < DateTime.MaxValue.Date)
+            {
+                var until = dt.Date.AddDays(1);
+                query = query.Where(r => r.RequestedDeliveryDate.HasValue && r.RequestedDeliveryDate.Value < until);
+            }
+            else
+                query = query.Where(r => r.RequestedDeliveryDate.HasValue);
         }
 
         // Limit initial display and search results; searches run in SQL so an

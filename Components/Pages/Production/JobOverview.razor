@@ -113,6 +113,35 @@
                 <button type="button" class="btn btn-outline-secondary"
                         disabled="@loading" @onclick="ClearFiltersAsync">@L["Clear"]</button>
             </div>
+            <div class="job-overview-date-filters">
+                <fieldset class="job-overview-date-range">
+                    <legend><i class="bi bi-calendar3" aria-hidden="true"></i> @L["RequestDate"]</legend>
+                    <div class="job-overview-date-inputs">
+                        <div class="job-overview-filter">
+                            <label for="job-request-from">@DateText("From", "از")</label>
+                            <input id="job-request-from" type="date" class="form-control" @bind="requestFrom" disabled="@loading" />
+                        </div>
+                        <div class="job-overview-filter">
+                            <label for="job-request-to">@DateText("To", "تا")</label>
+                            <input id="job-request-to" type="date" class="form-control" @bind="requestTo" disabled="@loading" />
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset class="job-overview-date-range">
+                    <legend><i class="bi bi-calendar-check" aria-hidden="true"></i> @L["RequestedDeliveryDate"]</legend>
+                    <div class="job-overview-date-inputs">
+                        <div class="job-overview-filter">
+                            <label for="job-delivery-from">@DateText("From", "از")</label>
+                            <input id="job-delivery-from" type="date" class="form-control" @bind="deliveryFrom" disabled="@loading" />
+                        </div>
+                        <div class="job-overview-filter">
+                            <label for="job-delivery-to">@DateText("To", "تا")</label>
+                            <input id="job-delivery-to" type="date" class="form-control" @bind="deliveryTo" disabled="@loading" />
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="job-overview-date-hint">@DateText("Dates are Gregorian. Leave a date blank for an open-ended range, then select Search.", "تاریخ‌ها میلادی هستند. برای بازه بدون حد ابتدا یا انتها، تاریخ را خالی بگذارید و جستجو را انتخاب کنید.")</div>
+            </div>
         </section>
 
         @if (!string.IsNullOrWhiteSpace(error))
@@ -405,6 +434,12 @@
     private string searchText = "";
     private string jobTypeFilter = "";
     private string statusFilter = "";
+    private DateTime? requestFrom;
+    private DateTime? requestTo;
+    private DateTime? deliveryFrom;
+    private DateTime? deliveryTo;
+
+    private string DateText(string en, string fa) => L.IsPersian ? fa : en;
     private bool loading = true;
     private bool loaded;
     private bool canView;
@@ -448,6 +483,17 @@
 
     private async Task LoadAsync()
     {
+        if (loading && loaded) return;
+        if (requestFrom.HasValue && requestTo.HasValue && requestFrom.Value.Date > requestTo.Value.Date)
+        {
+            error = DateText("Request date: From must not be after To.", "تاریخ ثبت درخواست: تاریخ ابتدا نباید بعد از تاریخ انتها باشد.");
+            return;
+        }
+        if (deliveryFrom.HasValue && deliveryTo.HasValue && deliveryFrom.Value.Date > deliveryTo.Value.Date)
+        {
+            error = DateText("Delivery date: From must not be after To.", "تاریخ تحویل: تاریخ ابتدا نباید بعد از تاریخ انتها باشد.");
+            return;
+        }
         loading = true;
         error = null;
         visibleCount = 20;
@@ -465,7 +511,9 @@
             var parsedType = Enum.TryParse<SalesJobType>(jobTypeFilter, true, out var type)
                 ? type : (SalesJobType?)null;
             var updated = await JobProcessOverviewService.LoadAsync(
-                DbFactory, searchText, parsedType, RequestId);
+                DbFactory, searchText, parsedType, RequestId,
+                requestFrom: requestFrom, requestTo: requestTo,
+                deliveryFrom: deliveryFrom, deliveryTo: deliveryTo);
             jobs.Clear();
             jobs.AddRange(updated);
         }
@@ -490,6 +538,7 @@
         searchText = "";
         jobTypeFilter = "";
         statusFilter = "";
+        requestFrom = requestTo = deliveryFrom = deliveryTo = null;
         if (RequestId.HasValue)
             Navigation.NavigateTo("/production/jobs");
         else
