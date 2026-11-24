@@ -11,7 +11,7 @@
         <div>
             <label class="form-label" for="@(IdPrefix + "-code")">@LocalizationService["RollPantoneReference"]</label>
             <input id="@(IdPrefix + "-code")" type="text" class="form-control" maxlength="64"
-                   @bind="code" @bind:event="oninput" @onkeydown="HandleKey"
+                   @bind="code" @bind:event="oninput"
                    placeholder="@T("Optional Pantone reference", "کد پنتون اختیاری")" />
         </div>
         <div>
@@ -19,7 +19,7 @@
             <input id="@(IdPrefix + "-color")" type="color" class="form-control form-control-color roll-pantone-picker"
                    @bind="hex" />
         </div>
-        <button type="button" class="btn btn-outline-primary roll-pantone-add" @onclick="AddAsync">
+        <button type="button" class="btn btn-outline-primary roll-pantone-add" data-job-enter-target="true" @onclick="AddAsync">
             <i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["RollPantoneAdd"]
         </button>
     </div>
@@ -68,11 +68,6 @@
         code = color.Code == AutomaticName(color) ? "" : color.Code;
         hex = color.SafeHex;
         error = null;
-    }
-
-    private async Task HandleKey(KeyboardEventArgs args)
-    {
-        if (args.Key == "Enter") await AddAsync();
     }
 
     private async Task AddAsync()
