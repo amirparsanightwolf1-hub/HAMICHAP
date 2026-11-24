@@ -19,14 +19,11 @@
 
     <DataAnnotationsValidator />
 
-    <div class="mb-3">
-        <label class="form-label">
-            @LocalizationService["Code"]
-        </label>
-
-        <InputText class="form-control"
-                   @bind-Value="customer.Code" />
-    </div>
+    <p class="text-muted small">@(LocalizationService.IsPersian ? "کد مشتری هنگام ذخیره به صورت خودکار ایجاد می‌شود." : "Customer code is generated automatically when saved.")</p>
+    @if (errorMessage is not null)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
 
     <div class="mb-3">
         <label class="form-label">
@@ -65,7 +62,7 @@
     </div>
 
     <button type="submit"
-            class="btn btn-primary">
+            class="btn btn-primary" disabled="@isSaving">
         @LocalizationService["SaveCustomer"]
     </button>
 
@@ -74,14 +71,33 @@
 @code {
 
     private Customer customer = new();
+    private bool isSaving;
+    private string? errorMessage;
 
     private async Task Save()
     {
-        Db.Customers.Add(customer);
-
-        await Db.SaveChangesAsync();
-
-        Navigation.NavigateTo("/customers");
+        if (isSaving) return;
+        errorMessage = null;
+        if (string.IsNullOrWhiteSpace(customer.Name))
+        {
+            errorMessage = LocalizationService["CustomerNameIsRequired"];
+            return;
+        }
+        try
+        {
+            isSaving = true;
+            customer.Name = customer.Name.Trim();
+            customer.Code = await CustomerCodeGenerator.GenerateAsync(Db);
+            Db.Customers.Add(customer);
+            await Db.SaveChangesAsync();
+            Navigation.NavigateTo("/customers");
+        }
+        catch (Exception)
+        {
+            Db.Entry(customer).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+            errorMessage = LocalizationService.IsPersian ? "ذخیره مشتری انجام نشد. دوباره تلاش کنید." : "Customer could not be saved. Please try again.";
+        }
+        finally { isSaving = false; }
     }
 
 }

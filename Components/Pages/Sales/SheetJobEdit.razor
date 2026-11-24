@@ -135,9 +135,6 @@
 
                     @if (isCreatingCustomer)
                     {
-                        <label class="form-label">@LocalizationService["CustomerCodeRequired"]</label>
-                        <InputText class="form-control" @bind-Value="newCustomerCode" />
-
                         <label class="form-label">@LocalizationService["CustomerNameRequired"]</label>
                         <InputText class="form-control" @bind-Value="newCustomerName" />
 
@@ -246,8 +243,6 @@
                     <label class="form-label">@LocalizationService["PrintingAndColorNotes"]</label>
                     <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="@LocalizationService["PrintingNotesPlaceholder"]" />
 
-                    <label class="form-label">@LocalizationService["CustomerOrderNumber"]</label>
-                    <InputText class="form-control" @bind-Value="spec.OrderNumber" />
                 </div>
 
                 <JobMaterialEstimate Sheet="spec" />
@@ -456,7 +451,6 @@
     private List<Customer> customers = new();
     private int selectedCustomerId;
     private bool isCreatingCustomer;
-    private string newCustomerCode = "";
     private string newCustomerName = "";
     private string newCustomerPhone = "";
     private string newCustomerEmail = "";
@@ -602,7 +596,6 @@
     {
 
         isCreatingCustomer = true;
-        newCustomerCode = "";
         newCustomerName = "";
         newCustomerPhone = "";
         newCustomerEmail = "";
@@ -831,15 +824,10 @@
 
             if (isCreatingCustomer)
             {
-                if (string.IsNullOrWhiteSpace(newCustomerCode))
-                    throw new InvalidOperationException(LocalizationService["CustomerCodeIsRequired"]);
-
                 if (string.IsNullOrWhiteSpace(newCustomerName))
                     throw new InvalidOperationException(LocalizationService["CustomerNameIsRequired"]);
 
-                var code = newCustomerCode.Trim();
-                if (await Db.Customers.AnyAsync(x => x.Code == code))
-                    throw new InvalidOperationException(string.Format(LocalizationService["CustomerCodeAlreadyExists"], code));
+                var code = await CustomerCodeGenerator.GenerateAsync(Db);
 
                 var newCustomer = new Customer
                 {

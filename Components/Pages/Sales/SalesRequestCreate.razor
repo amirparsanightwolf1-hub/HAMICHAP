@@ -121,10 +121,6 @@
                 {
                     <div class="job-create-fields-grid">
                         <div class="job-create-field">
-                            <label for="job-create-code">@LocalizationService["CustomerCode"] <span class="job-create-required">*</span></label>
-                            <InputText id="job-create-code" class="form-control" @bind-Value="newCustomerCode" />
-                        </div>
-                        <div class="job-create-field">
                             <label for="job-create-name">@LocalizationService["CustomerName"] <span class="job-create-required">*</span></label>
                             <InputText id="job-create-name" class="form-control" @bind-Value="newCustomerName" />
                         </div>
@@ -259,7 +255,6 @@
     private bool isSaving;
     private bool isCreatingCustomer;
 
-    private string newCustomerCode = "";
     private string newCustomerName = "";
     private string newCustomerPhone = "";
     private string newCustomerEmail = "";
@@ -296,7 +291,6 @@
     {
         isCreatingCustomer = true;
 
-        newCustomerCode = "";
         newCustomerName = "";
         newCustomerPhone = "";
         newCustomerEmail = "";
@@ -331,12 +325,10 @@
             return;
         }
 
-        if (isCreatingCustomer &&
-            (string.IsNullOrWhiteSpace(newCustomerCode) ||
-             string.IsNullOrWhiteSpace(newCustomerName)))
+        if (isCreatingCustomer && string.IsNullOrWhiteSpace(newCustomerName))
         {
             errorMessage =
-                LocalizationService["CustomerCodeAndNameRequired"];
+                LocalizationService["CustomerNameIsRequired"];
 
             return;
         }
@@ -358,13 +350,7 @@
 
             if (isCreatingCustomer)
             {
-                var code = newCustomerCode.Trim();
-
-                if (await Db.Customers.AnyAsync(x => x.Code == code))
-                {
-                    throw new InvalidOperationException(
-                        $"{LocalizationService["CustomerCodeAlreadyExists"]} {code}");
-                }
+                var code = await CustomerCodeGenerator.GenerateAsync(Db);
 
                 var newCustomer = new Customer
                 {
