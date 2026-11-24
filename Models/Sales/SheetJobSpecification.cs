@@ -15,6 +15,8 @@ public sealed class SheetJobSpecification
     public string RequiredItems { get; set; } = "";
     public string PaperType { get; set; } = "";
     public string Zinc { get; set; } = "";
+    // Null follows the selected process and spot colors; a number is a manual override.
+    public int? PrintingPlateCountOverride { get; set; }
     public string Die { get; set; } = "";
     public string Cliche { get; set; } = "";
     public string ProductionLocation { get; set; } = "";

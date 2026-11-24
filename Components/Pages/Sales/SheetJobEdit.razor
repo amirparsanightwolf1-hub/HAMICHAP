@@ -179,8 +179,15 @@
                         <small class="text-muted">@LocalizationService["PaperTypeHelp"]</small>
                     </div>
 
-                    <label class="form-label"><i class="bi bi-grid-3x3 app-field-icon" aria-hidden="true"></i> @LocalizationService["Zinc"]</label>
-                    <input class="form-control" value="@PlateCount" readonly />
+                    <label class="form-label" for="sheet-plate-count"><i class="bi bi-grid-3x3 app-field-icon" aria-hidden="true"></i> @ToolingText("Printing plate count", "تعداد زینک")</label>
+                     <div class="input-group">
+                         <InputNumber id="sheet-plate-count" class="form-control" min="0" step="1" @bind-Value="EditablePlateCount" />
+                         <button type="button" class="btn btn-outline-secondary" @onclick="ResetPlateCount"
+                                 title="@ToolingText("Reset to calculated plate count", "بازگشت به تعداد محاسبه‌شده")"
+                                 aria-label="@ToolingText("Reset to calculated plate count", "بازگشت به تعداد محاسبه‌شده")">
+                             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                         </button>
+                     </div>
 
                     <label class="form-label job-edit-quantity-label"><i class="bi bi-files app-field-icon" aria-hidden="true"></i> @ToolingText("Sheet count", "تعداد شیت")</label>
                     <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.PrintRunSheets" />
@@ -456,7 +463,21 @@
     private List<RollPantoneColor> frontPantoneColors = new();
     private List<RollPantoneColor> backPantoneColors = new();
     private int PlateCount => frontCmykColors.Count + backCmykColors.Count + frontPantoneColors.Count + backPantoneColors.Count;
-    private void RefreshPlateCount() => spec.Zinc = PlateCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    private int? EditablePlateCount
+    {
+        get => spec.PrintingPlateCountOverride ?? PlateCount;
+        set
+        {
+            spec.PrintingPlateCountOverride = value.HasValue ? Math.Max(0, value.Value) : null;
+            RefreshPlateCount();
+        }
+    }
+    private void ResetPlateCount()
+    {
+        spec.PrintingPlateCountOverride = null;
+        RefreshPlateCount();
+    }
+    private void RefreshPlateCount() => spec.Zinc = (spec.PrintingPlateCountOverride ?? PlateCount).ToString(System.Globalization.CultureInfo.InvariantCulture);
     private string mixedFrontColors = string.Empty;
     private string mixedBackColors = string.Empty;
     private string finishType = string.Empty;

@@ -203,8 +203,15 @@
                         <input class="form-control" value="@PlateCount" readonly />
                     </div>
                     <div class="label-specification-field">
-                        <label><i class="bi bi-grid-3x3 app-field-icon" aria-hidden="true"></i> @LocalizationService["Zinc"]</label>
-                        <input class="form-control" value="@PlateCount" readonly />
+                        <label for="roll-plate-count"><i class="bi bi-grid-3x3 app-field-icon" aria-hidden="true"></i> @ToolingText("Printing plate count", "تعداد زینک")</label>
+                     <div class="input-group">
+                         <InputNumber id="roll-plate-count" class="form-control" min="0" step="1" @bind-Value="EditablePlateCount" />
+                         <button type="button" class="btn btn-outline-secondary" @onclick="ResetPlateCount"
+                                 title="@ToolingText("Reset to calculated plate count", "بازگشت به تعداد محاسبه‌شده")"
+                                 aria-label="@ToolingText("Reset to calculated plate count", "بازگشت به تعداد محاسبه‌شده")">
+                             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                         </button>
+                     </div>
                     </div>
                     <div class="label-specification-field">
                         <label><i class="bi bi-chat-left-text app-field-icon" aria-hidden="true"></i> @LocalizationService["PrintingNotes"]</label>
@@ -492,7 +499,21 @@
     private bool canEditSpecifications;
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private int PlateCount => frontCmykColors.Count + (spec.PantoneColors?.Count ?? 0);
-    private void RefreshColorCount() { spec.ColorCount = PlateCount; spec.Zinc = PlateCount.ToString(System.Globalization.CultureInfo.InvariantCulture); }
+    private int? EditablePlateCount
+    {
+        get => spec.PrintingPlateCountOverride ?? PlateCount;
+        set
+        {
+            spec.PrintingPlateCountOverride = value.HasValue ? Math.Max(0, value.Value) : null;
+            RefreshColorCount();
+        }
+    }
+    private void ResetPlateCount()
+    {
+        spec.PrintingPlateCountOverride = null;
+        RefreshColorCount();
+    }
+    private void RefreshColorCount() { spec.ColorCount = PlateCount; spec.Zinc = (spec.PrintingPlateCountOverride ?? PlateCount).ToString(System.Globalization.CultureInfo.InvariantCulture); }
     private static readonly (string Key, string LocalizationKey, string Css)[] CmykColors =
     {
         ("C", "CmykCyan", "cmyk-c"), ("M", "CmykMagenta", "cmyk-m"),

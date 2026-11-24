@@ -18,6 +18,8 @@ public sealed class RollJobSpecification
     public string PaperType { get; set; } = "";
     public int? ColorCount { get; set; }
     public string Zinc { get; set; } = "";
+    // Null follows the selected process and spot colors; a number is a manual override.
+    public int? PrintingPlateCountOverride { get; set; }
     // Named spot colors with user-chosen on-screen preview colors, stored in the job JSON.
     public List<RollPantoneColor> PantoneColors { get; set; } = new();
     public string PrintingNotes { get; set; } = "";
