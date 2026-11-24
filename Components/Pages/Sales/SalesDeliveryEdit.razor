@@ -1,4 +1,5 @@
 ﻿@page "/sales/deliveries/edit/{Id:long}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Inventory
@@ -16,7 +17,8 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
-@inject SalesDeliveryService SalesDeliveryService
+@inject ShipmentPaymentService ShipmentPayment
+@inject PermissionService Permissions
 @inject LocalizationService L
 
 <PageTitle>
@@ -67,7 +69,7 @@
 
                 </button>
 
-                @if (delivery.Status == SalesDeliveryStatus.Draft)
+                @if (delivery.Status == SalesDeliveryStatus.Draft && linkedInvoice == null && canEdit)
                 {
                     <button type="button"
                             class="btn btn-primary"
@@ -84,20 +86,18 @@
 
                     </button>
 
-                    <button type="button"
-                            class="btn btn-success"
-                            @onclick="PostAsync"
-                            disabled="@isPosting">
-
-                        @if (isPosting)
-                        {
-                            <span class="spinner-border spinner-border-sm me-1"></span>
-                        }
-
-                        <i class="bi bi-check-circle"></i>
-                        @L["Post"]
-
-                    </button>
+                }
+                @if (delivery.Status == SalesDeliveryStatus.Draft && linkedInvoice == null && canPrepare)
+                {
+                    <button type="button" class="btn btn-primary" disabled="@(isSaving || isPosting)" @onclick="PrepareInvoiceAsync"><i class="bi bi-receipt"></i> @Text("Create invoice", "صدور فاکتور")</button>
+                }
+                @if (linkedInvoice != null)
+                {
+                    <a class="btn btn-outline-primary" href="@($"/sales/invoices/edit/{linkedInvoice.Id}")">@Text("View invoice", "مشاهده فاکتور")</a>
+                }
+                @if (delivery.Status == SalesDeliveryStatus.Draft && linkedInvoice?.PaidAtUtc != null && canPost)
+                {
+                    <button type="button" class="btn btn-success" disabled="@(isPosting || isSaving)" @onclick="PostAsync"><i class="bi bi-truck"></i> @Text("Dispatch paid goods", "ارسال کالای پرداخت شده")</button>
                 }
 
             </div>
@@ -117,6 +117,14 @@
             </div>
         }
 
+        @if (delivery.Status == SalesDeliveryStatus.Draft)
+        {
+            <div class="alert @(linkedInvoice?.PaidAtUtc != null ? "alert-success" : "alert-info")">
+                @(linkedInvoice == null ? Text("Prepare an invoice for QC-accepted finished goods.", "برای محصول نهایی تأییدشده فاکتور صادر کنید.") :
+                    linkedInvoice.PaidAtUtc == null ? Text("Awaiting full payment — shipment locked.", "در انتظار پرداخت کامل — ارسال مسدود است.") :
+                    Text("Payment confirmed — ready for shipment, subject to current stock.", "پرداخت تأیید شد — آماده ارسال با بررسی موجودی."))
+            </div>
+        }
         <!-- Delivery Information -->
 
         <div class="card shadow-sm mb-4">
@@ -195,7 +203,7 @@
                             @L["DeliveryDate"]
                         </label>
 
-                        @if (delivery.Status == SalesDeliveryStatus.Draft)
+                        @if (CanEditDraft)
                         {
                             <InputDate @bind-Value="delivery.DeliveryDate"
                                        class="form-control" />
@@ -217,12 +225,12 @@
                             @L["FromLocation"]
                         </label>
 
-                        @if (delivery.Status == SalesDeliveryStatus.Draft)
+                        @if (CanEditDraft)
                         {
                             <select class="form-select"
                                     @bind="delivery.FromLocationId">
 
-                                @foreach (var location in locations)
+                                @foreach (var location in finishedGoodsLocations)
                                 {
                                     <option value="@location.Id">
                                         @GetLocationDisplayName(location)
@@ -248,12 +256,12 @@
                             @L["ToLocation"]
                         </label>
 
-                        @if (delivery.Status == SalesDeliveryStatus.Draft)
+                        @if (CanEditDraft)
                         {
                             <select class="form-select"
                                     @bind="delivery.ToLocationId">
 
-                                @foreach (var location in locations)
+                                @foreach (var location in customerLocations)
                                 {
                                     <option value="@location.Id">
                                         @GetLocationDisplayName(location)
@@ -293,7 +301,7 @@
                             @L["Notes"]
                         </label>
 
-                        @if (delivery.Status == SalesDeliveryStatus.Draft)
+                        @if (CanEditDraft)
                         {
                             <textarea class="form-control"
                                       rows="3"
@@ -416,8 +424,7 @@
                                     <td class="text-end erp-min-width-150"
                                         >
 
-                                        @if (delivery.Status ==
-                                            SalesDeliveryStatus.Draft)
+                                        @if (CanEditDraft)
                                         {
                                             <input type="number"
                                                    class="form-control text-end"
@@ -443,8 +450,7 @@
 
                                     <td class="erp-min-width-220" >
 
-                                        @if (delivery.Status ==
-                                            SalesDeliveryStatus.Draft)
+                                        @if (CanEditDraft)
                                         {
                                             <input type="text"
                                                    class="form-control"
@@ -500,6 +506,10 @@
     public long Id { get; set; }
 
     private SalesDeliveryModel? delivery;
+    private HamiChap_MES_ERP.Models.Sales.SalesInvoice? linkedInvoice;
+    private bool canEdit, canPrepare, canPost;
+    private bool CanEditDraft => canEdit && linkedInvoice == null && delivery?.Status == SalesDeliveryStatus.Draft;
+    private string Text(string en, string fa) => L.IsPersian ? fa : en;
 
     private List<InventoryLocation> locations = new();
 
@@ -525,6 +535,11 @@
 
         try
         {
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Deliveries.View")) return;
+            canEdit = await Permissions.HasPermissionAsync(principal, "Sales.Deliveries.Edit");
+            canPrepare = await Permissions.HasPermissionAsync(principal, "Sales.Deliveries.Create");
+            canPost = await Permissions.HasPermissionAsync(principal, "Sales.Deliveries.Post");
             delivery =
                 await Db.SalesDeliveries
 
@@ -561,6 +576,7 @@
                 return;
             }
 
+            linkedInvoice = await Db.SalesInvoices.AsNoTracking().FirstOrDefaultAsync(x => x.SalesDeliveryId == Id);
             finishedGoodsLocations =
                 await Db.InventoryLocations
                 .Where(x =>
@@ -589,88 +605,51 @@
 
     private async Task SaveAsync()
     {
-        if (delivery == null)
-            return;
-
-        if (delivery.Status != SalesDeliveryStatus.Draft)
-            return;
-
-        errorMessage = null;
-        successMessage = null;
-
+        if (delivery == null || !CanEditDraft || isSaving || isPosting) return;
+        isSaving = true;
+        errorMessage = successMessage = null;
         try
         {
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Deliveries.Edit")) throw new UnauthorizedAccessException();
             ValidateDraft();
-
-            isSaving = true;
-
+            await using var tx = await Db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            if (await Db.SalesInvoices.AnyAsync(x => x.SalesDeliveryId == delivery.Id))
+                throw new InvalidOperationException("Invoiced shipments cannot be edited.");
             await Db.SaveChangesAsync();
+            await tx.CommitAsync();
+            successMessage = L["SalesDeliverySavedSuccessfully"];
+        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isSaving = false; }
+    }
 
-            successMessage =
-                L["SalesDeliverySavedSuccessfully"];
-        }
-        catch (Exception ex)
+    private async Task PrepareInvoiceAsync()
+    {
+        if (delivery == null || !canPrepare || linkedInvoice != null || isPosting || isSaving) return;
+        // Do not silently invoice unsaved edits.
+        if (Db.ChangeTracker.HasChanges()) { errorMessage = Text("Save changes before invoicing.", "پیش از صدور فاکتور تغییرات را ذخیره کنید."); return; }
+        isPosting = true;
+        try
         {
-            errorMessage = ex.Message;
+            var id = await ShipmentPayment.PrepareInvoiceAsync(delivery.Id, (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User);
+            Navigation.NavigateTo($"/sales/deliveries/edit/{delivery.Id}", forceLoad: true);
         }
-        finally
-        {
-            isSaving = false;
-        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isPosting = false; }
     }
 
     private async Task PostAsync()
     {
-        if (delivery == null)
-            return;
-
-        if (delivery.Status != SalesDeliveryStatus.Draft)
-            return;
-
-        errorMessage = null;
-        successMessage = null;
-
+        if (delivery == null || !canPost || linkedInvoice?.PaidAtUtc == null || isPosting || isSaving) return;
+        isPosting = true;
         try
         {
-            ValidateDraft();
-
-            isPosting = true;
-
-            var authenticationState =
-                await AuthenticationStateProvider
-                    .GetAuthenticationStateAsync();
-
-            var user =
-                await UserManager.GetUserAsync(
-                    authenticationState.User);
-
-            if (user == null)
-            {
-                throw new InvalidOperationException(
-                    L["UserNotAuthenticated"]);
-            }
-
-            /*
-             * Save the current draft changes first.
-             */
-            await Db.SaveChangesAsync();
-
-            await SalesDeliveryService.PostDeliveryAsync(
-                delivery.Id,
-                user.Id);
-
-            Navigation.NavigateTo(
-                $"/sales/deliveries/edit/{delivery.Id}",
-                forceLoad: true);
+            await ShipmentPayment.DispatchAsync(delivery.Id, (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User);
+            Navigation.NavigateTo($"/sales/deliveries/edit/{delivery.Id}", forceLoad: true);
         }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
-        }
-        finally
-        {
-            isPosting = false;
-        }
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isPosting = false; }
     }
 
     private void ValidateDraft()

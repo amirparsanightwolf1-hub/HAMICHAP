@@ -127,7 +127,7 @@ public class SalesDeliveryService
         string userId)
     {
         await using var transaction =
-            await _db.Database.BeginTransactionAsync();
+            await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
         try
         {
@@ -161,10 +161,11 @@ public class SalesDeliveryService
                 delivery.SalesOrder,
                 delivery.Lines);
 
-            // Create the invoice inside the existing transaction.
-            await _salesInvoiceService.CreateForDeliveryAsync(
-                delivery.Id,
-                userId);
+            var invoice = await _db.SalesInvoices.Include(x => x.Lines)
+                .FirstOrDefaultAsync(x => x.SalesDeliveryId == delivery.Id && x.Status == SalesInvoiceStatus.Issued);
+            if (invoice?.PaidAtUtc == null || string.IsNullOrWhiteSpace(invoice.PaidByUserId))
+                throw new InvalidOperationException("Full payment must be confirmed before shipment.");
+            await ShipmentReadiness.ValidateAsync(_db, delivery, invoice);
 
             foreach (var line in delivery.Lines)
             {
@@ -239,7 +240,7 @@ public class SalesDeliveryService
                 await _inventoryPosting.PostAsync(
                     inventoryDocument.Id,
                     userId,
-                    useTransaction: false);
+                    useTransaction: false, allowSalesDelivery: true);
 
                 line.InventoryDocumentId =
                     inventoryDocument.Id;

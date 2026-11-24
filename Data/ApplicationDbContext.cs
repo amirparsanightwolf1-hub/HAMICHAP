@@ -27,6 +27,8 @@ namespace HamiChap_MES_ERP.Data
 
             builder.Entity<SalesInvoice>().Property(x => x.Subtotal).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().Property(x => x.TotalAmount).HasPrecision(18, 2);
+            builder.Entity<SalesInvoice>().Property(x => x.PaidByUserId).HasMaxLength(450);
+            builder.Entity<SalesInvoice>().Property(x => x.PaymentReference).HasMaxLength(500);
             builder.Entity<SalesInvoice>().HasIndex(x => x.InvoiceNumber).IsUnique();
             builder.Entity<SalesInvoice>().HasIndex(x => x.SalesDeliveryId).IsUnique();
 

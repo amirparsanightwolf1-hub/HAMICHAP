@@ -1,4 +1,10 @@
 @page "/sales/invoices/edit/{Id:long}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
+@inject ShipmentPaymentService ShipmentPayment
 
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Models.Sales
@@ -35,6 +41,26 @@
     }
     else
     {
+        <section class="card mb-3 no-print">
+            <div class="card-body">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div><strong>@PaymentText("Payment status", "وضعیت پرداخت")</strong>
+                        <div class="small @(invoice.PaidAtUtc.HasValue ? "text-success" : "text-muted")">@(invoice.SalesDelivery.Status == SalesDeliveryStatus.Posted ? PaymentText("Shipment posted", "ارسال ثبت شده") : invoice.PaidAtUtc.HasValue ? PaymentText("Fully paid · ready for shipment", "پرداخت کامل · آماده ارسال") : PaymentText("Awaiting payment", "در انتظار پرداخت"))</div>
+                        @if (invoice.PaidAtUtc.HasValue) { <div class="small">@invoice.PaymentReference · @invoice.PaidAtUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div> }
+                    </div>
+                    <a class="btn btn-outline-primary btn-sm" href="@($"/sales/deliveries/edit/{invoice.SalesDeliveryId}")">@PaymentText("Shipment", "ارسال")</a>
+                </div>
+                @if (canConfirm && invoice.Status == SalesInvoiceStatus.Issued && invoice.SalesDelivery.Status == SalesDeliveryStatus.Draft && !invoice.PaidAtUtc.HasValue)
+                {
+                    <div class="row g-2 align-items-end mt-2">
+                        <div class="col-sm"><label class="form-label">@PaymentText("Payment reference", "مرجع پرداخت")</label><input class="form-control" maxlength="500" @bind="paymentReference" /></div>
+                        <div class="col-sm-auto"><button class="btn btn-success" disabled="@(paymentBusy || string.IsNullOrWhiteSpace(paymentReference))" @onclick="ConfirmPaymentAsync">@PaymentText("Confirm full payment", "تأیید پرداخت کامل") · @FormatAmount(invoice.TotalAmount)</button></div>
+                    </div>
+                    <p class="small text-muted mt-2 mb-0">@PaymentText("Confirm only after verifying receipt of the entire invoice amount.", "تنها پس از بررسی دریافت کل مبلغ فاکتور تأیید کنید.")</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(paymentError)) { <div class="alert alert-danger mt-2 mb-0">@paymentError</div> }
+            </div>
+        </section>
         <article class="invoice-document">
             <header class="document-header">
                 <div>
@@ -147,10 +173,26 @@
 
     private SalesInvoice? invoice;
     private bool isLoading = true;
+    private bool canConfirm, paymentBusy;
+    private string paymentReference = "";
+    private string? paymentError;
+    private string PaymentText(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private async Task ConfirmPaymentAsync()
+    {
+        if (!canConfirm || paymentBusy || invoice == null) return;
+        paymentBusy = true;
+        paymentError = null;
+        try { await ShipmentPayment.ConfirmPaymentAsync(invoice.Id, paymentReference, (await Auth.GetAuthenticationStateAsync()).User); await OnParametersSetAsync(); }
+        catch (Exception ex) { paymentError = ex.Message; }
+        finally { paymentBusy = false; }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
         isLoading = true;
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        canConfirm = await Permissions.HasPermissionAsync(user, "Sales.Invoices.ConfirmPayment");
+        if (!canConfirm && !await Permissions.HasPermissionAsync(user, "Sales.Invoices.View")) { invoice = null; isLoading = false; return; }
         invoice = await Db.SalesInvoices.AsNoTracking()
             .Include(x => x.Customer)
             .Include(x => x.Quotation).ThenInclude(x => x.SalesRequest)

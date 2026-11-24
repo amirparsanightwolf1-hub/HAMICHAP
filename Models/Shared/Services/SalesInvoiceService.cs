@@ -17,11 +17,11 @@ public class SalesInvoiceService
         _numberSeries = numberSeries;
     }
 
-    // Must be called by SalesDeliveryService inside its existing posting transaction.
+    // Called inside the draft invoice preparation transaction, before shipment.
     public async Task<SalesInvoice> CreateForDeliveryAsync(long deliveryId, string userId)
     {
         if (_db.Database.CurrentTransaction == null)
-            throw new InvalidOperationException("Invoice creation must run inside the delivery-posting transaction.");
+            throw new InvalidOperationException("Invoice creation must run inside an invoice preparation transaction.");
 
         if (string.IsNullOrWhiteSpace(userId))
             throw new InvalidOperationException("A valid user is required to create a sales invoice.");
@@ -42,6 +42,7 @@ public class SalesInvoiceService
         if (delivery.Status != SalesDeliveryStatus.Draft)
             throw new InvalidOperationException("Only a draft delivery can generate an invoice.");
 
+        await ShipmentReadiness.ValidateAsync(_db, delivery, null);
         var order = delivery.SalesOrder;
         var quotation = order.Quotation;
         if (quotation.Status != QuotationStatus.Accepted)
@@ -61,7 +62,7 @@ public class SalesInvoiceService
             InvoiceDate = DateTime.Now,
             Status = SalesInvoiceStatus.Issued,
             CreatedByUserId = userId,
-            Notes = $"Generated from delivery {delivery.DeliveryNumber}"
+            Notes = $"Prepared for shipment {delivery.DeliveryNumber}"
         };
 
         var quantityBeingInvoicedByQuotationLine = new Dictionary<long, decimal>();

@@ -105,7 +105,7 @@
                                 </td>
 
                                 <td>
-                                    @LocalizationService[$"SalesInvoiceStatus.{invoice.Status}"]
+                                    @(invoice.Status == HamiChap_MES_ERP.Models.Sales.Enums.SalesInvoiceStatus.Cancelled ? LocalizationService[$"SalesInvoiceStatus.{invoice.Status}"] : invoice.SalesDelivery?.Status == HamiChap_MES_ERP.Models.Sales.Enums.SalesDeliveryStatus.Posted ? (LocalizationService.IsPersian ? "ارسال شده" : "Shipped") : invoice.PaidAtUtc.HasValue ? (LocalizationService.IsPersian ? "پرداخت شده" : "Paid") : (LocalizationService.IsPersian ? "در انتظار پرداخت" : "Awaiting payment"))
                                 </td>
                             </tr>
                         }

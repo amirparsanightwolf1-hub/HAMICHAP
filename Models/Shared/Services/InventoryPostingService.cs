@@ -20,7 +20,7 @@ public class InventoryPostingService
     public async Task PostAsync(
     long documentId,
     string userId,
-    bool useTransaction = true, bool allowProductionConsumption = false)
+    bool useTransaction = true, bool allowProductionConsumption = false, bool allowSalesDelivery = false)
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new InvalidOperationException(
@@ -28,7 +28,7 @@ public class InventoryPostingService
 
         if (!useTransaction)
         {
-            await PostInternalAsync(documentId, userId, allowProductionConsumption);
+            await PostInternalAsync(documentId, userId, allowProductionConsumption, allowSalesDelivery);
 
             return;
         }
@@ -38,7 +38,7 @@ public class InventoryPostingService
 
         try
         {
-            await PostInternalAsync(documentId, userId, allowProductionConsumption);
+            await PostInternalAsync(documentId, userId, allowProductionConsumption, allowSalesDelivery);
 
             await transaction.CommitAsync();
         }
@@ -58,7 +58,7 @@ public class InventoryPostingService
         }
     }
 
-    private async Task PostInternalAsync(long documentId, string userId, bool allowProductionConsumption)
+    private async Task PostInternalAsync(long documentId, string userId, bool allowProductionConsumption, bool allowSalesDelivery)
     {
         var document =
             await LoadDocumentAsync(
@@ -67,6 +67,8 @@ public class InventoryPostingService
         ValidateDocument(document);
         if (document.DocumentType == InventoryDocumentType.ProductionConsumption && !allowProductionConsumption)
             throw new InvalidOperationException("Use the material usage and return workflow.");
+        if (document.DocumentType == InventoryDocumentType.SalesDelivery && !allowSalesDelivery)
+            throw new InvalidOperationException("Use the paid shipment workflow.");
 
         var locations =
             await LoadLocationsAsync(

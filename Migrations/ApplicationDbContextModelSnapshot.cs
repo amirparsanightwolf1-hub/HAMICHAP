@@ -1979,6 +1979,10 @@ namespace HamiChap_MES_ERP.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("PaidAtUtc").HasColumnType("datetime2");
+                    b.Property<string>("PaidByUserId").HasMaxLength(450).HasColumnType("nvarchar(450)");
+                    b.Property<string>("PaymentReference").HasMaxLength(500).HasColumnType("nvarchar(500)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");

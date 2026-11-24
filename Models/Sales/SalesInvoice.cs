@@ -25,6 +25,10 @@ public class SalesInvoice : BaseEntity
     public SalesInvoiceStatus Status { get; set; } = SalesInvoiceStatus.Issued;
     public decimal Subtotal { get; set; }
     public decimal TotalAmount { get; set; }
+    // Full payment confirmation by an authorized employee, not an online payment processor.
+    public DateTime? PaidAtUtc { get; set; }
+    public string? PaidByUserId { get; set; }
+    public string? PaymentReference { get; set; }
     public string Notes { get; set; } = "";
     public string? CreatedByUserId { get; set; }
 
