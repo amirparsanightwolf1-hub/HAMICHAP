@@ -6,6 +6,7 @@
 @using System.Text
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
@@ -48,12 +49,23 @@
                         <span class="badge bg-secondary">@orders.Count</span>
                     </div>
                     <div class="card-body order-queue">
-                        <p class="small text-muted">@L["SelectOrderToSplit"]</p>
+                        <p class="small text-muted">@T("Set the order of whole jobs, then apply the queue to the machine calendar. Earlier jobs get first choice of available machine time.", "اولویت کل سفارش‌ها را تعیین و سپس صف را روی تقویم دستگاه‌ها اعمال کنید.")</p>
+                        @if (canEdit)
+                        {
+                            <div class="manager-queue-actions">
+                                <button type="button" class="btn btn-primary btn-sm w-100" disabled="@(queueBusy || !OrderedQueue.Any(x => CanMoveJob(x) && IsSequenceConfirmed(x)))" @onclick="ApplyQueueAsync">
+                                    <i class="bi bi-calendar-check" aria-hidden="true"></i> @T("Apply job priorities", "اعمال اولویت سفارش‌ها")
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm w-100" disabled="@queueBusy" @onclick="ResetQueueAsync">
+                                    @T("Sort by delivery date", "ترتیب بر اساس تاریخ تحویل")
+                                </button>
+                            </div>
+                        }
                         @if (orders.Count == 0)
                         {
                             <div class="small text-muted">@L["NoProductionOrders"]</div>
                         }
-                        @foreach (var order in orders)
+                        @foreach (var order in OrderedQueue)
                         {
                             <div class="queue-order @(selectedOrderId == order.Id ? "queue-order-selected" : "")"
                                  @onclick="() => SelectOrder(order.Id)">
@@ -62,6 +74,22 @@
                                     <small>@(IsSequenceConfirmed(order) && order.PlannedStartDate.HasValue ? L["Scheduled"] : L["Unscheduled"])</small>
                                 </div>
                                 <div class="small text-muted">@order.SalesOrder?.Customer?.Name</div>
+                                <div class="small">@T("Delivery", "تحویل"): @FormatDateTime(DeliveryDeadline(order))</div>
+                                @if (CanMoveJob(order))
+                                {
+                                    <div class="manager-job-rank">
+                                        <span>@T("Priority", "اولویت") #@(MovableQueue.FindIndex(x => x.Id == order.Id) + 1)</span>
+                                        @if (canEdit)
+                                        {
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@(queueBusy || MovableQueue.FirstOrDefault()?.Id == order.Id)" @onclick:stopPropagation="true" @onclick="() => MoveJobAsync(order.Id, -1)" aria-label="@T("Move job up", "انتقال سفارش به بالا")"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@(queueBusy || MovableQueue.LastOrDefault()?.Id == order.Id)" @onclick:stopPropagation="true" @onclick="() => MoveJobAsync(order.Id, 1)" aria-label="@T("Move job down", "انتقال سفارش به پایین")"><i class="bi bi-arrow-down" aria-hidden="true"></i></button>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="small text-muted"><i class="bi bi-lock" aria-hidden="true"></i> @T("Schedule locked", "زمان‌بندی ثابت")</div>
+                                }
                                 <div class="small">@L["CeoDuration"]: @DurationLabel(order.EstimatedDurationMinutes)</div>
                                 <div class="small text-muted">@FormatDateTime(order.PlannedStartDate) – @FormatDateTime(order.PlannedEndDate)</div>
                                 @if (OrderHasExistingOverlap(order.Id))
@@ -103,7 +131,7 @@
                                 @if (canEdit)
                                 {
                                     <button type="button" class="btn btn-primary btn-sm w-100 mt-2"
-                                            disabled="@(SelectedOperations.Count == 0)"
+                                            disabled="@(queueBusy || SelectedOperations.Count == 0 || !CanMoveJob(orderForEdit))"
                                             @onclick="ConfirmOperationSequence">@L["ConfirmAndAutoSchedule"]</button>
                                     <p class="small text-muted mt-2 mb-0">@L["AutoScheduleAfterReconfirmation"]</p>
                                 }
@@ -220,7 +248,7 @@
                                             }
                                             <label class="form-label">@L["EstimatedHours"]</label>
                                             <input class="form-control form-control-sm mb-2" type="number"
-                                                   min="0.25" step="0.25"
+                                                   min="0.016667" step="any"
                                                    value="@OperationHoursChoice(step)"
                                                    @onchange="e => SetOperationHours(step.Id, e.Value?.ToString())" />
                                             <button type="button" class="btn btn-outline-primary btn-sm w-100"
@@ -447,6 +475,8 @@
 
     private bool canView;
     private bool canEdit;
+    private bool queueBusy;
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
     private bool isError;
     private string? message;
     private CalendarView viewMode = CalendarView.Month;
@@ -468,6 +498,42 @@
     private Dictionary<long, string> editedHours = new();
     private Dictionary<long, int> editedMachines = new();
     private Dictionary<long, bool> editedOutsourcing = new();
+
+    private static DateTime? DeliveryDeadline(ProductionOrder order)
+    {
+        // A date-only promise allows work through the end of that day.
+        var dates = new List<DateTime>();
+        if (order.SalesOrder?.DeliveryDate is DateTime delivery) dates.Add(delivery);
+        var quote = order.SalesOrder?.Quotation;
+        if (quote?.SalesRequest?.RequestedDeliveryDate is DateTime requested) dates.Add(requested);
+        if (quote != null)
+            dates.AddRange(quote.Lines.Where(x => x.SourceRequest?.RequestedDeliveryDate != null)
+                .Select(x => x.SourceRequest!.RequestedDeliveryDate!.Value));
+        if (dates.Count == 0) return null;
+        return dates.Select(x => x.TimeOfDay == TimeSpan.Zero ? x.Date.AddDays(1) : x).Min();
+    }
+
+    private static bool IsQueueStatus(ProductionOrder order) =>
+        order.Status is ProductionOrderStatus.Planned or ProductionOrderStatus.MaterialChecking or
+            ProductionOrderStatus.WaitingForMaterial or ProductionOrderStatus.ReadyToStart
+        && order.ActualStartDate == null && order.SalesOrder?.Status != SalesOrderStatus.Cancelled;
+
+    private static bool CanMoveJob(ProductionOrder order, IEnumerable<ProductionOperation> steps,
+        IEnumerable<ProductionSchedule> bookings) =>
+        IsQueueStatus(order) &&
+        steps.Where(x => x.ProductionOrderId == order.Id).All(x => x.Status is ProductionOperationStatus.Pending or ProductionOperationStatus.Ready) &&
+        !bookings.Any(x => x.ProductionOperation.ProductionOrderId == order.Id && x.Status != ScheduleStatus.Planned && x.Status != ScheduleStatus.Cancelled);
+
+    private bool CanMoveJob(ProductionOrder order) => CanMoveJob(order, operations, schedules);
+
+    private static IOrderedEnumerable<ProductionOrder> InQueueOrder(IEnumerable<ProductionOrder> source) =>
+        source.OrderBy(x => x.QueuePosition ?? int.MaxValue)
+            .ThenBy(x => DeliveryDeadline(x) ?? DateTime.MaxValue)
+            .ThenBy(x => x.CreatedDate).ThenBy(x => x.Id);
+
+    private List<ProductionOrder> MovableQueue => InQueueOrder(orders.Where(x => CanMoveJob(x))).ToList();
+    private IEnumerable<ProductionOrder> OrderedQueue => MovableQueue.Concat(
+        orders.Where(x => !CanMoveJob(x)).OrderBy(x => x.PlannedStartDate).ThenBy(x => x.Id));
 
     private ProductionOrder? SelectedOrder => orders.FirstOrDefault(x => x.Id == selectedOrderId);
     private List<ProductionOperation> SelectedOperations => operations
@@ -728,8 +794,10 @@
         await using var db = await DbFactory.CreateDbContextAsync();
         orders = await db.ProductionOrders.AsNoTracking()
             .Include(x => x.SalesOrder).ThenInclude(x => x.Customer)
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
             .Where(x => x.Status != ProductionOrderStatus.Cancelled)
-            .OrderBy(x => x.PlannedStartDate).ToListAsync();
+            .AsSplitQuery().OrderBy(x => x.PlannedStartDate).ToListAsync();
         machines = await db.Machines.AsNoTracking()
             .Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
         operations = await db.ProductionOperations.AsNoTracking()
@@ -849,7 +917,7 @@
     private string OperationNameChoice(ProductionOperation step) =>
         editedNames.GetValueOrDefault(step.Id, step.Name);
     private string OperationHoursChoice(ProductionOperation step) =>
-        editedHours.GetValueOrDefault(step.Id, step.PlannedHours.ToString("0.##", CultureInfo.InvariantCulture));
+        editedHours.GetValueOrDefault(step.Id, step.PlannedHours.ToString("0.######", CultureInfo.InvariantCulture));
     private void SetOperationName(long id, string? value) => editedNames[id] = value ?? "";
     private void SetOperationHours(long id, string? value) => editedHours[id] = value ?? "";
     private bool OutsourcingChoice(ProductionOperation step) =>
@@ -961,135 +1029,198 @@
 
     // Manager confirmation is the scheduling action: calculate ALL stage placements
     // at once, respecting both machine availability and order-stage sequence.
-    private async Task ConfirmOperationSequence()
+    private async Task<string> RequireQueueManagerAsync()
     {
-        if (!canEdit || !selectedOrderId.HasValue) return;
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        if (user.Identity?.IsAuthenticated != true ||
+            !(user.IsInRole("Administrator") || user.IsInRole("ProductionManager") ||
+              user.IsInRole("Production Manager") || user.IsInRole("Manager")))
+            throw new UnauthorizedAccessException("Production manager access required.");
+        return user.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException("Employee identity required.");
+    }
+
+    private static Task<List<ProductionOrder>> LoadQueueOrdersAsync(ApplicationDbContext db) =>
+        db.ProductionOrders.Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
+            .Where(x => x.Status != ProductionOrderStatus.Cancelled && x.Status != ProductionOrderStatus.Completed)
+            .AsSplitQuery().ToListAsync();
+
+    private async Task MoveJobAsync(long orderId, int direction) =>
+        await ChangeQueueAsync(orderId, direction, false);
+
+    private async Task ResetQueueAsync() => await ChangeQueueAsync(0, 0, true);
+
+    private async Task ChangeQueueAsync(long orderId, int direction, bool reset)
+    {
+        if (!canEdit || queueBusy) return;
+        queueBusy = true;
         try
         {
-            var principal = (await Auth.GetAuthenticationStateAsync()).User;
-            var approver = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (String.IsNullOrWhiteSpace(approver))
-            {
-                ShowError(L["ApprovalIdentityMissing"]);
-                return;
-            }
-
+            await RequireQueueManagerAsync();
             await using var db = await DbFactory.CreateDbContextAsync();
-            await using var transaction = await db.Database.BeginTransactionAsync(
-                System.Data.IsolationLevel.Serializable);
-            var order = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == selectedOrderId.Value);
-            if (order == null) return;
-            var steps = await db.ProductionOperations
-                .Include(x => x.WorkCenter)
-                .Where(x => x.ProductionOrderId == order.Id)
-                .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToListAsync();
-            if (steps.Count == 0)
+            await using var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var all = await LoadQueueOrdersAsync(db);
+            var steps = await db.ProductionOperations.AsNoTracking().ToListAsync();
+            var bookings = await db.ProductionSchedules.AsNoTracking()
+                .Include(x => x.ProductionOperation).Where(x => x.Status != ScheduleStatus.Cancelled).ToListAsync();
+            var queue = InQueueOrder(all.Where(x => CanMoveJob(x, steps, bookings))).ToList();
+            if (reset)
+                foreach (var order in queue) order.QueuePosition = null;
+            else
             {
-                ShowError(L["NoOperationsGenerated"]);
-                return;
+                var index = queue.FindIndex(x => x.Id == orderId);
+                var next = index + direction;
+                if (index < 0 || next < 0 || next >= queue.Count) return;
+                var moving = queue[index];
+                queue.RemoveAt(index);
+                queue.Insert(next, moving);
+                for (var i = 0; i < queue.Count; i++) queue[i].QueuePosition = i + 1;
             }
-            if (steps.Any(x => editedHours.ContainsKey(x.Id) ||
-                               editedMachines.ContainsKey(x.Id) ||
-                               editedOutsourcing.ContainsKey(x.Id) ||
-                               editedNames.ContainsKey(x.Id)))
+            await db.SaveChangesAsync();
+            await tx.CommitAsync();
+            await ReloadAsync();
+            ShowSuccess(T("Priority saved. Apply job priorities to update the machine calendar.", "اولویت ذخیره شد. برای تغییر تقویم دستگاه‌ها اولویت‌ها را اعمال کنید."));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Could not change production job priority");
+            ShowError(T("Could not save priorities.", "ذخیره اولویت‌ها انجام نشد."));
+        }
+        finally { queueBusy = false; }
+    }
+
+    private Task ApplyQueueAsync() => RebuildQueueAsync(null);
+    private Task ConfirmOperationSequence() => RebuildQueueAsync(selectedOrderId);
+
+    private async Task RebuildQueueAsync(long? confirmOrderId)
+    {
+        if (!canEdit || queueBusy) return;
+        queueBusy = true;
+        try
+        {
+            var approver = await RequireQueueManagerAsync();
+            if (editedHours.Count > 0 || editedMachines.Count > 0 || editedOutsourcing.Count > 0 || editedNames.Count > 0)
             {
                 ShowError(L["SaveStageEditsBeforeConfirmation"]);
                 return;
             }
-            if (steps.Where((step, index) => step.Sequence != index + 1).Any() ||
-                steps.Any(x => x.PlannedHours <= 0 || String.IsNullOrWhiteSpace(x.Name) ||
-                    x.Status is ProductionOperationStatus.Completed or ProductionOperationStatus.Cancelled))
-            {
-                ShowError(L["InvalidOperationSequence"]);
-                return;
-            }
-            // The production manager sets the stage durations directly.
-            // An optional future planned start is honored, but no separate
-            // approval or preassigned end date is necessary.
-            var totalMinutes = steps.Sum(OperationMinutes);
-            var now = DateTime.Now;
-            var earliestStart = order.PlannedStartDate is DateTime requestedStart && requestedStart > now
-                ? requestedStart : now;
-            var searchEnd = earliestStart.AddDays(365);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var all = await LoadQueueOrdersAsync(db);
+            var steps = await db.ProductionOperations.Include(x => x.WorkCenter)
+                .OrderBy(x => x.Sequence).ThenBy(x => x.Id).ToListAsync();
+            var bookings = await db.ProductionSchedules.Include(x => x.ProductionOperation)
+                .Where(x => x.Status != ScheduleStatus.Cancelled).ToListAsync();
+            var availableMachines = await db.Machines.Where(x => x.IsActive).ToListAsync();
 
-            var ids = steps.Select(x => x.Id).ToList();
-            var current = await db.ProductionSchedules
-                .Where(x => ids.Contains(x.ProductionOperationId) && x.Status != ScheduleStatus.Cancelled)
-                .ToListAsync();
-            if (current.Any(x => x.Status != ScheduleStatus.Planned) ||
-                steps.Any(x => x.Status is ProductionOperationStatus.Running or ProductionOperationStatus.Completed))
+            bool Confirmed(ProductionOrder order, List<ProductionOperation> route) =>
+                order.OperationsSequenceConfirmedAt.HasValue &&
+                string.Equals(order.OperationsSequenceSignature,
+                    OperationSequenceSignature(order.EstimatedDurationMinutes, route), StringComparison.Ordinal);
+
+            var routes = InQueueOrder(all.Where(x => CanMoveJob(x, steps, bookings)))
+                .Select(order => (Order: order, Steps: steps.Where(s => s.ProductionOrderId == order.Id).ToList()))
+                .Where(x => x.Order.Id == confirmOrderId || Confirmed(x.Order, x.Steps)).ToList();
+
+            if (confirmOrderId.HasValue && routes.All(x => x.Order.Id != confirmOrderId.Value))
             {
                 ShowError(L["CannotChangeActiveSchedule"]);
                 return;
             }
-
-            var availableMachines = await db.Machines.Where(x => x.IsActive).ToListAsync();
-            if (steps.Any(x => !x.IsOutsourced && !availableMachines.Any(m => CompatibleWithStage(x, m))))
+            if (routes.Count == 0)
             {
-                ShowError(L["MachineAssignmentsRequired"]);
-                return;
-            }
-            var busy = await db.ProductionSchedules
-                .Where(x => !ids.Contains(x.ProductionOperationId) &&
-                    x.Status != ScheduleStatus.Cancelled &&
-                    x.PlannedStart < searchEnd &&
-                    x.PlannedEnd > earliestStart)
-                .Select(x => new ProductionAutomaticScheduler.BusyInterval(
-                    x.MachineId, x.PlannedStart, x.PlannedEnd))
-                .ToListAsync();
-
-            if (!ProductionAutomaticScheduler.TryBuild(order, steps,
-                availableMachines, busy, CompatibleWithStage, out var plan, out var error,
-                earliestStart, searchEnd))
-            {
-                ShowError(L["AutoScheduleCannotFit"] + " " + error);
+                ShowError(T("Confirm operation estimates for at least one job first.", "ابتدا زمان مراحل حداقل یک سفارش را تأیید کنید."));
                 return;
             }
 
-            // A failed plan makes zero database changes. Replace the previously
-            // PLANNED schedule only once the entire route is feasible.
-            foreach (var booking in current) booking.Status = ScheduleStatus.Cancelled;
-            foreach (var placement in plan)
+            // Fixed bookings, including released or running work, are not replaced.
+            // A running operation with a stale planned end requires an updated finish estimate.
+            var now = DateTime.Now;
+            if (bookings.Any(x => x.Status == ScheduleStatus.Running && x.PlannedEnd <= now))
             {
-                var step = steps.First(x => x.Id == placement.OperationId);
-                if (step.IsOutsourced)
+                ShowError(T("A running operation is past its estimated finish. Update its finish before rebuilding the queue.",
+                    "زمان پایان تخمینی یکی از عملیات در حال اجرا گذشته است. پیش از زمان‌بندی مجدد آن را به‌روزرسانی کنید."));
+                return;
+            }
+            var movableIds = routes.SelectMany(x => x.Steps).Select(x => x.Id).ToHashSet();
+            var existing = bookings.Where(x => !movableIds.Contains(x.ProductionOperationId))
+                .Select(x => new ProductionAutomaticScheduler.BusyInterval(x.MachineId, x.PlannedStart, x.PlannedEnd)).ToList();
+            var plans = new List<(ProductionOrder Order, List<ProductionOperation> Steps, List<ProductionAutomaticScheduler.Placement> Plan)>();
+            var horizon = now.AddDays(365);
+            foreach (var route in routes)
+            {
+                var order = route.Order;
+                var stageList = route.Steps;
+                if (stageList.Count == 0 || stageList.Where((step, index) => step.Sequence != index + 1).Any() ||
+                    stageList.Any(x => x.PlannedHours <= 0 || string.IsNullOrWhiteSpace(x.Name)))
                 {
-                    step.OutsourcedPlannedStart = placement.Start;
-                    step.OutsourcedPlannedEnd = placement.End;
-                    continue;
+                    ShowError(order.OrderNumber + ": " + L["InvalidOperationSequence"]);
+                    return;
                 }
-                step.OutsourcedPlannedStart = null;
-                step.OutsourcedPlannedEnd = null;
-                var machine = availableMachines.First(x => x.Id == placement.MachineId!.Value);
-                step.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
-                db.ProductionSchedules.Add(new ProductionSchedule
+                var deadline = DeliveryDeadline(order);
+                var end = deadline.HasValue && deadline.Value < horizon ? deadline.Value : horizon;
+                if (!ProductionAutomaticScheduler.TryBuild(order, stageList, availableMachines, existing,
+                        CompatibleWithStage, out var plan, out var error, now, end))
                 {
-                    ProductionOperationId = step.Id,
-                    MachineId = placement.MachineId.Value,
-                    PlannedStart = placement.Start,
-                    PlannedEnd = placement.End,
-                    Status = ScheduleStatus.Planned
-                });
+                    // Do not silently push a promised date or commit only part of a queue.
+                    string extra = "";
+                    if (deadline.HasValue && end < horizon &&
+                        ProductionAutomaticScheduler.TryBuild(order, stageList, availableMachines, existing,
+                            CompatibleWithStage, out var laterPlan, out _, now, horizon))
+                        extra = " " + T("Earliest feasible finish with this queue:", "زودترین پایان ممکن با این صف:") +
+                            " " + FormatDateTime(laterPlan.Max(x => x.End));
+                    ShowError(order.OrderNumber + ": " + T("Cannot fit the queue. Review estimates, priorities or negotiate delivery.", "صف قابل زمان‌بندی نیست. زمان‌ها، اولویت‌ها یا تاریخ تحویل را بررسی کنید.") + extra + " " + error);
+                    return;
+                }
+                plans.Add((order, stageList, plan));
+                existing.AddRange(plan.Where(x => x.MachineId.HasValue)
+                    .Select(x => new ProductionAutomaticScheduler.BusyInterval(x.MachineId!.Value, x.Start, x.End)));
             }
 
-            order.EstimatedDurationMinutes = totalMinutes;
-            order.PlannedStartDate = plan.Min(x => x.Start);
-            order.PlannedEndDate = plan.Max(x => x.End);
-            order.OperationsSequenceSignature =
-                OperationSequenceSignature(order.EstimatedDurationMinutes, steps);
-            order.OperationsSequenceConfirmedAt = DateTime.UtcNow;
-            order.OperationsSequenceConfirmedBy = approver;
+            // All jobs must fit before any existing booking is changed.
+            foreach (var booking in bookings.Where(x => movableIds.Contains(x.ProductionOperationId)))
+                booking.Status = ScheduleStatus.Cancelled;
+            foreach (var entry in plans)
+            {
+                foreach (var placement in entry.Plan)
+                {
+                    var step = entry.Steps.First(x => x.Id == placement.OperationId);
+                    if (step.IsOutsourced)
+                    {
+                        step.OutsourcedPlannedStart = placement.Start;
+                        step.OutsourcedPlannedEnd = placement.End;
+                        continue;
+                    }
+                    step.OutsourcedPlannedStart = null;
+                    step.OutsourcedPlannedEnd = null;
+                    var machine = availableMachines.First(x => x.Id == placement.MachineId!.Value);
+                    step.WorkCenterId = await EnsureMachineWorkCenterAsync(db, machine);
+                    db.ProductionSchedules.Add(new ProductionSchedule
+                    {
+                        ProductionOperationId = step.Id, MachineId = machine.Id,
+                        PlannedStart = placement.Start, PlannedEnd = placement.End,
+                        Status = ScheduleStatus.Planned
+                    });
+                }
+                entry.Order.EstimatedDurationMinutes = entry.Steps.Sum(OperationMinutes);
+                entry.Order.PlannedStartDate = entry.Plan.Min(x => x.Start);
+                entry.Order.PlannedEndDate = entry.Plan.Max(x => x.End);
+                entry.Order.OperationsSequenceSignature = OperationSequenceSignature(entry.Order.EstimatedDurationMinutes, entry.Steps);
+                entry.Order.OperationsSequenceConfirmedAt = DateTime.UtcNow;
+                entry.Order.OperationsSequenceConfirmedBy = approver;
+            }
             await db.SaveChangesAsync();
-            await transaction.CommitAsync();
-            selectedOperationId = plan.FirstOrDefault()?.OperationId;
-            ShowSuccess(L["SequenceAndAutomaticScheduleSaved"]);
+            await tx.CommitAsync();
             await ReloadAsync();
+            ShowSuccess(T($"Machine calendar updated for {plans.Count} jobs in priority order.", $"تقویم دستگاه‌ها برای {plans.Count} سفارش بر اساس اولویت به‌روزرسانی شد."));
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Could not automatically schedule production order {OrderId}", selectedOrderId);
+            Logger.LogError(ex, "Could not rebuild production priority queue");
             ShowError(L["AutoScheduleFailed"]);
         }
+        finally { queueBusy = false; }
     }
 
     private async Task CompleteOutsourcedOperation(long id)

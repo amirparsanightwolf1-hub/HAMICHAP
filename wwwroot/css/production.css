@@ -1526,3 +1526,9 @@
     min-width: 86px;
     flex: 1;
 }
+
+/* Whole-job priority controls in machine scheduling. */
+.manager-queue-actions { display:grid; gap:6px; margin-bottom:12px; }
+.manager-job-rank { display:flex; align-items:center; gap:6px; margin:7px 0; }
+.manager-job-rank > span { flex:1; font-size:.78rem; font-weight:650; color:#315a79; }
+.manager-job-rank .btn { min-width:32px; min-height:30px; padding:3px 7px; }

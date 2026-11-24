@@ -18,6 +18,8 @@ public class ProductionOrder : BaseEntity
 
     // Planning preferences used by the Production Planning calendar.
     public int EstimatedDurationMinutes { get; set; } = 60;
+    // Null uses the default delivery-date queue; lower explicit rank means higher priority.
+    public int? QueuePosition { get; set; }
     public bool AvoidOvertime { get; set; }
     public bool AvoidNightShift { get; set; }
 

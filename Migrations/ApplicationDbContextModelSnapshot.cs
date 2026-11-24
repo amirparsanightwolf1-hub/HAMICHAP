@@ -1239,6 +1239,9 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<int?>("QueuePosition")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SalesOrderId");
