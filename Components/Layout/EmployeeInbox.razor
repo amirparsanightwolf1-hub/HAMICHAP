@@ -85,6 +85,18 @@
                             @if (entry.Unread) { <span class="hc-inbox-unread-dot" title="@T("Unread", "خوانده‌نشده")"></span> }
                         </div>
                         <div class="hc-inbox-message">@((L.IsPersian && entry.BodyFa != null ? entry.BodyFa : entry.Body))</div>
+                        @if (entry.StockAlert is { } shortage)
+                        {
+                            <div class="hc-inbox-material">
+                                <strong class="small text-warning-emphasis">@T("Current low stock", "کسری فعلی موجودی")</strong>
+                                <div class="d-flex justify-content-between gap-2 small"><span>@L["Available"]</span><strong class="text-danger">@shortage.AvailableQuantity.ToString("0.###") @shortage.UnitSymbol</strong></div>
+                                <div class="d-flex justify-content-between gap-2 small"><span>@L["Threshold"]</span><span>@shortage.Threshold.ToString("0.###") @shortage.UnitSymbol</span></div>
+                            </div>
+                        }
+                        else if (entry.Kind == LowStockResolved)
+                        {
+                            <span class="small text-success"><i class="bi bi-check-circle" aria-hidden="true"></i> @T("Alert cleared", "هشدار رفع شده")</span>
+                        }
                         @if (entry.Material is { } material)
                         {
                             <div class="hc-inbox-material">
@@ -139,7 +151,7 @@
     private static string Icon(string kind) => kind switch
     {
         MaterialRequest => "bi-box-seam", MaterialIssued => "bi-box-arrow-right",
-        InvoiceReady => "bi-receipt", ShipmentReady => "bi-truck", OperationReady => "bi-gear", _ => "bi-envelope"
+        InvoiceReady => "bi-receipt", ShipmentReady => "bi-truck", OperationReady => "bi-gear", LowStock => "bi-exclamation-triangle", LowStockResolved => "bi-check-circle", _ => "bi-envelope"
     };
 
     protected override async Task OnInitializedAsync()

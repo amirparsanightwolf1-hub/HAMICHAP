@@ -4,6 +4,11 @@
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Inventory
 @using HamiChap_MES_ERP.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
+@inject InventoryAlertService InventoryAlerts
 
 @inject ApplicationDbContext Db
 @inject LocalizationService LocalizationService
@@ -12,6 +17,16 @@
     @LocalizationService["InventoryStock"]
 </PageTitle>
 
+@if (checkingAccess)
+{
+    <p role="status">@LocalizationService["Loading"]</p>
+}
+else if (!canViewStock)
+{
+    <div class="alert alert-warning">@LocalizationService["AccessDenied"]</div>
+}
+else
+{
 <div class="page-container inventory-page inventory-stock">
 
     <div class="erp-page-header inventory-hero">
@@ -39,6 +54,7 @@
         <a class="btn btn-outline-primary" href="/inventory/documents/create"><i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["CreateInventoryDocument"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/stock/warehouse"><i class="bi bi-building" aria-hidden="true"></i> @LocalizationService["WarehouseStock"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/stock/lots"><i class="bi bi-box-seam" aria-hidden="true"></i> @LocalizationService["StockByLot"]</a>
+        <a class="btn btn-outline-secondary" href="/inventory/low-stock"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> @LocalizationService["LowStockAlert"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/transactions"><i class="bi bi-clock-history" aria-hidden="true"></i> @LocalizationService["Transactions"]</a>
     </div>
     </details>
@@ -65,6 +81,7 @@
                 @lowStockItems.Count
                 @LocalizationService["ItemsLowStock"]
             </span>
+            <a class="btn btn-outline-warning btn-sm ms-2" href="/inventory/low-stock">@(LocalizationService.IsPersian ? "مشاهده همه کسری‌ها" : "View all shortages")</a>
 
         </div>
     }
@@ -334,6 +351,8 @@
 
 </div>
 
+}
+
 @code {
 
     private sealed class StockSummary
@@ -350,6 +369,7 @@
     }
 
     private List<StockSummary>? balances;
+    private bool checkingAccess = true, canViewStock;
 
     private string stockArea = "storage";
 
@@ -382,11 +402,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadBalances();
+        try
+        {
+            var user = (await Auth.GetAuthenticationStateAsync()).User;
+            canViewStock = await Permissions.HasPermissionAsync(user, "Inventory.Stock.View");
+            if (canViewStock) await LoadBalances();
+        }
+        finally { checkingAccess = false; }
     }
 
     private async Task LoadBalances()
     {
+        if (!canViewStock) return;
         var day = DateTime.Today;
         var query = Db.InventoryBalances.AsNoTracking()
             .Include(x => x.Item)
@@ -498,37 +525,10 @@
 
     private async Task LoadLowStockAlerts()
     {
-        // Low-stock alerts are based on COMPANY inventory,
-        // regardless of the currently selected owner filter.
-
-        var companyBalances = await Db.InventoryBalances.UsableStock(DateTime.Today)
-            .Include(x => x.Item)
-            .Where(x =>
-                x.CustomerId == null &&
-                x.Item.EnableLowStockAlert)
-            .ToListAsync();
-
-        companyAvailableByItem = companyBalances
-            .GroupBy(x => x.ItemId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Sum(x =>
-                    x.OnHandQuantity -
-                    x.ReservedQuantity));
-
-        thresholdByItem = await Db.Items.AsNoTracking().Where(x => x.IsActive && x.EnableLowStockAlert)
-            .ToDictionaryAsync(x => x.Id, x => x.LowStockThreshold);
-        foreach (var itemId in thresholdByItem.Keys)
-            companyAvailableByItem.TryAdd(itemId, 0m);
-
-        lowStockItems = thresholdByItem
-            .Where(x =>
-                companyAvailableByItem.TryGetValue(
-                    x.Key,
-                    out var available) &&
-                available <= x.Value)
-            .Select(x => x.Key)
-            .ToList();
+        var monitored = await InventoryAlerts.GetMonitoredStockAsync();
+        companyAvailableByItem = monitored.ToDictionary(x => x.ItemId, x => x.AvailableQuantity);
+        thresholdByItem = monitored.ToDictionary(x => x.ItemId, x => x.Threshold);
+        lowStockItems = monitored.Where(x => x.AvailableQuantity <= x.Threshold).Select(x => x.ItemId).ToList();
     }
 
     private bool IsLowStock(int itemId)

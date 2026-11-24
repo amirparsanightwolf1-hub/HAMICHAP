@@ -13,6 +13,8 @@ public static class EmployeeInboxEvents
     public const string ShipmentReady = "shipment-ready";
     public const string Message = "message";
     public const string OperationReady = "operation-ready";
+    public const string LowStock = "low-stock";
+    public const string LowStockResolved = "low-stock-resolved";
     public static readonly string[] OperatorRoles = { "Administrator", "Operator", "ProductionManager", "Production Manager", "Manager", "FloorManager", "Floor Manager", "Production" };
 
     public static async Task<IReadOnlyList<string>> RecipientsAsync(ApplicationDbContext db, params string[] required)

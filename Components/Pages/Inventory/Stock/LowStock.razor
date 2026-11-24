@@ -1,0 +1,87 @@
+@page "/inventory/low-stock"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+@inject InventoryAlertService InventoryAlerts
+@inject PermissionService Permissions
+@inject AuthenticationStateProvider Auth
+@inject LocalizationService L
+@inject ILogger<LowStock> Logger
+
+<PageTitle>@T("Low stock", "کسری موجودی")</PageTitle>
+<div class="page-container inventory-page">
+    <header class="erp-page-header hc-standard-header">
+        <div class="hc-heading-content">
+            <span class="hc-heading-icon"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
+            <div><h1 class="erp-page-title">@T("Low-stock items", "اقلام دارای کسری موجودی")</h1>
+                <p class="erp-page-subtitle">@T("Company-owned usable stock at or below the configured minimum, including zero stock.", "موجودی قابل استفاده شرکت در حداقل تعیین‌شده یا کمتر، شامل اقلام بدون موجودی.")</p></div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/inventory/stock" class="btn btn-outline-secondary">@L["InventoryStock"]</a>
+            <button type="button" class="btn btn-outline-primary" disabled="@loading" @onclick="LoadAsync"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> @L["Refresh"]</button>
+        </div>
+    </header>
+    @if (loading) { <p role="status">@L["Loading"]</p> }
+    else if (error != null) { <div class="alert alert-danger" role="alert">@error</div> }
+    else if (!canView) { <div class="alert alert-warning">@L["AccessDenied"]</div> }
+    else if (rows.Count == 0)
+    {
+        <div class="card"><div class="card-body text-success"><i class="bi bi-check-circle" aria-hidden="true"></i> @T("No active low-stock alerts.", "هشدار کسری موجودی فعال نیست.")</div></div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header d-flex flex-wrap justify-content-between gap-2 align-items-center">
+                <strong>@rows.Count @T("items at or below minimum", "قلم در حداقل موجودی یا کمتر")</strong>
+                <input type="search" class="form-control form-control-sm w-auto" aria-label="@T("Search items", "جستجوی کالا")" placeholder="@T("Search name or code", "نام یا کد کالا")" @bind="search" @bind:event="oninput" />
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>@L["Item"]</th><th>@L["Available"]</th><th>@L["Threshold"]</th><th>@T("Short by", "مقدار کسری")</th><th>@L["Status"]</th></tr></thead>
+                    <tbody>
+                        @foreach (var item in rows.Where(x => x.ItemName.Contains(search, StringComparison.OrdinalIgnoreCase) || x.ItemCode.Contains(search, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            <tr @key="item.ItemId">
+                                <td><strong>@item.ItemName</strong><div class="small text-muted">@item.ItemCode</div></td>
+                                <td class="text-danger fw-semibold">@item.AvailableQuantity.ToString("0.###") @item.UnitSymbol</td>
+                                <td>@item.Threshold.ToString("0.###") @item.UnitSymbol</td>
+                                <td>@Math.Max(0m, item.ShortageQuantity).ToString("0.###") @item.UnitSymbol</td>
+                                <td><span class="badge @(item.AvailableQuantity <= 0 ? "bg-danger" : "bg-warning text-dark")">@(item.AvailableQuantity <= 0 ? T("No usable stock", "بدون موجودی قابل استفاده") : T("Low stock", "کسری موجودی"))</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <p class="small text-muted mt-2">@T("Short by is the amount needed to reach the minimum, not a purchase recommendation. Alerts clear only above the minimum or when monitoring is disabled.", "مقدار کسری برای رسیدن به حداقل است، نه پیشنهاد خرید. هشدار با عبور از حداقل یا غیرفعال شدن پایش رفع می‌شود.")</p>
+    }
+</div>
+
+@code {
+    private List<LowStockAlert> rows = new();
+    private bool loading = true, canView;
+    private string search = "";
+    private string? error;
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        error = null;
+        try
+        {
+            canView = await Permissions.HasPermissionAsync((await Auth.GetAuthenticationStateAsync()).User, "Inventory.Stock.View");
+            rows = canView ? await InventoryAlerts.GetLowStockAlertsAsync() : new();
+        }
+        catch (Exception ex)
+        {
+            rows.Clear();
+            Logger.LogWarning(ex, "Could not load current shortages");
+            error = T("Unable to load current shortages. Refresh to retry.", "بارگذاری کسری‌ها انجام نشد. دوباره تلاش کنید.");
+        }
+        finally { loading = false; }
+    }
+}

@@ -1,119 +1,60 @@
-﻿using HamiChap_MES_ERP.Data;
+using HamiChap_MES_ERP.Data;
 using HamiChap_MES_ERP.Models.Inventory;
 using Microsoft.EntityFrameworkCore;
 
 namespace HamiChap_MES_ERP.Services;
 
-public class InventoryAlertService
+public class InventoryAlertService(IDbContextFactory<ApplicationDbContext> dbFactory)
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _dbFactory;
-
-    public InventoryAlertService(
-        IDbContextFactory<ApplicationDbContext> dbFactory)
+    // Single calculation for the stock page, inbox and current shortages.
+    // Company-owned usable storage stock only; zero-balance items are included.
+    internal static async Task<List<LowStockAlert>> ReadMonitoredAsync(ApplicationDbContext db,
+        CancellationToken cancellationToken = default, int? itemId = null)
     {
-        _dbFactory = dbFactory;
-    }
-
-    public async Task<List<LowStockAlert>> GetLowStockAlertsAsync(
-        CancellationToken cancellationToken = default)
-    {
-        await using var db =
-            await _dbFactory.CreateDbContextAsync(cancellationToken);
-
-        var items = await db.Items
-            .AsNoTracking()
-            .Include(x => x.Unit)
-            .Where(x => x.IsActive)
-            .Where(x => x.EnableLowStockAlert)
-            .ToListAsync(cancellationToken);
-
-        if (items.Count == 0)
-            return new List<LowStockAlert>();
-
-        var itemIds = items
-            .Select(x => x.Id)
-            .ToList();
-
-        var balances = await db.InventoryBalances.UsableStock(DateTime.Today)
-            .AsNoTracking()
-            .Where(x =>
-                x.CustomerId == null &&
-                itemIds.Contains(x.ItemId))
-            .ToListAsync(cancellationToken);
-
-        var availableByItem = balances
+        var items = db.Items.AsNoTracking().Where(x => x.IsActive && x.EnableLowStockAlert);
+        if (itemId.HasValue) items = items.Where(x => x.Id == itemId.Value);
+        var day = DateTime.Today;
+        var quantities = db.InventoryBalances.AsNoTracking().UsableStock(day)
+            .Where(x => x.CustomerId == null && x.Item.EnableLowStockAlert)
             .GroupBy(x => x.ItemId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Sum(x =>
-                    x.OnHandQuantity - x.ReservedQuantity));
+            .Select(g => new { ItemId = g.Key, Available = g.Sum(x => x.OnHandQuantity - x.ReservedQuantity) });
+        // Left join preserves items that have no balance rows yet.
+        return await (from item in items
+                      join quantity in quantities on item.Id equals quantity.ItemId into available
+                      from quantity in available.DefaultIfEmpty()
+                      select new LowStockAlert
+                      {
+                          ItemId = item.Id, ItemCode = item.Code, ItemName = item.Name,
+                          UnitSymbol = item.Unit.Symbol,
+                          AvailableQuantity = quantity == null ? 0m : quantity.Available,
+                          Threshold = item.LowStockThreshold
+                      }).ToListAsync(cancellationToken);
+    }
 
-        return items
-            .Select(item =>
-            {
-                var available =
-                    availableByItem.TryGetValue(
-                        item.Id,
-                        out var quantity)
-                        ? quantity
-                        : 0m;
+    public async Task<List<LowStockAlert>> GetMonitoredStockAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        return await ReadMonitoredAsync(db, cancellationToken);
+    }
 
-                return new LowStockAlert
-                {
-                    ItemId = item.Id,
-                    ItemCode = item.Code,
-                    ItemName = item.Name,
-                    UnitSymbol = item.Unit?.Symbol ?? "",
-                    AvailableQuantity = available,
-                    Threshold = item.LowStockThreshold
-                };
-            })
+    public async Task<List<LowStockAlert>> GetLowStockAlertsAsync(CancellationToken cancellationToken = default) =>
+        (await GetMonitoredStockAsync(cancellationToken))
             .Where(x => x.AvailableQuantity <= x.Threshold)
-            .OrderBy(x => x.AvailableQuantity)
-            .ThenBy(x => x.ItemName)
-            .ToList();
+            .OrderBy(x => x.AvailableQuantity > 0)
+            .ThenBy(x => x.ItemName).ThenBy(x => x.ItemId).ToList();
+
+    public async Task<bool> IsLowStockAsync(int itemId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await ReadMonitoredAsync(db, cancellationToken, itemId);
+        return rows.Any(x => x.AvailableQuantity <= x.Threshold);
     }
 
-    public async Task<bool> IsLowStockAsync(
-        int itemId,
-        CancellationToken cancellationToken = default)
+    public async Task<decimal> GetCompanyAvailableQuantityAsync(int itemId, CancellationToken cancellationToken = default)
     {
-        await using var db =
-            await _dbFactory.CreateDbContextAsync(cancellationToken);
-
-        var item = await db.Items
-            .AsNoTracking()
-            .FirstOrDefaultAsync(
-                x => x.Id == itemId,
-                cancellationToken);
-
-        if (item == null || !item.EnableLowStockAlert)
-            return false;
-
-        var availableQuantity = await db.InventoryBalances.UsableStock(DateTime.Today)
-            .Where(x =>
-                x.ItemId == itemId &&
-                x.CustomerId == null)
-            .SumAsync(
-                x => x.OnHandQuantity - x.ReservedQuantity,
-                cancellationToken);
-
-        return availableQuantity <= item.LowStockThreshold;
-    }
-
-    public async Task<decimal> GetCompanyAvailableQuantityAsync(
-        int itemId,
-        CancellationToken cancellationToken = default)
-    {
-        await using var db =
-            await _dbFactory.CreateDbContextAsync(cancellationToken);
-
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         return await db.InventoryBalances.UsableStock(DateTime.Today)
-            .Where(x =>
-                x.ItemId == itemId &&
-                x.CustomerId == null)
-            .SumAsync(
-                x => x.OnHandQuantity - x.ReservedQuantity,
-                cancellationToken);
+            .Where(x => x.ItemId == itemId && x.CustomerId == null)
+            .SumAsync(x => x.OnHandQuantity - x.ReservedQuantity, cancellationToken);
     }
 }
