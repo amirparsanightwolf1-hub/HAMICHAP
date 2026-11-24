@@ -272,10 +272,10 @@
     </div>
             <AuthorizeView>
                 <Authorized>
-                    <a class="hc-account-link" href="/Account/Manage"><i class="bi bi-person-circle" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "حساب کاربری" : "My account")</span></a>
+                    <a class="hc-account-link" href="/Account/Manage" aria-label="@(LocalizationService.IsPersian ? "حساب کاربری" : "My account")"><i class="bi bi-person-circle" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "حساب کاربری" : "My account")</span></a>
                 </Authorized>
                 <NotAuthorized>
-                    <a class="hc-account-link" href="/Account/Login"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i><span>@LocalizationService["Login"]</span></a>
+                    <a class="hc-account-link" href="/Account/Login" aria-label="@LocalizationService["Login"]"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i><span>@LocalizationService["Login"]</span></a>
                 </NotAuthorized>
             </AuthorizeView>
         </div>

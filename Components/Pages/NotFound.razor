@@ -3,5 +3,12 @@
 @inject LocalizationService L
 @layout MainLayout
 
-<h3>@L["Not Found"]</h3>
-<p>@L["Sorry, the content you are looking for does not exist."]</p>
+<PageTitle>@L["Not Found"]</PageTitle>
+<div class="hc-status-page">
+    <section class="hc-status-card">
+        <span class="hc-heading-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+        <h1>@L["Not Found"]</h1>
+        <p>@L["Sorry, the content you are looking for does not exist."]</p>
+        <a href="/" class="btn btn-primary"><i class="bi bi-house-door" aria-hidden="true"></i> @(L.IsPersian ? "بازگشت به خانه" : "Return home")</a>
+    </section>
+</div>

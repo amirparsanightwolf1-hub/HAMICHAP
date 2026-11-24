@@ -5,26 +5,19 @@
 
 <PageTitle>@L["Error"]</PageTitle>
 
-<h1 class="text-danger">@L["Error."]</h1>
-<h2 class="text-danger">@L["An error occurred while processing your request."]</h2>
-
-@if (ShowRequestId)
-{
-    <p>
-        <strong>@L["Request ID:"]</strong> <code>@RequestId</code>
-    </p>
-}
-
-<h3>@L["Development Mode"]</h3>
-<p>
-    @L["Swapping to"] <strong>Development</strong> @L["environment will display more detailed information about the error that occurred."]
-</p>
-<p>
-    <strong>@L["The Development environment shouldn't be enabled for deployed applications."]</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> @L["environment by setting the"] <strong>ASPNETCORE_ENVIRONMENT</strong> @L["environment variable to"] <strong>Development</strong>
-    @L["and restarting the app."]
-</p>
+<div class="hc-status-page">
+    <section class="hc-status-card">
+        <span class="hc-heading-icon"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span>
+        <h1>@L["Error."]</h1>
+        <p>@L["An error occurred while processing your request."]</p>
+        <p>@(L.IsPersian ? "در صورت تکرار مشکل، شناسه درخواست را به مسئول سیستم اطلاع دهید." : "If the issue continues, share the request ID with your system administrator.")</p>
+        @if (ShowRequestId)
+        {
+            <p><strong>@L["Request ID:"]</strong> <code>@RequestId</code></p>
+        }
+        <a class="btn btn-primary" href="/"><i class="bi bi-house-door" aria-hidden="true"></i> @(L.IsPersian ? "بازگشت به خانه" : "Return home")</a>
+    </section>
+</div>
 
 @code{
     [CascadingParameter]

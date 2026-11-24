@@ -172,3 +172,12 @@
     .hc-workspace-toolbar,.mobile-menu-btn,.sidebar-backdrop { display:none!important; }
     .hc-workspace-body { padding:0!important; }
 }
+
+@media screen {
+    .hc-customer-inventory .card,.hc-evaluation-page .card,.hc-tool-page .card { box-shadow:var(--erp-shadow); }
+    .hc-customer-inventory .row,.hc-evaluation-page .row { --bs-gutter-y:12px; }
+    .hc-evaluation-page .table-responsive { border-radius:8px; }
+    .hc-tool-page .card-header { padding:13px 16px; }
+    .hc-workspace-body .invoice-page > .no-print:first-child { flex-wrap:wrap; gap:10px; }
+    .hc-workspace-body .invoice-page .invoice-document { margin-inline:auto; }
+}
