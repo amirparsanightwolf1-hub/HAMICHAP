@@ -1,0 +1,4 @@
+.warehouse-notification { position:relative; }
+.warehouse-notification-panel { position:absolute; inset-inline-end:0; top:calc(100% + 10px); z-index:1050; width:min(420px,calc(100vw - 24px)); max-height:70vh; overflow:auto; display:grid; gap:10px; background:#fff; border:1px solid #dce5ee; border-radius:12px; padding:13px; box-shadow:0 12px 40px #15344b29; color:#263748; }
+.warehouse-notification-card { display:grid; gap:3px; padding:10px; border:1px solid #dce5ee; border-radius:9px; background:#f8fafc; }
+@media(max-width:620px) { .warehouse-notification-panel { position:fixed; top:70px; inset-inline:12px; width:auto; } }

@@ -1,28 +1,114 @@
 @implements IDisposable
 @using Microsoft.AspNetCore.Components.Authorization
 @using HamiChap_MES_ERP.Services
+@using static HamiChap_MES_ERP.Services.WarehouseRequestService
 @inject WarehouseRequestService Requests
 @inject AuthenticationStateProvider Auth
 @inject LocalizationService L
 @inject ILogger<WarehouseRequestIndicator> Logger
 
-@if (count > 0)
+@if (rows.Count > 0 || open)
 {
-    <a href="/inventory/material-requests" class="btn btn-outline-primary btn-sm" title="@Label" aria-label="@Label" role="status">
-        <i class="bi bi-bell" aria-hidden="true"></i> <span class="badge bg-primary">@count</span>
-    </a>
+    <div class="warehouse-notification">
+        <button type="button" class="btn btn-outline-primary btn-sm" aria-expanded="@open" aria-label="@T("Warehouse notifications", "اعلان‌های انبار")" @onclick="() => open = !open">
+            <i class="bi bi-bell" aria-hidden="true"></i> <span class="badge bg-primary">@rows.Count</span>
+        </button>
+        @if (open)
+        {
+            <section class="warehouse-notification-panel" aria-label="@T("Material requests", "درخواست‌های مواد")">
+                <header class="d-flex align-items-center justify-content-between gap-2">
+                    <strong>@T("Material requests", "درخواست‌های مواد") (@rows.Count)</strong>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => open = false" aria-label="@T("Close", "بستن")"><i class="bi bi-x-lg"></i></button>
+                </header>
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="alert @(failed ? "alert-danger" : "alert-success") py-2 small" role="status">@message</div>
+                }
+                @if (rows.Count == 0)
+                {
+                    <p class="text-muted small mb-0">@T("All requests processed.", "همه درخواست‌ها بررسی شدند.")</p>
+                }
+                @foreach (var row in rows.Take(12))
+                {
+                    <article class="warehouse-notification-card" @key="row.Id">
+                        <strong>@row.JobTitle</strong>
+                        <div class="small text-muted">@row.Operation · @row.RequestedBy</div>
+                        @foreach (var line in row.Lines)
+                        {
+                            <div class="d-flex justify-content-between gap-2 small mt-1">
+                                <span>@line.Item · @line.Required.ToString("0.###") @line.Unit</span>
+                                <span class="@(line.Available >= line.Required ? "text-success" : "text-danger")">@line.Available.ToString("0.###") @T("available", "موجود")</span>
+                            </div>
+                        }
+                        @if (canIssue && row.CanIssue)
+                        {
+                            <button type="button" class="btn btn-success btn-sm w-100 mt-2" disabled="@busy" @onclick="() => IssueAsync(row.Id)">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> @T("Issue now", "تحویل مواد")
+                            </button>
+                        }
+                        else if (!row.CanIssue)
+                        {
+                            <span class="small text-warning-emphasis">@T("Waiting for stock", "در انتظار موجودی")</span>
+                        }
+                    </article>
+                }
+                <a href="/inventory/material-requests" class="btn btn-outline-primary btn-sm w-100">@T("Open warehouse queue", "مشاهده صف انبار")</a>
+            </section>
+        }
+    </div>
 }
 @code {
     private readonly CancellationTokenSource stop = new();
-    private int count;
-    private string Label => L.IsPersian ? $"درخواست‌های مواد: {count}" : $"Open material requests: {count}";
+    private IReadOnlyList<RequestRow> rows = Array.Empty<RequestRow>();
+    private bool open, busy, canIssue, failed;
+    private string? message;
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
 
     protected override Task OnInitializedAsync()
     {
         _ = PollAsync(stop.Token);
         return Task.CompletedTask;
     }
-
+    private async Task RefreshAsync()
+    {
+        if (busy) return;
+        busy = true;
+        try
+        {
+            var user = (await Auth.GetAuthenticationStateAsync()).User;
+            if (!await Requests.CanViewAsync(user))
+            {
+                rows = Array.Empty<RequestRow>(); open = false; return;
+            }
+            var next = await Requests.ReadAsync(user, false);
+            var hasNew = next.Any(x => !rows.Any(old => old.Id == x.Id));
+            rows = next;
+            canIssue = await Requests.CanIssueAsync(user);
+            if (hasNew && canIssue) open = true;
+        }
+        finally { busy = false; }
+    }
+    private async Task IssueAsync(long id)
+    {
+        if (busy || !canIssue) return;
+        busy = true;
+        try
+        {
+            var user = (await Auth.GetAuthenticationStateAsync()).User;
+            await Requests.IssueAsync(id, user);
+            rows = rows.Where(x => x.Id != id).ToList();
+            message = T("Materials issued. Stock updated.", "مواد تحویل شد و موجودی به‌روزرسانی شد.");
+            failed = false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Issue from notification failed");
+            message = T("Issue failed. Check current stock in the warehouse queue.", "تحویل انجام نشد. موجودی را در صف انبار بررسی کنید.");
+            failed = true;
+        }
+        finally { busy = false; }
+        try { await RefreshAsync(); } catch (Exception ex) { Logger.LogWarning(ex, "Warehouse notification refresh failed"); }
+    }
     private async Task PollAsync(CancellationToken token)
     {
         try
@@ -30,19 +116,11 @@
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
             do
             {
-                try
-                {
-                    var user = (await Auth.GetAuthenticationStateAsync()).User;
-                    var next = await Requests.PendingCountAsync(user, token);
-                    if (!token.IsCancellationRequested && next != count)
-                        await InvokeAsync(() => { count = next; StateHasChanged(); });
-                }
-                catch (OperationCanceledException) when (token.IsCancellationRequested) { break; }
-                catch (Exception ex) { Logger.LogWarning(ex, "Could not check warehouse request count"); }
+                try { await InvokeAsync(async () => { if (!token.IsCancellationRequested) { await RefreshAsync(); StateHasChanged(); } }); }
+                catch (Exception ex) when (!token.IsCancellationRequested) { Logger.LogWarning(ex, "Could not refresh material notifications"); }
             } while (await timer.WaitForNextTickAsync(token));
         }
         catch (OperationCanceledException) { }
     }
-
     public void Dispose() { stop.Cancel(); stop.Dispose(); }
 }
