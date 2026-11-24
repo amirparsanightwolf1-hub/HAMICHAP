@@ -98,13 +98,13 @@
                 <fieldset disabled="@savingPreferences">
                     <legend>@T("Order & production", "سفارش و تولید")</legend>
                     <div class="job-overview-column-checks">
-                        <label class="job-overview-column-check"><input type="checkbox" checked disabled /><span>@T("Job number (pinned)", "شماره کار (ثابت)")</span></label>
+                        <label class="job-overview-column-check"><input type="checkbox" checked disabled /><span>@T("Job title (pinned)", "عنوان کار (ثابت)")</span></label>
                         @foreach (var key in FixedColumns)
                         {
                             var id = "field:" + key;
                             <label class="job-overview-column-check" @key="id">
                                 <input type="checkbox" checked="@IsVisible(id)" @onchange="e => SetVisible(id, e.Value is true)" />
-                                <span>@L[key]</span>
+                                <span>@(key == "RequestNumber" ? T("Job number (secondary)", "شماره کار (فرعی)") : L[key])</span>
                             </label>
                         }
                     </div>
@@ -153,11 +153,7 @@
         <table class="job-overview-compact-table">
             <thead>
                 <tr>
-                    <th scope="col" class="job-overview-compact-pin">@T("Job number", "شماره کار")</th>
-                    @if (IsVisible("field:JobTitle"))
-                    {
-                        <th scope="col">@L["JobTitle"]</th>
-                    }
+                    <th scope="col" class="job-overview-compact-pin">@L["JobTitle"]</th>
                     @if (IsVisible("field:Customer"))
                     {
                         <th scope="col">@L["Customer"]</th>
@@ -286,12 +282,12 @@
                 {
                     <tr @key="job.RequestId">
                         <th scope="row" class="job-overview-compact-pin">
-                            <a href="@job.EditUrl">@job.RequestNumber</a>
+                            <a class="job-title-primary" href="@job.EditUrl">@Display(job.Title)</a>
+                            @if (IsVisible("field:RequestNumber") && !string.Equals(job.Title, job.RequestNumber, StringComparison.OrdinalIgnoreCase))
+                            {
+                                <a class="job-title-secondary" href="@($"/jobs/{job.RequestId}")" dir="ltr">@job.RequestNumber</a>
+                            }
                         </th>
-                        @if (IsVisible("field:JobTitle"))
-                        {
-                            <td>@Display(job.Title)</td>
-                        }
                         @if (IsVisible("field:Customer"))
                         {
                             <td>@Display(job.Customer)</td>
@@ -609,7 +605,7 @@
     private const string PreferenceName = "ProductionJobs.Compact.HiddenColumns.v1";
     private static readonly string[] FixedColumns =
     {
-        "JobTitle",
+        "RequestNumber",
         "Customer",
         "JobType",
         "Quantity",
@@ -652,8 +648,8 @@
     private string T(string en, string fa) => L.IsPersian ? fa : en;
     private bool IsVisible(string key) => !hidden.Contains(key);
     private IEnumerable<string> VisibleSpecificationColumns => SpecificationColumns.Where(x => IsVisible("spec:" + x));
-    private int AllColumnCount => 1 + FixedColumns.Length - 1 + SpecificationColumns.Count + operationColumns.Count;
-    private int VisibleCount => 1 + FixedColumns.Count(x => x != "JobOverviewRequiredProcesses" && IsVisible("field:" + x))
+    private int AllColumnCount => 1 + FixedColumns.Length - 2 + SpecificationColumns.Count + operationColumns.Count;
+    private int VisibleCount => 1 + FixedColumns.Count(x => x != "JobOverviewRequiredProcesses" && x != "RequestNumber" && IsVisible("field:" + x))
         + VisibleSpecificationColumns.Count() + VisibleOperationColumns.Count();
     private bool HasChanges => !hidden.SetEquals(savedHidden);
 
@@ -689,7 +685,7 @@
                 .Select(x => x.Value).FirstOrDefaultAsync();
             if (!string.IsNullOrWhiteSpace(value))
                 savedHidden = new HashSet<string>(JsonSerializer.Deserialize<string[]>(value) ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-            savedHidden.Remove("field:RequestNumber");
+            savedHidden.Remove("field:JobTitle");
             hidden = new HashSet<string>(savedHidden, StringComparer.OrdinalIgnoreCase);
             preferenceUserId = userId;
             preferencesReady = true;
@@ -705,7 +701,7 @@
 
     private void SetVisible(string key, bool visible)
     {
-        if (!preferencesReady || savingPreferences || key.Equals("field:RequestNumber", StringComparison.OrdinalIgnoreCase)) return;
+        if (!preferencesReady || savingPreferences || key.Equals("field:JobTitle", StringComparison.OrdinalIgnoreCase)) return;
         if (visible) hidden.Remove(key); else hidden.Add(key);
         preferenceMessage = null;
     }

@@ -137,10 +137,10 @@
                         <table class="table table-hover align-middle mb-0 table-responsive-cards sales-quotations-table">
                             <thead class="table-light">
                                 <tr>
-                                    <th>@(LocalizationService.IsPersian ? "شماره کار" : "Job number") / @LocalizationService["QuotationNumber"]</th>
+                                    <th>@LocalizationService["JobTitle"] / @LocalizationService["QuotationNumber"]</th>
                                     <th>@LocalizationService["Customer"]</th>
                                     <th>@LocalizationService["JobType"]</th>
-                                    <th>@LocalizationService["JobTitle"]</th>
+                                    <th>@(LocalizationService.IsPersian ? "شماره کار" : "Job number")</th>
                                     <th>@LocalizationService["QuotationDate"]</th>
                                     <th>@LocalizationService["ValidUntil"]</th>
                                     <th class="text-end">@LocalizationService["FinalAmount"]</th>
@@ -158,7 +158,7 @@
                                         aria-expanded="@(expandedQuotationId == quotation.Id)"
                                         @onclick="() => ToggleDetails(quotation.Id)"
                                         @onkeydown="args => HandleRowKeyDown(args, quotation.Id)">
-                                        <td class="fw-semibold"><div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(quotation)</div><small class="text-muted d-block">@quotation.QuotationNumber</small></td>
+                                        <td class="fw-semibold"><div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(quotation, quotation.QuotationNumber)</div><small class="text-muted d-block">@quotation.QuotationNumber</small></td>
                                         <td>@(quotation.Customer?.Name ?? "-")</td>
                                         <td>
                                             @if (quotation.SalesRequest != null)
@@ -172,7 +172,7 @@
                                                 <span>-</span>
                                             }
                                         </td>
-                                        <td><span class="quotation-job-title-cell">@GetJobTitle(quotation)</span></td>
+                                        <td><span class="job-title-secondary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(quotation)</span></td>
                                         <td>@quotation.QuotationDate.ToString("yyyy-MM-dd")</td>
                                         <td>@(quotation.ValidUntil?.ToString("yyyy-MM-dd") ?? "-")</td>
                                         <td class="text-end fw-semibold">@(decimal.Round(quotation.FinalAmount, 0, MidpointRounding.AwayFromZero).ToString("N0"))</td>
@@ -400,7 +400,7 @@
                     (x.Customer?.Name?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (x.SalesRequest?.RequestNumber?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     GetLinkedJobs(x).Any(job => job.RequestNumber.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
-                    GetJobTitle(x).Contains(term, StringComparison.OrdinalIgnoreCase))
+                    HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(x).Contains(term, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 

@@ -17,7 +17,7 @@
 @inject PermissionService Permissions
 @inject LocalizationService L
 
-<PageTitle>@(job?.RequestNumber ?? T("Job workspace", "پرونده کار"))</PageTitle>
+<PageTitle>@(job is null ? T("Job workspace", "پرونده کار") : JobReferences.Title(job))</PageTitle>
 <div class="page-container job-workspace">
     @if (loading)
     {
@@ -31,8 +31,9 @@
     {
         <header class="erp-page-header mb-3">
             <div>
-                <div class="text-muted small">@T("Universal job number", "شماره یکتای کار")</div>
-                <h2 class="erp-page-title" dir="ltr">@job.RequestNumber</h2>
+                <div class="text-muted small">@T("Job workspace", "پرونده کار")</div>
+                <h2 class="erp-page-title">@JobReferences.Title(job)</h2>
+                <div class="job-title-secondary" dir="ltr">@job.RequestNumber</div>
                 <p class="erp-page-subtitle">@job.Customer.Name · @L.TranslateEnum(job.JobType) · @L.TranslateEnum(job.Status)</p>
             </div>
             <a class="btn btn-outline-secondary" href="/production/jobs"><i class="bi bi-search" aria-hidden="true"></i> @T("Find another job", "جستجوی کار دیگر")</a>

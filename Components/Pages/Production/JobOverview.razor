@@ -184,7 +184,7 @@
                                         <span aria-hidden="true">·</span>
                                         <span>@L.TranslateEnum(job.JobType)</span>
                                     </div>
-                                    <h2>@job.Title</h2>
+                                    <h2><a class="job-title-primary" href="@($"/jobs/{job.RequestId}")">@job.Title</a></h2>
                                     <p>@job.Customer
                                         @if (job.Quantity.HasValue)
                                         {

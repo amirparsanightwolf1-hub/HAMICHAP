@@ -167,7 +167,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>
-                                        @(LocalizationService.IsPersian ? "شماره کار" : "Job number")
+                                        @LocalizationService["JobTitle"]
                                     </th>
                                     <th>
                                         @LocalizationService["Customer"]
@@ -182,7 +182,7 @@
                                         Job type
                                     </th>
                                     <th>
-                                        @LocalizationService["JobTitle"]
+                                        @(LocalizationService.IsPersian ? "شماره کار" : "Job number")
                                     </th>
                                     <th>
                                         @LocalizationService["Status"]
@@ -206,7 +206,7 @@
                                         @onkeydown="args => HandleRowKeyDown(args, request.Id)">
                                         <td>
                                             <span class="fw-semibold">
-                                                <a class="job-reference-link" href="@($"/jobs/{request.Id}")" @onclick:stopPropagation="true">@request.RequestNumber</a>
+                                                <a class="job-reference-link" href="@($"/jobs/{request.Id}")" @onclick:stopPropagation="true">@HamiChap_MES_ERP.Models.Sales.JobReferences.Title(request)</a>
                                             </span>
                                         </td>
 
@@ -227,7 +227,7 @@
                                         </td>
 
                                         <td>
-                                            <span class="sales-job-title-cell">@GetJobTitle(request)</span>
+                                            <span class="job-title-secondary" dir="ltr">@request.RequestNumber</span>
                                         </td>
 
                                         <td>

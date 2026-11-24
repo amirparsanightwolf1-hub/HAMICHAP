@@ -822,3 +822,11 @@
         .job-overview-compact.is-fullscreen .job-overview-operation-legend { font-size:.68rem; gap:4px 9px; }
     }
 }
+
+/* The job title is the stable, pinned visual identity; numbers are secondary. */
+.job-overview-compact-table .job-overview-compact-pin { min-width:200px; max-width:260px; }
+.job-overview-compact-pin .job-title-primary { display:block; font-size:.84rem; line-height:1.45; overflow-wrap:anywhere; }
+.job-overview-compact-pin .job-title-secondary { display:block; font-size:.68rem; color:#64748b; font-weight:500; margin-top:3px; text-align:start; }
+.job-overview-card-title .job-title-primary { color:inherit; text-decoration:none; }
+.job-overview-card-title .job-title-primary:hover { text-decoration:underline; }
+@media(max-width:620px) { .job-overview-compact-table .job-overview-compact-pin { min-width:145px; max-width:165px; } }
