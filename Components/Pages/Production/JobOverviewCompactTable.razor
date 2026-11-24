@@ -1,4 +1,14 @@
 @using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@using System.Text.Json
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
+@inject ILogger<JobOverviewCompactTable> Logger
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Services
 @using static HamiChap_MES_ERP.Services.JobProcessOverviewService
@@ -10,47 +20,217 @@
         <i class="bi bi-info-circle" aria-hidden="true"></i>
         @L["JobOverviewCompactHint"]
     </div>
+    <div class="job-overview-column-toolbar">
+        <button type="button" class="btn btn-outline-primary btn-sm" disabled="@loadingPreferences"
+                aria-expanded="@(showColumnPicker ? "true" : "false")" aria-controls="job-overview-column-picker"
+                @onclick="() => showColumnPicker = !showColumnPicker">
+            <i class="bi bi-layout-three-columns" aria-hidden="true"></i> @T("Choose columns", "انتخاب ستون‌ها")
+        </button>
+        @if (loadingPreferences)
+        {
+            <span class="text-muted small" role="status">@L["Loading"]</span>
+        }
+        else
+        {
+            <span class="text-muted small">@VisibleCount / @AllColumnCount @T("columns visible", "ستون قابل مشاهده")</span>
+        }
+        @if (preferencesReady && HasChanges)
+        {
+            <span class="text-muted small">@T("Unsaved changes", "تغییرات ذخیره نشده")</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(preferenceMessage))
+        {
+            <span class="small @(preferenceError ? "text-danger" : "text-success")" role="status">@preferenceMessage</span>
+        }
+        @if (!loadingPreferences && !preferencesReady)
+        {
+            <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="LoadPreferencesAsync">@T("Retry", "تلاش مجدد")</button>
+        }
+    </div>
+    @if (showColumnPicker && preferencesReady)
+    {
+        <section id="job-overview-column-picker" class="job-overview-column-picker">
+            <div class="job-overview-column-picker-head">
+                <div>
+                    <strong>@T("Visible columns", "ستون‌های قابل مشاهده")</strong>
+                    <p>@T("Choose which fields to show. Your saved selection follows your account.", "فیلدهای مورد نظر را انتخاب کنید. انتخاب ذخیره‌شده در حساب کاربری شما باقی می‌ماند.")</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@savingPreferences" @onclick="() => showColumnPicker = false">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i> @T("Close", "بستن")
+                </button>
+            </div>
+            <div class="job-overview-column-picker-actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@savingPreferences" @onclick="ShowAll">@T("Show all", "نمایش همه")</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@savingPreferences" @onclick="HideOptional">@T("Hide optional columns", "پنهان کردن ستون‌های اختیاری")</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@(savingPreferences || !HasChanges)" @onclick="DiscardChanges">@T("Discard changes", "لغو تغییرات")</button>
+            </div>
+            <div class="job-overview-column-groups">
+                <fieldset disabled="@savingPreferences">
+                    <legend>@T("Order & production", "سفارش و تولید")</legend>
+                    <div class="job-overview-column-checks">
+                        <label class="job-overview-column-check"><input type="checkbox" checked disabled /><span>@T("Job number (pinned)", "شماره کار (ثابت)")</span></label>
+                        @foreach (var key in FixedColumns)
+                        {
+                            var id = "field:" + key;
+                            <label class="job-overview-column-check" @key="id">
+                                <input type="checkbox" checked="@IsVisible(id)" @onchange="e => SetVisible(id, e.Value is true)" />
+                                <span>@L[key]</span>
+                            </label>
+                        }
+                    </div>
+                </fieldset>
+                @if (SpecificationColumns.Count > 0)
+                {
+                    <fieldset disabled="@savingPreferences">
+                        <legend>@T("Job specifications", "مشخصات کار")</legend>
+                        <div class="job-overview-column-checks">
+                            @foreach (var key in SpecificationColumns)
+                            {
+                                var id = "spec:" + key;
+                                <label class="job-overview-column-check" @key="id">
+                                    <input type="checkbox" checked="@IsVisible(id)" @onchange="e => SetVisible(id, e.Value is true)" />
+                                    <span>@SpecificationLabel(key)</span>
+                                </label>
+                            }
+                        </div>
+                    </fieldset>
+                }
+            </div>
+            <div class="job-overview-column-save">
+                <button type="button" class="btn btn-primary btn-sm" disabled="@(savingPreferences || !HasChanges)" @onclick="SavePreferencesAsync">
+                    <i class="bi bi-floppy" aria-hidden="true"></i> @T("Save my columns", "ذخیره ستون‌های من")
+                </button>
+            </div>
+        </section>
+    }
     <div class="job-overview-compact-scroll" role="region" tabindex="0"
          aria-label="@L["JobOverviewCompactView"]">
         <table class="job-overview-compact-table">
             <thead>
                 <tr>
-                    <th scope="col" class="job-overview-compact-pin">@L["RequestNumber"]</th>
-                    <th scope="col">@L["JobTitle"]</th>
-                    <th scope="col">@L["Customer"]</th>
-                    <th scope="col">@L["JobType"]</th>
-                    <th scope="col">@L["Quantity"]</th>
-                    <th scope="col">@L["RequestDate"]</th>
-                    <th scope="col">@L["RequestedDeliveryDate"]</th>
-                    <th scope="col">@L["JobOverviewCompactRequestStatus"]</th>
-                    <th scope="col">@L["JobOverviewCompactProductionStatus"]</th>
-                    <th scope="col">@L["SalesOrder"]</th>
-                    <th scope="col">@L["ProductionOrder"]</th>
-                    <th scope="col">@L["Quotation"]</th>
-                    <th scope="col">@L["JobOverviewProcessProgress"]</th>
-                    <th scope="col">@L["JobOverviewCompactCompletedStages"]</th>
-                    <th scope="col">@L["JobOverviewProducedQuantity"]</th>
-                    <th scope="col">@L["OrderedQuantity"]</th>
-                    <th scope="col">@L["JobOverviewCompactQuantityProgress"]</th>
-                    <th scope="col">@L["JobOverviewCompactSharedRoute"]</th>
-                    <th scope="col">@L["JobOverviewOrderWideProgress"]</th>
-                    <th scope="col">@L["JobOverviewCompactVerifiedRoute"]</th>
-                    <th scope="col">@L["JobOverviewInvalidSpecs"]</th>
-                    <th scope="col">@L["JobOverviewCompactPlannedStart"]</th>
-                    <th scope="col">@L["PlannedEnd"]</th>
-                    <th scope="col">@L["JobOverviewCompactActualStart"]</th>
-                    <th scope="col">@L["JobOverviewCompactActualEnd"]</th>
-                    <th scope="col" class="job-overview-compact-wide">@L["JobOverviewRequiredProcesses"]</th>
-                    <th scope="col" class="job-overview-compact-wide">@L["JobOverviewCompactItems"]</th>
-                    <th scope="col" class="job-overview-compact-wide">@L["Notes"]</th>
-                    <th scope="col" class="job-overview-compact-wide">@L["ProductionNotes"]</th>
-                    @foreach (var key in SpecificationColumns)
+                    <th scope="col" class="job-overview-compact-pin">@T("Job number", "شماره کار")</th>
+                    @if (IsVisible("field:JobTitle"))
+                    {
+                        <th scope="col">@L["JobTitle"]</th>
+                    }
+                    @if (IsVisible("field:Customer"))
+                    {
+                        <th scope="col">@L["Customer"]</th>
+                    }
+                    @if (IsVisible("field:JobType"))
+                    {
+                        <th scope="col">@L["JobType"]</th>
+                    }
+                    @if (IsVisible("field:Quantity"))
+                    {
+                        <th scope="col">@L["Quantity"]</th>
+                    }
+                    @if (IsVisible("field:RequestDate"))
+                    {
+                        <th scope="col">@L["RequestDate"]</th>
+                    }
+                    @if (IsVisible("field:RequestedDeliveryDate"))
+                    {
+                        <th scope="col">@L["RequestedDeliveryDate"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactRequestStatus"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactRequestStatus"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactProductionStatus"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactProductionStatus"]</th>
+                    }
+                    @if (IsVisible("field:SalesOrder"))
+                    {
+                        <th scope="col">@L["SalesOrder"]</th>
+                    }
+                    @if (IsVisible("field:ProductionOrder"))
+                    {
+                        <th scope="col">@L["ProductionOrder"]</th>
+                    }
+                    @if (IsVisible("field:Quotation"))
+                    {
+                        <th scope="col">@L["Quotation"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewProcessProgress"))
+                    {
+                        <th scope="col">@L["JobOverviewProcessProgress"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactCompletedStages"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactCompletedStages"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewProducedQuantity"))
+                    {
+                        <th scope="col">@L["JobOverviewProducedQuantity"]</th>
+                    }
+                    @if (IsVisible("field:OrderedQuantity"))
+                    {
+                        <th scope="col">@L["OrderedQuantity"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactQuantityProgress"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactQuantityProgress"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactSharedRoute"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactSharedRoute"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewOrderWideProgress"))
+                    {
+                        <th scope="col">@L["JobOverviewOrderWideProgress"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactVerifiedRoute"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactVerifiedRoute"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewInvalidSpecs"))
+                    {
+                        <th scope="col">@L["JobOverviewInvalidSpecs"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactPlannedStart"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactPlannedStart"]</th>
+                    }
+                    @if (IsVisible("field:PlannedEnd"))
+                    {
+                        <th scope="col">@L["PlannedEnd"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactActualStart"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactActualStart"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactActualEnd"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactActualEnd"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewRequiredProcesses"))
+                    {
+                        <th scope="col" class="job-overview-compact-wide">@L["JobOverviewRequiredProcesses"]</th>
+                    }
+                    @if (IsVisible("field:JobOverviewCompactItems"))
+                    {
+                        <th scope="col" class="job-overview-compact-wide">@L["JobOverviewCompactItems"]</th>
+                    }
+                    @if (IsVisible("field:Notes"))
+                    {
+                        <th scope="col" class="job-overview-compact-wide">@L["Notes"]</th>
+                    }
+                    @if (IsVisible("field:ProductionNotes"))
+                    {
+                        <th scope="col" class="job-overview-compact-wide">@L["ProductionNotes"]</th>
+                    }
+                    @foreach (var key in VisibleSpecificationColumns)
                     {
                         <th scope="col" class="job-overview-compact-spec" @key="key">
                             @SpecificationLabel(key)
                         </th>
                     }
-                    <th scope="col">@L["JobOverviewCompactActions"]</th>
+                    @if (IsVisible("field:JobOverviewCompactActions"))
+                    {
+                        <th scope="col">@L["JobOverviewCompactActions"]</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -60,132 +240,219 @@
                         <th scope="row" class="job-overview-compact-pin">
                             <a href="@job.EditUrl">@job.RequestNumber</a>
                         </th>
-                        <td>@Display(job.Title)</td>
-                        <td>@Display(job.Customer)</td>
-                        <td>@L.TranslateEnum(job.JobType)</td>
-                        <td class="job-overview-compact-number">
-                            @(job.Quantity.HasValue ? job.Quantity.Value.ToString("N0") : "—")
-                        </td>
-                        <td class="job-overview-compact-date">@job.RequestDate.ToString("yyyy-MM-dd")</td>
-                        <td class="job-overview-compact-date">@FormatDate(job.RequestedDeliveryDate)</td>
-                        <td>@L.TranslateEnum(job.RequestStatus)</td>
-                        <td>
-                            @(job.ProductionStatus.HasValue ? L.TranslateEnum(job.ProductionStatus.Value) : "—")
-                        </td>
-                        <td>
-                            @if (job.SalesOrderId.HasValue)
-                            {
-                                <a href="@($"/sales/orders/edit/{job.SalesOrderId.Value}")">
-                                    @Display(job.SalesOrderNumber)
-                                </a>
-                            }
-                            else { <span>—</span> }
-                        </td>
-                        <td>
-                            @if (job.ProductionOrderId.HasValue)
-                            {
-                                <a href="@($"/production/orders/edit/{job.ProductionOrderId.Value}")">
-                                    @Display(job.ProductionOrderNumber)
-                                </a>
-                            }
-                            else { <span>—</span> }
-                        </td>
-                        <td>
-                            @if (job.QuotationId.HasValue)
-                            {
-                                <a href="@($"/sales/quotations/edit/{job.QuotationId.Value}")">
-                                    @job.QuotationId.Value
-                                </a>
-                            }
-                            else { <span>—</span> }
-                        </td>
-                        <td class="job-overview-compact-number">
-                            @(job.JobProgressPercent.HasValue ? $"{job.JobProgressPercent.Value}%" : "—")
-                        </td>
-                        <td class="job-overview-compact-number">
-                            @job.CompletedStages / @job.ActiveStages
-                        </td>
-                        <td class="job-overview-compact-number">
-                            @(job.ProducedQuantity.HasValue ? job.ProducedQuantity.Value.ToString("N0") : "—")
-                        </td>
-                        <td class="job-overview-compact-number">
-                            @(job.OrderedQuantity.HasValue ? job.OrderedQuantity.Value.ToString("N0") : "—")
-                        </td>
-                        <td class="job-overview-compact-number">
-                            @(job.QuantityProgressPercent.HasValue ? $"{job.QuantityProgressPercent.Value}%" : "—")
-                        </td>
-                        <td>@YesNo(job.SharedProductionRoute)</td>
-                        <td class="job-overview-compact-number">
-                            @(job.SharedOrderProgressPercent.HasValue ? $"{job.SharedOrderProgressPercent.Value}%" : "—")
-                        </td>
-                        <td>@YesNo(job.UsingRecordedOperations)</td>
-                        <td>@YesNo(job.InvalidSpecifications)</td>
-                        <td class="job-overview-compact-date">@FormatDateTime(job.PlannedStart)</td>
-                        <td class="job-overview-compact-date">@FormatDateTime(job.PlannedEnd)</td>
-                        <td class="job-overview-compact-date">@FormatDateTime(job.ActualStart)</td>
-                        <td class="job-overview-compact-date">@FormatDateTime(job.ActualEnd)</td>
-                        <td class="job-overview-compact-wide">
-                            @if (job.Stages.Count == 0)
-                            {
-                                <span>—</span>
-                            }
-                            else
-                            {
-                                <div class="job-overview-compact-stages">
-                                    @foreach (var stage in job.Stages)
-                                    {
-                                        <span @key="stage.Sequence">
-                                            <strong>@stage.Sequence. @StageName(stage.Name)</strong>
-                                            — @StageLabel(stage.State)
-                                            @if (!string.IsNullOrWhiteSpace(StageMachine(stage)))
-                                            {
-                                                <span> · @StageMachine(stage)</span>
-                                            }
-                                            @if (stage.PlannedStart.HasValue)
-                                            {
-                                                <span> · @stage.PlannedStart.Value.ToString("yyyy-MM-dd HH:mm")</span>
-                                            }
-                                            @if (stage.PlannedEnd.HasValue)
-                                            {
-                                                <span> → @stage.PlannedEnd.Value.ToString("yyyy-MM-dd HH:mm")</span>
-                                            }
-                                            @if (stage.NeedsReview)
-                                            {
-                                                <span> · @L["JobOverviewRequiresRoutingReview"]</span>
-                                            }
-                                        </span>
-                                    }
-                                </div>
-                            }
-                        </td>
-                        <td class="job-overview-compact-wide">@Display(job.RequestItems)</td>
-                        <td class="job-overview-compact-wide">@Display(job.RequestNotes)</td>
-                        <td class="job-overview-compact-wide">@Display(job.ProductionNotes)</td>
-                        @foreach (var key in SpecificationColumns)
+                        @if (IsVisible("field:JobTitle"))
+                        {
+                            <td>@Display(job.Title)</td>
+                        }
+                        @if (IsVisible("field:Customer"))
+                        {
+                            <td>@Display(job.Customer)</td>
+                        }
+                        @if (IsVisible("field:JobType"))
+                        {
+                            <td>@L.TranslateEnum(job.JobType)</td>
+                        }
+                        @if (IsVisible("field:Quantity"))
+                        {
+                            <td class="job-overview-compact-number">
+                                @(job.Quantity.HasValue ? job.Quantity.Value.ToString("N0") : "—")
+                            </td>
+                        }
+                        @if (IsVisible("field:RequestDate"))
+                        {
+                            <td class="job-overview-compact-date">@job.RequestDate.ToString("yyyy-MM-dd")</td>
+                        }
+                        @if (IsVisible("field:RequestedDeliveryDate"))
+                        {
+                            <td class="job-overview-compact-date">@FormatDate(job.RequestedDeliveryDate)</td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactRequestStatus"))
+                        {
+                            <td>@L.TranslateEnum(job.RequestStatus)</td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactProductionStatus"))
+                        {
+                            <td>
+                                @(job.ProductionStatus.HasValue ? L.TranslateEnum(job.ProductionStatus.Value) : "—")
+                            </td>
+                        }
+                        @if (IsVisible("field:SalesOrder"))
+                        {
+                            <td>
+                                @if (job.SalesOrderId.HasValue)
+                                {
+                                    <a href="@($"/sales/orders/edit/{job.SalesOrderId.Value}")">
+                                        @Display(job.SalesOrderNumber)
+                                    </a>
+                                }
+                                else { <span>—</span> }
+                            </td>
+                        }
+                        @if (IsVisible("field:ProductionOrder"))
+                        {
+                            <td>
+                                @if (job.ProductionOrderId.HasValue)
+                                {
+                                    <a href="@($"/production/orders/edit/{job.ProductionOrderId.Value}")">
+                                        @Display(job.ProductionOrderNumber)
+                                    </a>
+                                }
+                                else { <span>—</span> }
+                            </td>
+                        }
+                        @if (IsVisible("field:Quotation"))
+                        {
+                            <td>
+                                @if (job.QuotationId.HasValue)
+                                {
+                                    <a href="@($"/sales/quotations/edit/{job.QuotationId.Value}")">
+                                        @job.QuotationId.Value
+                                    </a>
+                                }
+                                else { <span>—</span> }
+                            </td>
+                        }
+                        @if (IsVisible("field:JobOverviewProcessProgress"))
+                        {
+                            <td class="job-overview-compact-number">
+                                @(job.JobProgressPercent.HasValue ? $"{job.JobProgressPercent.Value}%" : "—")
+                            </td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactCompletedStages"))
+                        {
+                            <td class="job-overview-compact-number">
+                                @job.CompletedStages / @job.ActiveStages
+                            </td>
+                        }
+                        @if (IsVisible("field:JobOverviewProducedQuantity"))
+                        {
+                            <td class="job-overview-compact-number">
+                                @(job.ProducedQuantity.HasValue ? job.ProducedQuantity.Value.ToString("N0") : "—")
+                            </td>
+                        }
+                        @if (IsVisible("field:OrderedQuantity"))
+                        {
+                            <td class="job-overview-compact-number">
+                                @(job.OrderedQuantity.HasValue ? job.OrderedQuantity.Value.ToString("N0") : "—")
+                            </td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactQuantityProgress"))
+                        {
+                            <td class="job-overview-compact-number">
+                                @(job.QuantityProgressPercent.HasValue ? $"{job.QuantityProgressPercent.Value}%" : "—")
+                            </td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactSharedRoute"))
+                        {
+                            <td>@YesNo(job.SharedProductionRoute)</td>
+                        }
+                        @if (IsVisible("field:JobOverviewOrderWideProgress"))
+                        {
+                            <td class="job-overview-compact-number">
+                                @(job.SharedOrderProgressPercent.HasValue ? $"{job.SharedOrderProgressPercent.Value}%" : "—")
+                            </td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactVerifiedRoute"))
+                        {
+                            <td>@YesNo(job.UsingRecordedOperations)</td>
+                        }
+                        @if (IsVisible("field:JobOverviewInvalidSpecs"))
+                        {
+                            <td>@YesNo(job.InvalidSpecifications)</td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactPlannedStart"))
+                        {
+                            <td class="job-overview-compact-date">@FormatDateTime(job.PlannedStart)</td>
+                        }
+                        @if (IsVisible("field:PlannedEnd"))
+                        {
+                            <td class="job-overview-compact-date">@FormatDateTime(job.PlannedEnd)</td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactActualStart"))
+                        {
+                            <td class="job-overview-compact-date">@FormatDateTime(job.ActualStart)</td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactActualEnd"))
+                        {
+                            <td class="job-overview-compact-date">@FormatDateTime(job.ActualEnd)</td>
+                        }
+                        @if (IsVisible("field:JobOverviewRequiredProcesses"))
+                        {
+                            <td class="job-overview-compact-wide">
+                                @if (job.Stages.Count == 0)
+                                {
+                                    <span>—</span>
+                                }
+                                else
+                                {
+                                    <div class="job-overview-compact-stages">
+                                        @foreach (var stage in job.Stages)
+                                        {
+                                            <span @key="stage.Sequence">
+                                                <strong>@stage.Sequence. @StageName(stage.Name)</strong>
+                                                — @StageLabel(stage.State)
+                                                @if (!string.IsNullOrWhiteSpace(StageMachine(stage)))
+                                                {
+                                                    <span> · @StageMachine(stage)</span>
+                                                }
+                                                @if (stage.PlannedStart.HasValue)
+                                                {
+                                                    <span> · @stage.PlannedStart.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                                }
+                                                @if (stage.PlannedEnd.HasValue)
+                                                {
+                                                    <span> → @stage.PlannedEnd.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                                }
+                                                @if (stage.NeedsReview)
+                                                {
+                                                    <span> · @L["JobOverviewRequiresRoutingReview"]</span>
+                                                }
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                        }
+                        @if (IsVisible("field:JobOverviewCompactItems"))
+                        {
+                            <td class="job-overview-compact-wide">@Display(job.RequestItems)</td>
+                        }
+                        @if (IsVisible("field:Notes"))
+                        {
+                            <td class="job-overview-compact-wide">@Display(job.RequestNotes)</td>
+                        }
+                        @if (IsVisible("field:ProductionNotes"))
+                        {
+                            <td class="job-overview-compact-wide">@Display(job.ProductionNotes)</td>
+                        }
+                        @foreach (var key in VisibleSpecificationColumns)
                         {
                             <td class="job-overview-compact-spec" @key="key">
                                 @Display(SpecificationValue(job, key))
                             </td>
                         }
-                        <td class="job-overview-compact-links">
-                            <a href="@job.EditUrl">@L["OpenJob"]</a>
-                            @if (job.Quantity > 0)
-                            {
-                                <a href="@job.ProofUrl">@L["OpenApprovalProof"]</a>
-                            }
-                            @if (job.ProductionOrderId.HasValue)
-                            {
-                                <a href="@($"/production/orders/edit/{job.ProductionOrderId.Value}")">
-                                    @L["ProductionOrder"]
-                                </a>
-                            }
-                            else if (job.QuotationId.HasValue)
-                            {
-                                <a href="@($"/sales/quotations/edit/{job.QuotationId.Value}")">
-                                    @L["Quotation"]
-                                </a>
-                            }
-                        </td>
+                        @if (IsVisible("field:JobOverviewCompactActions"))
+                        {
+                            <td class="job-overview-compact-links">
+                                <a href="@job.EditUrl">@L["OpenJob"]</a>
+                                @if (job.Quantity > 0)
+                                {
+                                    <a href="@job.ProofUrl">@L["OpenApprovalProof"]</a>
+                                }
+                                @if (job.ProductionOrderId.HasValue)
+                                {
+                                    <a href="@($"/production/orders/edit/{job.ProductionOrderId.Value}")">
+                                        @L["ProductionOrder"]
+                                    </a>
+                                }
+                                else if (job.QuotationId.HasValue)
+                                {
+                                    <a href="@($"/sales/quotations/edit/{job.QuotationId.Value}")">
+                                        @L["Quotation"]
+                                    </a>
+                                }
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>
@@ -199,6 +466,167 @@
 
     [Parameter, EditorRequired]
     public IReadOnlyList<string> SpecificationColumns { get; set; } = Array.Empty<string>();
+
+    // Store view preferences in a dedicated Identity user-token namespace.
+    // These are non-secret UI settings, separate from authentication credentials.
+    private const string PreferenceProvider = "HAMICHAP.Preferences";
+    private const string PreferenceName = "ProductionJobs.Compact.HiddenColumns.v1";
+    private static readonly string[] FixedColumns =
+    {
+        "JobTitle",
+        "Customer",
+        "JobType",
+        "Quantity",
+        "RequestDate",
+        "RequestedDeliveryDate",
+        "JobOverviewCompactRequestStatus",
+        "JobOverviewCompactProductionStatus",
+        "SalesOrder",
+        "ProductionOrder",
+        "Quotation",
+        "JobOverviewProcessProgress",
+        "JobOverviewCompactCompletedStages",
+        "JobOverviewProducedQuantity",
+        "OrderedQuantity",
+        "JobOverviewCompactQuantityProgress",
+        "JobOverviewCompactSharedRoute",
+        "JobOverviewOrderWideProgress",
+        "JobOverviewCompactVerifiedRoute",
+        "JobOverviewInvalidSpecs",
+        "JobOverviewCompactPlannedStart",
+        "PlannedEnd",
+        "JobOverviewCompactActualStart",
+        "JobOverviewCompactActualEnd",
+        "JobOverviewRequiredProcesses",
+        "JobOverviewCompactItems",
+        "Notes",
+        "ProductionNotes",
+        "JobOverviewCompactActions"
+    };
+    private HashSet<string> hidden = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> savedHidden = new(StringComparer.OrdinalIgnoreCase);
+    private string? preferenceUserId;
+    private bool loadingPreferences = true;
+    private bool preferencesReady;
+    private bool savingPreferences;
+    private bool showColumnPicker;
+    private bool preferenceError;
+    private string? preferenceMessage;
+
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
+    private bool IsVisible(string key) => !hidden.Contains(key);
+    private IEnumerable<string> VisibleSpecificationColumns => SpecificationColumns.Where(x => IsVisible("spec:" + x));
+    private int AllColumnCount => 1 + FixedColumns.Length + SpecificationColumns.Count;
+    private int VisibleCount => 1 + FixedColumns.Count(x => IsVisible("field:" + x)) + VisibleSpecificationColumns.Count();
+    private bool HasChanges => !hidden.SetEquals(savedHidden);
+
+    protected override Task OnInitializedAsync() => LoadPreferencesAsync();
+
+    private async Task<string?> CurrentAuthorizedUserAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        if (user.Identity?.IsAuthenticated != true) return null;
+        if (!await Permissions.HasPermissionAsync(user, "Sales.Requests.View") &&
+            !await Permissions.HasPermissionAsync(user, "Production.Orders.View"))
+            return null;
+        return user.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+
+    private async Task LoadPreferencesAsync()
+    {
+        loadingPreferences = true;
+        preferencesReady = false;
+        preferenceMessage = null;
+        preferenceError = false;
+        hidden.Clear();
+        savedHidden.Clear();
+        preferenceUserId = null;
+        try
+        {
+            var userId = await CurrentAuthorizedUserAsync();
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new InvalidOperationException("No authorized user.");
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var value = await db.UserTokens.AsNoTracking()
+                .Where(x => x.UserId == userId && x.LoginProvider == PreferenceProvider && x.Name == PreferenceName)
+                .Select(x => x.Value).FirstOrDefaultAsync();
+            if (!string.IsNullOrWhiteSpace(value))
+                savedHidden = new HashSet<string>(JsonSerializer.Deserialize<string[]>(value) ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            savedHidden.Remove("field:RequestNumber");
+            hidden = new HashSet<string>(savedHidden, StringComparer.OrdinalIgnoreCase);
+            preferenceUserId = userId;
+            preferencesReady = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Could not load compact job column preferences");
+            preferenceError = true;
+            preferenceMessage = T("Could not load saved columns.", "بارگذاری ستون‌های ذخیره‌شده انجام نشد.");
+        }
+        finally { loadingPreferences = false; }
+    }
+
+    private void SetVisible(string key, bool visible)
+    {
+        if (!preferencesReady || savingPreferences || key.Equals("field:RequestNumber", StringComparison.OrdinalIgnoreCase)) return;
+        if (visible) hidden.Remove(key); else hidden.Add(key);
+        preferenceMessage = null;
+    }
+
+    private void ShowAll()
+    {
+        hidden.Clear();
+        preferenceMessage = null;
+    }
+
+    private void HideOptional()
+    {
+        // Retain preferences for specification keys not present in this search.
+        hidden.UnionWith(FixedColumns.Select(x => "field:" + x));
+        hidden.UnionWith(SpecificationColumns.Select(x => "spec:" + x));
+        preferenceMessage = null;
+    }
+
+    private void DiscardChanges()
+    {
+        hidden = new HashSet<string>(savedHidden, StringComparer.OrdinalIgnoreCase);
+        preferenceMessage = null;
+    }
+
+    private async Task SavePreferencesAsync()
+    {
+        if (!preferencesReady || savingPreferences || !HasChanges) return;
+        savingPreferences = true;
+        preferenceMessage = null;
+        preferenceError = false;
+        try
+        {
+            var userId = await CurrentAuthorizedUserAsync();
+            if (string.IsNullOrWhiteSpace(userId) || userId != preferenceUserId)
+                throw new InvalidOperationException("The signed-in account changed.");
+            var snapshot = hidden.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var token = await db.UserTokens.FindAsync(userId, PreferenceProvider, PreferenceName);
+            if (token is null)
+            {
+                token = new IdentityUserToken<string> { UserId = userId, LoginProvider = PreferenceProvider, Name = PreferenceName };
+                db.UserTokens.Add(token);
+            }
+            token.Value = JsonSerializer.Serialize(snapshot);
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            savedHidden = new HashSet<string>(snapshot, StringComparer.OrdinalIgnoreCase);
+            preferenceMessage = T("Saved to your account.", "در حساب کاربری شما ذخیره شد.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Could not save compact job column preferences");
+            preferenceError = true;
+            preferenceMessage = T("Could not save columns. Try again.", "ذخیره ستون‌ها انجام نشد. دوباره تلاش کنید.");
+        }
+        finally { savingPreferences = false; }
+    }
 
     private static string Display(string? value) =>
         string.IsNullOrWhiteSpace(value) ? "—" : value;

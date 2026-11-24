@@ -740,3 +740,20 @@
         max-width: 118px;
     }
 }
+
+/* Per-account compact table column selection. */
+.job-overview-column-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-bottom:10px; }
+.job-overview-column-picker { border:1px solid #dbe5ee; border-radius:11px; padding:14px; background:#fff; margin-bottom:12px; }
+.job-overview-column-picker-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.job-overview-column-picker-head strong { color:#26445f; font-size:.94rem; }
+.job-overview-column-picker-head p { margin:4px 0 0; color:#64748b; font-size:.79rem; }
+.job-overview-column-picker-actions { display:flex; flex-wrap:wrap; gap:7px; margin:12px 0; }
+.job-overview-column-groups { display:grid; gap:12px; max-height:340px; overflow:auto; padding-inline-end:5px; }
+.job-overview-column-groups fieldset { min-width:0; border:1px solid #e1e8ef; border-radius:8px; padding:10px; margin:0; }
+.job-overview-column-groups legend { float:none; width:auto; font-size:.78rem; font-weight:650; color:#34536d; padding:0 5px; margin:0; }
+.job-overview-column-checks { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,185px),1fr)); gap:5px 12px; }
+.job-overview-column-check { display:flex; align-items:flex-start; gap:7px; min-width:0; padding:5px 3px; color:#334155; font-size:.78rem; cursor:pointer; overflow-wrap:anywhere; }
+.job-overview-column-check input { flex:0 0 16px; width:16px; height:16px; margin:0; accent-color:#0c568d; cursor:pointer; }
+.job-overview-column-check input:disabled { cursor:default; }
+.job-overview-column-save { display:flex; justify-content:flex-end; margin-top:12px; padding-top:12px; border-top:1px solid #e1e8ef; }
+@media(max-width:480px) { .job-overview-column-picker { padding:10px; } .job-overview-column-picker-head { flex-wrap:wrap; } .job-overview-column-checks { grid-template-columns:1fr; } .job-overview-column-save .btn { width:100%; } }
