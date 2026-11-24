@@ -109,7 +109,7 @@
             </div>
             <div class="card-body">
                 <div class="order-info-grid">
-                    <label class="form-label">@LocalizationService["Customer"]</label>
+                    <label class="form-label"><i class="bi bi-person app-field-icon" aria-hidden="true"></i> @LocalizationService["Customer"]</label>
                     <div>
                         @if (!isCreatingCustomer)
                         {
@@ -140,7 +140,7 @@
                         <div style="grid-column:1 / -1"><CustomerProfileFields Profile="newCustomerProfile" IdPrefix="roll-new-customer" Changed="StateHasChanged" /></div>
                     }
 
-                    <label class="form-label">@LocalizationService["JobTitle"]</label>
+                    <label class="form-label"><i class="bi bi-tag app-field-icon" aria-hidden="true"></i> @LocalizationService["JobTitle"]</label>
                     <InputText class="form-control" @bind-Value="spec.JobTitle" />
                     <div style="grid-column: 1 / -1;">
                         <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
@@ -166,23 +166,23 @@
             <div class="card-body">
                 <div class="label-specifications-grid">
                     <div class="label-specification-field">
-                        <label>@LocalizationService["LabelPull"]</label>
+                        <label><i class="bi bi-arrow-down-up app-field-icon" aria-hidden="true"></i> @LocalizationService["LabelPull"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelPull" />
                     </div>
                     <div class="label-specification-field">
-                        <label>@LocalizationService["LabelWidth"]</label>
+                        <label><i class="bi bi-arrow-left-right app-field-icon" aria-hidden="true"></i> @LocalizationService["LabelWidth"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelWidth" />
                     </div>
                     <div class="label-specification-field">
-                        <label>@LocalizationService["GapBetweenLabels"]</label>
+                        <label><i class="bi bi-distribute-vertical app-field-icon" aria-hidden="true"></i> @LocalizationService["GapBetweenLabels"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.GapBetweenLabels" />
                     </div>
                     <div class="label-specification-field job-edit-quantity-field">
-                        <label>@LocalizationService["LabelQuantity"]</label>
+                        <label><i class="bi bi-123 app-field-icon" aria-hidden="true"></i> @LocalizationService["LabelQuantity"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.LabelQuantity" />
                     </div>
                     <div class="label-specification-field">
-                        <label>@LocalizationService["PaperTypeMaterial"]</label>
+                        <label><i class="bi bi-layers app-field-icon" aria-hidden="true"></i> @LocalizationService["PaperTypeMaterial"]</label>
                         <div>
                             <input class="form-control" list="roll-paper-types" @bind="spec.PaperType" placeholder="@LocalizationService["SelectOrEnterMaterial"]" />
                             <datalist id="roll-paper-types">
@@ -199,15 +199,15 @@
                         </div>
                     </div>
                     <div class="label-specification-field">
-                        <label>@LocalizationService["ColorCount"]</label>
+                        <label><i class="bi bi-palette app-field-icon" aria-hidden="true"></i> @LocalizationService["ColorCount"]</label>
                         <input class="form-control" value="@PlateCount" readonly />
                     </div>
                     <div class="label-specification-field">
-                        <label>@LocalizationService["Zinc"]</label>
+                        <label><i class="bi bi-grid-3x3 app-field-icon" aria-hidden="true"></i> @LocalizationService["Zinc"]</label>
                         <input class="form-control" value="@PlateCount" readonly />
                     </div>
                     <div class="label-specification-field">
-                        <label>@LocalizationService["PrintingNotes"]</label>
+                        <label><i class="bi bi-chat-left-text app-field-icon" aria-hidden="true"></i> @LocalizationService["PrintingNotes"]</label>
                         <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="@LocalizationService["RollPrintingNotesHint"]" />
                     </div>
                     <div class="col-12">
@@ -237,11 +237,11 @@
                         </div>
                     </div>
                     <div class="label-specification-field">
-                        <label>@LocalizationService["RollDiameter"]</label>
+                        <label><i class="bi bi-disc app-field-icon" aria-hidden="true"></i> @LocalizationService["RollDiameter"]</label>
                         <InputNumber class="form-control" @bind-Value="spec.RollDiameter" />
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-semibold">@LocalizationService["RollOrientationUnwindDirection"]</label>
+                        <label class="form-label fw-semibold"><i class="bi bi-arrow-repeat app-field-icon" aria-hidden="true"></i> @LocalizationService["RollOrientationUnwindDirection"]</label>
                         <div class="text-muted small mb-2">@LocalizationService["ChooseRollOrientation"]</div>
                         <div class="orientation-grid orientation-grid-four" role="group"
                              aria-label="@LocalizationService["RollOrientationUnwindDirection"]">

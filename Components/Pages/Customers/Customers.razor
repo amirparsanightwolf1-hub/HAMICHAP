@@ -32,7 +32,7 @@
                     class="btn btn-primary"
                     @onclick="CreateCustomer">
 
-                @LocalizationService["NewCustomer"]
+                <i class="bi bi-person-plus" aria-hidden="true"></i> @LocalizationService["NewCustomer"]
 
             </button>
         </div>
@@ -114,12 +114,12 @@
 
                                     <td>
 
-                                        <a class="btn btn-sm btn-outline-secondary me-1" href="@($"/customers/{customer.Id}/edit")">@T("Edit", "ویرایش")</a>
+                                        <a class="btn btn-sm btn-outline-secondary me-1" href="@($"/customers/{customer.Id}/edit")"><i class="bi bi-pencil" aria-hidden="true"></i> @T("Edit", "ویرایش")</a>
                                         <button type="button"
                                                 class="btn btn-sm btn-primary"
                                                 @onclick="() => OpenInventory(customer.Id)">
 
-                                            @LocalizationService["Inventory"]
+                                            <i class="bi bi-boxes" aria-hidden="true"></i> @LocalizationService["Inventory"]
 
                                         </button>
 

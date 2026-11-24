@@ -29,23 +29,23 @@
             {
                 @if (showSalesDashboard)
                 {
-                    <a class="login-button" href="/dashboard/sales">@LocalizationService["ManagerSalesDashboard"]</a>
+                    <a class="login-button" href="/dashboard/sales"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> @LocalizationService["ManagerSalesDashboard"]</a>
                 }
                 @if (showWarehouseDashboard)
                 {
-                    <a class="login-button" href="/dashboard/warehouse">@LocalizationService["ManagerWarehouseDashboard"]</a>
+                    <a class="login-button" href="/dashboard/warehouse"><i class="bi bi-box-seam" aria-hidden="true"></i> @LocalizationService["ManagerWarehouseDashboard"]</a>
                 }
                 @if (showCeoDashboard)
                 {
-                    <a class="login-button" href="/dashboard/ceo">@LocalizationService["ManagerCeoDashboard"]</a>
+                    <a class="login-button" href="/dashboard/ceo"><i class="bi bi-bar-chart-line" aria-hidden="true"></i> @LocalizationService["ManagerCeoDashboard"]</a>
                 }
                 @if (showProductionDashboard)
                 {
-                    <a class="login-button" href="/dashboard/production">@LocalizationService["ManagerProductionDashboard"]</a>
+                    <a class="login-button" href="/dashboard/production"><i class="bi bi-kanban" aria-hidden="true"></i> @LocalizationService["ManagerProductionDashboard"]</a>
                 }
                 @if (showOperatorDashboard)
                 {
-                    <a class="login-button" href="/production/machine-operator">@LocalizationService["OperatorDashboardTitle"]</a>
+                    <a class="login-button" href="/production/machine-operator"><i class="bi bi-play-circle" aria-hidden="true"></i> @LocalizationService["OperatorDashboardTitle"]</a>
                 }
             }
 
@@ -54,7 +54,7 @@
                 <button type="button"
                         class="login-button"
                         @onclick="CreateNewOrder">
-                    ➕ @LocalizationService["NewOrder"]
+                    <i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["NewOrder"]
                 </button>
             }
 

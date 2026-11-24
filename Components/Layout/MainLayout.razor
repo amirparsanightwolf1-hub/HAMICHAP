@@ -47,7 +47,7 @@
                 </div>
         
                 <nav class="side-menu" aria-label="@LocalizationService["ManagerMainNavigation"]">
-                    <div class="menu-group-label">@LocalizationService["ManagerMainNavigation"]</div>
+                    <div class="menu-group-label"><i class="bi bi-grid" aria-hidden="true"></i> @LocalizationService["ManagerMainNavigation"]</div>
                     <a class="@NavClass("/")" href="/" @onclick="CloseMenu">
                         <i class="bi bi-house-door" aria-hidden="true"></i><span>@LocalizationService["Dashboard"]</span>
                     </a>
@@ -84,7 +84,7 @@
 
                     @if (canViewSales || canViewCustomers)
                     {
-                        <div class="menu-group-label">@LocalizationService["Sales"]</div>
+                        <div class="menu-group-label"><i class="bi bi-cart" aria-hidden="true"></i> @LocalizationService["Sales"]</div>
                         @if (canViewSalesRequests)
                         {
                             <a class="@NavClass("/sales/requests")" href="/sales/requests" @onclick="CloseMenu">
@@ -112,15 +112,15 @@
                                 <summary>@LocalizationService["ManagerMoreSales"]</summary>
                                 @if (canViewSalesDeliveries)
                                 {
-                                    <a href="/sales/deliveries/create" @onclick="CloseMenu">@LocalizationService["SalesDeliveries"]</a>
+                                    <a href="/sales/deliveries/create" @onclick="CloseMenu"><i class="bi bi-truck" aria-hidden="true"></i><span>@LocalizationService["SalesDeliveries"]</span></a>
                                 }
                                 @if (canViewSalesInvoices)
                                 {
-                                    <a href="/sales/invoices" @onclick="CloseMenu">@LocalizationService["SalesInvoices"]</a>
+                                    <a href="/sales/invoices" @onclick="CloseMenu"><i class="bi bi-receipt-cutoff" aria-hidden="true"></i><span>@LocalizationService["SalesInvoices"]</span></a>
                                 }
                                 @if (canViewCustomers)
                                 {
-                                    <a href="/customers/inventory" @onclick="CloseMenu">@LocalizationService["CustomerInventory"]</a>
+                                    <a href="/customers/inventory" @onclick="CloseMenu"><i class="bi bi-boxes" aria-hidden="true"></i><span>@LocalizationService["CustomerInventory"]</span></a>
                                 }
                             </details>
                         }
@@ -128,7 +128,7 @@
 
                     @if (canViewInventory)
                     {
-                        <div class="menu-group-label">@LocalizationService["Inventory"]</div>
+                        <div class="menu-group-label"><i class="bi bi-boxes" aria-hidden="true"></i> @LocalizationService["Inventory"]</div>
                         @if (canViewDocuments)
                         {
                             <a class="@NavClass("/inventory/documents")" href="/inventory/documents" @onclick="CloseMenu">
@@ -151,35 +151,35 @@
                             <summary>@LocalizationService["ManagerMoreInventory"]</summary>
                             @if (canViewStock)
                             {
-                                <a href="/inventory/stock/warehouse" @onclick="CloseMenu">@LocalizationService["WarehouseStock"]</a>
-                                <a href="/inventory/stock/lots" @onclick="CloseMenu">@LocalizationService["StockByLot"]</a>
+                                <a href="/inventory/stock/warehouse" @onclick="CloseMenu"><i class="bi bi-building" aria-hidden="true"></i><span>@LocalizationService["WarehouseStock"]</span></a>
+                                <a href="/inventory/stock/lots" @onclick="CloseMenu"><i class="bi bi-box-seam" aria-hidden="true"></i><span>@LocalizationService["StockByLot"]</span></a>
                             }
                             @if (canViewTransactions)
                             {
-                                <a href="/inventory/transactions" @onclick="CloseMenu">@LocalizationService["Transactions"]</a>
+                                <a href="/inventory/transactions" @onclick="CloseMenu"><i class="bi bi-arrow-left-right" aria-hidden="true"></i><span>@LocalizationService["Transactions"]</span></a>
                             }
                             @if (canViewLocations)
                             {
-                                <a href="/inventory/locations" @onclick="CloseMenu">@LocalizationService["Locations"]</a>
+                                <a href="/inventory/locations" @onclick="CloseMenu"><i class="bi bi-geo-alt" aria-hidden="true"></i><span>@LocalizationService["Locations"]</span></a>
                             }
                             @if (canViewCategories)
                             {
-                                <a href="/inventory/itemcategories" @onclick="CloseMenu">@LocalizationService["ItemCategories"]</a>
+                                <a href="/inventory/itemcategories" @onclick="CloseMenu"><i class="bi bi-tags" aria-hidden="true"></i><span>@LocalizationService["ItemCategories"]</span></a>
                             }
                             @if (canViewUnits)
                             {
-                                <a href="/inventory/units" @onclick="CloseMenu">@LocalizationService["Units"]</a>
+                                <a href="/inventory/units" @onclick="CloseMenu"><i class="bi bi-rulers" aria-hidden="true"></i><span>@LocalizationService["Units"]</span></a>
                             }
                             @if (canViewLots)
                             {
-                                <a href="/inventory/lots" @onclick="CloseMenu">@LocalizationService["Lots"]</a>
+                                <a href="/inventory/lots" @onclick="CloseMenu"><i class="bi bi-collection" aria-hidden="true"></i><span>@LocalizationService["Lots"]</span></a>
                             }
                         </details>
                     }
 
                     @if (canViewProduction || showProductionDashboard || showCeoDashboard)
                     {
-                        <div class="menu-group-label">@LocalizationService["Production"]</div>
+                        <div class="menu-group-label"><i class="bi bi-gear" aria-hidden="true"></i> @LocalizationService["Production"]</div>
                         @if (canViewProduction || showCeoDashboard)
                         {
                             <a class="@NavClass("/production/orders")" href="/production/orders" @onclick="CloseMenu">
@@ -202,17 +202,17 @@
                         {
                             <details class="nav-more-group">
                                 <summary>@LocalizationService["ManagerMoreProduction"]</summary>
-                                <a href="/production/workflow" @onclick="CloseMenu">@LocalizationService["ProductionWorkflow"]</a>
-                                <a href="/production/jobs" @onclick="CloseMenu">@LocalizationService["JobOverview"]</a>
-                                <a href="/production/imposition-optimizer" @onclick="CloseMenu">@LocalizationService["Imposition Optimizer"]</a>
-                                <a href="/production/quality-inspections" @onclick="CloseMenu">@LocalizationService["QualityInspectionManagement"]</a>
+                                <a href="/production/workflow" @onclick="CloseMenu"><i class="bi bi-diagram-3" aria-hidden="true"></i><span>@LocalizationService["ProductionWorkflow"]</span></a>
+                                <a href="/production/jobs" @onclick="CloseMenu"><i class="bi bi-clipboard-data" aria-hidden="true"></i><span>@LocalizationService["JobOverview"]</span></a>
+                                <a href="/production/imposition-optimizer" @onclick="CloseMenu"><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i><span>@LocalizationService["Imposition Optimizer"]</span></a>
+                                <a href="/production/quality-inspections" @onclick="CloseMenu"><i class="bi bi-patch-check" aria-hidden="true"></i><span>@LocalizationService["QualityInspectionManagement"]</span></a>
                             </details>
                         }
                     }
 
                     @if (canViewUsers || canViewRoles || canManagePermissions)
                     {
-                        <div class="menu-group-label">@LocalizationService["Administration"]</div>
+                        <div class="menu-group-label"><i class="bi bi-shield-lock" aria-hidden="true"></i> @LocalizationService["Administration"]</div>
                         @if (canViewUsers)
                         {
                             <a class="@NavClass("/administration/users")" href="/administration/users" @onclick="CloseMenu">
@@ -225,11 +225,11 @@
                                 <summary>@LocalizationService["ManagerMoreAdministration"]</summary>
                                 @if (canViewRoles)
                                 {
-                                    <a href="/administration/roles" @onclick="CloseMenu">@LocalizationService["Roles"]</a>
+                                    <a href="/administration/roles" @onclick="CloseMenu"><i class="bi bi-person-badge" aria-hidden="true"></i><span>@LocalizationService["Roles"]</span></a>
                                 }
                                 @if (canManagePermissions)
                                 {
-                                    <a href="/administration/permission-management" @onclick="CloseMenu">@LocalizationService["Permissions"]</a>
+                                    <a href="/administration/permission-management" @onclick="CloseMenu"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>@LocalizationService["Permissions"]</span></a>
                                 }
                             </details>
                         }

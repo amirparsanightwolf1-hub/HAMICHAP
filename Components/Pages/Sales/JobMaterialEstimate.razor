@@ -3,18 +3,18 @@
 @inject LocalizationService LocalizationService
 
 <section class="border rounded p-3 mt-3">
-    <strong>@T("Material consumption estimate", "برآورد مصرف مواد")</strong>
+    <strong><i class="bi bi-calculator" aria-hidden="true"></i> @T("Material consumption estimate", "برآورد مصرف مواد")</strong>
     <div class="row g-2 mt-2">
         @if (Roll is not null)
         {
             <div class="col-md-4">
-                <label class="form-label">@T("Label dimensions unit", "واحد ابعاد لیبل")</label>
+                <label class="form-label"><i class="bi bi-rulers app-field-icon" aria-hidden="true"></i> @T("Label dimensions unit", "واحد ابعاد لیبل")</label>
                 <select class="form-select" @bind="Plan.DimensionUnit" @bind:after="Recalculate">
                     <option value="">@T("Select unit", "انتخاب واحد")</option><option value="mm">mm</option><option value="cm">cm</option>
                 </select>
             </div>
             <div class="col-md-4">
-                <label class="form-label">@T("Labels across web (lanes)", "تعداد لیبل در عرض")</label>
+                <label class="form-label"><i class="bi bi-grid-3x3-gap app-field-icon" aria-hidden="true"></i> @T("Labels across web (lanes)", "تعداد لیبل در عرض")</label>
                 <InputSelect class="form-select" @bind-Value="Plan.Lanes" @bind-Value:after="Recalculate">
                     <option value="">@T("Select lanes", "انتخاب تعداد")</option>
                     @for (var i = 1; i <= 20; i++)
@@ -24,31 +24,31 @@
                 </InputSelect>
             </div>
             <div class="col-md-4">
-                <label class="form-label">@T("Web width (mm)", "عرض رول (میلی‌متر)")</label>
+                <label class="form-label"><i class="bi bi-arrow-left-right app-field-icon" aria-hidden="true"></i> @T("Web width (mm)", "عرض رول (میلی‌متر)")</label>
                 <InputNumber class="form-control" min="1" @bind-Value="Plan.WebWidthMm" @bind-Value:after="Recalculate" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">@T("Material grammage (g/m²)", "گرماژ مواد")</label>
+                <label class="form-label"><i class="bi bi-speedometer2 app-field-icon" aria-hidden="true"></i> @T("Material grammage (g/m²)", "گرماژ مواد")</label>
                 <InputNumber class="form-control" min="1" @bind-Value="Plan.RollGrammage" @bind-Value:after="Recalculate" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">@T("Labels per finished roll", "تعداد لیبل در رول نهایی")</label>
+                <label class="form-label"><i class="bi bi-disc app-field-icon" aria-hidden="true"></i> @T("Labels per finished roll", "تعداد لیبل در رول نهایی")</label>
                 <InputNumber class="form-control" min="1" @bind-Value="Plan.LabelsPerFinishedRoll" @bind-Value:after="Recalculate" />
             </div>
         }
         else
         {
             <div class="col-md-4">
-                <label class="form-label">@T("Finished quantity (optional)", "تعداد محصول نهایی (اختیاری)")</label>
+                <label class="form-label"><i class="bi bi-123 app-field-icon" aria-hidden="true"></i> @T("Finished quantity (optional)", "تعداد محصول نهایی (اختیاری)")</label>
                 <InputNumber class="form-control" min="1" @bind-Value="Plan.FinishedQuantity" @bind-Value:after="Recalculate" />
             </div>
             <div class="col-md-4">
-                <label class="form-label">@T("Products per sheet (optional)", "تعداد محصول در هر شیت (اختیاری)")</label>
+                <label class="form-label"><i class="bi bi-grid-3x3 app-field-icon" aria-hidden="true"></i> @T("Products per sheet (optional)", "تعداد محصول در هر شیت (اختیاری)")</label>
                 <InputNumber class="form-control" min="1" @bind-Value="Plan.ProductsPerSheet" @bind-Value:after="Recalculate" />
             </div>
         }
         <div class="col-md-4">
-            <label class="form-label">@T("Extra material allowance (%)", "درصد مواد اضافه برای ضایعات")</label>
+            <label class="form-label"><i class="bi bi-percent app-field-icon" aria-hidden="true"></i> @T("Extra material allowance (%)", "درصد مواد اضافه برای ضایعات")</label>
             <InputNumber class="form-control" min="0" max="100" step="1" @bind-Value="Plan.WastePercent" @bind-Value:after="Recalculate" />
         </div>
     </div>

@@ -30,28 +30,28 @@
         <h3 id="@(IdPrefix + "-identity-heading")" class="profile-heading"><i class="bi bi-person-vcard" aria-hidden="true"></i> @T("Identity and registration", "اطلاعات هویتی و ثبتی")</h3>
         <div class="profile-grid">
             <div class="profile-field profile-field-wide">
-                <label for="@(IdPrefix + "-name")">@(Profile.CustomerType == CustomerType.Legal ? T("Registered company name", "نام ثبتی شرکت") : T("Full name", "نام و نام خانوادگی")) <span class="profile-required">*</span></label>
+                <label for="@(IdPrefix + "-name")"><i class="bi bi-person-vcard app-field-icon" aria-hidden="true"></i> @(Profile.CustomerType == CustomerType.Legal ? T("Registered company name", "نام ثبتی شرکت") : T("Full name", "نام و نام خانوادگی")) <span class="profile-required">*</span></label>
                 <input id="@(IdPrefix + "-name")" class="form-control" @bind="Profile.Name" @bind:event="oninput" @bind:after="NotifyChanged" />
             </div>
             @if (Profile.CustomerType == CustomerType.Natural)
             {
             <div class="profile-field">
-                <label for="@(IdPrefix + "-national-id")">@T("National ID number", "کد ملی")</label>
+                <label for="@(IdPrefix + "-national-id")"><i class="bi bi-person-badge app-field-icon" aria-hidden="true"></i> @T("National ID number", "کد ملی")</label>
                 <InputText id="@(IdPrefix + "-national-id")" class="form-control" dir="ltr" inputmode="numeric" @bind-Value="Profile.NationalId" />
             </div>
             }
             else if (Profile.CustomerType == CustomerType.Legal)
             {
             <div class="profile-field">
-                <label for="@(IdPrefix + "-national-code")">@T("National code", "شناسه ملی")</label>
+                <label for="@(IdPrefix + "-national-code")"><i class="bi bi-building app-field-icon" aria-hidden="true"></i> @T("National code", "شناسه ملی")</label>
                 <InputText id="@(IdPrefix + "-national-code")" class="form-control" dir="ltr" inputmode="numeric" @bind-Value="Profile.NationalCode" />
             </div>
             <div class="profile-field">
-                <label for="@(IdPrefix + "-economic-code")">@T("Economic code", "کد اقتصادی")</label>
+                <label for="@(IdPrefix + "-economic-code")"><i class="bi bi-receipt app-field-icon" aria-hidden="true"></i> @T("Economic code", "کد اقتصادی")</label>
                 <InputText id="@(IdPrefix + "-economic-code")" class="form-control" dir="ltr" @bind-Value="Profile.EconomicCode" />
             </div>
             <div class="profile-field">
-                <label for="@(IdPrefix + "-registration")">@T("Registration number", "شماره ثبت")</label>
+                <label for="@(IdPrefix + "-registration")"><i class="bi bi-file-earmark-text app-field-icon" aria-hidden="true"></i> @T("Registration number", "شماره ثبت")</label>
                 <InputText id="@(IdPrefix + "-registration")" class="form-control" dir="ltr" @bind-Value="Profile.RegistrationNumber" />
             </div>
             }
@@ -63,20 +63,20 @@
             @if (Profile.CustomerType == CustomerType.Legal)
             {
             <div class="profile-field profile-field-wide">
-                <label for="@(IdPrefix + "-contact")">@T("Contact person", "نام رابط شرکت")</label>
+                <label for="@(IdPrefix + "-contact")"><i class="bi bi-person-lines-fill app-field-icon" aria-hidden="true"></i> @T("Contact person", "نام رابط شرکت")</label>
                 <InputText id="@(IdPrefix + "-contact")" class="form-control" @bind-Value="Profile.ContactPerson" />
             </div>
             }
             <div class="profile-field">
-                <label for="@(IdPrefix + "-mobile")">@T("Mobile number", "تلفن همراه")</label>
+                <label for="@(IdPrefix + "-mobile")"><i class="bi bi-phone app-field-icon" aria-hidden="true"></i> @T("Mobile number", "تلفن همراه")</label>
                 <InputText id="@(IdPrefix + "-mobile")" class="form-control" type="tel" dir="ltr" autocomplete="tel-national" @bind-Value="Profile.Mobile" />
             </div>
             <div class="profile-field">
-                <label for="@(IdPrefix + "-phone")">@T("Landline phone", "تلفن ثابت")</label>
+                <label for="@(IdPrefix + "-phone")"><i class="bi bi-telephone app-field-icon" aria-hidden="true"></i> @T("Landline phone", "تلفن ثابت")</label>
                 <InputText id="@(IdPrefix + "-phone")" class="form-control" type="tel" dir="ltr" @bind-Value="Profile.Phone" />
             </div>
             <div class="profile-field">
-                <label for="@(IdPrefix + "-email")">@T("Email address", "ایمیل")</label>
+                <label for="@(IdPrefix + "-email")"><i class="bi bi-envelope app-field-icon" aria-hidden="true"></i> @T("Email address", "ایمیل")</label>
                 <InputText id="@(IdPrefix + "-email")" class="form-control" type="email" dir="ltr" autocomplete="email" @bind-Value="Profile.Email" />
             </div>
         </div>
@@ -85,19 +85,19 @@
         <h3 id="@(IdPrefix + "-address-heading")" class="profile-heading"><i class="bi bi-geo-alt" aria-hidden="true"></i> @T("Address", "نشانی")</h3>
         <div class="profile-grid">
             <div class="profile-field">
-                <label for="@(IdPrefix + "-province")">@T("Province / state", "استان")</label>
+                <label for="@(IdPrefix + "-province")"><i class="bi bi-map app-field-icon" aria-hidden="true"></i> @T("Province / state", "استان")</label>
                 <InputText id="@(IdPrefix + "-province")" class="form-control" autocomplete="address-level1" @bind-Value="Profile.Province" />
             </div>
             <div class="profile-field">
-                <label for="@(IdPrefix + "-city")">@T("City", "شهر")</label>
+                <label for="@(IdPrefix + "-city")"><i class="bi bi-geo-alt app-field-icon" aria-hidden="true"></i> @T("City", "شهر")</label>
                 <InputText id="@(IdPrefix + "-city")" class="form-control" autocomplete="address-level2" @bind-Value="Profile.City" />
             </div>
             <div class="profile-field">
-                <label for="@(IdPrefix + "-postal")">@T("Postal code", "کد پستی")</label>
+                <label for="@(IdPrefix + "-postal")"><i class="bi bi-mailbox app-field-icon" aria-hidden="true"></i> @T("Postal code", "کد پستی")</label>
                 <InputText id="@(IdPrefix + "-postal")" class="form-control" dir="ltr" autocomplete="postal-code" @bind-Value="Profile.PostalCode" />
             </div>
             <div class="profile-field profile-field-wide">
-                <label for="@(IdPrefix + "-address")">@T("Full address", "نشانی کامل")</label>
+                <label for="@(IdPrefix + "-address")"><i class="bi bi-pin-map app-field-icon" aria-hidden="true"></i> @T("Full address", "نشانی کامل")</label>
                 <InputText id="@(IdPrefix + "-address")" class="form-control" autocomplete="street-address" @bind-Value="Profile.Address" />
             </div>
         </div>

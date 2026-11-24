@@ -108,7 +108,7 @@
             </div>
             <div class="card-body">
                 <div class="order-info-grid">
-                    <label class="form-label">@LocalizationService["Customer"]</label>
+                    <label class="form-label"><i class="bi bi-person app-field-icon" aria-hidden="true"></i> @LocalizationService["Customer"]</label>
                     <div>
                         @if (!isCreatingCustomer)
                         {
@@ -139,7 +139,7 @@
                         <div style="grid-column:1 / -1"><CustomerProfileFields Profile="newCustomerProfile" IdPrefix="sheet-new-customer" Changed="StateHasChanged" /></div>
                     }
 
-                    <label class="form-label">@LocalizationService["JobTitle"]</label>
+                    <label class="form-label"><i class="bi bi-tag app-field-icon" aria-hidden="true"></i> @LocalizationService["JobTitle"]</label>
                     <InputText class="form-control" @bind-Value="spec.JobTitle" />
                     <div style="grid-column: 1 / -1;">
                         <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
@@ -149,7 +149,7 @@
                                                 TargetQuotationId="@TargetQuotationId" />
                     </div>
 
-                    <label class="form-label">@LocalizationService["Referrer"]</label>
+                    <label class="form-label"><i class="bi bi-person-check app-field-icon" aria-hidden="true"></i> @LocalizationService["Referrer"]</label>
                     <InputText class="form-control" @bind-Value="spec.Referrer" />
 
                 </div>
@@ -163,7 +163,7 @@
             </div>
             <div class="card-body">
                 <div class="order-info-grid">
-                    <label class="form-label">@LocalizationService["PaperType"]</label>
+                    <label class="form-label"><i class="bi bi-layers app-field-icon" aria-hidden="true"></i> @LocalizationService["PaperType"]</label>
                     <div>
                         <input class="form-control" list="sheet-paper-types" @bind="spec.PaperType" placeholder="@LocalizationService["SelectOrType"]" />
                         <datalist id="sheet-paper-types">
@@ -179,13 +179,13 @@
                         <small class="text-muted">@LocalizationService["PaperTypeHelp"]</small>
                     </div>
 
-                    <label class="form-label">@LocalizationService["Zinc"]</label>
+                    <label class="form-label"><i class="bi bi-grid-3x3 app-field-icon" aria-hidden="true"></i> @LocalizationService["Zinc"]</label>
                     <input class="form-control" value="@PlateCount" readonly />
 
-                    <label class="form-label job-edit-quantity-label">@LocalizationService["PrintRunSheets"]</label>
+                    <label class="form-label job-edit-quantity-label"><i class="bi bi-files app-field-icon" aria-hidden="true"></i> @LocalizationService["PrintRunSheets"]</label>
                     <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.PrintRunSheets" />
 
-                    <label class="form-label" for="sheet-before-cut-length">@ToolingText("Size before cut (cm)", "ابعاد قبل از برش (سانتی‌متر)")</label>
+                    <label class="form-label" for="sheet-before-cut-length"><i class="bi bi-rulers app-field-icon" aria-hidden="true"></i> @ToolingText("Size before cut (cm)", "ابعاد قبل از برش (سانتی‌متر)")</label>
                     <div class="input-group" dir="ltr" role="group" aria-label="@ToolingText("Size before cut (cm)", "ابعاد قبل از برش (سانتی‌متر)")">
                         <InputNumber id="sheet-before-cut-length" class="form-control" style="min-width:0" min="0" step="any"
                                      placeholder="@ToolingText("Length", "طول")" aria-label="@LocalizationService["BeforeCutLengthCm"]" @bind-Value="spec.BeforeCutLengthCm" />
@@ -194,7 +194,7 @@
                                      placeholder="@ToolingText("Width", "عرض")" aria-label="@LocalizationService["BeforeCutWidthCm"]" @bind-Value="spec.BeforeCutWidthCm" />
                     </div>
 
-                    <label class="form-label" for="sheet-after-cut-length">@ToolingText("Size after cut (cm)", "ابعاد بعد از برش (سانتی‌متر)")</label>
+                    <label class="form-label" for="sheet-after-cut-length"><i class="bi bi-rulers app-field-icon" aria-hidden="true"></i> @ToolingText("Size after cut (cm)", "ابعاد بعد از برش (سانتی‌متر)")</label>
                     <div class="input-group" dir="ltr" role="group" aria-label="@ToolingText("Size after cut (cm)", "ابعاد بعد از برش (سانتی‌متر)")">
                         <InputNumber id="sheet-after-cut-length" class="form-control" style="min-width:0" min="0" step="any"
                                      placeholder="@ToolingText("Length", "طول")" aria-label="@LocalizationService["CutLengthCm"]" @bind-Value="spec.CutLengthCm" />
@@ -204,13 +204,13 @@
                     </div>
 
 
-                    <label class="form-label">@LocalizationService["Grammage"]</label>
+                    <label class="form-label"><i class="bi bi-speedometer2 app-field-icon" aria-hidden="true"></i> @LocalizationService["Grammage"]</label>
                     <InputNumber class="form-control" @bind-Value="spec.Grammage" />
 
-                    <label class="form-label job-edit-quantity-label">@LocalizationService["SheetCount"]</label>
+                    <label class="form-label job-edit-quantity-label"><i class="bi bi-123 app-field-icon" aria-hidden="true"></i> @LocalizationService["SheetCount"]</label>
                     <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.SheetCount" />
 
-                    <label class="form-label">@LocalizationService["ProductionLocation"]</label>
+                    <label class="form-label"><i class="bi bi-geo-alt app-field-icon" aria-hidden="true"></i> @LocalizationService["ProductionLocation"]</label>
                     <div>
                         <input class="form-control" list="sheet-production-locations" @bind="spec.ProductionLocation" placeholder="@LocalizationService["SelectOrEnterLocation"]" />
                         <datalist id="sheet-production-locations">
@@ -220,7 +220,7 @@
                         </datalist>
                     </div>
 
-                    <label class="form-label">@LocalizationService["PaymentMethod"]</label>
+                    <label class="form-label"><i class="bi bi-credit-card app-field-icon" aria-hidden="true"></i> @LocalizationService["PaymentMethod"]</label>
                     <div>
                         <input class="form-control" list="sheet-payment-methods" @bind="spec.PaymentMethod" placeholder="@LocalizationService["SelectOrEnterPaymentMethod"]" />
                         <datalist id="sheet-payment-methods">
@@ -231,7 +231,7 @@
                         </datalist>
                     </div>
 
-                    <label class="form-label">@LocalizationService["PrintingAndColorNotes"]</label>
+                    <label class="form-label"><i class="bi bi-chat-left-text app-field-icon" aria-hidden="true"></i> @LocalizationService["PrintingAndColorNotes"]</label>
                     <InputText class="form-control" @bind-Value="spec.PrintingNotes" placeholder="@LocalizationService["PrintingNotesPlaceholder"]" />
 
                 </div>
@@ -288,19 +288,19 @@
                 </div>
 
                 <div class="order-info-grid mt-3">
-                    <label class="form-label" for="front-pantone-colors">@LocalizationService["FrontPantoneColors"]</label>
+                    <label class="form-label" for="front-pantone-colors"><i class="bi bi-palette app-field-icon" aria-hidden="true"></i> @LocalizationService["FrontPantoneColors"]</label>
                     <JobPantonePicker Colors="frontPantoneColors" IdPrefix="front-pantone" Changed="RefreshPlateCount" />
 
-                    <label class="form-label" for="back-pantone-colors">@LocalizationService["BackPantoneColors"]</label>
+                    <label class="form-label" for="back-pantone-colors"><i class="bi bi-palette app-field-icon" aria-hidden="true"></i> @LocalizationService["BackPantoneColors"]</label>
                     <JobPantonePicker Colors="backPantoneColors" IdPrefix="back-pantone" Changed="RefreshPlateCount" />
 
-                    <label class="form-label" for="mixed-front-colors">@LocalizationService["MixedFrontColors"]</label>
+                    <label class="form-label" for="mixed-front-colors"><i class="bi bi-droplet-half app-field-icon" aria-hidden="true"></i> @LocalizationService["MixedFrontColors"]</label>
                     <InputText id="mixed-front-colors" class="form-control" @bind-Value="mixedFrontColors" placeholder="@LocalizationService["EnterMixedFrontColors"]" />
 
-                    <label class="form-label" for="mixed-back-colors">@LocalizationService["MixedBackColors"]</label>
+                    <label class="form-label" for="mixed-back-colors"><i class="bi bi-droplet-half app-field-icon" aria-hidden="true"></i> @LocalizationService["MixedBackColors"]</label>
                     <InputText id="mixed-back-colors" class="form-control" @bind-Value="mixedBackColors" placeholder="@LocalizationService["EnterMixedBackColors"]" />
 
-                    <label class="form-label" for="finish-type">@LocalizationService["FinishType"]</label>
+                    <label class="form-label" for="finish-type"><i class="bi bi-stars app-field-icon" aria-hidden="true"></i> @LocalizationService["FinishType"]</label>
                     <InputSelect id="finish-type" class="form-select" @bind-Value="finishType">
                         <option value="">@LocalizationService["SelectFinishType"]</option>
                         <option value="Hybrid">@LocalizationService["FinishHybrid"]</option>
@@ -308,7 +308,7 @@
                         <option value="Clear varnish">@LocalizationService["FinishClearVarnish"]</option>
                     </InputSelect>
 
-                    <label class="form-label" for="plate-provider">@LocalizationService["PlateProvider"]</label>
+                    <label class="form-label" for="plate-provider"><i class="bi bi-person-check app-field-icon" aria-hidden="true"></i> @LocalizationService["PlateProvider"]</label>
                     <InputSelect id="plate-provider" class="form-select" @bind-Value="plateProvider">
                         <option value="">@LocalizationService["SelectPlateProvider"]</option>
                         <option value="Press">@LocalizationService["PlateProviderPress"]</option>

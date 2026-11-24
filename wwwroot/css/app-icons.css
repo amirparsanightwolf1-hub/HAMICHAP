@@ -1,0 +1,6 @@
+/* Visual cues preserve the existing text labels. */
+.app-field-icon { display: inline-block; margin-inline-end: .25rem; opacity: .85; font-size: .95em; vertical-align: baseline; }
+.app-layout .nav-more-group a { display: flex; align-items: center; gap: .55rem; }
+.app-layout .nav-more-group a > .bi { flex: 0 0 1.1em; text-align: center; }
+.app-layout .menu-group-label > .bi { margin-inline-end: .3rem; }
+.btn > .bi:first-child, .login-button > .bi:first-child { margin-inline-end: .25rem; }

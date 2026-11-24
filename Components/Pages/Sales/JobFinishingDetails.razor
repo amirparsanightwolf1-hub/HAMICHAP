@@ -7,7 +7,7 @@
         @foreach (var field in Fields)
         {
             <div @key="field.Key">
-                <label class="form-label small" for="@(IdPrefix + "-" + field.Key)">@T(field.En, field.Fa)</label>
+                <label class="form-label small" for="@(IdPrefix + "-" + field.Key)"><i class="bi bi-sliders" aria-hidden="true"></i> @T(field.En, field.Fa)</label>
                 <select id="@(IdPrefix + "-" + field.Key)" class="form-select form-select-sm" value="@Get(field.Key)" @onchange="args => Set(field.Key, args)">
                     <option value="">@T("Select (optional)", "انتخاب (اختیاری)")</option>
                     @foreach (var option in field.Options)
