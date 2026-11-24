@@ -5,6 +5,8 @@
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
+@using SalesDeliveryModel = HamiChap_MES_ERP.Models.Sales.SalesDelivery
+@using SalesDeliveryLineModel = HamiChap_MES_ERP.Models.Sales.SalesDeliveryLine
 @using HamiChap_MES_ERP.Models.Sales.Enums
 @using HamiChap_MES_ERP.Models.Production
 @using HamiChap_MES_ERP.Models.Production.Quality
@@ -140,7 +142,7 @@
             }
             // Delivery/invoice lines trace to quotation lines. Include unlinked historical
             // lines only when their parent quote is the job's primary quotation.
-            var deliveries = await db.Set<SalesDelivery>().AsNoTracking()
+            var deliveries = await db.Set<SalesDeliveryModel>().AsNoTracking()
                 .Where(x => orderIds.Contains(x.SalesOrderId) &&
                     (x.Lines.Any(l => l.SalesOrderLine.QuotationLine != null && l.SalesOrderLine.QuotationLine.SourceRequestId == Id) ||
                      x.SalesOrder.Quotation.SalesRequestId == Id &&
@@ -156,7 +158,7 @@
             }
             if (canInventory)
             {
-                var deliveryDocumentIds = await db.Set<SalesDeliveryLine>().AsNoTracking()
+                var deliveryDocumentIds = await db.Set<SalesDeliveryLineModel>().AsNoTracking()
                     .Where(x => deliveryIds.Contains(x.SalesDeliveryId) && x.InventoryDocumentId.HasValue)
                     .Select(x => x.InventoryDocumentId!.Value).ToListAsync();
                 var documents = await db.InventoryDocuments.AsNoTracking()
