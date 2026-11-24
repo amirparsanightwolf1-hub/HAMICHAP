@@ -279,7 +279,7 @@
     private bool showProductionDashboard;
     private bool showOperatorWorkspace;
     private string NavClass(string path) =>
-        "menu-button" + (Navigation.ToBaseRelativePath(Navigation.Uri).TrimEnd('/') ==
+        "menu-button" + (Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].TrimEnd('/') ==
             path.TrimStart('/').TrimEnd('/') ? " active" : "");
 
     protected override async Task OnInitializedAsync()
@@ -305,11 +305,11 @@
         object? sender,
         LocationChangedEventArgs e)
     {
-        if (menuOpen)
+        _ = InvokeAsync(() =>
         {
             menuOpen = false;
-            InvokeAsync(StateHasChanged);
-        }
+            StateHasChanged();
+        });
     }
 
     private async void OnAuthenticationStateChanged(
