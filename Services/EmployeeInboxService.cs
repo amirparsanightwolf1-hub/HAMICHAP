@@ -48,7 +48,7 @@ public sealed class EmployeeInboxService(IDbContextFactory<ApplicationDbContext>
             .Where(x => x.AvailableQuantity <= x.Threshold).ToDictionary(x => x.ItemId);
         var active = db.EmployeeInboxItems.Where(x => x.RecipientUserId == userId && x.Kind == LowStock);
         var activeIds = await active.AsNoTracking().Select(x => x.SourceId).ToListAsync();
-        if (activeIds.Count == current.Count && activeIds.All(x => x.HasValue && x.Value >= int.MinValue &&
+        if (activeIds.Count == current.Count && activeIds.Distinct().Count() == current.Count && activeIds.All(x => x.HasValue && x.Value >= int.MinValue &&
             x.Value <= int.MaxValue && current.ContainsKey((int)x.Value)))
             return current;
 

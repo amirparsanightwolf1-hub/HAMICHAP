@@ -17,7 +17,7 @@ public class InventoryAlertService(IDbContextFactory<ApplicationDbContext> dbFac
         var quantities = db.InventoryBalances.AsNoTracking().UsableStock(day)
             .Where(x => x.CustomerId == null && x.Item.EnableLowStockAlert)
             .GroupBy(x => x.ItemId)
-            .Select(g => new { ItemId = g.Key, Available = g.Sum(x => x.OnHandQuantity - x.ReservedQuantity) });
+            .Select(g => new { ItemId = g.Key, Available = g.Sum(x => (decimal?)(x.OnHandQuantity - x.ReservedQuantity)) });
         // Left join preserves items that have no balance rows yet.
         return await (from item in items
                       join quantity in quantities on item.Id equals quantity.ItemId into available
@@ -26,7 +26,7 @@ public class InventoryAlertService(IDbContextFactory<ApplicationDbContext> dbFac
                       {
                           ItemId = item.Id, ItemCode = item.Code, ItemName = item.Name,
                           UnitSymbol = item.Unit.Symbol,
-                          AvailableQuantity = quantity == null ? 0m : quantity.Available,
+                          AvailableQuantity = quantity.Available ?? 0m,
                           Threshold = item.LowStockThreshold
                       }).ToListAsync(cancellationToken);
     }
