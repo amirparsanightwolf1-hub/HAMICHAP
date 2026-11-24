@@ -193,6 +193,14 @@ public sealed class WarehouseRequestService(IDbContextFactory<ApplicationDbConte
             numbers.Add(number);
         }
         request.Status = Issued;
+        if (!string.IsNullOrWhiteSpace(request.RequestedByUserId) &&
+            await db.Users.AnyAsync(x => x.Id == request.RequestedByUserId && x.IsActive))
+        {
+            var title = JobReferences.ProductionTitle(request.ProductionOrder);
+            var detail = string.Join(" · ", request.Lines.Select(x => $"{x.Item.Name}: {x.Quantity:0.###} {x.Unit.Symbol}"));
+            EmployeeInboxEvents.Add(db, new[] { request.RequestedByUserId! }, EmployeeInboxEvents.MaterialIssued, request.Id,
+                "Materials issued: " + title, detail, "مواد تحویل شد: " + title, detail, employee);
+        }
         await db.SaveChangesAsync();
         await tx.CommitAsync();
         return numbers;

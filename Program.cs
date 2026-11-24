@@ -23,6 +23,7 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<InventoryPostingService>();
 builder.Services.AddScoped<WarehouseRequestService>();
+builder.Services.AddScoped<EmployeeInboxService>();
 builder.Services.AddScoped<MaterialSettlementService>();
 builder.Services.AddScoped<ImpositionOptimizerService>();
 builder.Services.AddScoped<StockBalanceService>();

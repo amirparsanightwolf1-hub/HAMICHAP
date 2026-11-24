@@ -281,7 +281,9 @@
         </button>
 
     </div>
-            <WarehouseRequestIndicator />
+            <AuthorizeView>
+                <Authorized><EmployeeInbox /></Authorized>
+            </AuthorizeView>
             <AuthorizeView>
                 <Authorized>
                     <a class="hc-account-link" href="/Account/Manage" aria-label="@(LocalizationService.IsPersian ? "حساب کاربری" : "My account")"><i class="bi bi-person-circle" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "حساب کاربری" : "My account")</span></a>

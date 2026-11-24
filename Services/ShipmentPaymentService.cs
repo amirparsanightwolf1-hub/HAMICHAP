@@ -22,6 +22,11 @@ public sealed class ShipmentPaymentService(IDbContextFactory<ApplicationDbContex
         var existing = await db.SalesInvoices.AsNoTracking().FirstOrDefaultAsync(x => x.SalesDeliveryId == deliveryId);
         if (existing != null) return existing.Id;
         var invoice = await new SalesInvoiceService(db, new NumberSeriesService(db)).CreateForDeliveryAsync(deliveryId, employee);
+        var recipients = await EmployeeInboxEvents.RecipientsAsync(db, "Sales.Invoices.ConfirmPayment");
+        EmployeeInboxEvents.Add(db, recipients, EmployeeInboxEvents.InvoiceReady, invoice.Id,
+            "Invoice awaiting payment: " + invoice.InvoiceNumber, "Verify receipt of the full invoice amount.",
+            "فاکتور در انتظار پرداخت: " + invoice.InvoiceNumber, "دریافت کل مبلغ فاکتور را بررسی کنید.", employee);
+        await db.SaveChangesAsync();
         await tx.CommitAsync();
         return invoice.Id;
     }
@@ -41,6 +46,10 @@ public sealed class ShipmentPaymentService(IDbContextFactory<ApplicationDbContex
         invoice.PaidAtUtc = DateTime.UtcNow;
         invoice.PaidByUserId = employee;
         invoice.PaymentReference = reference;
+        var recipients = await EmployeeInboxEvents.RecipientsAsync(db, "Sales.Deliveries.View", "Sales.Deliveries.Post");
+        EmployeeInboxEvents.Add(db, recipients, EmployeeInboxEvents.ShipmentReady, invoice.Id,
+            "Paid invoice: " + invoice.InvoiceNumber, "Payment confirmed. Check the shipment queue for dispatch.",
+            "فاکتور پرداخت شده: " + invoice.InvoiceNumber, "پرداخت تأیید شد. صف ارسال را بررسی کنید.", employee);
         await db.SaveChangesAsync();
         await tx.CommitAsync();
     }

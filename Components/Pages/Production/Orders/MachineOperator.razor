@@ -846,7 +846,8 @@
             if (item == null) throw new InvalidOperationException(L["OperatorErrItemUnavailable"]);
             var notes = requestNotes.GetValueOrDefault(operationId, "").Trim();
             if (notes.Length > 1000) throw new InvalidOperationException(L["OperatorErrNotesTooLong"]);
-            db.ProductionMaterialRequests.Add(new ProductionMaterialRequest
+            await using var inboxTransaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var materialRequest = new ProductionMaterialRequest
             {
                 ProductionOrderId = step.ProductionOrderId,
                 ProductionOperationId = step.Id,
@@ -857,8 +858,16 @@
                 {
                     new() { ItemId = item.Id, UnitId = item.UnitId, Quantity = quantity, Notes = notes }
                 }
-            });
+            };
+            db.ProductionMaterialRequests.Add(materialRequest);
             await db.SaveChangesAsync();
+            var recipients = await EmployeeInboxEvents.RecipientsAsync(db, "Inventory.Documents.View", "Inventory.Stock.View", "Inventory.Documents.Post");
+            var job = HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(visibleOrders.FirstOrDefault(x => x.Id == step.ProductionOrderId) ?? step.ProductionOrder);
+            EmployeeInboxEvents.Add(db, recipients, EmployeeInboxEvents.MaterialRequest, materialRequest.Id,
+                "Material request: " + job, $"{item.Name}: {quantity:0.###} · {step.Name}",
+                "درخواست مواد: " + job, $"{item.Name}: {quantity:0.###} · {step.Name}", userId);
+            await db.SaveChangesAsync();
+            await inboxTransaction.CommitAsync();
             message = L["OperatorWarehouseSubmitted"];
             isError = false;
             requestNotes[operationId] = "";

@@ -141,6 +141,28 @@ namespace HamiChap_MES_ERP.Migrations
                     b.ToTable("Permissions");
                 });
 
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Administration.EmployeeInboxItem", b =>
+                {
+                    b.Property<long>("Id").ValueGeneratedOnAdd().HasColumnType("bigint");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    b.Property<string>("RecipientUserId").IsRequired().HasMaxLength(450).HasColumnType("nvarchar(450)");
+                    b.Property<string>("SenderUserId").HasMaxLength(450).HasColumnType("nvarchar(450)");
+                    b.Property<string>("EventKey").IsRequired().HasMaxLength(120).HasColumnType("nvarchar(120)");
+                    b.Property<string>("Kind").IsRequired().HasMaxLength(32).HasColumnType("nvarchar(32)");
+                    b.Property<long?>("SourceId").HasColumnType("bigint");
+                    b.Property<string>("Subject").IsRequired().HasMaxLength(400).HasColumnType("nvarchar(400)");
+                    b.Property<string>("SubjectFa").HasMaxLength(400).HasColumnType("nvarchar(400)");
+                    b.Property<string>("Body").IsRequired().HasColumnType("nvarchar(max)");
+                    b.Property<string>("BodyFa").HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("CreatedAtUtc").HasColumnType("datetime2");
+                    b.Property<DateTime?>("ReadAtUtc").HasColumnType("datetime2");
+                    b.Property<byte[]>("RowVersion").IsConcurrencyToken().IsRequired().ValueGeneratedOnAddOrUpdate().HasColumnType("rowversion");
+                    b.HasKey("Id");
+                    b.HasIndex("RecipientUserId", "EventKey").IsUnique();
+                    b.HasIndex("RecipientUserId", "ReadAtUtc", "CreatedAtUtc");
+                    b.ToTable("EmployeeInboxItems");
+                });
+
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Administration.RolePermission", b =>
                 {
                     b.Property<int>("Id")
@@ -2543,6 +2565,11 @@ namespace HamiChap_MES_ERP.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Administration.EmployeeInboxItem", b =>
+                {
+                    b.HasOne("ApplicationUser", null).WithMany().HasForeignKey("RecipientUserId").OnDelete(DeleteBehavior.Cascade).IsRequired();
                 });
 
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Administration.RolePermission", b =>

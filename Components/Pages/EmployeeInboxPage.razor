@@ -1,0 +1,16 @@
+@page "/inbox"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
+
+<PageTitle>@(L.IsPersian ? "صندوق پیام" : "Employee inbox")</PageTitle>
+<div class="page-container">
+    <header class="erp-page-header hc-standard-header">
+        <div class="hc-heading-content">
+            <span class="hc-heading-icon"><i class="bi bi-inbox" aria-hidden="true"></i></span>
+            <div><h1 class="erp-page-title">@(L.IsPersian ? "صندوق پیام کارمند" : "Employee inbox")</h1>
+                <p class="erp-page-subtitle">@(L.IsPersian ? "اعلان‌ها، پیام‌ها و کارهای ارجاع‌شده" : "Notifications, messages and assigned work in one place.")</p></div>
+        </div>
+    </header>
+    <EmployeeInbox FullPage="true" />
+</div>

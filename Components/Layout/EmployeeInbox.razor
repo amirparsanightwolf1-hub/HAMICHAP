@@ -1,0 +1,247 @@
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Authorization
+@using HamiChap_MES_ERP.Services
+@using static HamiChap_MES_ERP.Services.EmployeeInboxService
+@using static HamiChap_MES_ERP.Services.EmployeeInboxEvents
+@inject EmployeeInboxService Inbox
+@inject WarehouseRequestService Warehouse
+@inject AuthenticationStateProvider Auth
+@inject NavigationManager Navigation
+@inject LocalizationService L
+@inject ILogger<EmployeeInbox> Logger
+
+<div class="hc-inbox @(FullPage ? "hc-inbox-full" : "hc-inbox-quick")" @onkeydown="HandleKey">
+    @if (!FullPage)
+    {
+        <div class="d-flex align-items-center gap-1">
+            <button type="button" class="hc-inbox-trigger btn btn-outline-primary btn-sm" aria-expanded="@(open ? "true" : "false")"
+                    aria-label="@T("Open inbox", "باز کردن صندوق پیام")" @onclick="ToggleAsync">
+                <i class="bi bi-bell" aria-hidden="true"></i><span class="hc-inbox-trigger-label">@T("Inbox", "صندوق پیام")</span>
+                @if (unreadCount > 0) { <span class="hc-inbox-count" role="status">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span> }
+            </button>
+            <a class="hc-inbox-page-link btn btn-outline-secondary btn-sm" href="/inbox" title="@T("Open full inbox", "مشاهده صندوق پیام")" aria-label="@T("Open full inbox", "مشاهده صندوق پیام")"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a>
+        </div>
+    }
+    @if (FullPage || open)
+    {
+        <section class="hc-inbox-panel" aria-label="@T("Employee inbox", "صندوق پیام کارمند")">
+            <header class="hc-inbox-head">
+                <div><strong>@T("Inbox", "صندوق پیام")</strong><div class="small text-muted">@unreadCount @T("unread", "خوانده‌نشده")</div></div>
+                <div class="d-flex flex-wrap align-items-center gap-1">
+                    <button class="btn btn-outline-primary btn-sm" disabled="@busy" @onclick="ToggleComposeAsync"><i class="bi bi-pencil-square" aria-hidden="true"></i> @T("New message", "پیام جدید")</button>
+                    @if (!FullPage)
+                    {
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="() => open = false" aria-label="@T("Close inbox", "بستن صندوق پیام")"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+                    }
+                </div>
+            </header>
+            @if (!string.IsNullOrWhiteSpace(feedback))
+            {
+                <div class="alert @(failed ? "alert-danger" : "alert-success") small py-2 mb-0" role="status">@feedback</div>
+            }
+            @if (compose)
+            {
+                <section class="hc-inbox-compose">
+                    <label class="form-label">@T("Find employee", "جستجوی کارمند")</label>
+                    <div class="d-flex gap-1 mb-2"><input class="form-control form-control-sm" @bind="employeeSearch" placeholder="@T("Name or employee number", "نام یا شماره کارمندی")" /><button class="btn btn-outline-secondary btn-sm" disabled="@busy" @onclick="FindEmployeesAsync">@T("Search", "جستجو")</button></div>
+                    <label class="form-label">@T("To", "گیرنده")</label>
+                    <select class="form-select form-select-sm mb-2" @bind="recipient">
+                        <option value="">@T("Select employee", "انتخاب کارمند")</option>
+                        @foreach (var employee in employees) { <option value="@employee.Id">@employee.Name</option> }
+                    </select>
+                    <label class="form-label">@T("Subject", "موضوع")</label>
+                    <input class="form-control form-control-sm mb-2" maxlength="200" @bind="subject" @bind:event="oninput" />
+                    <label class="form-label">@T("Message", "پیام")</label>
+                    <textarea class="form-control form-control-sm mb-2" rows="4" maxlength="4000" @bind="body" @bind:event="oninput"></textarea>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" disabled="@busy" @onclick="() => compose = false">@T("Cancel", "لغو")</button>
+                        <button class="btn btn-primary btn-sm" disabled="@(busy || string.IsNullOrWhiteSpace(recipient) || string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(body))" @onclick="SendAsync"><i class="bi bi-send"></i> @T("Send", "ارسال")</button>
+                    </div>
+                </section>
+            }
+            <div class="hc-inbox-filters">
+                <button class="btn btn-sm @(unreadOnly ? "btn-outline-secondary" : "btn-primary")" disabled="@busy" @onclick="() => FilterAsync(false)">@T("Recent", "اخیر")</button>
+                <button class="btn btn-sm @(unreadOnly ? "btn-primary" : "btn-outline-secondary")" disabled="@busy" @onclick="() => FilterAsync(true)">@T("Unread", "خوانده‌نشده") (@unreadCount)</button>
+                <button class="btn btn-link btn-sm ms-auto" disabled="@(busy || unreadCount == 0)" @onclick="MarkAllAsync">@T("Mark all read", "خواندن همه")</button>
+            </div>
+            @if (loading)
+            {
+                <p class="small text-muted" role="status">@L["Loading"]</p>
+            }
+            else if (entries.Count == 0)
+            {
+                <div class="hc-inbox-empty"><i class="bi bi-inbox" aria-hidden="true"></i><p>@(unreadOnly ? T("No unread messages.", "پیام خوانده‌نشده‌ای نیست.") : T("Your inbox is empty.", "صندوق پیام شما خالی است."))</p></div>
+            }
+            <div class="hc-inbox-items">
+                @foreach (var entry in entries)
+                {
+                    <article class="hc-inbox-item @(entry.Unread ? "is-unread" : "")" @key="entry.Id">
+                        <div class="hc-inbox-item-heading">
+                            <span class="hc-inbox-item-icon"><i class="bi @Icon(entry.Kind)" aria-hidden="true"></i></span>
+                            <div class="hc-inbox-item-title">
+                                <strong>@(L.IsPersian && entry.SubjectFa != null ? entry.SubjectFa : entry.Subject)</strong>
+                                <div class="small text-muted">@(string.IsNullOrWhiteSpace(entry.Sender) ? T("System", "سیستم") : entry.Sender) · @entry.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                            </div>
+                            @if (entry.Unread) { <span class="hc-inbox-unread-dot" title="@T("Unread", "خوانده‌نشده")"></span> }
+                        </div>
+                        <div class="hc-inbox-message">@((L.IsPersian && entry.BodyFa != null ? entry.BodyFa : entry.Body))</div>
+                        @if (entry.Material is { } material)
+                        {
+                            <div class="hc-inbox-material">
+                                @foreach (var line in material.Lines)
+                                {
+                                    <div class="d-flex justify-content-between gap-2 small"><span>@line.Item · @line.Required.ToString("0.###") @line.Unit</span><span class="@(line.Available >= line.Required ? "text-success" : "text-danger")">@line.Available.ToString("0.###") @T("available", "موجود")</span></div>
+                                }
+                                @if (canIssue && material.CanIssue)
+                                {
+                                    <button type="button" class="btn btn-success btn-sm w-100 mt-1" disabled="@busy" @onclick="() => IssueAsync(entry)"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> @T("Issue now", "تحویل مواد")</button>
+                                }
+                                else if (!material.CanIssue)
+                                {
+                                    <span class="small text-warning-emphasis">@T("Waiting for stock", "در انتظار موجودی")</span>
+                                }
+                            </div>
+                        }
+                        <div class="hc-inbox-item-actions">
+                            @if (entry.Url is not null)
+                            {
+                                <button class="btn btn-outline-primary btn-sm" disabled="@busy" @onclick="() => OpenEntryAsync(entry)">@T("Open", "مشاهده")</button>
+                            }
+                            <button class="btn btn-link btn-sm" disabled="@busy" @onclick="() => SetReadAsync(entry)">@((entry.Unread ? T("Mark read", "خوانده شد") : T("Mark unread", "خوانده‌نشده")))</button>
+                        </div>
+                    </article>
+                }
+            </div>
+            @if (FullPage && entries.Count < totalCount && take < 500)
+            {
+                <button class="btn btn-outline-secondary btn-sm" disabled="@busy" @onclick="MoreAsync">@T("Show more", "نمایش بیشتر")</button>
+            }
+            @if (!FullPage)
+            {
+                <a class="btn btn-outline-primary btn-sm w-100" href="/inbox">@T("View full inbox", "مشاهده همه پیام‌ها")</a>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter] public bool FullPage { get; set; }
+    private readonly CancellationTokenSource stop = new();
+    private IReadOnlyList<Entry> entries = Array.Empty<Entry>();
+    private List<Employee> employees = new();
+    private bool open, busy, loading = true, unreadOnly, compose, canIssue, failed;
+    private int unreadCount, totalCount, take = 12;
+    private string employeeSearch = "", recipient = "", subject = "", body = "";
+    private string? feedback;
+    private bool disposed;
+    private HashSet<long> knownRequests = new();
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
+    private static string Icon(string kind) => kind switch
+    {
+        MaterialRequest => "bi-box-seam", MaterialIssued => "bi-box-arrow-right",
+        InvoiceReady => "bi-receipt", ShipmentReady => "bi-truck", _ => "bi-envelope"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (FullPage) take = 50;
+        await RunAsync(LoadAsync);
+        if (!disposed) _ = PollAsync(stop.Token);
+    }
+
+    private async Task< System.Security.Claims.ClaimsPrincipal > UserAsync() => (await Auth.GetAuthenticationStateAsync()).User;
+
+    private async Task LoadAsync()
+    {
+        var snapshot = await Inbox.ReadAsync(await UserAsync(), unreadOnly, take);
+        if (disposed) return;
+        entries = snapshot.Entries;
+        unreadCount = snapshot.UnreadCount;
+        totalCount = snapshot.TotalCount;
+        canIssue = snapshot.CanIssue;
+        var newRequests = entries.Where(x => x.Unread && x.Material != null).Select(x => x.Id).ToArray();
+        if (!FullPage && canIssue && newRequests.Any(x => !knownRequests.Contains(x))) open = true;
+        knownRequests.UnionWith(newRequests);
+    }
+
+    private async Task RunAsync(Func<Task> action)
+    {
+        if (busy || disposed) return;
+        busy = true;
+        try { await action(); }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Employee inbox action failed");
+            feedback = T("Unable to complete the inbox action. Refresh and retry.", "عملیات صندوق پیام انجام نشد. دوباره تلاش کنید.");
+            failed = true;
+        }
+        finally { busy = loading = false; }
+    }
+
+    private async Task ToggleAsync()
+    {
+        open = !open;
+        if (open) await RunAsync(LoadAsync);
+    }
+    private void HandleKey(KeyboardEventArgs args) { if (!FullPage && args.Key == "Escape") open = false; }
+    private Task FilterAsync(bool value) => RunAsync(async () => { unreadOnly = value; take = FullPage ? 50 : 12; await LoadAsync(); });
+    private Task MoreAsync() => RunAsync(async () => { take = Math.Min(take + 50, 500); await LoadAsync(); });
+    private Task SetReadAsync(Entry entry) => RunAsync(async () => { await Inbox.SetReadAsync(await UserAsync(), entry.Id, entry.Unread); await LoadAsync(); });
+    private Task MarkAllAsync() => RunAsync(async () => { await Inbox.MarkAllReadAsync(await UserAsync()); await LoadAsync(); });
+    private Task OpenEntryAsync(Entry entry) => RunAsync(async () =>
+    {
+        if (entry.Url == null) return;
+        await Inbox.SetReadAsync(await UserAsync(), entry.Id, true);
+        open = false;
+        Navigation.NavigateTo(entry.Url);
+        await LoadAsync();
+    });
+    private Task IssueAsync(Entry entry) => RunAsync(async () =>
+    {
+        if (!canIssue || entry.Material?.CanIssue != true) return;
+        var user = await UserAsync();
+        await Warehouse.IssueAsync(entry.Material.Id, user);
+        feedback = T("Materials issued. Stock updated.", "مواد تحویل شد و موجودی به‌روزرسانی شد.");
+        failed = false;
+        await Inbox.SetReadAsync(user, entry.Id, true);
+        await LoadAsync();
+    });
+    private Task ToggleComposeAsync() => RunAsync(async () =>
+    {
+        compose = !compose;
+        if (compose) employees = await Inbox.FindEmployeesAsync(await UserAsync(), employeeSearch);
+    });
+    private Task FindEmployeesAsync() => RunAsync(async () =>
+    {
+        employees = await Inbox.FindEmployeesAsync(await UserAsync(), employeeSearch);
+        if (!employees.Any(x => x.Id == recipient)) recipient = "";
+    });
+    private Task SendAsync() => RunAsync(async () =>
+    {
+        await Inbox.SendAsync(await UserAsync(), recipient, subject, body);
+        feedback = T("Message sent.", "پیام ارسال شد.");
+        failed = false;
+        subject = body = recipient = "";
+        compose = false;
+        await LoadAsync();
+    });
+    private async Task PollAsync(CancellationToken token)
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+            while (await timer.WaitForNextTickAsync(token))
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (disposed) return;
+                    await RunAsync(LoadAsync);
+                    if (!disposed) StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { if (!disposed) Logger.LogWarning(ex, "Inbox refresh stopped"); }
+    }
+    public void Dispose() { disposed = true; stop.Cancel(); stop.Dispose(); }
+}

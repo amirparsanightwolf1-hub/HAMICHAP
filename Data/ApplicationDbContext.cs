@@ -13,6 +13,7 @@ namespace HamiChap_MES_ERP.Data
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
         public DbSet<ProductionOperationEvent> ProductionOperationEvents => Set<ProductionOperationEvent>();
+        public DbSet<EmployeeInboxItem> EmployeeInboxItems => Set<EmployeeInboxItem>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -118,6 +119,18 @@ namespace HamiChap_MES_ERP.Data
 
 
             base.OnModelCreating(builder);
+            builder.Entity<EmployeeInboxItem>(b =>
+            {
+                b.Property(x => x.RecipientUserId).HasMaxLength(450);
+                b.Property(x => x.SenderUserId).HasMaxLength(450);
+                b.Property(x => x.EventKey).HasMaxLength(120);
+                b.Property(x => x.Kind).HasMaxLength(32);
+                b.Property(x => x.Subject).HasMaxLength(400);
+                b.Property(x => x.SubjectFa).HasMaxLength(400);
+                b.HasIndex(x => new { x.RecipientUserId, x.EventKey }).IsUnique();
+                b.HasIndex(x => new { x.RecipientUserId, x.ReadAtUtc, x.CreatedAtUtc });
+                b.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.RecipientUserId).OnDelete(DeleteBehavior.Cascade);
+            });
             builder.Entity<InventoryDocumentLine>().Property(x => x.ActualConsumedQuantity).HasPrecision(18, 3);
             builder.Entity<InventoryDocumentLine>().Property(x => x.ReturnedQuantity).HasPrecision(18, 3);
             builder.Entity<SalesProofRevision>(b =>
