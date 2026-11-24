@@ -23,6 +23,9 @@ public class SalesInvoice : BaseEntity
 
     public DateTime InvoiceDate { get; set; } = DateTime.Now;
     public SalesInvoiceStatus Status { get; set; } = SalesInvoiceStatus.Issued;
+    // Null is reserved for historical invoices whose type was never recorded.
+    public SalesInvoiceType? InvoiceType { get; set; }
+    public string? BuyerProfileJson { get; set; }
     public decimal Subtotal { get; set; }
     public decimal TotalAmount { get; set; }
     // Full payment confirmation by an authorized employee, not an online payment processor.

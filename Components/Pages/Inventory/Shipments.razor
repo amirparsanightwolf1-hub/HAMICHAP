@@ -36,7 +36,7 @@
         {
             <article class="card mb-3" @key="invoice.Id">
                 <div class="card-header d-flex justify-content-between gap-2 align-items-start">
-                    <div><strong>@JobReferences.Titles(invoice.Quotation, invoice.InvoiceNumber)</strong><div class="small text-muted">@invoice.Customer.Name · @invoice.InvoiceNumber</div></div>
+                    <div><strong>@JobReferences.Titles(invoice.Quotation, invoice.InvoiceNumber)</strong><div class="small text-muted">@invoice.Customer.Name · @invoice.InvoiceNumber · @InvoiceTypeLabels.Label(invoice.InvoiceType, L.IsPersian)</div></div>
                     <span class="badge @(invoice.PaidAtUtc.HasValue ? "bg-success" : "bg-warning text-dark")">@(invoice.PaidAtUtc.HasValue ? T("Paid", "پرداخت شده") : T("Awaiting payment", "در انتظار پرداخت"))</span>
                 </div>
                 <div class="card-body">

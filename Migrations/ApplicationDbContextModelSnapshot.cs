@@ -2005,6 +2005,9 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<string>("PaidByUserId").HasMaxLength(450).HasColumnType("nvarchar(450)");
                     b.Property<string>("PaymentReference").HasMaxLength(500).HasColumnType("nvarchar(500)");
 
+                    b.Property<int?>("InvoiceType").HasColumnType("int");
+                    b.Property<string>("BuyerProfileJson").HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");

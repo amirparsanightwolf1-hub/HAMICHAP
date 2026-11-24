@@ -18,8 +18,9 @@ public class SalesInvoiceService
     }
 
     // Called inside the draft invoice preparation transaction, before shipment.
-    public async Task<SalesInvoice> CreateForDeliveryAsync(long deliveryId, string userId)
+    public async Task<SalesInvoice> CreateForDeliveryAsync(long deliveryId, string userId, SalesInvoiceType invoiceType)
     {
+        if (!Enum.IsDefined(invoiceType)) throw new InvalidOperationException("Select a valid invoice type.");
         if (_db.Database.CurrentTransaction == null)
             throw new InvalidOperationException("Invoice creation must run inside an invoice preparation transaction.");
 
@@ -52,6 +53,13 @@ public class SalesInvoiceService
         if (delivery.Lines.Count == 0)
             throw new InvalidOperationException("A delivery without lines cannot be invoiced.");
 
+        string? buyerProfile = null;
+        if (invoiceType == SalesInvoiceType.Formal)
+        {
+            var customer = await _db.Customers.AsNoTracking().FirstAsync(x => x.Id == delivery.CustomerId);
+            buyerProfile = InvoiceBuyerProfile.Capture(customer);
+        }
+
         var invoice = new SalesInvoice
         {
             InvoiceNumber = await _numberSeries.GetNextNumberAsync(NumberSeriesType.SalesInvoice, useTransaction: false),
@@ -61,6 +69,8 @@ public class SalesInvoiceService
             CustomerId = delivery.CustomerId,
             InvoiceDate = DateTime.Now,
             Status = SalesInvoiceStatus.Issued,
+            InvoiceType = invoiceType,
+            BuyerProfileJson = buyerProfile,
             CreatedByUserId = userId,
             Notes = $"Prepared for shipment {delivery.DeliveryNumber}"
         };

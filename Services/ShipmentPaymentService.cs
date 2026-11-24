@@ -13,15 +13,20 @@ public sealed class ShipmentPaymentService(IDbContextFactory<ApplicationDbContex
         if (!await permissions.HasPermissionAsync(user, permission)) throw new UnauthorizedAccessException("Required permission missing.");
         return user.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new UnauthorizedAccessException();
     }
-    public async Task<long> PrepareInvoiceAsync(long deliveryId, ClaimsPrincipal user)
+    public async Task<long> PrepareInvoiceAsync(long deliveryId, ClaimsPrincipal user, SalesInvoiceType invoiceType)
     {
+        if (!Enum.IsDefined(invoiceType)) throw new InvalidOperationException("Select a valid invoice type.");
         var employee = await RequireAsync(user, "Sales.Deliveries.Create");
         await using var db = await factory.CreateDbContextAsync();
         await using var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
         if (!await db.Users.AnyAsync(x => x.Id == employee && x.IsActive)) throw new UnauthorizedAccessException();
         var existing = await db.SalesInvoices.AsNoTracking().FirstOrDefaultAsync(x => x.SalesDeliveryId == deliveryId);
-        if (existing != null) return existing.Id;
-        var invoice = await new SalesInvoiceService(db, new NumberSeriesService(db)).CreateForDeliveryAsync(deliveryId, employee);
+        if (existing != null)
+        {
+            if (existing.InvoiceType != invoiceType) throw new InvalidOperationException("An invoice has already been issued with a different or unclassified type.");
+            return existing.Id;
+        }
+        var invoice = await new SalesInvoiceService(db, new NumberSeriesService(db)).CreateForDeliveryAsync(deliveryId, employee, invoiceType);
         var recipients = await EmployeeInboxEvents.RecipientsAsync(db, "Sales.Invoices.ConfirmPayment");
         EmployeeInboxEvents.Add(db, recipients, EmployeeInboxEvents.InvoiceReady, invoice.Id,
             "Invoice awaiting payment: " + invoice.InvoiceNumber, "Verify receipt of the full invoice amount.",

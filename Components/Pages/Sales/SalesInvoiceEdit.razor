@@ -64,8 +64,13 @@
         <article class="invoice-document">
             <header class="document-header">
                 <div>
-                    <h1>@T("SalesInvoice")</h1>
-                    <p class="document-subtitle">@T("SalesInvoicePreview")</p>
+                    <h1>@(invoice.InvoiceType switch
+                    {
+                        SalesInvoiceType.Formal => PaymentText("Formal invoice", "فاکتور رسمی"),
+                        SalesInvoiceType.Informal => PaymentText("Informal invoice", "فاکتور غیررسمی"),
+                        _ => T("SalesInvoice")
+                    })</h1>
+                    <p class="document-subtitle">@InvoiceTypeLabels.Label(invoice.InvoiceType, LocalizationService.IsPersian)</p>
                 </div>
                 <div class="text-end invoice-number">
                     <div class="muted-label">@T("InvoiceNumber")</div>
@@ -82,7 +87,7 @@
                 <div><h2>@(LocalizationService.IsPersian ? "کارهای مرتبط" : "Related jobs")</h2><p class="info-value">@HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(invoice.Quotation)</p><p class="small text-muted">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(invoice.Quotation)</p></div>
                 <div>
                     <h2>@T("Customer")</h2>
-                    <p class="info-value">@(invoice.Customer?.Name ?? "—")</p>
+                    <p class="info-value">@(buyerProfile?.Name ?? invoice.Customer?.Name ?? "—")</p>
                 </div>
                 <div>
                     <h2>@T("InvoiceDate")</h2>
@@ -101,6 +106,24 @@
                     <p class="info-value">@(invoice.SalesDelivery?.DeliveryNumber ?? "—")</p>
                 </div>
             </section>
+
+            @if (invoice.InvoiceType == SalesInvoiceType.Formal && buyerProfile is { } buyer)
+            {
+                <section class="mt-4">
+                    <h2 class="section-heading">@PaymentText("Registered buyer details", "مشخصات ثبتی خریدار")</h2>
+                    <div class="info-grid">
+                        <div><h2>@PaymentText(buyer.IdentityLabel == "individual" ? "National ID" : "Company national ID", buyer.IdentityLabel == "individual" ? "کد ملی" : "شناسه ملی")</h2><p class="info-value">@ValueOrDash(buyer.IdentityNumber)</p></div>
+                        @if (buyer.IdentityLabel == "company")
+                        {
+                            <div><h2>@PaymentText("Economic code", "کد اقتصادی")</h2><p class="info-value">@ValueOrDash(buyer.EconomicCode)</p></div>
+                            <div><h2>@PaymentText("Registration number", "شماره ثبت")</h2><p class="info-value">@ValueOrDash(buyer.RegistrationNumber)</p></div>
+                        }
+                        <div><h2>@PaymentText("Address", "نشانی")</h2><p class="info-value">@ValueOrDash(buyer.Address)</p></div>
+                        <div><h2>@PaymentText("Postal code", "کد پستی")</h2><p class="info-value">@ValueOrDash(buyer.PostalCode)</p></div>
+                        <div><h2>@PaymentText("Phone", "تلفن")</h2><p class="info-value">@ValueOrDash(buyer.Phone)</p></div>
+                    </div>
+                </section>
+            }
 
             <section class="mt-4">
                 <h2 class="section-heading">@T("SalesInvoiceItems")</h2>
@@ -172,6 +195,8 @@
     [Parameter] public long Id { get; set; }
 
     private SalesInvoice? invoice;
+    private InvoiceBuyerProfile? buyerProfile;
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
     private bool isLoading = true;
     private bool canConfirm, paymentBusy;
     private string paymentReference = "";
@@ -201,6 +226,7 @@
             .Include(x => x.SalesDelivery)
             .Include(x => x.Lines).ThenInclude(x => x.Item)
             .FirstOrDefaultAsync(x => x.Id == Id);
+        buyerProfile = InvoiceBuyerProfile.Read(invoice?.BuyerProfileJson);
         isLoading = false;
     }
 

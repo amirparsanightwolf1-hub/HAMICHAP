@@ -1,4 +1,9 @@
 @page "/sales/invoices"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
 
 @using HamiChap_MES_ERP.Services
 @using HamiChap_MES_ERP.Data
@@ -26,6 +31,18 @@
         </div>
     </div>
 
+    @if (canView)
+    {
+        <div class="card mb-3"><div class="card-body d-flex flex-wrap gap-2 align-items-center">
+            <label for="invoice-type-filter" class="form-label mb-0">@Text("Invoice type", "نوع فاکتور")</label>
+            <select id="invoice-type-filter" class="form-select w-auto" @bind="typeFilter" @bind:after="ChangeFilterAsync" disabled="@isLoading">
+                <option value="">@Text("All types", "همه انواع")</option>
+                <option value="Formal">@Text("Formal", "رسمی")</option>
+                <option value="Informal">@Text("Informal", "غیررسمی")</option>
+                <option value="legacy">@Text("Legacy — unclassified", "قدیمی — نوع نامشخص")</option>
+            </select>
+        </div></div>
+    }
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
         <div class="alert alert-danger">
@@ -43,6 +60,10 @@
             </div>
         </div>
     }
+    else if (!canView)
+    {
+        <div class="alert alert-warning">@LocalizationService["AccessDenied"]</div>
+    }
     else if (totalCount == 0)
     {
         <div class="alert alert-info">
@@ -57,6 +78,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>@LocalizationService["SalesInvoices.Invoice"]</th>
+                            <th>@Text("Type", "نوع")</th>
                             <th>@LocalizationService["Common.Date"]</th>
                             <th>@LocalizationService["Common.Customer"]</th>
                             <th>@LocalizationService["SalesInvoices.Quotation"]</th>
@@ -80,6 +102,7 @@
                                     <small class="text-muted d-block">@invoice.InvoiceNumber · @HamiChap_MES_ERP.Models.Sales.JobReferences.Display(invoice.Quotation)</small>
                                 </td>
 
+                                <td>@InvoiceTypeLabels.Label(invoice.InvoiceType, LocalizationService.IsPersian)</td>
                                 <td>
                                     @invoice.InvoiceDate.ToString("yyyy-MM-dd")
                                 </td>
@@ -156,7 +179,10 @@
 
     private List<SalesInvoice> invoices = new();
 
-    private bool isLoading = true;
+    private bool isLoading = true, canView;
+    private string typeFilter = "";
+    private string Text(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private async Task ChangeFilterAsync() { currentPage = 1; await LoadAsync(); }
     private string? errorMessage;
 
     private int currentPage = 1;
@@ -179,8 +205,13 @@
 
         try
         {
-            var query = Db.SalesInvoices
-                .AsNoTracking();
+            var user = (await Auth.GetAuthenticationStateAsync()).User;
+            canView = await Permissions.HasPermissionAsync(user, "Sales.Invoices.View") || await Permissions.HasPermissionAsync(user, "Sales.Invoices.ConfirmPayment");
+            if (!canView) { invoices.Clear(); totalCount = 0; return; }
+            var query = Db.SalesInvoices.AsNoTracking();
+            if (typeFilter == "legacy") query = query.Where(x => x.InvoiceType == null);
+            else if (Enum.TryParse<SalesInvoiceType>(typeFilter, out var selected) && Enum.IsDefined(selected))
+                query = query.Where(x => x.InvoiceType == selected);
 
             totalCount = await query.CountAsync();
 

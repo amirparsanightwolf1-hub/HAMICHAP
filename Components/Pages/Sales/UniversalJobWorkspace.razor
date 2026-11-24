@@ -165,7 +165,7 @@
             if (canInvoices)
             {
                 var invoices = await db.SalesInvoices.AsNoTracking().Where(x => deliveryIds.Contains(x.SalesDeliveryId)).OrderByDescending(x => x.Id).ToListAsync();
-                sections.Add(new(T("Invoices (accounting numbers)", "فاکتورها با شماره حسابداری"), "bi-receipt-cutoff", invoices.Select(x => new DocumentRow(x.InvoiceNumber, Date(x.InvoiceDate), L.TranslateEnum(x.Status), $"/sales/invoices/edit/{x.Id}")).ToList()));
+                sections.Add(new(T("Invoices (accounting numbers)", "فاکتورها با شماره حسابداری"), "bi-receipt-cutoff", invoices.Select(x => new DocumentRow(x.InvoiceNumber, Date(x.InvoiceDate) + " · " + InvoiceTypeLabels.Label(x.InvoiceType, L.IsPersian), L.TranslateEnum(x.Status), $"/sales/invoices/edit/{x.Id}")).ToList()));
             }
             if (canInventory)
             {

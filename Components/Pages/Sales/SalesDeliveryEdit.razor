@@ -4,6 +4,7 @@
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Inventory
 @using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Models.Sales
 @using HamiChap_MES_ERP.Models.Shared
 @using HamiChap_MES_ERP.Services
 @using Microsoft.AspNetCore.Components.Authorization
@@ -89,7 +90,7 @@
                 }
                 @if (delivery.Status == SalesDeliveryStatus.Draft && linkedInvoice == null && canPrepare)
                 {
-                    <button type="button" class="btn btn-primary" disabled="@(isSaving || isPosting)" @onclick="PrepareInvoiceAsync"><i class="bi bi-receipt"></i> @Text("Create invoice", "صدور فاکتور")</button>
+                    <button type="button" class="btn btn-primary" disabled="@(isSaving || isPosting || !SelectedInvoiceType.HasValue)" @onclick="PrepareInvoiceAsync"><i class="bi bi-receipt"></i> @Text("Create invoice", "صدور فاکتور")</button>
                 }
                 @if (linkedInvoice != null)
                 {
@@ -124,6 +125,24 @@
                     linkedInvoice.PaidAtUtc == null ? Text("Awaiting full payment — shipment locked.", "در انتظار پرداخت کامل — ارسال مسدود است.") :
                     Text("Payment confirmed — ready for shipment, subject to current stock.", "پرداخت تأیید شد — آماده ارسال با بررسی موجودی."))
             </div>
+        }
+        @if (delivery.Status == SalesDeliveryStatus.Draft && linkedInvoice == null && canPrepare)
+        {
+            <section class="card mb-3">
+                <div class="card-body">
+                    <label for="invoice-type" class="form-label fw-semibold">@Text("Invoice type", "نوع فاکتور")</label>
+                    <select id="invoice-type" class="form-select" style="max-width:360px" @bind="invoiceTypeChoice" disabled="@(isPosting || isSaving)">
+                        <option value="">@Text("Select invoice type", "انتخاب نوع فاکتور")</option>
+                        <option value="Formal">@Text("Formal", "رسمی")</option>
+                        <option value="Informal">@Text("Informal", "غیررسمی")</option>
+                    </select>
+                    <p class="small text-muted mt-2 mb-0">@Text("Formal includes registered customer details; informal uses a simpler layout. Both use accepted quotation prices and require full payment before shipment. Formal requires a completed customer identity profile.", "فاکتور رسمی شامل مشخصات ثبتی مشتری و غیررسمی دارای قالب ساده‌تر است. هر دو بر اساس قیمت توافق‌شده و با پرداخت کامل پیش از ارسال هستند. برای فاکتور رسمی مشخصات هویتی مشتری را تکمیل کنید.")</p>
+                </div>
+            </section>
+        }
+        else if (linkedInvoice != null)
+        {
+            <div class="mb-3 small"><strong>@Text("Invoice type", "نوع فاکتور"):</strong> @InvoiceTypeLabels.Label(linkedInvoice.InvoiceType, L.IsPersian)</div>
         }
         <!-- Delivery Information -->
 
@@ -508,6 +527,8 @@
     private SalesDeliveryModel? delivery;
     private HamiChap_MES_ERP.Models.Sales.SalesInvoice? linkedInvoice;
     private bool canEdit, canPrepare, canPost;
+    private string invoiceTypeChoice = "";
+    private SalesInvoiceType? SelectedInvoiceType => Enum.TryParse<SalesInvoiceType>(invoiceTypeChoice, out var type) && Enum.IsDefined(type) ? type : null;
     private bool CanEditDraft => canEdit && linkedInvoice == null && delivery?.Status == SalesDeliveryStatus.Draft;
     private string Text(string en, string fa) => L.IsPersian ? fa : en;
 
@@ -626,13 +647,13 @@
 
     private async Task PrepareInvoiceAsync()
     {
-        if (delivery == null || !canPrepare || linkedInvoice != null || isPosting || isSaving) return;
+        if (delivery == null || !canPrepare || linkedInvoice != null || isPosting || isSaving || SelectedInvoiceType is not { } invoiceType) return;
         // Do not silently invoice unsaved edits.
         if (Db.ChangeTracker.HasChanges()) { errorMessage = Text("Save changes before invoicing.", "پیش از صدور فاکتور تغییرات را ذخیره کنید."); return; }
         isPosting = true;
         try
         {
-            var id = await ShipmentPayment.PrepareInvoiceAsync(delivery.Id, (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User);
+            var id = await ShipmentPayment.PrepareInvoiceAsync(delivery.Id, (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User, invoiceType);
             Navigation.NavigateTo($"/sales/deliveries/edit/{delivery.Id}", forceLoad: true);
         }
         catch (Exception ex) { errorMessage = ex.Message; }
