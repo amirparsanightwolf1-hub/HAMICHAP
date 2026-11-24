@@ -50,6 +50,7 @@ public class Quotation : BaseEntity
 
 
     public decimal FinalAmount { get; set; }
+    public string? CurrencyCode { get; set; }
 
 
 

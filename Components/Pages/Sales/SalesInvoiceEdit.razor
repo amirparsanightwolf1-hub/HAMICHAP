@@ -107,6 +107,10 @@
                 </div>
             </section>
 
+            @if (TaxSellerProfile.Read(invoice.SellerProfileJson) is { } seller)
+            {
+                <section class="mt-4"><h2 class="section-heading">@PaymentText("Registered seller", "مشخصات فروشنده")</h2><div class="info-grid"><div><h2>@PaymentText("Legal name", "نام ثبتی")</h2><p>@seller.LegalName</p></div><div><h2>@PaymentText("National ID", "شناسه ملی")</h2><p>@seller.NationalId</p></div><div><h2>@PaymentText("Economic code", "کد اقتصادی")</h2><p>@seller.EconomicCode</p></div><div><h2>@PaymentText("Address / postal code", "نشانی / کد پستی")</h2><p>@seller.Address · @seller.PostalCode</p></div></div></section>
+            }
             @if (invoice.InvoiceType == SalesInvoiceType.Formal && buyerProfile is { } buyer)
             {
                 <section class="mt-4">
@@ -152,11 +156,11 @@
                                     rowNumber++;
                                     <tr>
                                         <td class="text-center">@rowNumber</td>
-                                        <td>@(line.Item?.Name ?? $"#{line.ItemId}")</td>
+                                        <td>@(line.TaxItemName ?? line.Item?.Name ?? $"#{line.ItemId}") @if (!string.IsNullOrWhiteSpace(line.TaxItemCode)) { <div class="small text-muted">@line.TaxItemCode</div> }</td>
                                         <td>@line.Notes</td>
                                         <td class="text-end">@line.Quantity.ToString("N2")</td>
                                         <td class="text-end">@FormatAmount(line.UnitPrice)</td>
-                                        <td class="text-end">@FormatAmount(line.LineTotal)</td>
+                                        <td class="text-end">@FormatAmount(line.LineTotal) @if (line.VatRate.HasValue) { <div class="small">@PaymentText("VAT", "ارزش افزوده") @line.VatRate.Value.ToString("0.##")% · @FormatAmount(line.VatAmount ?? 0m)</div> }</td>
                                     </tr>
                                 }
                             }
@@ -170,9 +174,13 @@
                     <span>@T("Subtotal")</span>
                     <span>@FormatAmount(invoice.Subtotal)</span>
                 </div>
+                @if (invoice.VatAmount.HasValue)
+                {
+                    <div class="total-row"><span>@PaymentText("VAT", "مالیات و عوارض ارزش افزوده")</span><span>@FormatAmount(invoice.VatAmount.Value)</span></div>
+                }
                 <div class="total-row grand-total">
                     <span>@T("TotalAmount")</span>
-                    <span>@FormatAmount(invoice.TotalAmount)</span>
+                    <span>@FormatAmount(invoice.TotalAmount) @invoice.CurrencyCode</span>
                 </div>
             </section>
 

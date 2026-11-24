@@ -406,6 +406,7 @@ public static class PermissionSeeder
 
             new() { Name = "Sales.Invoices.View", Description = "View sales invoices" },
             new() { Name = "Sales.Invoices.ConfirmPayment", Description = "Confirm full payment of a sales invoice" },
+            new() { Name = "Sales.Invoices.TaxReporting", Description = "Prepare tax reports and record external submission results" },
 
             // Sales Deliveries
             // =========================

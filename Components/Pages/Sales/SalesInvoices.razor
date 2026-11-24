@@ -31,6 +31,10 @@
         </div>
     </div>
 
+    @if (canReportTax)
+    {
+        <div class="mb-3"><a class="btn btn-outline-primary" href="/sales/tax-reporting"><i class="bi bi-file-earmark-check"></i> @Text("Tax reporting", "گزارش مالیاتی")</a></div>
+    }
     @if (canView)
     {
         <div class="card mb-3"><div class="card-body d-flex flex-wrap gap-2 align-items-center">
@@ -124,7 +128,7 @@
                                 </td>
 
                                 <td class="text-end">
-                                    @invoice.TotalAmount.ToString("N2")
+                                    @invoice.TotalAmount.ToString("N2") @invoice.CurrencyCode
                                 </td>
 
                                 <td>
@@ -179,7 +183,7 @@
 
     private List<SalesInvoice> invoices = new();
 
-    private bool isLoading = true, canView;
+    private bool isLoading = true, canView, canReportTax;
     private string typeFilter = "";
     private string Text(string en, string fa) => LocalizationService.IsPersian ? fa : en;
     private async Task ChangeFilterAsync() { currentPage = 1; await LoadAsync(); }
@@ -206,7 +210,8 @@
         try
         {
             var user = (await Auth.GetAuthenticationStateAsync()).User;
-            canView = await Permissions.HasPermissionAsync(user, "Sales.Invoices.View") || await Permissions.HasPermissionAsync(user, "Sales.Invoices.ConfirmPayment");
+            canReportTax = await Permissions.HasPermissionAsync(user, "Sales.Invoices.TaxReporting");
+            canView = canReportTax || await Permissions.HasPermissionAsync(user, "Sales.Invoices.View") || await Permissions.HasPermissionAsync(user, "Sales.Invoices.ConfirmPayment");
             if (!canView) { invoices.Clear(); totalCount = 0; return; }
             var query = Db.SalesInvoices.AsNoTracking();
             if (typeFilter == "legacy") query = query.Where(x => x.InvoiceType == null);

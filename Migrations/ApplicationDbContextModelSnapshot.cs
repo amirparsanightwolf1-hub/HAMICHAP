@@ -1663,6 +1663,8 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<DateTime?>("ValidUntil")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CurrencyCode").HasMaxLength(3).HasColumnType("nvarchar(3)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -1704,6 +1706,10 @@ namespace HamiChap_MES_ERP.Migrations
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatRate").HasPrecision(5, 2).HasColumnType("decimal(5,2)");
+                    b.Property<string>("TaxItemCode").HasMaxLength(64).HasColumnType("nvarchar(64)");
+                    b.Property<string>("TaxTreatmentReason").HasMaxLength(250).HasColumnType("nvarchar(250)");
 
                     b.HasKey("Id");
 
@@ -2008,6 +2014,14 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<int?>("InvoiceType").HasColumnType("int");
                     b.Property<string>("BuyerProfileJson").HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CurrencyCode").HasMaxLength(3).HasColumnType("nvarchar(3)");
+                    b.Property<string>("SellerProfileJson").HasColumnType("nvarchar(max)");
+                    b.Property<decimal?>("VatAmount").HasPrecision(18, 2).HasColumnType("decimal(18,2)");
+                    b.Property<string>("TaxReportJson").HasColumnType("nvarchar(max)");
+                    b.Property<string>("TaxReportStatus").HasMaxLength(32).HasColumnType("nvarchar(32)");
+                    b.Property<string>("TaxAuthorityReference").HasMaxLength(250).HasColumnType("nvarchar(250)");
+                    b.Property<string>("TaxReportAuditJson").HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -2069,6 +2083,13 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal?>("VatRate").HasPrecision(5, 2).HasColumnType("decimal(5,2)");
+                    b.Property<decimal?>("VatAmount").HasPrecision(18, 2).HasColumnType("decimal(18,2)");
+                    b.Property<string>("TaxItemCode").HasMaxLength(64).HasColumnType("nvarchar(64)");
+                    b.Property<string>("TaxTreatmentReason").HasMaxLength(250).HasColumnType("nvarchar(250)");
+                    b.Property<string>("TaxItemName").HasMaxLength(400).HasColumnType("nvarchar(400)");
+                    b.Property<string>("TaxUnit").HasMaxLength(64).HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 

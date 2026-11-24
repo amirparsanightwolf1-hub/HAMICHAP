@@ -1,0 +1,143 @@
+@page "/sales/tax-reporting"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using HamiChap_MES_ERP.Services
+@using HamiChap_MES_ERP.Models.Sales
+@using static HamiChap_MES_ERP.Services.InvoiceTaxReportingService
+@inject InvoiceTaxReportingService Reports
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
+@inject LocalizationService L
+@inject ILogger<TaxReporting> Logger
+
+<PageTitle>@T("Tax reporting", "گزارش مالیاتی")</PageTitle>
+<div class="page-container">
+    <header class="erp-page-header hc-standard-header">
+        <div class="hc-heading-content"><span class="hc-heading-icon"><i class="bi bi-file-earmark-check"></i></span><div>
+            <h1 class="erp-page-title">@T("Tax reporting", "گزارش مالیاتی")</h1>
+            <p class="erp-page-subtitle">@T("Prepare invoice data and reconcile external submission results.", "آماده‌سازی اطلاعات فاکتور و تطبیق نتایج ارسال خارجی")</p>
+        </div></div>
+        <a class="btn btn-outline-secondary" href="/sales/invoices">@L["SalesInvoices"]</a>
+    </header>
+    @if (loading) { <p>@L["Loading"]</p> }
+    else if (!canView) { <div class="alert alert-warning">@L["AccessDenied"]</div> }
+    else
+    {
+        <div class="alert alert-warning">@T("No live tax-authority connection is configured. The JSON is an internal exchange package, not an official electronic invoice. Record results only after verifying them in the authority or authorized provider.", "اتصال مستقیم به سازمان مالیاتی پیکربندی نشده است. JSON بسته تبادل داخلی است و صورتحساب الکترونیکی رسمی نیست. نتیجه را فقط پس از بررسی در سامانه یا شرکت معتمد ثبت کنید.")</div>
+        @if (message != null) { <div class="alert @(failed ? "alert-danger" : "alert-success")" role="status">@message</div> }
+        <div class="card mb-3"><div class="card-body d-flex flex-wrap align-items-end gap-2">
+            <div><label class="form-label">@T("Invoice or customer", "فاکتور یا مشتری")</label><input class="form-control" @bind="search" /></div>
+            <div><label class="form-label">@T("Reporting status", "وضعیت گزارش")</label><select class="form-select" @bind="filter">
+                <option value="">@T("All", "همه")</option>
+                @foreach (var status in statuses) { <option value="@status">@StatusLabel(status)</option> }
+                <option value="legacy">@T("Legacy", "قدیمی")</option>
+            </select></div>
+            <button class="btn btn-primary" disabled="@busy" @onclick="RefreshAsync">@L["Search"]</button>
+        </div></div>
+        <div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+            <thead><tr><th>@L["SalesInvoice"]</th><th>@T("Type", "نوع")</th><th>@T("VAT", "ارزش افزوده")</th><th>@L["TotalAmount"]</th><th>@L["Status"]</th><th></th></tr></thead>
+            <tbody>@foreach (var row in rows)
+            {
+                <tr @key="row.Id">
+                    <td><strong>@row.Job</strong><div class="small text-muted">@row.Number · @row.Date.ToString("yyyy-MM-dd")</div></td>
+                    <td>@InvoiceTypeLabels.Label(row.Type, L.IsPersian)</td><td>@(row.Vat?.ToString("N2") ?? "—")</td><td>@row.Total.ToString("N2") @row.Currency</td>
+                    <td>@StatusLabel(row.Status)<div class="small text-muted">@row.Reference</div></td>
+                    <td><button class="btn btn-outline-primary btn-sm" disabled="@busy" @onclick="() => SelectAsync(row)">@T("Review", "بررسی")</button></td>
+                </tr>
+            }</tbody>
+        </table></div><div class="card-footer small text-muted">@rows.Count @T("results (latest 200 matching invoices)", "نتیجه (حداکثر ۲۰۰ فاکتور اخیر)")</div></div>
+        @if (selected != null)
+        {
+            <section class="card mt-3"><div class="card-body">
+                <h2 class="h5">@selected.Number · @selected.Job</h2>
+                <p>@StatusLabel(selected.Status)</p>
+                <button class="btn btn-primary btn-sm" disabled="@busy" @onclick="PrepareAsync">@T("Prepare / open exchange package", "آماده‌سازی / مشاهده بسته تبادل")</button>
+                @if (payload != null)
+                {
+                    <label class="form-label d-block mt-3">@T("Internal JSON — copy or save for verified provider mapping", "JSON داخلی — کپی یا ذخیره برای تبدیل توسط ارائه‌دهنده تأییدشده")</label>
+                    <textarea class="form-control font-monospace" rows="8" readonly dir="ltr">@payload</textarea>
+                    <a class="btn btn-outline-primary btn-sm mt-2" download="@($"invoice-tax-{selected.Id}.json")" href="@DataUrl">@T("Save JSON", "ذخیره JSON")</a>
+                    @if (selected.Status != "Accepted externally")
+                    {
+                        <div class="row g-2 mt-3 align-items-end">
+                            <div class="col-sm"><label class="form-label">@T("Verified external result", "نتیجه تأییدشده خارجی")</label>
+                                <select class="form-select" @bind="externalStatus"><option value="">@T("Select", "انتخاب")</option>
+                                    <option value="Submitted externally">@StatusLabel("Submitted externally")</option>
+                                    <option value="Accepted externally">@StatusLabel("Accepted externally")</option>
+                                    <option value="Rejected externally">@StatusLabel("Rejected externally")</option>
+                                </select></div>
+                            <div class="col-sm"><label class="form-label">@T("Authority/provider reference", "مرجع سازمان / شرکت معتمد")</label><input class="form-control" maxlength="250" @bind="reference" /></div>
+                            <div class="col-12"><label class="form-label">@T("Notes / rejection reason", "یادداشت / دلیل رد")</label><textarea class="form-control" rows="2" maxlength="1000" @bind="notes"></textarea></div>
+                            <div class="col-12"><button class="btn btn-success" disabled="@(busy || externalStatus == "" || string.IsNullOrWhiteSpace(reference))" @onclick="RecordAsync">@T("Record verified result", "ثبت نتیجه تأییدشده")</button></div>
+                        </div>
+                    }
+                }
+                @if (audit.Count > 0)
+                {
+                    <h3 class="h6 mt-3">@T("Reporting history", "سوابق گزارش")</h3>
+                    @foreach (var item in audit.AsEnumerable().Reverse()) { <div class="small border-bottom py-2">@item.AtUtc.ToString("yyyy-MM-dd HH:mm") UTC · @StatusLabel(item.Status) · @item.Reference · @item.Notes</div> }
+                }
+            </div></section>
+        }
+    }
+</div>
+@code {
+    private static readonly string[] statuses = { "Pending preparation", "Prepared", "Submitted externally", "Accepted externally", "Rejected externally" };
+    private List<Row> rows = new();
+    private List<AuditEvent> audit = new();
+    private Row? selected;
+    private string? payload, message;
+    private string search = "", filter = "", externalStatus = "", reference = "", notes = "";
+    private bool loading = true, canView, busy, failed;
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
+    private string StatusLabel(string value) => value switch
+    {
+        "Pending preparation" => T(value, "در انتظار آماده‌سازی"), "Prepared" => T(value, "آماده"),
+        "Submitted externally" => T(value, "ارسال خارجی ثبت شده"), "Accepted externally" => T(value, "پذیرش خارجی ثبت شده"),
+        "Rejected externally" => T(value, "رد خارجی ثبت شده"), _ => T(value, "قدیمی / نامشخص")
+    };
+    private string DataUrl => "data:application/json;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(payload ?? ""));
+    protected override Task OnInitializedAsync() => RefreshAsync();
+    private async Task RunAsync(Func<Task> action)
+    {
+        if (busy) return;
+        busy = true; message = null;
+        try { await action(); failed = false; }
+        catch (Exception ex) { Logger.LogWarning(ex, "Tax reporting action failed"); failed = true; message = ex is InvalidOperationException ? ex.Message : T("Tax reporting action failed.", "عملیات گزارش مالیاتی انجام نشد."); }
+        finally { busy = loading = false; }
+    }
+    private async Task LoadAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        canView = await Permissions.HasPermissionAsync(user, Permission);
+        rows = canView ? await Reports.ReadAsync(user, search, filter) : new();
+        if (selected != null)
+        {
+            selected = rows.FirstOrDefault(x => x.Id == selected.Id);
+            if (selected == null) { payload = null; audit.Clear(); }
+        }
+    }
+    private Task RefreshAsync() => RunAsync(LoadAsync);
+    private Task SelectAsync(Row row) => RunAsync(async () =>
+    {
+        selected = row; payload = null; externalStatus = reference = notes = "";
+        audit = await Reports.AuditAsync(row.Id, (await Auth.GetAuthenticationStateAsync()).User);
+    });
+    private Task PrepareAsync() => RunAsync(async () =>
+    {
+        if (selected == null) return;
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        payload = await Reports.PrepareAsync(selected.Id, user);
+        audit = await Reports.AuditAsync(selected.Id, user);
+        await LoadAsync();
+    });
+    private Task RecordAsync() => RunAsync(async () =>
+    {
+        if (selected == null) return;
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        await Reports.RecordExternalResultAsync(selected.Id, externalStatus, reference, notes, user);
+        audit = await Reports.AuditAsync(selected.Id, user);
+        message = T("External result recorded. No transmission was performed.", "نتیجه خارجی ثبت شد. هیچ ارسال مستقیمی انجام نشد.");
+        externalStatus = reference = notes = "";
+        await LoadAsync();
+    });
+}

@@ -24,5 +24,11 @@ public class SalesInvoiceLine : BaseEntity
     public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal LineTotal { get; set; }
+    public decimal? VatRate { get; set; }
+    public decimal? VatAmount { get; set; }
+    public string? TaxItemCode { get; set; }
+    public string? TaxTreatmentReason { get; set; }
+    public string? TaxItemName { get; set; }
+    public string? TaxUnit { get; set; }
     public string Notes { get; set; } = "";
 }

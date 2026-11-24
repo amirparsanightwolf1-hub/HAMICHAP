@@ -6,7 +6,7 @@ using HamiChap_MES_ERP.Models.Shared;
 using Microsoft.EntityFrameworkCore;
 namespace HamiChap_MES_ERP.Services;
 
-public sealed class ShipmentPaymentService(IDbContextFactory<ApplicationDbContext> factory, PermissionService permissions)
+public sealed class ShipmentPaymentService(IDbContextFactory<ApplicationDbContext> factory, PermissionService permissions, Microsoft.Extensions.Configuration.IConfiguration configuration)
 {
     private async Task<string> RequireAsync(ClaimsPrincipal user, string permission)
     {
@@ -26,7 +26,7 @@ public sealed class ShipmentPaymentService(IDbContextFactory<ApplicationDbContex
             if (existing.InvoiceType != invoiceType) throw new InvalidOperationException("An invoice has already been issued with a different or unclassified type.");
             return existing.Id;
         }
-        var invoice = await new SalesInvoiceService(db, new NumberSeriesService(db)).CreateForDeliveryAsync(deliveryId, employee, invoiceType);
+        var invoice = await new SalesInvoiceService(db, new NumberSeriesService(db)).CreateForDeliveryAsync(deliveryId, employee, invoiceType, TaxSellerProfile.FromConfiguration(configuration));
         var recipients = await EmployeeInboxEvents.RecipientsAsync(db, "Sales.Invoices.ConfirmPayment");
         EmployeeInboxEvents.Add(db, recipients, EmployeeInboxEvents.InvoiceReady, invoice.Id,
             "Invoice awaiting payment: " + invoice.InvoiceNumber, "Verify receipt of the full invoice amount.",

@@ -26,6 +26,20 @@ namespace HamiChap_MES_ERP.Data
             builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceSignature).HasMaxLength(64);
             builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceConfirmedBy).HasMaxLength(450);
 
+            builder.Entity<Quotation>().Property(x => x.CurrencyCode).HasMaxLength(3);
+            builder.Entity<QuotationLine>().Property(x => x.VatRate).HasPrecision(5, 2);
+            builder.Entity<QuotationLine>().Property(x => x.TaxItemCode).HasMaxLength(64);
+            builder.Entity<QuotationLine>().Property(x => x.TaxTreatmentReason).HasMaxLength(250);
+            builder.Entity<SalesInvoice>().Property(x => x.CurrencyCode).HasMaxLength(3);
+            builder.Entity<SalesInvoice>().Property(x => x.VatAmount).HasPrecision(18, 2);
+            builder.Entity<SalesInvoice>().Property(x => x.TaxReportStatus).HasMaxLength(32);
+            builder.Entity<SalesInvoice>().Property(x => x.TaxAuthorityReference).HasMaxLength(250);
+            builder.Entity<SalesInvoiceLine>().Property(x => x.VatRate).HasPrecision(5, 2);
+            builder.Entity<SalesInvoiceLine>().Property(x => x.VatAmount).HasPrecision(18, 2);
+            builder.Entity<SalesInvoiceLine>().Property(x => x.TaxItemCode).HasMaxLength(64);
+            builder.Entity<SalesInvoiceLine>().Property(x => x.TaxTreatmentReason).HasMaxLength(250);
+            builder.Entity<SalesInvoiceLine>().Property(x => x.TaxItemName).HasMaxLength(400);
+            builder.Entity<SalesInvoiceLine>().Property(x => x.TaxUnit).HasMaxLength(64);
             builder.Entity<SalesInvoice>().Property(x => x.Subtotal).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().Property(x => x.TotalAmount).HasPrecision(18, 2);
             builder.Entity<SalesInvoice>().Property(x => x.PaidByUserId).HasMaxLength(450);

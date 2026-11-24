@@ -50,6 +50,7 @@ builder.Services.AddScoped<SalesDeliveryService>();
 builder.Services.AddScoped<QualityInspectionService>();
 builder.Services.AddScoped<SalesInvoiceService>();
 builder.Services.AddScoped<ShipmentPaymentService>();
+builder.Services.AddScoped<InvoiceTaxReportingService>();
 builder.Services.AddScoped<ArtworkVectorizationService>();
 builder.Services.AddScoped<ArtworkGeometryPreparationService>();
 builder.Services.AddScoped<ArtworkRectangleDecompositionService>();

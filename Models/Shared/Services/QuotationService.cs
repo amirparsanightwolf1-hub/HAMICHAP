@@ -126,7 +126,7 @@ public class QuotationService
         }
 
         request.Status = SalesRequestStatus.QuotationCreated;
-        quotation.FinalAmount = quotation.Lines.Sum(x => x.TotalPrice);
+        quotation.FinalAmount = InvoiceVat.Gross(quotation);
         await _db.SaveChangesAsync();
     }
 
@@ -213,6 +213,8 @@ public class QuotationService
             throw new InvalidOperationException("This quotation cannot be sent.");
         if (quotation.Lines.Count == 0 || quotation.Lines.Any(x => x.Quantity <= 0 || x.UnitPrice <= 0))
             throw new InvalidOperationException("Complete pricing and quantities before sending.");
+        InvoiceVat.Validate(quotation);
+        quotation.FinalAmount = InvoiceVat.Gross(quotation);
         await SalesProofService.RequireAcceptedProofsAsync(_db, quotationId);
         quotation.Status = QuotationStatus.SentToCustomer;
         await _db.SaveChangesAsync();

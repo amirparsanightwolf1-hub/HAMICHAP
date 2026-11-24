@@ -154,7 +154,7 @@
                                         <td class="hc-quote-num">@FormatAmount(line.Quantity)</td>
                                         <td class="hc-quote-unit">@(line.Item?.Unit?.Name ?? "عدد")</td>
                                         <td class="hc-quote-num">@FormatAmount(line.UnitPrice)</td>
-                                        <td class="hc-quote-num"><strong>@FormatAmount(line.TotalPrice)</strong></td>
+                                        <td class="hc-quote-num"><strong>@FormatAmount(line.TotalPrice)</strong>@if (line.VatRate.HasValue) { <div class="small">VAT @line.VatRate.Value.ToString("0.##")% · @InvoiceVat.Tax(line, quotation.CurrencyCode).ToString("N2")</div> }</td>
                                     </tr>
                                 }
                             }
@@ -164,6 +164,10 @@
             </section>
 
             <section class="hc-quote-total-area">
+                @if (!string.IsNullOrWhiteSpace(quotation.CurrencyCode))
+                {
+                    <div class="small"><strong>@(LocalizationService.IsPersian ? "مبلغ خالص" : "Net amount"):</strong> @InvoiceVat.Subtotal(quotation).ToString("N2") @quotation.CurrencyCode<br /><strong>@(LocalizationService.IsPersian ? "ارزش افزوده" : "VAT"):</strong> @InvoiceVat.TotalTax(quotation).ToString("N2") @quotation.CurrencyCode</div>
+                }
                 <div class="hc-quote-total">
                     <span class="hc-quote-total-label">@T("TotalAmount")</span>
                     <strong class="hc-quote-total-amount">@FormatAmount(quotation.FinalAmount)</strong>

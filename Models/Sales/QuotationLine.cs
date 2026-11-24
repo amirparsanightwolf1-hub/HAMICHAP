@@ -33,6 +33,9 @@ public class QuotationLine : BaseEntity
 
 
     public decimal UnitPrice { get; set; }
+    public decimal? VatRate { get; set; }
+    public string? TaxItemCode { get; set; }
+    public string? TaxTreatmentReason { get; set; }
 
 
 

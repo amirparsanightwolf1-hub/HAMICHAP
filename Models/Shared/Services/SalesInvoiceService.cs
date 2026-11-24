@@ -18,7 +18,7 @@ public class SalesInvoiceService
     }
 
     // Called inside the draft invoice preparation transaction, before shipment.
-    public async Task<SalesInvoice> CreateForDeliveryAsync(long deliveryId, string userId, SalesInvoiceType invoiceType)
+    public async Task<SalesInvoice> CreateForDeliveryAsync(long deliveryId, string userId, SalesInvoiceType invoiceType, TaxSellerProfile seller)
     {
         if (!Enum.IsDefined(invoiceType)) throw new InvalidOperationException("Select a valid invoice type.");
         if (_db.Database.CurrentTransaction == null)
@@ -53,6 +53,11 @@ public class SalesInvoiceService
         if (delivery.Lines.Count == 0)
             throw new InvalidOperationException("A delivery without lines cannot be invoiced.");
 
+        InvoiceVat.Validate(quotation);
+        if (quotation.CurrencyCode != seller.CurrencyCode)
+            throw new InvalidOperationException("Accepted quotation currency does not match the configured tax seller currency.");
+        if (quotation.FinalAmount != InvoiceVat.Gross(quotation))
+            throw new InvalidOperationException("Accepted quotation totals do not match its VAT breakdown. Reconcile with accounting before invoicing.");
         string? buyerProfile = null;
         if (invoiceType == SalesInvoiceType.Formal)
         {
@@ -71,6 +76,9 @@ public class SalesInvoiceService
             Status = SalesInvoiceStatus.Issued,
             InvoiceType = invoiceType,
             BuyerProfileJson = buyerProfile,
+            CurrencyCode = quotation.CurrencyCode,
+            SellerProfileJson = System.Text.Json.JsonSerializer.Serialize(seller),
+            TaxReportStatus = "Pending preparation",
             CreatedByUserId = userId,
             Notes = $"Prepared for shipment {delivery.DeliveryNumber}"
         };
@@ -104,7 +112,9 @@ public class SalesInvoiceService
             quantityBeingInvoicedByQuotationLine[quoteLine.Id] =
                 alreadyAddedForThisDelivery + deliveryLine.Quantity;
 
-            var total = decimal.Round(deliveryLine.Quantity * quoteLine.UnitPrice, 2, MidpointRounding.AwayFromZero);
+            var allocation = InvoiceVat.Allocate(quoteLine, alreadyInvoiced + alreadyAddedForThisDelivery,
+                deliveryLine.Quantity, quotation.CurrencyCode!);
+            var item = await _db.Items.AsNoTracking().Include(x => x.Unit).FirstAsync(x => x.Id == quoteLine.ItemId);
             invoice.Lines.Add(new SalesInvoiceLine
             {
                 SalesDeliveryLineId = deliveryLine.Id,
@@ -113,13 +123,20 @@ public class SalesInvoiceService
                 UnitId = deliveryLine.UnitId,
                 Quantity = deliveryLine.Quantity,
                 UnitPrice = quoteLine.UnitPrice,
-                LineTotal = total,
+                LineTotal = allocation.Net,
+                VatRate = quoteLine.VatRate,
+                VatAmount = allocation.Vat,
+                TaxItemCode = quoteLine.TaxItemCode!.Trim(),
+                TaxTreatmentReason = quoteLine.TaxTreatmentReason?.Trim(),
+                TaxItemName = item.Name.Length <= 400 ? item.Name : item.Name[..400],
+                TaxUnit = item.Unit.Symbol.Length <= 64 ? item.Unit.Symbol : item.Unit.Symbol[..64],
                 Notes = string.IsNullOrWhiteSpace(deliveryLine.Notes) ? quoteLine.Notes : deliveryLine.Notes
             });
         }
 
         invoice.Subtotal = invoice.Lines.Sum(x => x.LineTotal);
-        invoice.TotalAmount = invoice.Subtotal;
+        invoice.VatAmount = invoice.Lines.Sum(x => x.VatAmount ?? 0m);
+        invoice.TotalAmount = invoice.Subtotal + invoice.VatAmount.Value;
         _db.SalesInvoices.Add(invoice);
         await _db.SaveChangesAsync();
         return invoice;

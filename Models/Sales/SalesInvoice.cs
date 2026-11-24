@@ -26,6 +26,13 @@ public class SalesInvoice : BaseEntity
     // Null is reserved for historical invoices whose type was never recorded.
     public SalesInvoiceType? InvoiceType { get; set; }
     public string? BuyerProfileJson { get; set; }
+    public string? CurrencyCode { get; set; }
+    public string? SellerProfileJson { get; set; }
+    public decimal? VatAmount { get; set; }
+    public string? TaxReportJson { get; set; }
+    public string? TaxReportStatus { get; set; }
+    public string? TaxAuthorityReference { get; set; }
+    public string? TaxReportAuditJson { get; set; }
     public decimal Subtotal { get; set; }
     public decimal TotalAmount { get; set; }
     // Full payment confirmation by an authorized employee, not an online payment processor.

@@ -183,7 +183,7 @@
             </div>
             <div class="quotation-workspace-overview-item is-total">
                 <span>@LocalizationService["FinalAmount"]</span>
-                <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
+                <strong>@FormatVatTotal(InvoiceVat.Gross(quotation))</strong>
             </div>
         </div>
 
@@ -396,6 +396,12 @@
 
             <div class="card-body p-0 quotation-table-body">
 
+                <div class="p-3 border-bottom">
+                    <label class="form-label">@VatText("Currency (ISO code)", "واحد پول (کد ISO)")</label>
+                    @if (IsEditable) { <input class="form-control" style="max-width:180px" maxlength="3" @bind="quotation.CurrencyCode" placeholder="IRR" /> }
+                    else { <strong>@(quotation.CurrencyCode ?? "—")</strong> }
+                    <p class="small text-muted mb-0 mt-1">@VatText("Unit prices exclude VAT. Enter the actual billing currency and verified rates and official goods/service identifiers. IRR means rials, not tomans.", "قیمت واحد بدون ارزش افزوده است. واحد پول واقعی، نرخ تأییدشده و شناسه رسمی کالا/خدمت را ثبت کنید. IRR ریال است، نه تومان.")</p>
+                </div>
                 <div class="table-responsive">
 
                     <table class="table table-hover align-middle mb-0 quotation-lines-table">
@@ -419,6 +425,7 @@
                                     @LocalizationService["TotalPrice"]
                                 </th>
 
+                                <th>@VatText("VAT / tax identifier", "ارزش افزوده / شناسه مالیاتی")</th>
                                 <th>
                                     @LocalizationService["Notes"]
                                 </th>
@@ -475,6 +482,24 @@
                                         @FormatWholeAmount(line.TotalPrice)
                                     </td>
 
+                                    <td style="min-width:210px">
+                                        @if (IsEditable)
+                                        {
+                                            <label class="small">@VatText("VAT %", "درصد ارزش افزوده")</label>
+                                            <input type="number" class="form-control form-control-sm mb-1" min="0" max="100" step="0.01" @bind="line.VatRate" />
+                                            <input class="form-control form-control-sm mb-1" maxlength="64" placeholder="@VatText("Official goods/service ID", "شناسه کالا / خدمت")" @bind="line.TaxItemCode" />
+                                            @if (line.VatRate == 0)
+                                            {
+                                                <input class="form-control form-control-sm" maxlength="250" placeholder="@VatText("Zero VAT justification", "دلیل نرخ صفر / معافیت")" @bind="line.TaxTreatmentReason" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div>@(line.VatRate.HasValue ? line.VatRate.Value.ToString("0.##") + "%" : "—") · @line.TaxItemCode</div>
+                                            <div class="small text-muted">@line.TaxTreatmentReason</div>
+                                        }
+                                        <div class="small text-muted">@VatText("VAT", "ارزش افزوده"): @FormatVatTotal(InvoiceVat.Tax(line, quotation.CurrencyCode))</div>
+                                    </td>
                                     <td>
 
                                         @if (IsEditable)
@@ -499,7 +524,7 @@
                 </div>
                 <div class="quotation-workspace-table-total" aria-live="polite">
                     <span>@LocalizationService["FinalAmount"]</span>
-                    <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
+                    <strong>@FormatVatTotal(InvoiceVat.Gross(quotation))</strong>
                 </div>
             </div>
         </section>
@@ -536,9 +561,10 @@
                         </div>
                     </div>
 
+                    <div class="small px-3 pt-2">@VatText("Net", "خالص"): @FormatVatTotal(InvoiceVat.Subtotal(quotation)) · @VatText("VAT", "ارزش افزوده"): @FormatVatTotal(InvoiceVat.TotalTax(quotation))</div>
                     <div class="quotation-workspace-total-amount" aria-live="polite">
                         <span>@LocalizationService["FinalAmount"]</span>
-                        <strong>@FormatWholeAmount(quotation.Lines.Sum(line => line.TotalPrice))</strong>
+                        <strong>@FormatVatTotal(InvoiceVat.Gross(quotation))</strong>
                     </div>
 
                     <dl class="quotation-workspace-total-details">
@@ -774,6 +800,7 @@
                 ValidateQuotation();
                 NormalizeUnitPrices();
                 CalculateFinalAmount();
+                InvoiceVat.Validate(quotation);
                 var pricingUser = await GetCurrentUserAsync();
                 await Db.SaveChangesAsync();
                 await QuotationService.AssignPricingUserAsEvaluatorAsync(quotation.Id, pricingUser.Id);
@@ -1002,12 +1029,8 @@
         if (quotation == null)
             return;
 
-        var subtotal =
-            quotation.Lines.Sum(x =>
-                x.TotalPrice);
-
-        quotation.FinalAmount =
-            subtotal;
+        quotation.CurrencyCode = quotation.CurrencyCode?.Trim().ToUpperInvariant();
+        quotation.FinalAmount = InvoiceVat.Gross(quotation);
     }
 
 
@@ -1075,6 +1098,8 @@
         }
     }
 
+    private string VatText(string en, string fa) => LocalizationService.IsPersian ? fa : en;
+    private string FormatVatTotal(decimal amount) => amount.ToString(quotation?.CurrencyCode == "IRR" ? "N0" : "N2", CultureInfo.CurrentCulture);
     private static decimal WholePrice(decimal amount) =>
         decimal.Round(amount, 0, MidpointRounding.AwayFromZero);
 
