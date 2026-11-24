@@ -1,4 +1,7 @@
 ﻿@page "/sales/evaluations/edit/{Id:long}"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Sales.Requests.Evaluate")]
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
@@ -281,6 +284,11 @@ else
 
     private async Task CompleteEvaluationAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Sales.Requests.Evaluate"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (evaluation == null)
             return;
 

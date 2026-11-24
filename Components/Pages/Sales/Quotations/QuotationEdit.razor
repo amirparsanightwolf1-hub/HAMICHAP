@@ -1,4 +1,7 @@
 @page "/sales/quotations/edit/{Id:long}"
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider SecurityAuth
+@inject HamiChap_MES_ERP.Services.PermissionService SecurityPermissions
+@attribute [Authorize(Policy = "Permission:Sales.Requests.View|Sales.Requests.CreateQuotation|Sales.Quotations.Approve")]
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
@@ -745,6 +748,11 @@
 
     private async Task SaveAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Sales.Requests.CreateQuotation"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (quotation == null || !IsEditable)
             return;
 
@@ -822,6 +830,11 @@
 
     private async Task ApproveAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Sales.Quotations.Approve"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (quotation == null)
             return;
 
@@ -854,6 +867,11 @@
 
     private async Task RejectAsync()
     {
+        if (!await SecurityPermissions.HasPermissionAsync((await SecurityAuth.GetAuthenticationStateAsync()).User, "Sales.Quotations.Approve"))
+        {
+            errorMessage = "Access denied / دسترسی غیرمجاز";
+            return;
+        }
         if (quotation == null)
             return;
 
