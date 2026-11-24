@@ -13,68 +13,49 @@ public class NumberSeriesService
     }
 
     public async Task<string> GetNextNumberAsync(
-    NumberSeriesType type,
-    bool useTransaction = true)
+        NumberSeriesType type,
+        bool useTransaction = true)
     {
-        if (!useTransaction ||
-            _db.Database.CurrentTransaction != null)
-        {
-            return await GetNextNumberInternalAsync(type);
-        }
+        // Preserve the existing caller API. Join a caller's transaction when
+        // present; otherwise always create one so the allocated number and
+        // readback are protected even for legacy useTransaction:false callers.
+        if (_db.Database.CurrentTransaction != null)
+            return await AllocateAsync(type);
 
-        await using var transaction =
-            await _db.Database.BeginTransactionAsync();
-
-        try
-        {
-            var number =
-                await GetNextNumberInternalAsync(type);
-
-            await transaction.CommitAsync();
-
-            return number;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+        var number = await AllocateAsync(type);
+        await transaction.CommitAsync();
+        return number;
     }
 
-    private async Task<string> GetNextNumberInternalAsync(
-    NumberSeriesType type)
+    private async Task<string> AllocateAsync(NumberSeriesType type)
     {
+        if (!Enum.IsDefined(type))
+            throw new ArgumentOutOfRangeException(nameof(type));
+
         var year = DateTime.Now.Year;
+        var prefix = GetPrefix(type);
 
-        var series =
-            await _db.NumberSeries
-                .FirstOrDefaultAsync(x =>
-                    x.Type == type &&
-                    x.Year == year);
+        // Atomic increment under update/range locks. HOLDLOCK also protects
+        // the first allocation of a new (Type, Year) key, including when the
+        // surrounding business transaction uses READ COMMITTED. The existing
+        // unique IX_NumberSeries_Type_Year index supports this key lookup.
+        // Values are parameters; no tracked entity or stale counter is used.
+        await _db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE [NumberSeries] WITH (UPDLOCK, HOLDLOCK)
+            SET [LastNumber] = [LastNumber] + 1
+            WHERE [Type] = {(int)type} AND [Year] = {year};
+            IF @@ROWCOUNT = 0
+            BEGIN
+                INSERT INTO [NumberSeries]
+                    ([Type], [Year], [Prefix], [LastNumber], [Padding], [IsActive])
+                VALUES ({(int)type}, {year}, {prefix}, 1, 6, 1);
+            END;
+            """);
 
-        if (series == null)
-        {
-            series = new NumberSeries
-            {
-                Type = type,
-                Prefix = GetPrefix(type),
-                Year = year,
-                LastNumber = 0,
-                Padding = 6
-            };
-
-            _db.NumberSeries.Add(series);
-
-            await _db.SaveChangesAsync();
-        }
-
-        series.LastNumber++;
-
-        await _db.SaveChangesAsync();
-
-        return
-            $"{series.Prefix}-{year}-" +
-            $"{series.LastNumber.ToString().PadLeft(series.Padding, '0')}";
+        var series = await _db.NumberSeries.AsNoTracking()
+            .SingleAsync(x => x.Type == type && x.Year == year);
+        return $"{series.Prefix}-{year}-{series.LastNumber.ToString().PadLeft(series.Padding, '0')}";
     }
 
     private static string GetPrefix(NumberSeriesType type)

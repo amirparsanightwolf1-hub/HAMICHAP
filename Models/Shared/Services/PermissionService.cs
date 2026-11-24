@@ -202,7 +202,7 @@ public class PermissionService
             return false;
 
         await using var db = await _dbFactory.CreateDbContextAsync();
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier);
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrWhiteSpace(userId) ||
             !await db.Users.AnyAsync(x => x.Id == userId && x.IsActive))
             return false;
