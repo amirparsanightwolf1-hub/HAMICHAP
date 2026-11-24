@@ -1,0 +1,176 @@
+@page "/jobs/{Id:long}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Models.Production
+@using HamiChap_MES_ERP.Models.Production.Quality
+@using HamiChap_MES_ERP.Models.Inventory
+@using HamiChap_MES_ERP.Services
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
+@inject LocalizationService L
+
+<PageTitle>@(job?.RequestNumber ?? T("Job workspace", "پرونده کار"))</PageTitle>
+<div class="page-container job-workspace">
+    @if (loading)
+    {
+        <p>@L["Loading"]</p>
+    }
+    else if (job is null)
+    {
+        <div class="alert alert-warning">@T("Job not found or access is not permitted.", "کار یافت نشد یا دسترسی مجاز نیست.")</div>
+    }
+    else
+    {
+        <header class="erp-page-header mb-3">
+            <div>
+                <div class="text-muted small">@T("Universal job number", "شماره یکتای کار")</div>
+                <h2 class="erp-page-title" dir="ltr">@job.RequestNumber</h2>
+                <p class="erp-page-subtitle">@job.Customer.Name · @L.TranslateEnum(job.JobType) · @L.TranslateEnum(job.Status)</p>
+            </div>
+            <a class="btn btn-outline-secondary" href="/production/jobs"><i class="bi bi-search" aria-hidden="true"></i> @T("Find another job", "جستجوی کار دیگر")</a>
+        </header>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            @if (canSales)
+            {
+                <a class="btn btn-primary" href="@($"/sales/requests/{(job.JobType == SalesJobType.Roll ? "roll" : "sheet")}/edit/{job.Id}")"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> @T("Specifications and artwork", "مشخصات و طرح")</a>
+            }
+            @if (canProduction)
+            {
+                <a class="btn btn-outline-primary" href="@($"/production/jobs?requestId={job.Id}")"><i class="bi bi-diagram-3" aria-hidden="true"></i> @T("Production progress", "پیشرفت تولید")</a>
+            }
+        </div>
+        <p class="text-muted small">@T("Related documents can cover multiple jobs. Order-level quantities and statuses are not individual job quantities.", "اسناد مرتبط ممکن است شامل چند کار باشند. مقادیر و وضعیت سفارش مشترک، مختص این کار نیستند.")</p>
+        <div class="job-workspace-grid">
+            @foreach (var group in sections)
+            {
+                <section class="card">
+                    <div class="card-header d-flex align-items-center gap-2"><i class="bi @group.Icon" aria-hidden="true"></i><strong>@group.Title</strong><span class="badge bg-secondary ms-auto">@group.Rows.Count</span></div>
+                    <div class="card-body p-0">
+                        @if (group.Rows.Count == 0)
+                        {
+                            <p class="text-muted small p-3 mb-0">@T("No linked records yet", "هنوز سند مرتبطی وجود ندارد")</p>
+                        }
+                        @foreach (var row in group.Rows)
+                        {
+                            <div class="job-workspace-record">
+                                <div>
+                                    @if (row.Url is not null)
+                                    {
+                                        <a href="@row.Url" class="fw-semibold">@row.Number</a>
+                                    }
+                                    else
+                                    {
+                                        <strong>@row.Number</strong>
+                                    }
+                                    <div class="small text-muted">@row.Detail</div>
+                                </div>
+                                <span class="small text-muted">@row.Status</span>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+    }
+    @if (error is not null)
+    {
+        <div class="alert alert-danger mt-3">@error</div>
+    }
+</div>
+
+@code {
+    [Parameter] public long Id { get; set; }
+    private SalesRequest? job;
+    private bool loading = true;
+    private bool canSales;
+    private bool canProduction;
+    private string? error;
+    private readonly List<Section> sections = new();
+    private sealed record DocumentRow(string Number, string Detail, string Status, string? Url = null);
+    private sealed record Section(string Title, string Icon, List<DocumentRow> Rows);
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
+    private string Date(DateTime value) => value.ToString("yyyy-MM-dd");
+
+    protected override async Task OnParametersSetAsync()
+    {
+        loading = true;
+        job = null;
+        sections.Clear();
+        error = null;
+        try
+        {
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
+            canSales = await Permissions.HasPermissionAsync(principal, "Sales.Requests.View");
+            canProduction = await Permissions.HasPermissionAsync(principal, "Production.Orders.View");
+            var canOrders = await Permissions.HasPermissionAsync(principal, "Sales.Orders.View");
+            var canDeliveries = await Permissions.HasPermissionAsync(principal, "Sales.Deliveries.View");
+            var canInvoices = await Permissions.HasPermissionAsync(principal, "Sales.Invoices.View");
+            var canInventory = await Permissions.HasPermissionAsync(principal, "Inventory.Documents.View");
+            if (!canSales && !canProduction) return;
+            await using var db = await DbFactory.CreateDbContextAsync();
+            job = await db.SalesRequests.AsNoTracking().Include(x => x.Customer).FirstOrDefaultAsync(x => x.Id == Id);
+            if (job is null) return;
+            var quotes = await db.Quotations.AsNoTracking()
+                .Where(q => q.SalesRequestId == Id || q.Lines.Any(l => l.SourceRequestId == Id))
+                .OrderByDescending(q => q.Id).ToListAsync();
+            var quoteIds = quotes.Select(x => x.Id).ToArray();
+            var orders = await db.SalesOrders.AsNoTracking().Where(x => quoteIds.Contains(x.QuotationId)).OrderByDescending(x => x.Id).ToListAsync();
+            var orderIds = orders.Select(x => x.Id).ToArray();
+            var production = await db.ProductionOrders.AsNoTracking().Where(x => orderIds.Contains(x.SalesOrderId)).OrderByDescending(x => x.Id).ToListAsync();
+            var productionIds = production.Select(x => x.Id).ToArray();
+
+            if (canSales)
+                sections.Add(new(T("Quotations", "پیش‌فاکتورها"), "bi-receipt", quotes.Select(x => new DocumentRow(x.QuotationNumber, Date(x.QuotationDate), L.TranslateEnum(x.Status), $"/sales/quotations/edit/{x.Id}")).ToList()));
+            if (canOrders)
+                sections.Add(new(T("Sales orders", "سفارش‌های فروش"), "bi-bag-check", orders.Select(x => new DocumentRow(x.OrderNumber, Date(x.OrderDate), L.TranslateEnum(x.Status), $"/sales/orders/edit/{x.Id}")).ToList()));
+            if (canProduction)
+            {
+                sections.Add(new(T("Production orders / batches", "سفارش‌ها و نوبت‌های تولید"), "bi-gear", production.Select(x => new DocumentRow(x.OrderNumber, Date(x.CreatedDate), L.TranslateEnum(x.Status), $"/production/orders/edit/{x.Id}")).ToList()));
+                var reservations = await db.ProductionMaterialReservations.AsNoTracking().Include(x => x.Item).Include(x => x.Unit)
+                    .Where(x => productionIds.Contains(x.ProductionOrderId)).OrderByDescending(x => x.Id).ToListAsync();
+                sections.Add(new(T("Material reservations (order level)", "رزرو مواد در سطح سفارش"), "bi-boxes", reservations.Select(x => new DocumentRow(x.Item.Name, $"{x.Quantity} {x.Unit.Symbol} · {Date(x.ReservedDate)}", L.TranslateEnum(x.Status), $"/production/orders/edit/{x.ProductionOrderId}")).ToList()));
+                var inspections = await db.Set<QualityInspection>().AsNoTracking().Where(x => productionIds.Contains(x.ProductionOrderId)).OrderByDescending(x => x.Id).ToListAsync();
+                sections.Add(new(T("Quality inspections (order level)", "کنترل کیفیت در سطح سفارش"), "bi-patch-check", inspections.Select(x => new DocumentRow($"QC-{x.Id}", Date(x.InspectionDate), L.TranslateEnum(x.Status), $"/production/orders/edit/{x.ProductionOrderId}")).ToList()));
+            }
+            // Delivery/invoice lines trace to quotation lines. Include unlinked historical
+            // lines only when their parent quote is the job's primary quotation.
+            var deliveries = await db.Set<SalesDelivery>().AsNoTracking()
+                .Where(x => orderIds.Contains(x.SalesOrderId) &&
+                    (x.Lines.Any(l => l.SalesOrderLine.QuotationLine != null && l.SalesOrderLine.QuotationLine.SourceRequestId == Id) ||
+                     x.SalesOrder.Quotation.SalesRequestId == Id &&
+                     (!x.Lines.Any() || x.Lines.Any(l => l.SalesOrderLine.QuotationLine == null || l.SalesOrderLine.QuotationLine.SourceRequestId == null))))
+                .OrderByDescending(x => x.Id).ToListAsync();
+            var deliveryIds = deliveries.Select(x => x.Id).ToArray();
+            if (canDeliveries)
+                sections.Add(new(T("Deliveries", "تحویل‌ها"), "bi-truck", deliveries.Select(x => new DocumentRow(x.DeliveryNumber, Date(x.DeliveryDate), L.TranslateEnum(x.Status), $"/sales/deliveries/edit/{x.Id}")).ToList()));
+            if (canInvoices)
+            {
+                var invoices = await db.SalesInvoices.AsNoTracking().Where(x => deliveryIds.Contains(x.SalesDeliveryId)).OrderByDescending(x => x.Id).ToListAsync();
+                sections.Add(new(T("Invoices (accounting numbers)", "فاکتورها با شماره حسابداری"), "bi-receipt-cutoff", invoices.Select(x => new DocumentRow(x.InvoiceNumber, Date(x.InvoiceDate), L.TranslateEnum(x.Status), $"/sales/invoices/edit/{x.Id}")).ToList()));
+            }
+            if (canInventory)
+            {
+                var deliveryDocumentIds = await db.Set<SalesDeliveryLine>().AsNoTracking()
+                    .Where(x => deliveryIds.Contains(x.SalesDeliveryId) && x.InventoryDocumentId.HasValue)
+                    .Select(x => x.InventoryDocumentId!.Value).ToListAsync();
+                var documents = await db.InventoryDocuments.AsNoTracking()
+                    .Where(x => (x.ProductionOrderId.HasValue && productionIds.Contains(x.ProductionOrderId.Value)) || deliveryDocumentIds.Contains(x.Id))
+                    .OrderByDescending(x => x.Id).ToListAsync();
+                sections.Add(new(T("Related inventory documents (order level)", "اسناد انبار مرتبط در سطح سفارش"), "bi-box-arrow-in-down", documents.Select(x => new DocumentRow(x.DocumentNumber, L.TranslateEnum(x.DocumentType) + " · " + Date(x.DocumentDate), L.TranslateEnum(x.Status), $"/inventory/documents/edit/{x.Id}")).ToList()));
+            }
+        }
+        catch (Exception)
+        {
+            job = null;
+            sections.Clear();
+            error = T("Unable to load the job workspace. Try again.", "بارگذاری پرونده کار انجام نشد. دوباره تلاش کنید.");
+        }
+        finally { loading = false; }
+    }
+}

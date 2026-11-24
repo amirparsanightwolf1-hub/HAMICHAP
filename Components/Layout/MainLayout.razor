@@ -90,6 +90,9 @@
                             <a class="@NavClass("/sales/requests")" href="/sales/requests" @onclick="CloseMenu">
                                 <i class="bi bi-clipboard-check" aria-hidden="true"></i><span>@LocalizationService["SalesRequests"]</span>
                             </a>
+                            <a class="@NavClass("/production/jobs")" href="/production/jobs" @onclick="CloseMenu">
+                                <i class="bi bi-search" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "جستجوی شماره کار" : "Find job")</span>
+                            </a>
                             <a class="@NavClass("/sales/quotations")" href="/sales/quotations" @onclick="CloseMenu">
                                 <i class="bi bi-receipt" aria-hidden="true"></i><span>@LocalizationService["SalesQuotations"]</span>
                             </a>
