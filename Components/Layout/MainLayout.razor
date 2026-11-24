@@ -140,11 +140,16 @@
                     @if (canViewInventory)
                     {
                         <div class="menu-group-label"><i class="bi bi-boxes" aria-hidden="true"></i> @LocalizationService["Inventory"]</div>
+                        @if (canViewSalesDeliveries)
+                        {
+                            <a class="@NavClass("/inventory/shipments")" href="/inventory/shipments" @onclick="CloseMenu"><i class="bi bi-truck"></i><span>@(LocalizationService.IsPersian ? "ارسال کالا" : "Ship orders")</span></a>
+                        }
                         @if (canViewDocuments && canViewStock)
                         {
                             <a class="@NavClass("/inventory/material-requests")" href="/inventory/material-requests" @onclick="CloseMenu">
                                 <i class="bi bi-inbox" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "درخواست‌های مواد" : "Material requests")</span>
                             </a>
+                            <a class="@NavClass("/inventory/material-settlement")" href="/inventory/material-settlement" @onclick="CloseMenu"><i class="bi bi-arrow-return-left"></i><span>@(LocalizationService.IsPersian ? "مصرف و برگشت" : "Usage & returns")</span></a>
                         }
                         @if (canViewDocuments)
                         {

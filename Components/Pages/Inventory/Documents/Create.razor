@@ -160,6 +160,7 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery(Name = "movement")] public string? Movement { get; set; }
     private InventoryDocument document = new() { DocumentType = InventoryDocumentType.GoodsReceipt };
     private List<Item> items = new();
     private List<Customer> customers = new();
@@ -184,6 +185,7 @@
         items = await Db.Items.AsNoTracking().Include(x => x.Unit).Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
         customers = await Db.Customers.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
         locations = await Db.InventoryLocations.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
+        document.DocumentType = Movement switch { "customer" => InventoryDocumentType.CustomerReceipt, "transfer" => InventoryDocumentType.MaterialTransfer, _ => InventoryDocumentType.GoodsReceipt };
         ApplyDefaults();
         AddLine();
     }

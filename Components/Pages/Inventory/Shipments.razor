@@ -1,0 +1,103 @@
+@page "/inventory/shipments"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using HamiChap_MES_ERP.Data
+@using HamiChap_MES_ERP.Models.Sales
+@using HamiChap_MES_ERP.Models.Sales.Enums
+@using HamiChap_MES_ERP.Services
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject ShipmentPaymentService Payments
+@inject PermissionService Permissions
+@inject AuthenticationStateProvider Auth
+@inject LocalizationService L
+@inject ILogger<Shipments> Logger
+<PageTitle>@T("Ship orders", "ارسال سفارش‌ها")</PageTitle>
+<div class="page-container inventory-page">
+    <header class="erp-page-header hc-standard-header">
+        <div class="hc-heading-content"><span class="hc-heading-icon"><i class="bi bi-truck"></i></span><div>
+            <h1 class="erp-page-title">@T("Shipment queue", "صف ارسال کالا")</h1>
+            <p class="erp-page-subtitle">@T("Dispatch only fully paid invoices. Stock is checked again at dispatch.", "فقط فاکتورهای کاملاً پرداخت‌شده ارسال شوند. موجودی دوباره بررسی می‌شود.")</p>
+        </div></div>
+        <button class="btn btn-outline-primary" disabled="@busy" @onclick="RefreshAsync">@L["Refresh"]</button>
+    </header>
+    @if (message != null) { <div class="alert @(failed ? "alert-danger" : "alert-success")" role="status">@message</div> }
+    @if (loading) { <p>@L["Loading"]</p> }
+    else if (!canView) { <div class="alert alert-warning">@L["AccessDenied"]</div> }
+    else
+    {
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn @(!showWaiting ? "btn-primary" : "btn-outline-secondary")" @onclick="() => showWaiting = false">@T("Paid / ready", "پرداخت شده / آماده") (@rows.Count(x => x.PaidAtUtc.HasValue))</button>
+            <button class="btn @(showWaiting ? "btn-primary" : "btn-outline-secondary")" @onclick="() => showWaiting = true">@T("Awaiting payment", "در انتظار پرداخت") (@rows.Count(x => !x.PaidAtUtc.HasValue))</button>
+            <a class="btn btn-outline-secondary" href="/inventory/stock">@L["InventoryStock"]</a>
+            <a class="btn btn-outline-secondary" href="/sales/deliveries">@T("Prepare shipment", "آماده‌سازی ارسال")</a>
+        </div>
+        @foreach (var invoice in rows.Where(x => showWaiting ? !x.PaidAtUtc.HasValue : x.PaidAtUtc.HasValue))
+        {
+            <article class="card mb-3" @key="invoice.Id">
+                <div class="card-header d-flex justify-content-between gap-2 align-items-start">
+                    <div><strong>@JobReferences.Titles(invoice.Quotation, invoice.InvoiceNumber)</strong><div class="small text-muted">@invoice.Customer.Name · @invoice.InvoiceNumber</div></div>
+                    <span class="badge @(invoice.PaidAtUtc.HasValue ? "bg-success" : "bg-warning text-dark")">@(invoice.PaidAtUtc.HasValue ? T("Paid", "پرداخت شده") : T("Awaiting payment", "در انتظار پرداخت"))</span>
+                </div>
+                <div class="card-body">
+                    @foreach (var line in invoice.Lines)
+                    {
+                        <div class="d-flex justify-content-between border-bottom py-2"><span>@line.Item.Name</span><strong>@line.Quantity.ToString("0.###") @line.Unit.Symbol</strong></div>
+                    }
+                    <div class="d-flex flex-wrap justify-content-end gap-2 mt-3">
+                        <a class="btn btn-outline-secondary btn-sm" href="@($"/sales/deliveries/edit/{invoice.SalesDeliveryId}")">@T("Shipment details", "جزئیات ارسال")</a>
+                        @if (canViewInvoices) { <a class="btn btn-outline-secondary btn-sm" href="@($"/sales/invoices/edit/{invoice.Id}")">@T("Invoice", "فاکتور")</a> }
+                        @if (invoice.PaidAtUtc.HasValue && canDispatch)
+                        {
+                            <button class="btn btn-success btn-sm" disabled="@busy" @onclick="() => DispatchAsync(invoice.SalesDeliveryId)"><i class="bi bi-truck"></i> @T("Confirm dispatch", "تأیید ارسال")</button>
+                        }
+                    </div>
+                </div>
+            </article>
+        }
+        @if (!rows.Any(x => showWaiting ? !x.PaidAtUtc.HasValue : x.PaidAtUtc.HasValue)) { <div class="card"><div class="card-body">@T("No shipments in this queue.", "سفارشی در این صف نیست.")</div></div> }
+    }
+</div>
+@code {
+    private List<SalesInvoice> rows = new();
+    private bool loading = true, busy, canView, canDispatch, canViewInvoices, showWaiting, failed;
+    private string? message;
+    private string T(string en, string fa) => L.IsPersian ? fa : en;
+    protected override Task OnInitializedAsync() => RefreshAsync();
+    private async Task LoadAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        canView = await Permissions.HasPermissionAsync(user, "Sales.Deliveries.View");
+        canDispatch = canView && await Permissions.HasPermissionAsync(user, "Sales.Deliveries.Post");
+        canViewInvoices = await Permissions.HasPermissionAsync(user, "Sales.Invoices.View") || await Permissions.HasPermissionAsync(user, "Sales.Invoices.ConfirmPayment");
+        if (!canView) { rows.Clear(); return; }
+        await using var db = await DbFactory.CreateDbContextAsync();
+        rows = await db.SalesInvoices.AsNoTracking().Include(x => x.Customer)
+            .Include(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+            .Include(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
+            .Include(x => x.Lines).ThenInclude(x => x.Item).Include(x => x.Lines).ThenInclude(x => x.Unit)
+            .Where(x => x.Status == SalesInvoiceStatus.Issued && x.SalesDelivery.Status == SalesDeliveryStatus.Draft)
+            .AsSplitQuery().OrderBy(x => x.InvoiceDate).ToListAsync();
+    }
+    private async Task RefreshAsync()
+    {
+        if (busy) return;
+        busy = true;
+        try { await LoadAsync(); }
+        catch (Exception ex) { Logger.LogError(ex, "Shipment queue load failed"); failed = true; message = T("Could not load shipments.", "بارگذاری ارسال‌ها انجام نشد."); }
+        finally { busy = loading = false; }
+    }
+    private async Task DispatchAsync(long id)
+    {
+        if (busy || !canDispatch) return;
+        busy = true;
+        try
+        {
+            await Payments.DispatchAsync(id, (await Auth.GetAuthenticationStateAsync()).User);
+            message = T("Shipment posted. Inventory updated.", "ارسال ثبت و موجودی به‌روز شد."); failed = false;
+            await LoadAsync();
+        }
+        catch (Exception ex) { Logger.LogWarning(ex, "Dispatch failed"); failed = true; message = ex is InvalidOperationException ? ex.Message : T("Shipment failed. Refresh and retry.", "ارسال انجام نشد. دوباره تلاش کنید."); }
+        finally { busy = false; }
+    }
+}

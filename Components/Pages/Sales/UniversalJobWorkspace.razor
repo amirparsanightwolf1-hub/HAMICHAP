@@ -175,7 +175,7 @@
                 var documents = await db.InventoryDocuments.AsNoTracking()
                     .Where(x => (x.ProductionOrderId.HasValue && productionIds.Contains(x.ProductionOrderId.Value)) || deliveryDocumentIds.Contains(x.Id))
                     .OrderByDescending(x => x.Id).ToListAsync();
-                sections.Add(new(T("Related inventory documents (order level)", "اسناد انبار مرتبط در سطح سفارش"), "bi-box-arrow-in-down", documents.Select(x => new DocumentRow(x.DocumentNumber, L.TranslateEnum(x.DocumentType) + " · " + Date(x.DocumentDate), L.TranslateEnum(x.Status), $"/inventory/documents/edit/{x.Id}")).ToList()));
+                sections.Add(new(T("Related inventory documents (order level)", "اسناد انبار مرتبط در سطح سفارش"), "bi-box-arrow-in-down", documents.Select(x => new DocumentRow(x.DocumentNumber, (x.DocumentType == InventoryDocumentType.ProductionConsumption ? T("Actual consumption", "مصرف واقعی") : L.TranslateEnum(x.DocumentType)) + " · " + Date(x.DocumentDate), L.TranslateEnum(x.Status), $"/inventory/documents/edit/{x.Id}")).ToList()));
             }
         }
         catch (Exception)

@@ -26,13 +26,22 @@
 
     </div>
 
-    <div class="d-flex flex-wrap gap-2 mb-3">
-        <a class="btn btn-primary" href="/inventory/material-requests"><i class="bi bi-inbox" aria-hidden="true"></i> @(LocalizationService.IsPersian ? "درخواست‌های مواد" : "Material requests")</a>
+    <div class="warehouse-action-grid mb-3">
+        <a href="/inventory/documents/create?movement=receive" class="warehouse-action"><i class="bi bi-box-arrow-in-down"></i><strong>@(LocalizationService.IsPersian ? "دریافت کالا" : "Receive stock")</strong><small>@(LocalizationService.IsPersian ? "ثبت کالای ورودی" : "Receive incoming goods")</small></a>
+        <a href="/inventory/material-requests" class="warehouse-action"><i class="bi bi-inbox"></i><strong>@(LocalizationService.IsPersian ? "تحویل مواد" : "Issue materials")</strong><small>@(LocalizationService.IsPersian ? "درخواست‌های اپراتورها" : "Operator requests")</small></a>
+        <a href="/inventory/material-settlement" class="warehouse-action"><i class="bi bi-arrow-return-left"></i><strong>@(LocalizationService.IsPersian ? "مصرف و برگشت" : "Usage & returns")</strong><small>@(LocalizationService.IsPersian ? "ثبت مصرف واقعی" : "Settle issued material")</small></a>
+        <a href="/inventory/shipments" class="warehouse-action"><i class="bi bi-truck"></i><strong>@(LocalizationService.IsPersian ? "ارسال کالا" : "Ship orders")</strong><small>@(LocalizationService.IsPersian ? "کالاهای پرداخت شده" : "Paid orders ready to dispatch")</small></a>
+    </div>
+    <details class="mb-3">
+        <summary class="small text-muted mb-2">@(LocalizationService.IsPersian ? "عملیات پیشرفته انبار" : "Advanced stock actions")</summary>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="/inventory/material-requests"><i class="bi bi-inbox" aria-hidden="true"></i> @(LocalizationService.IsPersian ? "درخواست‌های مواد" : "Material requests")</a>
         <a class="btn btn-outline-primary" href="/inventory/documents/create"><i class="bi bi-plus-circle" aria-hidden="true"></i> @LocalizationService["CreateInventoryDocument"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/stock/warehouse"><i class="bi bi-building" aria-hidden="true"></i> @LocalizationService["WarehouseStock"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/stock/lots"><i class="bi bi-box-seam" aria-hidden="true"></i> @LocalizationService["StockByLot"]</a>
         <a class="btn btn-outline-secondary" href="/inventory/transactions"><i class="bi bi-clock-history" aria-hidden="true"></i> @LocalizationService["Transactions"]</a>
     </div>
+    </details>
 
     <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="@(LocalizationService.IsPersian ? "نوع موجودی" : "Stock area")">
         <button type="button" class="btn @(stockArea == "storage" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => ChangeStockArea("storage")'>@(LocalizationService.IsPersian ? "موجودی انبار" : "Stored stock")</button>

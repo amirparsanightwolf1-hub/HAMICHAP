@@ -36,6 +36,7 @@
             <button type="button" class="btn @(!history ? "btn-primary" : "btn-outline-secondary")" disabled="@busy" @onclick="() => ChangeViewAsync(false)">@T("Open requests", "درخواست‌های باز") (@openCount)</button>
             <button type="button" class="btn @(history ? "btn-primary" : "btn-outline-secondary")" disabled="@busy" @onclick="() => ChangeViewAsync(true)">@T("History", "سوابق")</button>
             <a class="btn btn-outline-primary" href="/inventory/material-settlement"><i class="bi bi-arrow-return-left"></i> @T("Record usage / return", "ثبت مصرف / برگشت")</a>
+            <a class="btn btn-outline-primary" href="/inventory/shipments"><i class="bi bi-truck"></i> @T("Ship paid orders", "ارسال سفارش‌های پرداخت‌شده")</a>
             <a class="btn btn-outline-secondary" href="/inventory/stock">@L["InventoryStock"]</a>
             <a class="btn btn-outline-secondary" href="/inventory/documents">@L["Documents"]</a>
         </div>

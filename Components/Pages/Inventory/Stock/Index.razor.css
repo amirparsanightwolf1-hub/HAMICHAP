@@ -1,0 +1,5 @@
+.warehouse-action-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr)); gap:10px; }
+.warehouse-action { display:grid; gap:6px; align-content:start; padding:15px; border:1px solid #dce5ee; border-radius:12px; background:#fff; text-decoration:none; color:#214561; }
+.warehouse-action:hover { border-color:#83acc9; background:#f3f8fc; color:#0c568d; }
+.warehouse-action i { font-size:1.45rem; color:#0c568d; }
+.warehouse-action small { color:#64748b; font-size:.77rem; }
