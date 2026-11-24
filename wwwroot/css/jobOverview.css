@@ -757,3 +757,24 @@
 .job-overview-column-check input:disabled { cursor:default; }
 .job-overview-column-save { display:flex; justify-content:flex-end; margin-top:12px; padding-top:12px; border-top:1px solid #e1e8ef; }
 @media(max-width:480px) { .job-overview-column-picker { padding:10px; } .job-overview-column-picker-head { flex-wrap:wrap; } .job-overview-column-checks { grid-template-columns:1fr; } .job-overview-column-save .btn { width:100%; } }
+
+/* Independent operation columns; only verified completed stages are green. */
+.job-overview-operation-legend { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; margin-bottom:10px; font-size:.75rem; }
+.job-overview-operation-key { display:inline-flex; align-items:center; gap:5px; }
+.job-overview-operation-key.is-complete { color:#17643b; }
+.job-overview-operation-key.is-running { color:#936014; }
+.job-overview-operation-key.is-pending,.job-overview-operation-key.is-not-required { color:#64748b; }
+.job-overview-compact-table thead .job-overview-compact-operation-heading { min-width:145px; max-width:190px; background:#e7eef9; }
+.job-overview-operation-heading-label { display:block; font-size:.65rem; font-weight:500; color:#62758b; }
+.job-overview-compact-table .job-overview-compact-operation { min-width:145px; max-width:190px; vertical-align:middle; }
+.job-overview-compact-table tbody tr td.job-overview-compact-operation.is-complete { background:#dff3e6; color:#145c35; border-bottom-color:#b6dfc6; border-inline-end-color:#b6dfc6; }
+.job-overview-compact-table tbody tr:hover td.job-overview-compact-operation.is-complete { background:#d1ecd9; }
+.job-overview-compact-table tbody tr td.job-overview-compact-operation.is-running { background:#fff2d7; color:#8a570d; }
+.job-overview-compact-table tbody tr td.job-overview-compact-operation.is-ready { background:#e6f0fc; color:#1d5282; }
+.job-overview-compact-table tbody tr td.job-overview-compact-operation.is-cancelled { background:#fce8e8; color:#a13a3a; }
+.job-overview-compact-table tbody tr td.job-overview-compact-operation.is-untracked { background:#f1f2f5; color:#5b6574; }
+.job-overview-compact-table tbody tr td.job-overview-compact-operation.is-not-required { color:#94a3b8; text-align:center; }
+.job-overview-operation-status { display:flex; align-items:center; gap:5px; font-size:.76rem; }
+.job-overview-operation-detail,.job-overview-operation-dates,.job-overview-operation-review { font-size:.68rem; line-height:1.5; margin-top:4px; }
+.job-overview-operation-dates { overflow-wrap:normal; font-variant-numeric:tabular-nums; text-align:start; }
+.job-overview-operation-review { color:#92400e; }
