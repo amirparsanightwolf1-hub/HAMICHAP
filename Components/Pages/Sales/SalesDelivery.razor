@@ -77,7 +77,7 @@
                         @foreach (var order in salesOrders)
                         {
                             <option value="@order.Id">
-                                @order.OrderNumber -
+                                @HamiChap_MES_ERP.Models.Sales.JobReferences.Display(order.Quotation) (@order.OrderNumber) -
                                 @order.Customer?.Name
                             </option>
                         }
@@ -383,6 +383,8 @@
         salesOrders =
             await Db.SalesOrders
                 .Include(x => x.Customer)
+                .Include(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+                .Include(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
                 .Include(x => x.Lines)
                     .ThenInclude(x => x.Item)
                 .Include(x => x.Lines)

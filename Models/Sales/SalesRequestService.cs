@@ -34,7 +34,7 @@ public class SalesRequestService
         var number =
             await _numberSeries
                 .GetNextNumberAsync(
-                    NumberSeriesType.SalesRequest);
+                    NumberSeriesType.Job);
 
 
         var request = new SalesRequest

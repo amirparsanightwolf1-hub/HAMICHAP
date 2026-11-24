@@ -18,6 +18,7 @@ public enum NumberSeriesType
     Quotation = 202,
     SalesDelivery = 203,
     SalesInvoice = 204,
+    Job = 205,
     PurchaseOrder = 300,
 
     ProductionScrap = 500

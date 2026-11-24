@@ -68,8 +68,8 @@
     {
         <div class="job-edit-context" aria-label="@LocalizationService["JobEditorOverview"]">
             <div class="job-edit-context-field">
-                <span>@LocalizationService["RequestNumber"]</span>
-                <strong>@request.RequestNumber <span class="job-edit-context-date">· @request.RequestDate.ToString("yyyy-MM-dd")</span></strong>
+                <span>@(LocalizationService.IsPersian ? "شماره کار" : "Job number")</span>
+                <strong><a class="job-reference-link" href="@($"/jobs/{request.Id}")" @onclick:stopPropagation="true">@request.RequestNumber</a> <span class="job-edit-context-date">· @request.RequestDate.ToString("yyyy-MM-dd")</span></strong>
             </div>
             <div class="job-edit-context-field">
                 <span>@LocalizationService["Customer"]</span>

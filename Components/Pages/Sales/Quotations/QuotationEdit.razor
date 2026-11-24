@@ -56,7 +56,7 @@
                     <div class="quotation-workspace-eyebrow">@LocalizationService["QuotationEditorTitle"]</div>
                     <h1>@LocalizationService["Quotation"]</h1>
                     <div class="quotation-workspace-hero-meta">
-                        <span class="quotation-workspace-number">@quotation.QuotationNumber</span>
+                        <span class="quotation-workspace-number">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(quotation)</span><small class="text-muted">@quotation.QuotationNumber</small>
                         <span class="quotation-workspace-meta-separator" aria-hidden="true"></span>
                         <span>@GetCustomerName()</span>
                     </div>
@@ -670,6 +670,7 @@
                 .Include(x => x.Customer)
 
                 .Include(x => x.SalesRequest)
+                .Include(x => x.Lines).ThenInclude(x => x.SourceRequest)
 
                 .Include(x => x.Lines)
                     .ThenInclude(x => x.Item)

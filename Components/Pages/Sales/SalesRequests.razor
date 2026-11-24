@@ -167,7 +167,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>
-                                        @LocalizationService["RequestNumber"]
+                                        @(LocalizationService.IsPersian ? "شماره کار" : "Job number")
                                     </th>
                                     <th>
                                         @LocalizationService["Customer"]
@@ -206,7 +206,7 @@
                                         @onkeydown="args => HandleRowKeyDown(args, request.Id)">
                                         <td>
                                             <span class="fw-semibold">
-                                                @request.RequestNumber
+                                                <a class="job-reference-link" href="@($"/jobs/{request.Id}")" @onclick:stopPropagation="true">@request.RequestNumber</a>
                                             </span>
                                         </td>
 

@@ -137,7 +137,7 @@
                         <table class="table table-hover align-middle mb-0 table-responsive-cards sales-quotations-table">
                             <thead class="table-light">
                                 <tr>
-                                    <th>@LocalizationService["QuotationNumber"]</th>
+                                    <th>@(LocalizationService.IsPersian ? "شماره کار" : "Job number") / @LocalizationService["QuotationNumber"]</th>
                                     <th>@LocalizationService["Customer"]</th>
                                     <th>@LocalizationService["JobType"]</th>
                                     <th>@LocalizationService["JobTitle"]</th>
@@ -158,7 +158,7 @@
                                         aria-expanded="@(expandedQuotationId == quotation.Id)"
                                         @onclick="() => ToggleDetails(quotation.Id)"
                                         @onkeydown="args => HandleRowKeyDown(args, quotation.Id)">
-                                        <td class="fw-semibold">@quotation.QuotationNumber</td>
+                                        <td class="fw-semibold"><div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(quotation)</div><small class="text-muted d-block">@quotation.QuotationNumber</small></td>
                                         <td>@(quotation.Customer?.Name ?? "-")</td>
                                         <td>
                                             @if (quotation.SalesRequest != null)

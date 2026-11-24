@@ -88,7 +88,7 @@
 
                         <thead>
                             <tr>
-                                <th>@L["OrderNumber"]</th>
+                                <th>@(LocalizationService.IsPersian ? "شماره کار" : "Job number") / @L["OrderNumber"]</th>
                                 <th>@L["SalesOrder"]</th>
                                 <th>@L["Status"]</th>
                                 <th>@L["Created"]</th>
@@ -111,7 +111,7 @@
 
                                     <td data-label="@L["OrderNumber"]">
                                         <strong>
-                                            @order.OrderNumber
+                                            <div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(order.SalesOrder?.Quotation)</div><small class="text-muted d-block">@order.OrderNumber</small>
                                         </strong>
                                     </td>
 
@@ -179,7 +179,8 @@
     private List<ProductionOrder> FilteredOrders => (productionOrders ?? new())
         .Where(x => (string.IsNullOrWhiteSpace(statusFilter) || x.Status.ToString() == statusFilter) &&
             (string.IsNullOrWhiteSpace(searchText) || x.OrderNumber.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
-             (x.SalesOrder?.OrderNumber?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false)))
+             (x.SalesOrder?.OrderNumber?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
+             HamiChap_MES_ERP.Models.Sales.JobReferences.Display(x.SalesOrder?.Quotation).Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase)))
         .ToList();
 
     private void ClearFilters() { searchText = ""; statusFilter = ""; }
@@ -196,7 +197,8 @@
         try
         {
             productionOrders = await Db.ProductionOrders
-                .Include(x => x.SalesOrder)
+                .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+                .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
                 .Include(x => x.Lines)
                 .OrderByDescending(x => x.CreatedDate)
                 .ToListAsync();

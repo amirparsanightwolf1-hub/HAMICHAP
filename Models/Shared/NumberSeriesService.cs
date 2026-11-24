@@ -93,6 +93,7 @@ public class NumberSeriesService
             NumberSeriesType.SalesOrder => "SO",
             NumberSeriesType.PurchaseOrder => "PU",
             NumberSeriesType.SalesRequest => "SR",
+            NumberSeriesType.Job => "J",
             NumberSeriesType.Quotation => "QT",
             NumberSeriesType.ProductionScrap => "PS",
             NumberSeriesType.SalesDelivery => "SD",

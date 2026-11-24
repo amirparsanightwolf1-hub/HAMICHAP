@@ -76,6 +76,7 @@
 
                                 <td class="fw-semibold">
                                     @invoice.InvoiceNumber
+                                    <small class="text-muted d-block">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(invoice.Quotation)</small>
                                 </td>
 
                                 <td>
@@ -194,7 +195,8 @@
 
             invoices = await query
                 .Include(x => x.Customer)
-                .Include(x => x.Quotation)
+                .Include(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+                .Include(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
                 .Include(x => x.SalesOrder)
                 .Include(x => x.SalesDelivery)
                 .OrderByDescending(x => x.InvoiceDate)

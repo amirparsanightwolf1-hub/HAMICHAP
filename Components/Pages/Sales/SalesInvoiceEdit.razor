@@ -53,6 +53,7 @@
             <hr />
 
             <section class="info-grid">
+                <div><h2>@(LocalizationService.IsPersian ? "شماره‌های کار مرتبط" : "Related job numbers")</h2><p class="info-value">@HamiChap_MES_ERP.Models.Sales.JobReferences.Display(invoice.Quotation)</p></div>
                 <div>
                     <h2>@T("Customer")</h2>
                     <p class="info-value">@(invoice.Customer?.Name ?? "—")</p>
@@ -152,7 +153,8 @@
         isLoading = true;
         invoice = await Db.SalesInvoices.AsNoTracking()
             .Include(x => x.Customer)
-            .Include(x => x.Quotation)
+            .Include(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+                .Include(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
             .Include(x => x.SalesOrder)
             .Include(x => x.SalesDelivery)
             .Include(x => x.Lines).ThenInclude(x => x.Item)

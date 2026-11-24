@@ -49,8 +49,8 @@
                 </div>
 
                 <p class="erp-page-subtitle mb-0">
-                    @productionOrder.OrderNumber
-                </p>
+                    @HamiChap_MES_ERP.Models.Sales.JobReferences.Display(productionOrder.SalesOrder?.Quotation)
+                </p><small class="text-muted">@productionOrder.OrderNumber</small>
             </div>
 
             <div class="d-flex flex-wrap gap-2 justify-content-end">
@@ -943,6 +943,8 @@
 
                 .Include(x => x.SalesOrder)
                     .ThenInclude(x => x.Customer)
+                .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+                .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
 
                 .Include(x => x.Lines)
                     .ThenInclude(x => x.Item)

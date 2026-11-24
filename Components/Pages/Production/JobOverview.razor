@@ -175,7 +175,7 @@
                                 </span>
                                 <div>
                                     <div class="job-overview-card-eyebrow">
-                                        <span>@job.RequestNumber</span>
+                                        <a class="job-reference-link" href="@($"/jobs/{job.RequestId}")" @onclick:stopPropagation="true">@job.RequestNumber</a>
                                         <span aria-hidden="true">·</span>
                                         <span>@L.TranslateEnum(job.JobType)</span>
                                     </div>
