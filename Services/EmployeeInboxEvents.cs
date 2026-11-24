@@ -12,6 +12,8 @@ public static class EmployeeInboxEvents
     public const string InvoiceReady = "invoice-ready";
     public const string ShipmentReady = "shipment-ready";
     public const string Message = "message";
+    public const string OperationReady = "operation-ready";
+    public static readonly string[] OperatorRoles = { "Administrator", "Operator", "ProductionManager", "Production Manager", "Manager", "FloorManager", "Floor Manager", "Production" };
 
     public static async Task<IReadOnlyList<string>> RecipientsAsync(ApplicationDbContext db, params string[] required)
     {
@@ -24,6 +26,14 @@ public static class EmployeeInboxEvents
                  db.RolePermissions.Any(rp => rp.RoleId == ur.RoleId && rp.Permission.Name == name))));
         }
         return await query.Select(x => x.Id).Distinct().ToListAsync();
+    }
+
+    public static async Task<IReadOnlyList<string>> MachineRecipientsAsync(ApplicationDbContext db, int machineId)
+    {
+        var roles = OperatorRoles.Select(x => x.ToUpperInvariant()).ToArray();
+        return await db.Users.Where(u => u.IsActive && u.AssignedMachineId == machineId &&
+            db.UserRoles.Any(ur => ur.UserId == u.Id && db.Roles.Any(r => r.Id == ur.RoleId && roles.Contains(r.NormalizedName!))))
+            .Select(x => x.Id).Distinct().ToListAsync();
     }
 
     public static void Add(ApplicationDbContext db, IEnumerable<string> recipients, string kind, long sourceId,

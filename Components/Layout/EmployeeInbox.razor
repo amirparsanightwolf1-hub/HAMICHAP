@@ -139,7 +139,7 @@
     private static string Icon(string kind) => kind switch
     {
         MaterialRequest => "bi-box-seam", MaterialIssued => "bi-box-arrow-right",
-        InvoiceReady => "bi-receipt", ShipmentReady => "bi-truck", _ => "bi-envelope"
+        InvoiceReady => "bi-receipt", ShipmentReady => "bi-truck", OperationReady => "bi-gear", _ => "bi-envelope"
     };
 
     protected override async Task OnInitializedAsync()

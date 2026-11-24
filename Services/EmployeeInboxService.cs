@@ -13,7 +13,7 @@ public sealed class EmployeeInboxService(IDbContextFactory<ApplicationDbContext>
     public sealed record Entry(long Id, string Kind, string Subject, string Body, string? SubjectFa, string? BodyFa,
         string Sender, DateTime CreatedAtUtc, bool Unread, string? Url, WarehouseRequestService.RequestRow? Material);
     public sealed record Snapshot(IReadOnlyList<Entry> Entries, int UnreadCount, int TotalCount, bool CanIssue);
-    private sealed record Access(string UserId, bool Warehouse, bool Accounting, bool Shipping);
+    private sealed record Access(string UserId, bool Warehouse, bool Accounting, bool Shipping, bool Operator);
 
     private async Task<Access> GetAccessAsync(ClaimsPrincipal user, ApplicationDbContext db)
     {
@@ -24,12 +24,13 @@ public sealed class EmployeeInboxService(IDbContextFactory<ApplicationDbContext>
         return new(id, await warehouse.CanViewAsync(user),
             await permissions.HasPermissionAsync(user, "Sales.Invoices.ConfirmPayment"),
             await permissions.HasPermissionAsync(user, "Sales.Deliveries.View") &&
-                await permissions.HasPermissionAsync(user, "Sales.Deliveries.Post"));
+                await permissions.HasPermissionAsync(user, "Sales.Deliveries.Post"),
+            OperatorRoles.Any(user.IsInRole));
     }
 
     private static IQueryable<EmployeeInboxItem> Visible(ApplicationDbContext db, Access access) =>
         db.EmployeeInboxItems.Where(x => x.RecipientUserId == access.UserId &&
-            (x.Kind == Message || x.Kind == MaterialIssued ||
+            (x.Kind == Message || x.Kind == MaterialIssued || (access.Operator && x.Kind == OperationReady) ||
              (access.Warehouse && x.Kind == MaterialRequest) ||
              (access.Accounting && x.Kind == InvoiceReady) ||
              (access.Shipping && x.Kind == ShipmentReady)));
@@ -80,7 +81,7 @@ public sealed class EmployeeInboxService(IDbContextFactory<ApplicationDbContext>
             x.Kind switch
             {
                 MaterialRequest => "/inventory/material-requests",
-                MaterialIssued => "/production/machine-operator",
+                MaterialIssued or OperationReady => "/production/machine-operator",
                 InvoiceReady when x.SourceId.HasValue => $"/sales/invoices/edit/{x.SourceId.Value}",
                 ShipmentReady => "/inventory/shipments",
                 _ => null

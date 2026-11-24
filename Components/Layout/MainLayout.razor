@@ -59,6 +59,11 @@
                     <a class="@NavClass("/")" href="/" @onclick="CloseMenu">
                         <i class="bi bi-house-door" aria-hidden="true"></i><span>@LocalizationService["Dashboard"]</span>
                     </a>
+                    <AuthorizeView>
+                        <Authorized>
+                            <a class="@NavClass("/inbox")" href="/inbox" @onclick="CloseMenu"><i class="bi bi-inbox" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "صندوق پیام" : "Inbox")</span></a>
+                        </Authorized>
+                    </AuthorizeView>
                     @if (showSalesDashboard)
                     {
                         <a class="@NavClass("/dashboard/sales")" href="/dashboard/sales" @onclick="CloseMenu">

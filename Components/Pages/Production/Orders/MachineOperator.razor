@@ -738,7 +738,27 @@
                     x.ProductionOrderId == step.ProductionOrderId && x.Sequence > step.Sequence)
                     .OrderBy(x => x.Sequence).FirstOrDefaultAsync();
                 if (next != null && next.Status == ProductionOperationStatus.Pending)
+                {
                     next.Status = ProductionOperationStatus.Ready;
+                    if (!next.IsOutsourced)
+                    {
+                        var nextMachine = await db.ProductionSchedules.AsNoTracking()
+                            .Where(x => x.ProductionOperationId == next.Id && x.Status != ScheduleStatus.Cancelled)
+                            .OrderByDescending(x => x.Id).Select(x => (int?)x.MachineId).FirstOrDefaultAsync();
+                        if (nextMachine.HasValue)
+                        {
+                            var recipients = await EmployeeInboxEvents.MachineRecipientsAsync(db, nextMachine.Value);
+                            var title = HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(
+                                await db.ProductionOrders.AsNoTracking()
+                                    .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+                                    .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
+                                    .AsSplitQuery().FirstAsync(x => x.Id == step.ProductionOrderId));
+                            EmployeeInboxEvents.Add(db, recipients, EmployeeInboxEvents.OperationReady, next.Id,
+                                "Next operation ready: " + title, next.Name + " · Previous operation completed. Check your machine schedule.",
+                                "مرحله بعد آماده است: " + title, next.Name + " · مرحله قبلی تکمیل شد. برنامه دستگاه را بررسی کنید.", userId);
+                        }
+                    }
+                }
                 // The production order's final completion is still handled by QC and order workflow.
             }
             db.ProductionOperationEvents.Add(new ProductionOperationEvent
@@ -830,8 +850,10 @@
             if (itemId == 0 || quantity <= 0 || quantity > 100000000)
                 throw new InvalidOperationException(L["OperatorErrItemQuantity"]);
             await using var db = await DbFactory.CreateDbContextAsync();
-            var step = await db.ProductionOperations.AsNoTracking().Include(x => x.ProductionOrder)
-                .FirstOrDefaultAsync(x => x.Id == operationId);
+            var step = await db.ProductionOperations.AsNoTracking()
+                .Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+                .Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest)
+                .AsSplitQuery().FirstOrDefaultAsync(x => x.Id == operationId);
             var booking = await db.ProductionSchedules.AsNoTracking().FirstOrDefaultAsync(x =>
                 x.ProductionOperationId == operationId &&
                 (machineId == 0 || x.MachineId == machineId) &&
@@ -862,7 +884,7 @@
             db.ProductionMaterialRequests.Add(materialRequest);
             await db.SaveChangesAsync();
             var recipients = await EmployeeInboxEvents.RecipientsAsync(db, "Inventory.Documents.View", "Inventory.Stock.View", "Inventory.Documents.Post");
-            var job = HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(visibleOrders.FirstOrDefault(x => x.Id == step.ProductionOrderId) ?? step.ProductionOrder);
+            var job = HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(step.ProductionOrder);
             EmployeeInboxEvents.Add(db, recipients, EmployeeInboxEvents.MaterialRequest, materialRequest.Id,
                 "Material request: " + job, $"{item.Name}: {quantity:0.###} · {step.Name}",
                 "درخواست مواد: " + job, $"{item.Name}: {quantity:0.###} · {step.Name}", userId);
