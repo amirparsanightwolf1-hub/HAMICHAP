@@ -3,17 +3,15 @@
 @inherits LayoutComponentBase
 @layout HamiChap_MES_ERP.Components.Layout.MainLayout
 
-<h1>@L["Manage your account"]</h1>
-
-<div>
-    <h2>@L["Change your account settings"]</h2>
-    <hr />
-    <div class="row">
-        <div class="col-lg-3">
-            <ManageNavMenu />
+<div class="page-container hc-account-page">
+    <header class="erp-page-header hc-standard-header">
+        <div class="hc-heading-content">
+            <span class="hc-heading-icon"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
+            <div><h1 class="erp-page-title">@L["Manage your account"]</h1><p class="erp-page-subtitle">@L["Change your account settings"]</p></div>
         </div>
-        <div class="col-lg-9">
-            @Body
-        </div>
+    </header>
+    <div class="hc-account-grid">
+        <aside class="hc-account-nav"><ManageNavMenu /></aside>
+        <section class="hc-account-body card"><div class="card-body">@Body</div></section>
     </div>
 </div>

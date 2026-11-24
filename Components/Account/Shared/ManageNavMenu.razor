@@ -7,28 +7,28 @@
 
 <ul class="nav nav-pills flex-column">
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">@L["Profile"]</NavLink>
+        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All"><i class="bi bi-person" aria-hidden="true"></i><span>@L["Profile"]</span></NavLink>
     </li>
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Email">@L["Email"]</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/Email"><i class="bi bi-envelope" aria-hidden="true"></i><span>@L["Email"]</span></NavLink>
     </li>
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/ChangePassword">@L["Password"]</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/ChangePassword"><i class="bi bi-key" aria-hidden="true"></i><span>@L["Password"]</span></NavLink>
     </li>
     @if (hasExternalLogins)
     {
         <li class="nav-item">
-            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">@L["External logins"]</NavLink>
+            <NavLink class="nav-link" href="Account/Manage/ExternalLogins"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i><span>@L["External logins"]</span></NavLink>
         </li>
     }
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">@L["Two-factor authentication"]</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>@L["Two-factor authentication"]</span></NavLink>
     </li>
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Passkeys">@L["Passkeys"]</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/Passkeys"><i class="bi bi-fingerprint" aria-hidden="true"></i><span>@L["Passkeys"]</span></NavLink>
     </li>
     <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/PersonalData">@L["Personal data"]</NavLink>
+        <NavLink class="nav-link" href="Account/Manage/PersonalData"><i class="bi bi-file-earmark-person" aria-hidden="true"></i><span>@L["Personal data"]</span></NavLink>
     </li>
 </ul>
 

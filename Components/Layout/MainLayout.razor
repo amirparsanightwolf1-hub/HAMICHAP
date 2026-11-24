@@ -13,23 +13,28 @@
 
 <div class="app-layout">
 
-    <button class="mobile-menu-btn"
+    <button type="button" class="mobile-menu-btn" aria-controls="hc-sidebar"
+            aria-expanded="@(menuOpen ? "true" : "false")"
+            aria-label="@(LocalizationService.IsPersian ? "منوی اصلی" : "Main menu")"
             @onclick="ToggleMenu">
-        @(menuOpen ? "✕" : "☰")
+        <i class="bi @(menuOpen ? "bi-x-lg" : "bi-list")" aria-hidden="true"></i>
     </button>
 
     <div class="sidebar-backdrop @(menuOpen ? "show" : "")"
          @onclick="CloseMenu">
     </div>
 
-    <aside class="sidebar @(menuOpen ? "show" : "")">
+    <aside id="hc-sidebar" class="sidebar @(menuOpen ? "show" : "")">
 
         @if (loading)
         {
             <div class="nav-menu">
         
                 <div class="sidebar-header">
-                    <h3>@LocalizationService["AppTitle"]</h3>
+                    <a href="/" class="hc-sidebar-brand" @onclick="CloseMenu">
+                        <span class="hc-sidebar-logo"><img src="images/Logo%20Wings%20navy%20blue.png" alt="" /></span>
+                        <span class="hc-sidebar-wordmark"><strong>HAMICHAP</strong><small>MES / ERP</small></span>
+                    </a>
                 </div>
         
                 <div class="text-light p-2">
@@ -43,7 +48,10 @@
             <div class="nav-menu">
         
                 <div class="sidebar-header">
-                    <h3>@LocalizationService["AppTitle"]</h3>
+                    <a href="/" class="hc-sidebar-brand" @onclick="CloseMenu">
+                        <span class="hc-sidebar-logo"><img src="images/Logo%20Wings%20navy%20blue.png" alt="" /></span>
+                        <span class="hc-sidebar-wordmark"><strong>HAMICHAP</strong><small>MES / ERP</small></span>
+                    </a>
                 </div>
         
                 <nav class="side-menu" aria-label="@LocalizationService["ManagerMainNavigation"]">
@@ -245,26 +253,36 @@
     </aside>
 
     <main class="main-content">
-
-        @Body
-
-    </main>
-
-    <div class="language-switcher">
+        <div class="hc-workspace-toolbar no-print">
+            <div class="hc-workspace-caption"><i class="bi bi-grid-1x2" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "فضای کاری" : "Workspace")</span></div>
+            <div class="language-switcher" role="group" aria-label="@(LocalizationService.IsPersian ? "زبان" : "Language")">
 
         <button type="button"
                 class="language-button @(LocalizationService.CurrentLanguage == "en" ? "active" : "")"
                 @onclick='() => ChangeLanguage("en-US")'>
-            🇬🇧 @LocalizationService["English"]
+            @LocalizationService["English"]
         </button>
 
         <button type="button"
                 class="language-button @(LocalizationService.CurrentLanguage == "fa" ? "active" : "")"
                 @onclick='() => ChangeLanguage("fa-IR")'>
-            🇮🇷 فارسی
+            فارسی
         </button>
 
     </div>
+            <AuthorizeView>
+                <Authorized>
+                    <a class="hc-account-link" href="/Account/Manage"><i class="bi bi-person-circle" aria-hidden="true"></i><span>@(LocalizationService.IsPersian ? "حساب کاربری" : "My account")</span></a>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="hc-account-link" href="/Account/Login"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i><span>@LocalizationService["Login"]</span></a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <div class="hc-workspace-body">
+            @Body
+        </div>
+    </main>
 
     <InventoryAlertToast />
 

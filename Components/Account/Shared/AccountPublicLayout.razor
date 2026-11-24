@@ -1,0 +1,31 @@
+@inherits LayoutComponentBase
+@using HamiChap_MES_ERP.Services
+@inject LocalizationService L
+@inject NavigationManager Navigation
+
+<div class="hc-auth-page">
+    <div class="hc-auth-shell">
+        <header class="hc-auth-header">
+            <a href="/" class="hc-auth-brand">
+                <span><img src="images/Logo%20Wings%20navy%20blue.png" alt="" /></span>
+                <div><strong>HAMICHAP</strong><small>MES / ERP</small></div>
+            </a>
+            <nav class="hc-auth-languages" aria-label="@(L.IsPersian ? "زبان" : "Language")">
+                <a class="@(!L.IsPersian ? "is-active" : null)" href="@CultureUrl("en-US")" lang="en">English</a>
+                <a class="@(L.IsPersian ? "is-active" : null)" href="@CultureUrl("fa-IR")" lang="fa">فارسی</a>
+            </nav>
+        </header>
+        <main class="hc-auth-content">
+            @Body
+        </main>
+        <footer class="hc-auth-footer">
+            <a href="/Account/Login"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> @L["Login"]</a>
+            <span>HAMICHAP · MES / ERP</span>
+        </footer>
+    </div>
+</div>
+
+@code {
+    private string CultureUrl(string culture) =>
+        $"/Culture/Set?culture={Uri.EscapeDataString(culture)}&redirectUri={Uri.EscapeDataString(new Uri(Navigation.Uri).PathAndQuery)}";
+}

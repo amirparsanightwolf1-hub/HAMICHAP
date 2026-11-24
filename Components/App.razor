@@ -12,6 +12,14 @@
 
 <ResourcePreloader />
 
+@if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
+{
+    <link rel="stylesheet" href="@Assets["vendor/bootstrap/bootstrap.rtl.min.css"]" />
+}
+else
+{
+    <link rel="stylesheet" href="@Assets["vendor/bootstrap/bootstrap.min.css"]" />
+}
 <link rel="stylesheet" href="@Assets["vendor/bootstrap-icons/bootstrap-icons.min.css"]" />
 <link rel="stylesheet" href="@Assets["app.css"]" />
 <link rel="stylesheet" href="@Assets["HamiChap_MES_ERP.styles.css"]" />

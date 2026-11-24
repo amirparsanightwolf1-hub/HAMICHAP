@@ -1,0 +1,174 @@
+/* Shared HAMICHAP presentation. Screen-only rules preserve customer proof,
+   quotation and invoice print styles and leave specialist layouts intact. */
+:root {
+    --erp-background:#f3f6fa;
+    --erp-border:#dce4ed;
+    --erp-text:#263748;
+    --erp-heading:#173b58;
+    --erp-muted:#64748b;
+    --erp-shadow:0 2px 12px rgba(21,48,75,.055);
+    --erp-shadow-hover:0 5px 18px rgba(21,48,75,.09);
+    --bs-body-font-family:'Yekan Bakh',system-ui,sans-serif;
+    --bs-body-color:var(--erp-text);
+    --bs-body-bg:var(--erp-background);
+    --bs-border-color:var(--erp-border);
+    --bs-secondary-color:var(--erp-muted);
+    --bs-primary:#0c568d;
+    --bs-primary-rgb:12,86,141;
+    --bs-link-color:#0c568d;
+    --bs-link-hover-color:#08446f;
+}
+@media screen {
+    .app-layout { align-items:flex-start; }
+    .app-layout .sidebar { background:linear-gradient(165deg,#102d4a,#0b416b 80%); }
+    .app-layout .sidebar-header { padding:9px 9px 16px; margin-bottom:5px; }
+    .hc-sidebar-brand { display:flex; gap:10px; align-items:center; text-decoration:none; color:#fff; }
+    .hc-sidebar-brand:hover { color:#fff; }
+    .hc-sidebar-logo { display:grid; place-items:center; width:45px;height:45px; flex:0 0 45px; background:#fff; border-radius:10px; padding:5px; }
+    .hc-sidebar-logo img { width:100%;height:100%;object-fit:contain; }
+    .hc-sidebar-wordmark { display:grid; gap:3px; direction:ltr; line-height:1.3; }
+    .hc-sidebar-wordmark strong { font-size:1rem; letter-spacing:.06em; }
+    .hc-sidebar-wordmark small { color:#b9d0e4; font-size:.64rem; letter-spacing:.16em; }
+    .app-layout .side-menu .menu-group-label { color:#abc5d9; margin-block-start:6px; letter-spacing:.04em; }
+    .app-layout .side-menu .menu-button { background:transparent; border-color:transparent; min-height:40px; padding:9px 10px; gap:9px; }
+    .app-layout .side-menu .menu-button i { color:#c2d9ee; }
+    .app-layout .side-menu .menu-button:hover { color:#fff; background:rgba(255,255,255,.1); border-color:transparent; }
+    .app-layout .side-menu .menu-button:hover i { color:#fff; }
+    .app-layout .side-menu .menu-button.active { color:#153955; background:#eaf3fa; border-inline-start-color:#72bbdf; }
+    .app-layout .side-menu .menu-button.active i { color:#0c568d; }
+    .app-layout .nav-more-group summary { background:transparent; border-color:rgba(255,255,255,.12); min-height:37px; }
+    .app-layout .nav-more-group summary:hover,.app-layout .nav-more-group[open] summary { background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.2); }
+    .app-layout .nav-more-group a { padding-block:8px; }
+    .app-layout .main-content { padding:0; min-width:0; min-height:100dvh; overflow-x:clip; }
+    .hc-workspace-toolbar { display:flex; align-items:center; justify-content:flex-end; gap:12px; min-height:62px; padding:10px clamp(14px,2vw,28px); background:#fff; border-bottom:1px solid var(--erp-border); }
+    .hc-workspace-caption { display:flex; align-items:center; gap:8px; margin-inline-end:auto; color:#526b80; font-weight:650; font-size:.84rem; }
+    .hc-workspace-caption i { color:var(--erp-primary); }
+    .app-layout .hc-workspace-toolbar .language-switcher { position:static; z-index:auto; box-shadow:none; padding:3px; background:#f3f6fa; border-radius:9px; }
+    .app-layout .hc-workspace-toolbar .language-button { min-height:30px; padding:4px 9px; font-size:.75rem; background:transparent; }
+    .app-layout .hc-workspace-toolbar .language-button.active { background:#fff; border-color:#d3e2ee; }
+    .hc-account-link { display:inline-flex; align-items:center; gap:7px; font-size:.82rem; font-weight:650; text-decoration:none; color:#294e6b; white-space:nowrap; padding:7px 9px; border-radius:8px; }
+    .hc-account-link:hover { background:#eaf3fa; }
+    .hc-account-link i { font-size:1.16rem; }
+    .hc-workspace-body { min-width:0; padding:clamp(14px,2vw,28px); }
+    .hc-workspace-body > .page-container { padding-inline:0; padding-top:0; }
+    .hc-workspace-body > .container-fluid { padding-inline:0; }
+    .hc-workspace-body > h1,.hc-workspace-body > h2,.hc-workspace-body > h3 { font-size:clamp(1.3rem,2vw,1.75rem); margin-bottom:18px; }
+    .hc-workspace-body > .row { --bs-gutter-y:1rem; }
+    .hc-workspace-body .erp-page-header { flex-wrap:wrap; }
+    .hc-workspace-body .erp-page-header > div { min-width:0; }
+    .hc-workspace-body .erp-page-header:not(.inventory-hero,.operational-hero,.quotation-workspace-hero,.job-edit-header,.proof-page .erp-page-header) { gap:14px; }
+    .hc-workspace-body .erp-page-title { overflow-wrap:anywhere; }
+    .hc-workspace-body .btn:not(.btn-link),.hc-auth-content .btn { font-weight:600; }
+    .hc-workspace-body .btn-outline-secondary { --bs-btn-color:#405a70; --bs-btn-border-color:#c8d5e0; --bs-btn-hover-bg:#e9f1f8; --bs-btn-hover-color:#183c58; --bs-btn-hover-border-color:#acc6da; }
+    .hc-workspace-body .btn-outline-primary { --bs-btn-color:#0c568d; --bs-btn-border-color:#a8c8de; --bs-btn-hover-bg:#0c568d; --bs-btn-hover-border-color:#0c568d; }
+    .hc-workspace-body .btn-group { max-width:100%; }
+    .hc-workspace-body .card,.hc-auth-content .card { min-width:0; }
+    .hc-workspace-body .card-header { color:#2b4b65; }
+    .hc-workspace-body .form-control,.hc-workspace-body .form-select,.hc-auth-content .form-control { color:var(--erp-text); background-color:#fff; }
+    .hc-workspace-body .form-control[readonly],.hc-workspace-body .form-control:disabled,.hc-workspace-body .form-select:disabled { background:#f1f5f9; }
+    .hc-workspace-body .form-label,.hc-auth-content .form-label { font-weight:600; color:#3b5369; }
+    .hc-workspace-body .form-check-input,.hc-auth-content .form-check-input { cursor:pointer; }
+    .hc-workspace-body .form-check-input:checked,.hc-auth-content .form-check-input:checked { background-color:#0c568d; border-color:#0c568d; }
+    .hc-workspace-body .table-responsive { max-width:100%; overscroll-behavior-inline:contain; }
+    .hc-workspace-body .table > thead th { font-size:.8rem; }
+    .hc-workspace-body .table > tbody td { font-size:.87rem; }
+    .hc-workspace-body .table td,.hc-workspace-body .table th { border-color:#e2e8ef; }
+    .hc-workspace-body .table td .btn { white-space:nowrap; }
+    .hc-workspace-body .pagination { flex-wrap:wrap; gap:3px; }
+    .hc-workspace-body .page-link { border-radius:6px; color:#0c568d; }
+    .hc-workspace-body .active>.page-link { background:#0c568d; border-color:#0c568d; color:#fff; }
+    .hc-workspace-body .alert { border-radius:10px; overflow-wrap:anywhere; }
+    .hc-workspace-body .searchable-select-menu { border-color:#cbd8e4; border-radius:9px; box-shadow:0 8px 24px rgba(21,48,75,.13); }
+    .hc-workspace-body .searchable-select-option:hover { background:#eaf3fa; }
+    .hc-standard-header { padding:18px 20px; border:1px solid #dce5ee; background:linear-gradient(110deg,#eaf3fa,#fff 85%); border-radius:13px; }
+    .hc-heading-content { display:flex; align-items:center; gap:13px; min-width:0; }
+    .hc-heading-icon { display:grid; place-items:center; width:46px; height:46px; flex:0 0 46px; color:#0c568d; background:#eaf3fa; border:1px solid #d8e7f1; border-radius:12px; font-size:1.25rem; }
+    .hc-standard-header .erp-page-title { font-size:clamp(1.2rem,2.4vw,1.65rem); font-weight:720; }
+    .hc-admin-dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr)); gap:14px; }
+    .hc-admin-tile { display:flex; flex-direction:column; min-width:0; gap:12px; padding:20px; border:1px solid var(--erp-border); border-radius:13px; background:#fff; box-shadow:var(--erp-shadow); text-decoration:none; color:var(--erp-text); }
+    .hc-admin-tile:hover { border-color:#95b8d2; box-shadow:var(--erp-shadow-hover); }
+    .hc-admin-tile h2 { font-size:1.05rem; margin:0; font-weight:700; }
+    .hc-admin-tile p { color:var(--erp-muted); font-size:.85rem; margin:0; flex:1; }
+    .hc-admin-tile-action { display:flex; align-items:center; justify-content:space-between; font-weight:650; color:var(--erp-primary); padding-top:12px; border-top:1px solid var(--erp-border); font-size:.85rem; }
+    .hc-admin-page .card,.hc-account-page .card { box-shadow:var(--erp-shadow); }
+    .hc-admin-page .table-responsive { border:1px solid var(--erp-border); border-radius:10px; background:#fff; }
+    .hc-admin-page .list-group-item.active { background:#0c568d; border-color:#0c568d; }
+    .hc-admin-page .row { --bs-gutter-y:12px; }
+    .hc-admin-form { max-width:880px; }
+    .hc-admin-field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px 18px; }
+    .hc-admin-field-grid > .mb-3 { margin-bottom:0!important; min-width:0; }
+    .hc-admin-field-grid label { color:#3b5369; font-weight:600; font-size:.85rem; margin-bottom:6px; }
+    .hc-admin-roles { grid-column:1/-1; padding:13px; border:1px solid var(--erp-border); border-radius:9px; }
+    .hc-admin-role-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr)); gap:8px; }
+    .hc-admin-role-grid .form-check { margin:0; }
+    .hc-account-grid { display:grid; grid-template-columns:minmax(180px,245px) minmax(0,1fr); gap:16px; align-items:start; }
+    .hc-account-nav { padding:8px; background:#fff; border:1px solid var(--erp-border); border-radius:12px; }
+    .hc-account-nav .nav { gap:4px; }
+    .hc-account-nav .nav-link { display:flex; align-items:center; gap:9px; color:#3e5870; font-size:.88rem; border-radius:8px; }
+    .hc-account-nav .nav-link:hover { background:#f0f5fa; }
+    .hc-account-nav .nav-link.active { background:#e5f0fa; color:#0c568d; font-weight:700; }
+    .hc-account-body .card-body { padding:clamp(15px,2.5vw,26px); }
+    .hc-account-body h3,.hc-account-body h4 { font-size:1.15rem; margin-bottom:17px; }
+    .hc-account-body .row > [class*="col-"] { width:100%; max-width:550px; }
+    .hc-account-body .table-responsive { overflow:auto; }
+    .hc-auth-page { min-height:100vh; min-height:100dvh; padding:clamp(14px,4vw,36px); display:grid; place-items:center; background:radial-gradient(ellipse at 12% 18%,#e1edf7 0,transparent 48%),#f3f6fa; }
+    .hc-auth-shell { width:min(100%,760px); background:#fff; border:1px solid var(--erp-border); border-radius:18px; box-shadow:0 15px 50px rgba(15,42,70,.1); overflow:hidden; }
+    .hc-auth-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:linear-gradient(125deg,#102d4a,#0b416b); padding:18px 24px; }
+    .hc-auth-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff; }
+    .hc-auth-brand:hover { color:#fff; }
+    .hc-auth-brand > span { width:44px; height:44px; display:grid; place-items:center; padding:5px; background:#fff; border-radius:10px; }
+    .hc-auth-brand img { width:100%;height:100%;object-fit:contain; }
+    .hc-auth-brand > div { direction:ltr; display:grid; gap:2px; line-height:1.3; }
+    .hc-auth-brand strong { font-size:.98rem; letter-spacing:.06em; }
+    .hc-auth-brand small { color:#bdd5e8; font-size:.65rem; letter-spacing:.15em; }
+    .hc-auth-languages { display:flex; gap:3px; padding:3px; border-radius:8px; background:rgba(255,255,255,.12); }
+    .hc-auth-languages a { color:#e3edf6; font-size:.78rem; text-decoration:none; padding:4px 9px; border-radius:6px; }
+    .hc-auth-languages a.is-active { color:#0c568d; background:#fff; font-weight:700; }
+    .hc-auth-content { padding:clamp(20px,4vw,36px); max-width:100%; overflow-wrap:anywhere; }
+    .hc-auth-content > h1 { font-size:1.65rem; font-weight:720; margin:0 0 10px; }
+    .hc-auth-content h2 { font-size:1.1rem; font-weight:600; }
+    .hc-auth-content hr { border-color:#cdd8e4; }
+    .hc-auth-content .row { --bs-gutter-y:18px; }
+    .hc-auth-content .row > [class*="col-"] { width:100%; max-width:100%; }
+    .hc-auth-content form { max-width:480px; }
+    .hc-auth-content .form-floating > label { color:#64748b; }
+    .hc-auth-footer { padding:16px 24px; background:#f8fafc; border-top:1px solid var(--erp-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:.79rem; color:var(--erp-muted); }
+    .hc-auth-footer a { text-decoration:none; font-weight:650; }
+    .hc-status-page { min-height:55vh; display:grid; place-items:center; }
+    .hc-status-card { width:min(100%,520px); padding:clamp(20px,4vw,36px); border:1px solid var(--erp-border); background:#fff; border-radius:15px; box-shadow:var(--erp-shadow); }
+    .hc-status-card .hc-heading-icon { margin-bottom:16px; }
+    .hc-status-card h1 { font-size:1.55rem; }
+    .hc-status-card p { color:var(--erp-muted); }
+    .hc-status-card code { overflow-wrap:anywhere; }
+    .job-workspace .job-workspace-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr)); gap:14px; }
+    .job-workspace .job-workspace-record { padding:12px 14px; gap:12px; overflow-wrap:anywhere; }
+    .job-workspace .card { box-shadow:var(--erp-shadow); }
+    @media(min-width:769px) {
+        .app-layout .sidebar { position:sticky; top:0; height:100vh; height:100dvh; min-height:0; align-self:flex-start; }
+    }
+    @media(max-width:768px) {
+        .app-layout .sidebar { align-self:auto; }
+        .app-layout .side-menu .menu-button { min-height:45px; }
+        .hc-workspace-toolbar { padding-inline-start:67px; min-height:68px; gap:7px; flex-wrap:wrap; }
+        .hc-workspace-caption { display:none; }
+        .hc-workspace-body { padding:14px 11px 26px; }
+        [dir=rtl] .app-layout .sidebar { left:auto; right:0; transform:translateX(100%); }
+        [dir=rtl] .app-layout .sidebar.show { left:auto; right:0; transform:translateX(0); }
+        [dir=rtl] .app-layout .mobile-menu-btn { left:auto; right:10px; }
+        .hc-account-grid { grid-template-columns:1fr; }
+        .hc-account-nav .nav { flex-direction:row!important; flex-wrap:wrap; }
+        .hc-account-nav .nav-link { font-size:.78rem; }
+        .hc-admin-field-grid { grid-template-columns:1fr; }
+        .hc-standard-header { padding:14px; }
+    }
+    @media(max-width:420px) {
+        .hc-account-link span { display:none; }
+        .hc-account-link { padding:7px; }
+        .hc-auth-header,.hc-auth-footer { padding:14px 16px; }
+        .hc-heading-icon { width:38px; height:38px; flex-basis:38px; }
+    }
+}
+@media print {
+    .hc-workspace-toolbar,.mobile-menu-btn,.sidebar-backdrop { display:none!important; }
+    .hc-workspace-body { padding:0!important; }
+}
