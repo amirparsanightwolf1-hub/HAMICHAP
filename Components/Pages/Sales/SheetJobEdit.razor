@@ -182,7 +182,7 @@
                     <label class="form-label"><i class="bi bi-grid-3x3 app-field-icon" aria-hidden="true"></i> @LocalizationService["Zinc"]</label>
                     <input class="form-control" value="@PlateCount" readonly />
 
-                    <label class="form-label job-edit-quantity-label"><i class="bi bi-files app-field-icon" aria-hidden="true"></i> @LocalizationService["PrintRunSheets"]</label>
+                    <label class="form-label job-edit-quantity-label"><i class="bi bi-files app-field-icon" aria-hidden="true"></i> @ToolingText("Sheet count", "تعداد شیت")</label>
                     <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.PrintRunSheets" />
 
                     <label class="form-label" for="sheet-before-cut-length"><i class="bi bi-rulers app-field-icon" aria-hidden="true"></i> @ToolingText("Size before cut (cm)", "ابعاد قبل از برش (سانتی‌متر)")</label>
@@ -207,7 +207,7 @@
                     <label class="form-label"><i class="bi bi-speedometer2 app-field-icon" aria-hidden="true"></i> @LocalizationService["Grammage"]</label>
                     <InputNumber class="form-control" @bind-Value="spec.Grammage" />
 
-                    <label class="form-label job-edit-quantity-label"><i class="bi bi-123 app-field-icon" aria-hidden="true"></i> @LocalizationService["SheetCount"]</label>
+                    <label class="form-label job-edit-quantity-label"><i class="bi bi-123 app-field-icon" aria-hidden="true"></i> @ToolingText("Sheet count after cut", "تعداد شیت بعد از برش")</label>
                     <InputNumber class="form-control job-edit-quantity-input" @bind-Value="spec.SheetCount" />
 
                     <label class="form-label"><i class="bi bi-geo-alt app-field-icon" aria-hidden="true"></i> @LocalizationService["ProductionLocation"]</label>
