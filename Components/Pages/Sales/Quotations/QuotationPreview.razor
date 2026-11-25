@@ -111,7 +111,7 @@
                                     @if (Formal) { <td><span dir="ltr">@Display(line.TaxItemCode)</span>@if (!string.IsNullOrWhiteSpace(line.TaxTreatmentReason)) { <small class="hc-quote-item-code">@line.TaxTreatmentReason</small> }</td> }
                                     <td class="hc-quote-num">@line.Quantity.ToString("N2")</td><td>@(line.Item?.Unit?.Name ?? "—")</td>
                                     <td class="hc-quote-num">@Money(line.UnitPrice)</td><td class="hc-quote-num">@Money(net)</td>
-                                    <td class="hc-quote-num">@(HasTaxBreakdown ? Money(vat) : "—")@if (HasTaxBreakdown) { <small class="hc-quote-item-code">@line.VatRate?.ToString("0.##")%</small> }</td>
+                                    <td class="hc-quote-num">@(HasTaxBreakdown ? Money(vat) : "—")@if (HasTaxBreakdown) { <small class="hc-quote-item-code">@(line.VatRate?.ToString("0.##"))%</small> }</td>
                                     <td class="hc-quote-num"><strong>@Money(net + vat)</strong></td>
                                 </tr>
                             }
@@ -151,7 +151,7 @@
     private string? error;
     private bool Formal => quotation?.QuotationType == QuotationType.Formal;
     private bool Draft => quotation?.Status is QuotationStatus.Draft or QuotationStatus.RevisionRequired or QuotationStatus.PendingApproval or QuotationStatus.Approved or QuotationStatus.ReadyToSend;
-    private bool HasTaxBreakdown => !string.IsNullOrWhiteSpace(quotation?.CurrencyCode) && quotation.Lines.All(x => x.VatRate.HasValue);
+    private bool HasTaxBreakdown => quotation is not null && !string.IsNullOrWhiteSpace(quotation.CurrencyCode) && quotation.Lines.All(x => x.VatRate.HasValue);
     protected override async Task OnParametersSetAsync()
     {
         loading = true; error = null; quotation = null; parties = null; jobNames.Clear();

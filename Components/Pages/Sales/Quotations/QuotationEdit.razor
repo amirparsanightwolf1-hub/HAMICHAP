@@ -784,6 +784,8 @@
         if (quotation == null || !CanEditPricing || IsWriting) return;
         try
         {
+            ValidateQuotation();
+            NormalizeUnitPrices();
             CalculateFinalAmount();
             QuotationDocument.Capture(quotation, quotation.Customer, Configuration);
         }

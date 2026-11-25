@@ -16,18 +16,21 @@ public class QuotationService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly PermissionService _permissions;
     private readonly IConfiguration _configuration;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbFactory;
 
     public QuotationService(
         ApplicationDbContext db,
         NumberSeriesService numberSeries,
         UserManager<ApplicationUser> userManager,
-        PermissionService permissions, IConfiguration configuration)
+        PermissionService permissions, IConfiguration configuration,
+        IDbContextFactory<ApplicationDbContext> dbFactory)
     {
         _db = db;
         _numberSeries = numberSeries;
         _userManager = userManager;
         _permissions = permissions;
         _configuration = configuration;
+        _dbFactory = dbFactory;
     }
 
     private async Task RequireQuotationPermissionAsync(ClaimsPrincipal principal)
@@ -172,11 +175,12 @@ public class QuotationService
 
     public async Task AssignPricingUserAsEvaluatorAsync(long quotationId, string userId)
     {
+        await using var db = await _dbFactory.CreateDbContextAsync();
         if (string.IsNullOrWhiteSpace(userId))
             throw new UnauthorizedAccessException(
                 "An authenticated user is required to assign the evaluator.");
 
-        var quotation = await _db.Quotations
+        var quotation = await db.Quotations
             .Include(x => x.SalesRequest)
             .Include(x => x.Lines)
             .FirstOrDefaultAsync(x => x.Id == quotationId);
@@ -204,14 +208,14 @@ public class QuotationService
             .Distinct()
             .ToArray();
 
-        var requests = await _db.SalesRequests
+        var requests = await db.SalesRequests
             .Where(r => requestIds.Contains(r.Id))
             .ToListAsync();
 
         foreach (var request in requests)
             request.AssignedToUserId = userId;
 
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
     }
 
     // A quotation may be prepared internally while proofs are in progress,
@@ -220,8 +224,9 @@ public class QuotationService
 
     public async Task SendToCustomerAsync(long quotationId)
     {
-        await using var tx = await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
-        var quotation = await _db.Quotations.Include(x => x.Lines).Include(x => x.Customer).FirstAsync(x => x.Id == quotationId);
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        await using var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+        var quotation = await db.Quotations.Include(x => x.Lines).Include(x => x.Customer).FirstAsync(x => x.Id == quotationId);
         if (quotation.Status is not (QuotationStatus.Draft or QuotationStatus.RevisionRequired or
             QuotationStatus.PendingApproval or QuotationStatus.Approved or QuotationStatus.ReadyToSend or QuotationStatus.CustomerNegotiation))
             throw new InvalidOperationException("This quotation cannot be sent.");
@@ -229,10 +234,10 @@ public class QuotationService
             throw new InvalidOperationException("Complete pricing and quantities before sending.");
         var parties = QuotationDocument.Capture(quotation, quotation.Customer, _configuration);
         quotation.FinalAmount = InvoiceVat.Gross(quotation);
-        await SalesProofService.RequireAcceptedProofsAsync(_db, quotationId);
+        await SalesProofService.RequireAcceptedProofsAsync(db, quotationId);
         quotation.DocumentPartiesJson = QuotationDocument.Serialize(parties);
         quotation.Status = QuotationStatus.SentToCustomer;
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
         await tx.CommitAsync();
     }
 

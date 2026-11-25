@@ -328,7 +328,7 @@
 
 /* A4 document system: formal registration panel or lighter commercial quote. */
 .hc-quote-document { max-width: 210mm; padding: 10mm; font-size: 12px; }
-.hc-quote-document[dir="rtl"] { font-family: "YekanBakh", Tahoma, Arial, sans-serif; }
+.hc-quote-document[dir="rtl"] { font-family: "Yekan Bakh", Tahoma, Arial, sans-serif; }
 .hc-quote-header { gap: 16px; padding-bottom: 16px; }
 .hc-quote-heading h1 { font-size: 21px; }
 .hc-quote-logo { width: 60px; height: 60px; }
