@@ -238,6 +238,70 @@
                         }
                     </div>
 
+                    @if (quotation.QuotationType == QuotationType.Formal)
+                    {
+                        <div class="col-12">
+                            <section class="border rounded p-3" aria-label="@VatText("Seller company", "شرکت فروشنده")">
+                                <h2 class="h6 mb-2">@VatText("Seller company", "شرکت فروشنده")</h2>
+                                @if (CanEditPricing)
+                                {
+                                    <label class="form-label" for="seller-company-search">@VatText("Company name", "نام شرکت")</label>
+                                    <input id="seller-company-search" class="form-control mb-2" @bind="sellerSearch" @bind:event="oninput" disabled="@IsWriting" placeholder="@VatText("Search or enter company name", "جستجو یا ورود نام شرکت")" />
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <InputSelect TValue="int?" class="form-select flex-grow-1" style="max-width:560px" @bind-Value="quotation.SellerCompanyId" disabled="@IsWriting">
+                                            <option value="">@VatText("Select a saved company", "انتخاب شرکت ذخیره‌شده")</option>
+                                            @foreach (var company in FilteredSellers)
+                                            {
+                                                <option value="@company.Id">@company.LegalName — @company.NationalId</option>
+                                            }
+                                        </InputSelect>
+                                        <button class="btn btn-outline-primary" type="button" disabled="@IsWriting" @onclick="StartSeller"><i class="bi bi-plus-circle"></i> @VatText("Add company", "افزودن شرکت")</button>
+                                        @if (SelectedSeller is not null)
+                                        {
+                                            <button class="btn btn-outline-secondary" type="button" disabled="@IsWriting" @onclick="EditSeller">@VatText("Edit company", "ویرایش شرکت")</button>
+                                        }
+                                    </div>
+                                    @if (sellerDraft is not null)
+                                    {
+                                        <div class="row g-2 mt-2">
+                                            <div class="col-md-6"><label class="form-label">@VatText("Registered company name", "نام ثبتی شرکت") *</label><input class="form-control" maxlength="200" @bind="sellerDraft.LegalName" disabled="@IsWriting" /></div>
+                                            <div class="col-md-6"><label class="form-label">@VatText("National ID", "شناسه ملی") *</label><input class="form-control" maxlength="64" @bind="sellerDraft.NationalId" disabled="@(IsWriting || sellerDraft.Id != 0)" /></div>
+                                            <div class="col-md-4"><label class="form-label">@VatText("Economic code", "کد اقتصادی") *</label><input class="form-control" maxlength="64" @bind="sellerDraft.EconomicCode" disabled="@IsWriting" /></div>
+                                            <div class="col-md-4"><label class="form-label">@VatText("Registration number", "شماره ثبت")</label><input class="form-control" maxlength="64" @bind="sellerDraft.RegistrationNumber" disabled="@IsWriting" /></div>
+                                            <div class="col-md-4"><label class="form-label">@VatText("Postal code", "کد پستی") *</label><input class="form-control" maxlength="32" @bind="sellerDraft.PostalCode" disabled="@IsWriting" /></div>
+                                            <div class="col-12"><label class="form-label">@VatText("Registered address", "نشانی ثبتی") *</label><textarea class="form-control" rows="2" maxlength="600" @bind="sellerDraft.Address" disabled="@IsWriting"></textarea></div>
+                                            <div class="col-md-6"><label class="form-label">@VatText("Phone", "تلفن")</label><input class="form-control" maxlength="64" @bind="sellerDraft.Phone" disabled="@IsWriting" /></div>
+                                            <div class="col-md-6"><label class="form-label">@VatText("Email", "ایمیل")</label><input class="form-control" type="email" maxlength="254" @bind="sellerDraft.Email" disabled="@IsWriting" /></div>
+                                            <div class="col-md-4"><label class="form-label">@VatText("Tax jurisdiction (e.g. IR)", "کشور مالیاتی (مانند IR)") *</label><input class="form-control" maxlength="2" @bind="sellerDraft.Jurisdiction" disabled="@(IsWriting || sellerDraft.Id != 0)" /></div>
+                                            <div class="col-md-4"><label class="form-label">@VatText("Currency (e.g. IRR)", "واحد پول (مانند IRR)") *</label><input class="form-control" maxlength="3" @bind="sellerDraft.CurrencyCode" disabled="@IsWriting" /></div>
+                                            <div class="col-md-4"><label class="form-label">@VatText("Tax memory ID (for invoicing)", "شناسه یکتای حافظه مالیاتی (برای فاکتور)")</label><input class="form-control" maxlength="100" @bind="sellerDraft.TaxMemoryId" disabled="@IsWriting" /></div>
+                                            <div class="col-12 d-flex gap-2">
+                                                <button type="button" class="btn btn-primary" disabled="@IsWriting" @onclick="SaveSellerAsync">@VatText("Save company for reuse", "ذخیره شرکت برای استفاده مجدد")</button>
+                                                <button type="button" class="btn btn-outline-secondary" disabled="@IsWriting" @onclick="() => sellerDraft = null">@VatText("Cancel", "انصراف")</button>
+                                            </div>
+                                            <div class="form-text">@VatText("Changes affect future documents and drafts only, not already sent quotations. Enter verified company details; no automatic registry lookup is performed.", "تغییرات فقط بر اسناد آتی و پیش‌نویس‌ها اثر دارد، نه پیش‌فاکتورهای ارسال‌شده. اطلاعات تأییدشده را وارد کنید؛ استعلام خودکار انجام نمی‌شود.")</div>
+                                        </div>
+                                    }
+                                    @if (SelectedSeller is { } selected)
+                                    {
+                                        <div class="small mt-3"><strong>@selected.LegalName</strong> · @selected.NationalId · @selected.CurrencyCode<div>@selected.Address</div></div>
+                                        @if (!string.IsNullOrWhiteSpace(quotation.CurrencyCode) && quotation.CurrencyCode != selected.CurrencyCode)
+                                        {
+                                            <div class="text-danger small">@VatText("Quotation currency must match the seller's currency.", "واحد پول پیش‌فاکتور باید با واحد پول فروشنده یکسان باشد.")</div>
+                                        }
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(sellerError)) { <div class="alert alert-danger mt-2 mb-0" role="alert">@sellerError</div> }
+                                }
+                                else
+                                {
+                                    var savedSeller = QuotationDocument.Read(quotation.DocumentPartiesJson)?.Seller;
+                                    <strong>@(savedSeller?.Name ?? "—")</strong>
+                                    @if (savedSeller is not null) { <div class="small">@savedSeller.IdentityNumber · @savedSeller.Address</div> }
+                                }
+                            </section>
+                        </div>
+                    }
+
                     <div class="col-md-3">
 
                         <label class="form-label">
@@ -636,12 +700,22 @@
     private bool isApproving;
     private bool isRejecting;
     private bool isDeciding;
-    private bool IsWriting => isSaving || isSubmitting || isDeciding;
+    private bool IsWriting => isSaving || isSubmitting || isDeciding || isSavingSeller;
     private bool canManageQuotation;
     private bool CanEditPricing => canManageQuotation && IsEditable;
 
     private string? errorMessage;
     private string? successMessage;
+    private List<SellerCompany> sellerCompanies = new();
+    private SellerCompany? sellerDraft;
+    private string sellerSearch = "";
+    private string? sellerError;
+    private bool isSavingSeller;
+    private SellerCompany? SelectedSeller => sellerCompanies.FirstOrDefault(x => x.Id == quotation?.SellerCompanyId);
+    private IEnumerable<SellerCompany> FilteredSellers => sellerCompanies.Where(x =>
+        x.Id == quotation?.SellerCompanyId || string.IsNullOrWhiteSpace(sellerSearch) ||
+        x.LegalName.Contains(sellerSearch.Trim(), StringComparison.OrdinalIgnoreCase) ||
+        x.NationalId.Contains(sellerSearch.Trim(), StringComparison.OrdinalIgnoreCase));
     private readonly HashSet<long> invalidPriceLineIds = new();
 
     private bool IsEditable =>
@@ -705,6 +779,10 @@
         try
         {
             Db.ChangeTracker.Clear();
+            sellerDraft = null; sellerError = null; sellerSearch = "";
+            sellerCompanies = canManageQuotation
+                ? await Db.SellerCompanies.AsNoTracking().OrderBy(x => x.LegalName).ToListAsync()
+                : new List<SellerCompany>();
             quotation = await Db.Quotations
 
                 .Include(x => x.Customer)
@@ -779,6 +857,99 @@
         return request.RequestNumber;
     }
 
+    private void StartSeller()
+    {
+        sellerError = null;
+        sellerDraft = new SellerCompany
+        {
+            LegalName = sellerSearch.Trim(),
+            Jurisdiction = Configuration["TaxReporting:Jurisdiction"] ?? "",
+            CurrencyCode = quotation?.CurrencyCode ?? Configuration["TaxReporting:CurrencyCode"] ?? ""
+        };
+    }
+
+    private void EditSeller()
+    {
+        if (SelectedSeller is not { } source) return;
+        sellerError = null;
+        sellerDraft = new SellerCompany
+        {
+            Id = source.Id, RowVersion = source.RowVersion.ToArray(),
+            LegalName = source.LegalName,
+            NationalId = source.NationalId,
+            EconomicCode = source.EconomicCode,
+            RegistrationNumber = source.RegistrationNumber,
+            Address = source.Address,
+            PostalCode = source.PostalCode,
+            Phone = source.Phone,
+            Email = source.Email,
+            Jurisdiction = source.Jurisdiction,
+            CurrencyCode = source.CurrencyCode,
+            TaxMemoryId = source.TaxMemoryId,
+        };
+    }
+
+    private async Task SaveSellerAsync()
+    {
+        if (sellerDraft is null || quotation is null || !CanEditPricing || IsWriting ||
+            quotation.QuotationType != QuotationType.Formal) return;
+        isSavingSeller = true; sellerError = null;
+        try
+        {
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation"))
+                throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+            QuotationDocument.NormalizeSeller(sellerDraft);
+            QuotationDocument.ValidateSeller(sellerDraft);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            if (await db.SellerCompanies.AnyAsync(x => x.Jurisdiction == sellerDraft.Jurisdiction &&
+                x.NationalId == sellerDraft.NationalId && x.Id != sellerDraft.Id))
+                throw new InvalidOperationException(VatText("This company is already saved. Select it from the directory.", "این شرکت قبلاً ذخیره شده است؛ آن را از فهرست انتخاب کنید."));
+            SellerCompany saved;
+            if (sellerDraft.Id == 0)
+            {
+                saved = sellerDraft;
+                db.SellerCompanies.Add(saved);
+            }
+            else
+            {
+                saved = await db.SellerCompanies.SingleAsync(x => x.Id == sellerDraft.Id);
+                if (saved.Jurisdiction != sellerDraft.Jurisdiction || saved.NationalId != sellerDraft.NationalId)
+                    throw new InvalidOperationException("Registered company identity cannot be changed; add a different company instead.");
+                db.Entry(saved).Property(x => x.RowVersion).OriginalValue = sellerDraft.RowVersion;
+                saved.LegalName = sellerDraft.LegalName;
+                saved.EconomicCode = sellerDraft.EconomicCode;
+                saved.RegistrationNumber = sellerDraft.RegistrationNumber;
+                saved.Address = sellerDraft.Address;
+                saved.PostalCode = sellerDraft.PostalCode;
+                saved.Phone = sellerDraft.Phone;
+                saved.Email = sellerDraft.Email;
+                saved.CurrencyCode = sellerDraft.CurrencyCode;
+                saved.TaxMemoryId = sellerDraft.TaxMemoryId;
+            }
+            await db.SaveChangesAsync();
+            sellerCompanies = await db.SellerCompanies.AsNoTracking().OrderBy(x => x.LegalName).ToListAsync();
+            quotation.SellerCompanyId = saved.Id;
+            if (string.IsNullOrWhiteSpace(quotation.CurrencyCode)) quotation.CurrencyCode = saved.CurrencyCode;
+            sellerSearch = ""; sellerDraft = null;
+        }
+        catch (DbUpdateConcurrencyException) { sellerError = VatText("Company was updated by someone else. Reload the quotation and try again.", "شرکت توسط کاربر دیگری تغییر کرده است؛ پیش‌فاکتور را بارگذاری مجدد کنید."); }
+        catch (DbUpdateException) { sellerError = VatText("Company could not be saved. Check for an existing company with this national ID.", "ذخیره شرکت ممکن نیست؛ شناسه ملی تکراری را بررسی کنید."); }
+        catch (Exception ex) { sellerError = ex.Message; }
+        finally { isSavingSeller = false; }
+    }
+
+    private async Task ValidateDocumentAsync()
+    {
+        if (quotation is null) return;
+        if (sellerDraft is not null && quotation.QuotationType == QuotationType.Formal)
+            throw new InvalidOperationException(VatText("Save or cancel the company details first.", "ابتدا مشخصات شرکت را ذخیره یا لغو کنید."));
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var seller = quotation.SellerCompanyId is int id
+            ? await db.SellerCompanies.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id) : null;
+        QuotationDocument.Capture(quotation, quotation.Customer, Configuration, seller);
+    }
+
     private async Task SaveAndPreviewAsync()
     {
         if (quotation == null || !CanEditPricing || IsWriting) return;
@@ -787,7 +958,7 @@
             ValidateQuotation();
             NormalizeUnitPrices();
             CalculateFinalAmount();
-            QuotationDocument.Capture(quotation, quotation.Customer, Configuration);
+            await ValidateDocumentAsync();
         }
         catch (Exception ex) { errorMessage = ex.Message; return; }
         await SaveAsync();
@@ -811,6 +982,7 @@
                 throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
 
             ValidateQuotation();
+            if (quotation.QuotationType != QuotationType.Formal) quotation.SellerCompanyId = null;
 
             NormalizeUnitPrices();
             CalculateFinalAmount();
@@ -853,9 +1025,10 @@
             if (IsEditable)
             {
                 ValidateQuotation();
+                if (quotation.QuotationType != QuotationType.Formal) quotation.SellerCompanyId = null;
                 NormalizeUnitPrices();
                 CalculateFinalAmount();
-                QuotationDocument.Capture(quotation, quotation.Customer, Configuration);
+                await ValidateDocumentAsync();
                 var pricingUser = await GetCurrentUserAsync();
                 await Db.SaveChangesAsync();
                 await QuotationService.AssignPricingUserAsEvaluatorAsync(quotation.Id, pricingUser.Id);

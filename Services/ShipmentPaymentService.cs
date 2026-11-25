@@ -26,7 +26,34 @@ public sealed class ShipmentPaymentService(IDbContextFactory<ApplicationDbContex
             if (existing.InvoiceType != invoiceType) throw new InvalidOperationException("An invoice has already been issued with a different or unclassified type.");
             return existing.Id;
         }
-        var invoice = await new SalesInvoiceService(db, new NumberSeriesService(db)).CreateForDeliveryAsync(deliveryId, employee, invoiceType, TaxSellerProfile.FromConfiguration(configuration));
+        var quotation = await db.SalesDeliveries.AsNoTracking().Where(x => x.Id == deliveryId)
+            .Select(x => x.SalesOrder.Quotation).SingleOrDefaultAsync()
+            ?? throw new InvalidOperationException("Delivery or quotation not found.");
+        TaxSellerProfile seller;
+        if (quotation.QuotationType == QuotationType.Formal && quotation.SellerCompanyId is int companyId)
+        {
+            seller = QuotationDocument.Read(quotation.DocumentPartiesJson)?.TaxSeller
+                ?? throw new InvalidOperationException("The accepted formal quotation is missing its seller snapshot.");
+            // A tax memory ID can be supplied later, but only for the exact same
+            // registered issuer. Never replace the accepted legal party details.
+            if (seller.Jurisdiction == "IR" && string.IsNullOrWhiteSpace(seller.TaxMemoryId))
+            {
+                var current = await db.SellerCompanies.AsNoTracking().SingleAsync(x => x.Id == companyId);
+                if (current.Jurisdiction == seller.Jurisdiction && current.NationalId == seller.NationalId &&
+                    current.CurrencyCode == seller.CurrencyCode)
+                    seller = seller with { TaxMemoryId = current.TaxMemoryId };
+            }
+            seller.ValidateForInvoice();
+        }
+        else
+        {
+            seller = TaxSellerProfile.FromConfiguration(configuration);
+            var previousSeller = QuotationDocument.Read(quotation.DocumentPartiesJson)?.Seller;
+            if (quotation.QuotationType == QuotationType.Formal && previousSeller is not null &&
+                previousSeller.IdentityNumber != seller.NationalId)
+                throw new InvalidOperationException("Configured invoice seller does not match the accepted formal quotation.");
+        }
+        var invoice = await new SalesInvoiceService(db, new NumberSeriesService(db)).CreateForDeliveryAsync(deliveryId, employee, invoiceType, seller);
         var recipients = await EmployeeInboxEvents.RecipientsAsync(db, "Sales.Invoices.ConfirmPayment");
         EmployeeInboxEvents.Add(db, recipients, EmployeeInboxEvents.InvoiceReady, invoice.Id,
             "Invoice awaiting payment: " + invoice.InvoiceNumber, "Verify receipt of the full invoice amount.",

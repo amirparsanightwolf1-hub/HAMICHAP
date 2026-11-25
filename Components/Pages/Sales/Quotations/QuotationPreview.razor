@@ -168,7 +168,9 @@
                 throw new InvalidOperationException(Text("Cancelled or expired quotations cannot be generated.", "پیش‌فاکتور لغوشده یا منقضی قابل صدور نیست."));
             if (quotation.QuotationType is not null)
             {
-                parties = Draft ? QuotationDocument.Capture(quotation, quotation.Customer, Configuration)
+                var seller = Draft && quotation.SellerCompanyId is int sellerId
+                    ? await db.SellerCompanies.AsNoTracking().SingleOrDefaultAsync(x => x.Id == sellerId) : null;
+                parties = Draft ? QuotationDocument.Capture(quotation, quotation.Customer, Configuration, seller)
                     : QuotationDocument.Read(quotation.DocumentPartiesJson);
                 if (parties is null) throw new InvalidOperationException("Quotation party snapshot is missing. Reconcile the saved document before printing.");
                 if (quotation.FinalAmount != InvoiceVat.Gross(quotation))

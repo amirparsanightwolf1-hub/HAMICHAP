@@ -55,13 +55,18 @@ public sealed record TaxSellerProfile(string Jurisdiction, string CurrencyCode, 
         var profile = new TaxSellerProfile(Get("Jurisdiction").ToUpperInvariant(), Get("CurrencyCode").ToUpperInvariant(),
             Get("LegalName"), Get("NationalId"), Get("EconomicCode"), Get("RegistrationNumber"),
             Get("Address"), Get("PostalCode"), Get("TaxMemoryId"));
-        if (profile.Jurisdiction.Length != 2 || profile.CurrencyCode.Length != 3 ||
-            string.IsNullOrWhiteSpace(profile.LegalName) || string.IsNullOrWhiteSpace(profile.NationalId) ||
-            string.IsNullOrWhiteSpace(profile.EconomicCode) || string.IsNullOrWhiteSpace(profile.Address) ||
-            string.IsNullOrWhiteSpace(profile.PostalCode) ||
-            (profile.Jurisdiction == "IR" && string.IsNullOrWhiteSpace(profile.TaxMemoryId)))
-            throw new InvalidOperationException("Configure the registered seller, jurisdiction, currency and tax identification in TaxReporting before issuing new invoices.");
+        profile.ValidateForInvoice();
         return profile;
+    }
+
+    public void ValidateForInvoice()
+    {
+        if (Jurisdiction.Length != 2 || CurrencyCode.Length != 3 ||
+            string.IsNullOrWhiteSpace(LegalName) || string.IsNullOrWhiteSpace(NationalId) ||
+            string.IsNullOrWhiteSpace(EconomicCode) || string.IsNullOrWhiteSpace(Address) ||
+            string.IsNullOrWhiteSpace(PostalCode) ||
+            (Jurisdiction == "IR" && string.IsNullOrWhiteSpace(TaxMemoryId)))
+            throw new InvalidOperationException("Complete the registered seller, jurisdiction, currency and tax identification (including tax memory ID for Iran) before issuing new invoices.");
     }
     public static TaxSellerProfile? Read(string? json)
     {

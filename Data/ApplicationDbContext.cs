@@ -27,6 +27,24 @@ namespace HamiChap_MES_ERP.Data
             builder.Entity<ProductionOrder>().Property(x => x.OperationsSequenceConfirmedBy).HasMaxLength(450);
 
             builder.Entity<Quotation>().Property(x => x.CurrencyCode).HasMaxLength(3);
+            builder.Entity<SellerCompany>(b =>
+            {
+                b.Property(x => x.LegalName).HasMaxLength(200);
+                b.Property(x => x.NationalId).HasMaxLength(64);
+                b.Property(x => x.EconomicCode).HasMaxLength(64);
+                b.Property(x => x.RegistrationNumber).HasMaxLength(64);
+                b.Property(x => x.Address).HasMaxLength(600);
+                b.Property(x => x.PostalCode).HasMaxLength(32);
+                b.Property(x => x.Phone).HasMaxLength(64);
+                b.Property(x => x.Email).HasMaxLength(254);
+                b.Property(x => x.Jurisdiction).HasMaxLength(2);
+                b.Property(x => x.CurrencyCode).HasMaxLength(3);
+                b.Property(x => x.TaxMemoryId).HasMaxLength(100);
+                b.HasIndex(x => new { x.Jurisdiction, x.NationalId }).IsUnique();
+                b.HasIndex(x => x.LegalName);
+            });
+            builder.Entity<Quotation>().HasOne<SellerCompany>().WithMany()
+                .HasForeignKey(x => x.SellerCompanyId).OnDelete(DeleteBehavior.Restrict);
             builder.Entity<QuotationLine>().Property(x => x.VatRate).HasPrecision(5, 2);
             builder.Entity<QuotationLine>().Property(x => x.TaxItemCode).HasMaxLength(64);
             builder.Entity<QuotationLine>().Property(x => x.TaxTreatmentReason).HasMaxLength(250);
@@ -784,6 +802,8 @@ namespace HamiChap_MES_ERP.Data
 
         public DbSet<SalesEvaluationLine> SalesEvaluationLines
             => Set<SalesEvaluationLine>();
+
+        public DbSet<SellerCompany> SellerCompanies => Set<SellerCompany>();
 
         public DbSet<Quotation> Quotations
     => Set<Quotation>();

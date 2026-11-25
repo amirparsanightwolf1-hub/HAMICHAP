@@ -232,7 +232,9 @@ public class QuotationService
             throw new InvalidOperationException("This quotation cannot be sent.");
         if (quotation.Lines.Count == 0 || quotation.Lines.Any(x => x.Quantity <= 0 || x.UnitPrice <= 0))
             throw new InvalidOperationException("Complete pricing and quantities before sending.");
-        var parties = QuotationDocument.Capture(quotation, quotation.Customer, _configuration);
+        var seller = quotation.SellerCompanyId is int sellerId
+            ? await db.SellerCompanies.AsNoTracking().SingleOrDefaultAsync(x => x.Id == sellerId) : null;
+        var parties = QuotationDocument.Capture(quotation, quotation.Customer, _configuration, seller);
         quotation.FinalAmount = InvoiceVat.Gross(quotation);
         await SalesProofService.RequireAcceptedProofsAsync(db, quotationId);
         quotation.DocumentPartiesJson = QuotationDocument.Serialize(parties);

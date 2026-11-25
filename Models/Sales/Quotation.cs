@@ -55,6 +55,7 @@ public class Quotation : BaseEntity
     // Null only for legacy quotations and drafts not yet classified.
     public QuotationType? QuotationType { get; set; }
     public string? DocumentPartiesJson { get; set; }
+    public int? SellerCompanyId { get; set; }
 
 
 

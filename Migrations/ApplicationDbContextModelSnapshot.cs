@@ -1666,14 +1666,38 @@ namespace HamiChap_MES_ERP.Migrations
                     b.Property<string>("CurrencyCode").HasMaxLength(3).HasColumnType("nvarchar(3)");
                     b.Property<int?>("QuotationType").HasColumnType("int");
                     b.Property<string>("DocumentPartiesJson").HasColumnType("nvarchar(max)");
+                    b.Property<int?>("SellerCompanyId").HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("SalesRequestId");
+                    b.HasIndex("SellerCompanyId");
 
                     b.ToTable("Quotations");
+                });
+
+            modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.SellerCompany", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("LegalName").IsRequired().HasMaxLength(200).HasColumnType("nvarchar(200)");
+                    b.Property<string>("NationalId").IsRequired().HasMaxLength(64).HasColumnType("nvarchar(64)");
+                    b.Property<string>("EconomicCode").IsRequired().HasMaxLength(64).HasColumnType("nvarchar(64)");
+                    b.Property<string>("RegistrationNumber").IsRequired().HasMaxLength(64).HasColumnType("nvarchar(64)");
+                    b.Property<string>("Address").IsRequired().HasMaxLength(600).HasColumnType("nvarchar(600)");
+                    b.Property<string>("PostalCode").IsRequired().HasMaxLength(32).HasColumnType("nvarchar(32)");
+                    b.Property<string>("Phone").IsRequired().HasMaxLength(64).HasColumnType("nvarchar(64)");
+                    b.Property<string>("Email").IsRequired().HasMaxLength(254).HasColumnType("nvarchar(254)");
+                    b.Property<string>("Jurisdiction").IsRequired().HasMaxLength(2).HasColumnType("nvarchar(2)");
+                    b.Property<string>("CurrencyCode").IsRequired().HasMaxLength(3).HasColumnType("nvarchar(3)");
+                    b.Property<string>("TaxMemoryId").IsRequired().HasMaxLength(100).HasColumnType("nvarchar(100)");
+                    b.Property<byte[]>("RowVersion").IsConcurrencyToken().IsRequired().ValueGeneratedOnAddOrUpdate().HasColumnType("rowversion");
+                    b.HasKey("Id");
+                    b.HasIndex("LegalName");
+                    b.HasIndex("Jurisdiction", "NationalId").IsUnique();
+                    b.ToTable("SellerCompanies");
                 });
 
             modelBuilder.Entity("HamiChap_MES_ERP.Models.Sales.QuotationLine", b =>
@@ -3191,6 +3215,11 @@ namespace HamiChap_MES_ERP.Migrations
                         .HasForeignKey("SalesRequestId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("HamiChap_MES_ERP.Models.Sales.SellerCompany", null)
+                        .WithMany()
+                        .HasForeignKey("SellerCompanyId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Customer");
 
