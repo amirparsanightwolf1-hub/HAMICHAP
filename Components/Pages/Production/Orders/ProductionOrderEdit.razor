@@ -10,6 +10,8 @@
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
 @inject ProductionPostingService ProductionPostingService
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
 @inject ProductionExecutionService ProductionExecutionService
 
 <PageTitle>@LocalizationService["ProductionOrder"]</PageTitle>
@@ -70,7 +72,7 @@
                 }
 
                 
-                @if (productionOrder.Status == ProductionOrderStatus.ReadyToStart)
+                @if (canIssueMaterials && productionOrder.Status == ProductionOrderStatus.ReadyToStart)
                 {
                     <button type="button"
                             class="btn btn-warning"
@@ -914,6 +916,7 @@
     private string? errorMessage;
 
     private bool isIssuingMaterials;
+    private bool canIssueMaterials;
 
     private string? materialIssueMessage;
 
@@ -930,6 +933,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var principal = (await Auth.GetAuthenticationStateAsync()).User;
+        canIssueMaterials = await Permissions.HasPermissionAsync(principal, ProductionPostingService.IssuePermission);
         await LoadProductionOrderAsync();
     }
 
@@ -1139,7 +1144,7 @@
                 await ProductionPostingService.PostMaterialIssueAsync(
                     productionOrder.Id,
                     productionLocation.Id,
-                    "system");
+                    (await Auth.GetAuthenticationStateAsync()).User);
 
             materialIssueMessage =
                 string.Format(LocalizationService["MaterialIssuePosted"], documentIds.Count);

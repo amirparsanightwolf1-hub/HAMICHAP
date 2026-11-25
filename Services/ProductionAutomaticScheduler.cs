@@ -26,10 +26,18 @@ public static class ProductionAutomaticScheduler
     {
         plan = new List<Placement>();
         error = "";
-        if ((earliestStart ?? order.PlannedStartDate) is not DateTime windowStart ||
-            (searchEnd ?? order.PlannedEndDate) is not DateTime windowEnd || windowEnd <= windowStart)
+        if (order.PlannedStartDate is not DateTime approvedStart ||
+            order.PlannedEndDate is not DateTime approvedEnd || approvedEnd <= approvedStart)
         {
-            error = "A valid scheduling search interval is required.";
+            error = "Set a valid CEO production window before scheduling.";
+            return false;
+        }
+
+        var windowStart = earliestStart is DateTime startLimit && startLimit > approvedStart ? startLimit : approvedStart;
+        var windowEnd = searchEnd is DateTime endLimit && endLimit < approvedEnd ? endLimit : approvedEnd;
+        if (windowEnd <= windowStart)
+        {
+            error = "No production time remains within the CEO window and delivery deadline.";
             return false;
         }
         if (steps.Count == 0) { error = "This order has no operations."; return false; }

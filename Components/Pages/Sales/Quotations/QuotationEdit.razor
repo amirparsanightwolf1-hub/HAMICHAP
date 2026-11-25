@@ -1,4 +1,5 @@
 @page "/sales/quotations/edit/{Id:long}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Sales.Requests.View")]
 
 @using HamiChap_MES_ERP.Data
 @using HamiChap_MES_ERP.Models.Sales
@@ -11,7 +12,8 @@
 @using System.Globalization
 @using System.Text.Json
 
-@inject ApplicationDbContext Db
+@implements IAsyncDisposable
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
@@ -94,8 +96,7 @@
 
                 </button>
 
-                @if (quotation.Status == QuotationStatus.Draft ||
-                     quotation.Status == QuotationStatus.RevisionRequired)
+                @if (CanEditPricing)
                 {
                     <button type="button"
                             class="btn btn-primary"
@@ -128,15 +129,14 @@
                     </button>
                 }
 
-                @if (quotation.Status is QuotationStatus.PendingApproval or QuotationStatus.Approved or QuotationStatus.ReadyToSend)
+                @if (canManageQuotation && quotation.Status is (QuotationStatus.PendingApproval or QuotationStatus.Approved or QuotationStatus.ReadyToSend))
                 {
                     <button type="button" class="btn btn-primary" disabled="@isSubmitting" @onclick="SubmitForApprovalAsync">
                         @(LocalizationService.IsPersian ? "ثبت ارسال پیش‌فاکتور" : "Mark quotation as sent")
                     </button>
                 }
 
-                @if (quotation.Status == QuotationStatus.SentToCustomer ||
-                     quotation.Status == QuotationStatus.CustomerNegotiation)
+                @if (canManageQuotation && quotation.Status is (QuotationStatus.SentToCustomer or QuotationStatus.CustomerNegotiation))
                 {
                     <button type="button"
                             class="btn btn-success"
@@ -158,7 +158,7 @@
 
                     </button>
                 }
-                @if (quotation.Status is not (QuotationStatus.Accepted or QuotationStatus.Cancelled or QuotationStatus.Rejected or QuotationStatus.Expired))
+                @if (canManageQuotation && quotation.Status is not (QuotationStatus.Accepted or QuotationStatus.Cancelled or QuotationStatus.Rejected or QuotationStatus.Expired))
                 {
                     <button type="button" class="btn btn-outline-danger" disabled="@isDeciding" @onclick="CancelQuotationAsync">
                         @(LocalizationService.IsPersian ? "لغو پیش‌فاکتور و سفارش" : "Cancel quotation and jobs")
@@ -284,12 +284,12 @@
                     <div class="col-md-4">
 
                         <label class="form-label" for="quotation-validity-days">
-                            @(IsEditable
+                            @(CanEditPricing
                                 ? LocalizationService["ValidityDays"]
                                 : LocalizationService["ValidUntil"])
                         </label>
 
-                        @if (IsEditable)
+                        @if (CanEditPricing)
                         {
                             <InputNumber TValue="int?" id="quotation-validity-days"
                                          class="form-control"
@@ -317,7 +317,7 @@
                             @LocalizationService["EstimatedDeliveryDays"]
                         </label>
 
-                        @if (IsEditable)
+                        @if (CanEditPricing)
                         {
                             <InputNumber class="form-control"
                                          @bind-Value="quotation.EstimatedDeliveryDays" />
@@ -371,7 +371,7 @@
                     </div>
                 }
 
-                @if (IsEditable && linkedRequests.Count > 0)
+                @if (CanEditPricing && linkedRequests.Count > 0)
                 {
                     <div class="mt-3">
                         <a class="btn btn-outline-primary"
@@ -398,7 +398,7 @@
 
                 <div class="p-3 border-bottom">
                     <label class="form-label">@VatText("Currency (ISO code)", "واحد پول (کد ISO)")</label>
-                    @if (IsEditable) { <input class="form-control" style="max-width:180px" maxlength="3" @bind="quotation.CurrencyCode" placeholder="IRR" /> }
+                    @if (CanEditPricing) { <input class="form-control" style="max-width:180px" maxlength="3" @bind="quotation.CurrencyCode" placeholder="IRR" /> }
                     else { <strong>@(quotation.CurrencyCode ?? "—")</strong> }
                     <p class="small text-muted mb-0 mt-1">@VatText("Unit prices exclude VAT. Enter the actual billing currency and verified rates and official goods/service identifiers. IRR means rials, not tomans.", "قیمت واحد بدون ارزش افزوده است. واحد پول واقعی، نرخ تأییدشده و شناسه رسمی کالا/خدمت را ثبت کنید. IRR ریال است، نه تومان.")</p>
                 </div>
@@ -463,7 +463,7 @@
 
                                     <td class="text-end">
 
-                                        @if (IsEditable)
+                                        @if (CanEditPricing)
                                         {
                                             <input type="number" min="0" step="1" inputmode="numeric"
                                                    class="form-control text-end quotation-workspace-price-input @(invalidPriceLineIds.Contains(line.Id) ? "is-invalid" : "")"
@@ -483,7 +483,7 @@
                                     </td>
 
                                     <td style="min-width:210px">
-                                        @if (IsEditable)
+                                        @if (CanEditPricing)
                                         {
                                             <label class="small">@VatText("VAT %", "درصد ارزش افزوده")</label>
                                             <input type="number" class="form-control form-control-sm mb-1" min="0" max="100" step="0.01" @bind="line.VatRate" />
@@ -502,7 +502,7 @@
                                     </td>
                                     <td>
 
-                                        @if (IsEditable)
+                                        @if (CanEditPricing)
                                         {
                                             <InputText class="form-control"
                                                        @bind-Value="line.Notes" />
@@ -537,7 +537,7 @@
                 <strong>@LocalizationService["Notes"]</strong>
             </div>
             <div class="card-body quotation-card-body">
-                @if (IsEditable)
+                @if (CanEditPricing)
                 {
                     <InputTextArea class="form-control"
                                    rows="4"
@@ -605,6 +605,8 @@
     [Parameter]
     public long Id { get; set; }
 
+    private ApplicationDbContext? editContext;
+    private ApplicationDbContext Db => editContext!;
     private Quotation? quotation;
     private List<SalesRequest> linkedRequests = new();
 
@@ -614,6 +616,9 @@
     private bool isApproving;
     private bool isRejecting;
     private bool isDeciding;
+    private bool IsWriting => isSaving || isSubmitting || isDeciding;
+    private bool canManageQuotation;
+    private bool CanEditPricing => canManageQuotation && IsEditable;
 
     private string? errorMessage;
     private string? successMessage;
@@ -656,8 +661,18 @@
     }
 
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => editContext = await DbFactory.CreateDbContextAsync();
+
+    public async ValueTask DisposeAsync()
     {
+        if (editContext is not null)
+            await editContext.DisposeAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+        canManageQuotation = await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation");
         await LoadAsync();
     }
 
@@ -669,6 +684,7 @@
 
         try
         {
+            Db.ChangeTracker.Clear();
             quotation = await Db.Quotations
 
                 .Include(x => x.Customer)
@@ -692,7 +708,7 @@
                 // Editable legacy quotations may contain fractional prices.
                 // Normalize tracked values so visible unit prices and totals
                 // agree immediately; changes persist only when saved.
-                if (IsEditable)
+                if (CanEditPricing)
                     NormalizeUnitPrices();
 
                 // The primary request remains linked for legacy quotations.
@@ -745,7 +761,7 @@
 
     private async Task SaveAsync()
     {
-        if (quotation == null || !IsEditable)
+        if (quotation == null || !IsEditable || IsWriting)
             return;
 
         errorMessage = null;
@@ -753,12 +769,15 @@
 
         try
         {
+            isSaving = true;
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation"))
+                throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+
             ValidateQuotation();
 
             NormalizeUnitPrices();
             CalculateFinalAmount();
-
-            isSaving = true;
 
             var pricingUser = await GetCurrentUserAsync();
             await Db.SaveChangesAsync();
@@ -783,7 +802,7 @@
 
     private async Task SubmitForApprovalAsync()
     {
-        if (quotation == null || isSubmitting)
+        if (quotation == null || IsWriting)
             return;
 
         errorMessage = null;
@@ -887,7 +906,7 @@
 
     private async Task CustomerDecisionAsync(bool accepted)
     {
-        if (quotation == null || isDeciding)
+        if (quotation == null || IsWriting)
             return;
 
         errorMessage = null;
@@ -931,7 +950,7 @@
 
     private async Task CancelQuotationAsync()
     {
-        if (quotation == null || isDeciding) return;
+        if (quotation == null || IsWriting) return;
         isDeciding = true;
         errorMessage = null;
         try

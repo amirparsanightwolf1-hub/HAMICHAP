@@ -5,7 +5,7 @@
 @using HamiChap_MES_ERP.Models.Customers
 @using HamiChap_MES_ERP.Data
 
-@attribute [Authorize]
+@attribute [Authorize(Policy = "Customers.View")]
 
 @inject ApplicationDbContext Db
 @inject NavigationManager Nav
@@ -28,15 +28,11 @@
             </p></div>
         </div>
 
-        <div>
-            <button type="button"
-                    class="btn btn-primary"
-                    @onclick="CreateCustomer">
-
+        <AuthorizeView Policy="Customers.Create">
+            <button type="button" class="btn btn-primary" @onclick="CreateCustomer">
                 <i class="bi bi-person-plus" aria-hidden="true"></i> @LocalizationService["NewCustomer"]
-
             </button>
-        </div>
+        </AuthorizeView>
 
     </div>
 
@@ -115,7 +111,9 @@
 
                                     <td>
 
-                                        <a class="btn btn-sm btn-outline-secondary me-1" href="@($"/customers/{customer.Id}/edit")"><i class="bi bi-pencil" aria-hidden="true"></i> @T("Edit", "ویرایش")</a>
+                                        <AuthorizeView Policy="Customers.Edit">
+                                            <a class="btn btn-sm btn-outline-secondary me-1" href="@($"/customers/{customer.Id}/edit")"><i class="bi bi-pencil" aria-hidden="true"></i> @T("Edit", "ویرایش")</a>
+                                        </AuthorizeView>
                                         <button type="button"
                                                 class="btn btn-sm btn-primary"
                                                 @onclick="() => OpenInventory(customer.Id)">

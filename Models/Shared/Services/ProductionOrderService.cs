@@ -6,26 +6,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HamiChap_MES_ERP.Services;
 
-public class ProductionOrderService
+public sealed class ProductionOrderService(IDbContextFactory<ApplicationDbContext> factory)
 {
-    private readonly ApplicationDbContext _db;
-    private readonly NumberSeriesService _numberSeries;
-
-    public ProductionOrderService(
-        ApplicationDbContext db,
-        NumberSeriesService numberSeries)
-    {
-        _db = db;
-        _numberSeries = numberSeries;
-    }
-
     public async Task<ProductionOrder> CreateFromSalesOrderAsync(
         long salesOrderId)
     {
-        var salesOrder = await _db.SalesOrders
+        await using var db = await factory.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
+        // Lock the parent so concurrent requests check and create the order in sequence.
+        var salesOrder = await db.SalesOrders
+            .FromSqlInterpolated($"""
+                SELECT * FROM [SalesOrders] WITH (UPDLOCK, HOLDLOCK)
+                WHERE [Id] = {salesOrderId}
+                """)
             .Include(x => x.Lines)
-            .FirstOrDefaultAsync(x =>
-                x.Id == salesOrderId);
+            .SingleOrDefaultAsync();
 
         if (salesOrder == null)
         {
@@ -46,7 +42,7 @@ public class ProductionOrderService
         }
 
         var existingProductionOrder =
-            await _db.ProductionOrders
+            await db.ProductionOrders
                 .FirstOrDefaultAsync(x =>
                     x.SalesOrderId == salesOrder.Id &&
                     x.Status != ProductionOrderStatus.Cancelled);
@@ -57,7 +53,7 @@ public class ProductionOrderService
         }
 
         var productionNumber =
-            await _numberSeries.GetNextNumberAsync(
+            await new NumberSeriesService(db).GetNextNumberAsync(
                 NumberSeriesType.ProductionOrder);
 
         var productionOrder = new ProductionOrder
@@ -87,7 +83,7 @@ public class ProductionOrderService
             if (remainingQuantity <= 0)
                 continue;
 
-            var item = await _db.Items
+            var item = await db.Items
                 .FirstOrDefaultAsync(x =>
                     x.Id == salesLine.ItemId);
 
@@ -117,9 +113,10 @@ public class ProductionOrderService
                 "No remaining quantity requires production.");
         }
 
-        _db.ProductionOrders.Add(productionOrder);
+        db.ProductionOrders.Add(productionOrder);
 
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         return productionOrder;
     }

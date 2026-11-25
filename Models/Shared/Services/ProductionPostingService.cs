@@ -3,42 +3,38 @@ using HamiChap_MES_ERP.Models.Inventory;
 using HamiChap_MES_ERP.Models.Production;
 using HamiChap_MES_ERP.Models.Shared;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HamiChap_MES_ERP.Services;
 
-public class ProductionPostingService
+public sealed class ProductionPostingService(
+    IDbContextFactory<ApplicationDbContext> factory, PermissionService permissions)
 {
-    private readonly ApplicationDbContext _db;
-    private readonly InventoryPostingService _inventoryPosting;
-    private readonly NumberSeriesService _numberSeries;
-
-    public ProductionPostingService(
-        ApplicationDbContext db,
-        InventoryPostingService inventoryPosting,
-        NumberSeriesService numberSeries)
-    {
-        _db = db;
-        _inventoryPosting = inventoryPosting;
-        _numberSeries = numberSeries;
-    }
+    public const string IssuePermission = "Inventory.Documents.Post";
 
     public async Task<List<long>> PostMaterialIssueAsync(
         long productionOrderId,
         int toLocationId,
-        string userId)
+        ClaimsPrincipal user)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            throw new InvalidOperationException(
-                "A valid user is required.");
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId) || !await permissions.HasPermissionAsync(user, IssuePermission))
+            throw new UnauthorizedAccessException("Inventory posting permission is required to issue materials.");
 
+        await using var db = await factory.CreateDbContextAsync();
+        var numbering = new NumberSeriesService(db);
+        var posting = new InventoryPostingService(db);
         await using var transaction =
-            await _db.Database.BeginTransactionAsync();
+            await db.Database.BeginTransactionAsync();
 
         try
         {
-            var order = await _db.ProductionOrders
-                .FirstOrDefaultAsync(x =>
-                    x.Id == productionOrderId);
+            var order = await db.ProductionOrders
+                .FromSqlInterpolated($"""
+                    SELECT * FROM [ProductionOrders] WITH (UPDLOCK, HOLDLOCK)
+                    WHERE [Id] = {productionOrderId}
+                    """)
+                .SingleOrDefaultAsync();
 
             if (order == null)
                 throw new InvalidOperationException(
@@ -49,7 +45,7 @@ public class ProductionPostingService
                     "Materials can only be issued when the production order is Ready To Start.");
 
             var reservations =
-                await _db.ProductionMaterialReservations
+                await db.ProductionMaterialReservations
                     .Include(x => x.Item)
                     .Include(x => x.InventoryLot)
                     .Where(x =>
@@ -66,7 +62,7 @@ public class ProductionPostingService
                     "No reserved materials are available for issue.");
 
             var destination =
-                await _db.InventoryLocations
+                await db.InventoryLocations
                     .FirstOrDefaultAsync(x =>
                         x.Id == toLocationId &&
                         x.IsActive);
@@ -82,7 +78,7 @@ public class ProductionPostingService
                     .ToList();
 
             var sourceLocations =
-                await _db.InventoryLocations
+                await db.InventoryLocations
                     .Where(x =>
                         sourceLocationIds.Contains(x.Id) &&
                         x.IsActive)
@@ -101,7 +97,7 @@ public class ProductionPostingService
             foreach (var reservation in reservations)
             {
                 var balance =
-                    await _db.InventoryBalances
+                    await db.InventoryBalances
                         .FirstOrDefaultAsync(x =>
                             x.ItemId == reservation.ItemId &&
                             x.InventoryLocationId ==
@@ -145,7 +141,7 @@ public class ProductionPostingService
                     new InventoryDocument
                     {
                         DocumentNumber =
-                            await _numberSeries.GetNextNumberAsync(
+                            await numbering.GetNextNumberAsync(
                                 NumberSeriesType.ProductionIssue,
                                 useTransaction: false),
 
@@ -163,6 +159,8 @@ public class ProductionPostingService
 
                         ProductionOrderId =
                             productionOrderId,
+
+                        UserId = userId,
 
                         Status =
                             InventoryDocumentStatus.Draft,
@@ -209,9 +207,9 @@ public class ProductionPostingService
                         });
                 }
 
-                _db.InventoryDocuments.Add(document);
+                db.InventoryDocuments.Add(document);
 
-                await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
 
                 // Release the reserved quantity immediately before
                 // posting so InventoryPostingService can consume
@@ -219,7 +217,7 @@ public class ProductionPostingService
                 foreach (var reservation in group)
                 {
                     var balance =
-                        await _db.InventoryBalances
+                        await db.InventoryBalances
                             .FirstAsync(x =>
                                 x.ItemId ==
                                     reservation.ItemId &&
@@ -236,16 +234,16 @@ public class ProductionPostingService
                         DateTime.Now;
                 }
 
-                await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
 
-                await _inventoryPosting.PostAsync(
+                await posting.PostAsync(
                     document.Id,
                     userId,
                     useTransaction: false);
 
                 foreach (var reservation in group)
                 {
-                    _db.ProductionMaterialConsumptions.Add(
+                    db.ProductionMaterialConsumptions.Add(
                         new ProductionMaterialConsumption
                         {
                             ProductionOrderId =
@@ -273,7 +271,7 @@ public class ProductionPostingService
                         ReservationStatus.Consumed;
                 }
 
-                await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
 
                 documentIds.Add(document.Id);
             }
@@ -284,7 +282,7 @@ public class ProductionPostingService
             order.ActualStartDate ??=
                 DateTime.Now;
 
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
