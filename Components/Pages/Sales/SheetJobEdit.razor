@@ -94,7 +94,7 @@
             <a href="@GetSectionHref("job-edit-services")"><i class="bi bi-list-check" aria-hidden="true"></i> @LocalizationService["AdditionalServices"]</a>
             <a href="@GetSectionHref("job-edit-artwork")"><i class="bi bi-images" aria-hidden="true"></i> @LocalizationService["ArtworkFiles"]</a>
             <a href="@GetSectionHref("job-edit-items")"><i class="bi bi-layers" aria-hidden="true"></i> @LocalizationService["ItemsInThisOrder"]</a>
-            <button type="button" class="job-edit-nav-save" disabled="@isSaving"
+            <button type="button" class="job-edit-nav-save" disabled="@(isSaving || artworkEditor?.IsReceiving == true)"
                     @onclick="SaveAndOpenProofAsync">
                 <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
                 @((canEditSpecifications || canEditArtwork)
@@ -398,11 +398,12 @@
                 <span class="job-edit-section-hint">@LocalizationService["JobEditorArtworkHint"]</span>
             </div>
             <div class="card-body">
-                <JobArtworkEditor @ref="artworkEditor"
+                <JobArtworkEditor @key="RequestId" @ref="artworkEditor"
                                   SavedFiles="@spec.ArtworkFiles"
                                   LegacyPath="@spec.ArtworkRelativePath"
                                   LegacyName="@spec.ArtworkOriginalFileName"
-                                  CanEdit="@canEditArtwork" />
+                                  CanEdit="@canEditArtwork" ParentSaving="@isSaving"
+                                  ReceivingChanged="@OnArtworkReceivingChanged" />
             </div>
         </div>
 
@@ -426,7 +427,7 @@
                         : LocalizationService["JobEditorReadOnlyHint"])</span>
                 </div>
             </div>
-            <button type="button" class="job-edit-save-button" @onclick="SaveAndOpenProofAsync" disabled="@isSaving">
+            <button type="button" class="job-edit-save-button" @onclick="SaveAndOpenProofAsync" disabled="@(isSaving || artworkEditor?.IsReceiving == true)">
                 @if (isSaving)
                 {
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -463,6 +464,11 @@
     private string? errorMessage;
     private string? successMessage;
     private JobArtworkEditor? artworkEditor;
+    private void OnArtworkReceivingChanged() => StateHasChanged();
+    private bool ArtworkReceiving => artworkEditor?.IsReceiving == true;
+    private string ArtworkBusyMessage => LocalizationService.IsPersian
+        ? "پیش از ذخیره منتظر پایان بارگذاری فایل طرح بمانید."
+        : "Wait until artwork uploads finish before saving.";
     private bool canEditArtwork;
     private bool canEditSpecifications;
     private bool canCreateCustomer;
@@ -671,6 +677,7 @@
 
     private async Task SaveArtworkOnlyAsync()
     {
+        if (isSaving || ArtworkReceiving) { errorMessage = ArtworkBusyMessage; return; }
         if (request is null || artworkEditor is null ||
             !artworkEditor.HasPendingChanges || !canEditArtwork)
             return;
@@ -727,6 +734,11 @@
 
     private async Task<bool> SaveCurrentForOrderAsync()
     {
+        if (isSaving || ArtworkReceiving)
+        {
+            errorMessage = ArtworkBusyMessage;
+            return false;
+        }
         if (request is null)
             return false;
 
@@ -740,6 +752,7 @@
 
     private async Task SaveAndOpenProofAsync()
     {
+        if (isSaving || ArtworkReceiving) { errorMessage = ArtworkBusyMessage; return; }
         if (request is null)
             return;
 
@@ -779,6 +792,7 @@
 
     private async Task SaveAsync()
     {
+        if (isSaving || ArtworkReceiving) { errorMessage = ArtworkBusyMessage; return; }
         if (request is null || !canEditSpecifications) return;
 
         if (HasMissingToolingProvider())

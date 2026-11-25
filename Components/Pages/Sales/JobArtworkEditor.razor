@@ -2,6 +2,8 @@
 @using HamiChap_MES_ERP.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using System.IO
+@using Microsoft.JSInterop
+@implements IDisposable
 
 @inject LocalizationService LocalizationService
 
@@ -17,11 +19,18 @@
             {
                 <div class="small text-primary">@LocalizationService["ReplacingArtwork"]: @GetName(replacingPath)</div>
                 <button class="btn btn-sm btn-outline-secondary" type="button"
-                        @onclick="() => replacingPath = null">@LocalizationService["Cancel"]</button>
+                        disabled="@Busy" @onclick="() => replacingPath = null">@LocalizationService["Cancel"]</button>
             }
-            <InputFile OnChange="ArtworkSelected" multiple="@(replacingPath is null)"
+            <InputFile @key="inputVersion" OnChange="ArtworkSelectedAsync" multiple="@(replacingPath is null)"
                        accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp"
-                       class="form-control mt-2" />
+                       disabled="@Busy" class="form-control mt-2" />
+            @if (IsReceiving)
+            {
+                <div class="mt-2 small text-primary" role="status" aria-live="polite">
+                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                    @Text("Uploading artwork — please wait before selecting more files or saving.", "در حال بارگذاری فایل طرح؛ پیش از انتخاب فایل دیگر یا ذخیره منتظر بمانید.")
+                </div>
+            }
         </div>
     }
 
@@ -51,7 +60,7 @@
                         }
                         else if (replacement is not null)
                         {
-                            <div class="small text-primary">@LocalizationService["ReplacingArtwork"]: @replacement.File.Name</div>
+                            <div class="small text-primary">@LocalizationService["ReplacingArtwork"]: @replacement.Name</div>
                         }
                     </div>
                     @if (CanEdit)
@@ -60,18 +69,18 @@
                             @if (removed)
                             {
                                 <button type="button" class="btn btn-sm btn-outline-secondary"
-                                        @onclick="() => UndoRemove(file.RelativePath)">
+                                        disabled="@Busy" @onclick="() => UndoRemove(file.RelativePath)">
                                     @LocalizationService["Undo"]
                                 </button>
                             }
                             else
                             {
                                 <button type="button" class="btn btn-sm btn-outline-primary"
-                                        @onclick="() => BeginReplace(file.RelativePath)">
+                                        disabled="@Busy" @onclick="() => BeginReplace(file.RelativePath)">
                                     @LocalizationService["ReplaceArtwork"]
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-danger"
-                                        @onclick="() => MarkRemove(file.RelativePath)">
+                                        disabled="@Busy" @onclick="() => MarkRemove(file.RelativePath)">
                                     @LocalizationService["Remove"]
                                 </button>
                             }
@@ -91,15 +100,15 @@
                 <div class="artwork-file-row mb-2" @key="pending">
                     <div class="text-truncate">
                         <i class="bi bi-file-earmark me-2"></i>
-                        @pending.File.Name
-                        <small class="text-muted">(@(Math.Ceiling(pending.File.Size / 1024d).ToString("N0")) KB)</small>
+                        @pending.Name
+                        <small class="text-muted">(@(Math.Ceiling(pending.Size / 1024d).ToString("N0")) KB)</small>
                         @if (pending.ReplacesPath is not null)
                         {
                             <span class="small text-primary">— @LocalizationService["ReplacementArtwork"]</span>
                         }
                     </div>
                     <button type="button" class="btn btn-sm btn-outline-danger"
-                            @onclick="() => RemovePending(pending)">@LocalizationService["Remove"]</button>
+                            disabled="@Busy" @onclick="() => RemovePending(pending)">@LocalizationService["Remove"]</button>
                 </div>
             }
         </div>
@@ -121,8 +130,24 @@
     [Parameter] public string? LegacyPath { get; set; }
     [Parameter] public string? LegacyName { get; set; }
     [Parameter] public bool CanEdit { get; set; } = true;
+    [Parameter] public bool ParentSaving { get; set; }
+    [Parameter] public EventCallback ReceivingChanged { get; set; }
 
-    private sealed record PendingArtwork(IBrowserFile File, string? ReplacesPath);
+    private const long MaxBytes = 25L * 1024 * 1024;
+    private const int MaxPendingFiles = 20;
+    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        { ".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp" };
+    private sealed record PendingArtwork(string Name, long Size, string TempPath, string? ReplacesPath);
+
+    // Temporary content is outside the web root. Never retain browser file IDs
+    // across selections or after the InputFile component is replaced.
+    private readonly string tempDirectory = Path.Combine(Path.GetTempPath(), "HamiChap-artwork", Guid.NewGuid().ToString("N"));
+    private readonly CancellationTokenSource lifetime = new();
+    private bool disposed;
+    private int inputVersion;
+    public bool IsReceiving { get; private set; }
+    private bool Busy => IsReceiving || ParentSaving;
+    private string Text(string en, string fa) => LocalizationService.IsPersian ? fa : en;
 
     private readonly List<PendingArtwork> pendingArtworks = new();
     private readonly HashSet<string> removedPaths = new(StringComparer.Ordinal);
@@ -172,7 +197,8 @@
     private void MarkRemove(string path)
     {
         removedPaths.Add(path);
-        pendingArtworks.RemoveAll(x => x.ReplacesPath == path);
+        foreach (var pending in pendingArtworks.Where(x => x.ReplacesPath == path).ToList())
+            RemovePending(pending);
         if (replacingPath == path)
             replacingPath = null;
         localError = null;
@@ -180,36 +206,102 @@
 
     private void UndoRemove(string path) => removedPaths.Remove(path);
 
-    private void RemovePending(PendingArtwork pending) => pendingArtworks.Remove(pending);
-
-    private void ArtworkSelected(InputFileChangeEventArgs args)
+    private void RemovePending(PendingArtwork pending)
     {
+        if (pendingArtworks.Remove(pending)) DeleteTempFile(pending.TempPath);
+    }
+
+    private async Task ArtworkSelectedAsync(InputFileChangeEventArgs args)
+    {
+        if (!CanEdit || Busy || disposed) return;
         localError = null;
+        IsReceiving = true;
+        var replacementPath = replacingPath;
+        var batch = new List<PendingArtwork>();
         try
         {
-            var files = args.GetMultipleFiles(20);
-            if (replacingPath is not null)
+            // Disable the picker and parent save controls while its current
+            // browser file IDs are being consumed.
+            await ReceivingChanged.InvokeAsync();
+            StateHasChanged();
+            var files = args.GetMultipleFiles(MaxPendingFiles);
+            if (replacementPath is not null && files.Count != 1)
+                throw new InvalidOperationException(LocalizationService["SelectOneReplacementArtwork"]);
+            var retainedCount = pendingArtworks.Count(x => replacementPath is null || x.ReplacesPath != replacementPath);
+            if (retainedCount + files.Count > MaxPendingFiles)
+                throw new InvalidOperationException(Text("Select no more than 20 pending artwork files per save.", "حداکثر ۲۰ فایل طرح را در هر ذخیره انتخاب کنید."));
+            foreach (var file in files)
             {
-                if (files.Count != 1)
-                {
-                    localError = LocalizationService["SelectOneReplacementArtwork"];
-                    return;
-                }
-                pendingArtworks.RemoveAll(x => x.ReplacesPath == replacingPath);
-                pendingArtworks.Add(new PendingArtwork(files[0], replacingPath));
-                removedPaths.Remove(replacingPath);
+                if (file.Size <= 0 || file.Size > MaxBytes)
+                    throw new InvalidOperationException(string.Format(LocalizationService["ArtworkMaxSize"], file.Name));
+                if (!AllowedExtensions.Contains(Path.GetExtension(file.Name)))
+                    throw new InvalidOperationException(string.Format(LocalizationService["UnsupportedArtworkFormat"], file.Name));
+            }
+            Directory.CreateDirectory(tempDirectory);
+            foreach (var file in files)
+            {
+                var path = Path.Combine(tempDirectory, Guid.NewGuid().ToString("N") + ".tmp");
+                var pending = new PendingArtwork(Path.GetFileName(file.Name), file.Size, path, replacementPath);
+                batch.Add(pending);
+                await using var source = file.OpenReadStream(MaxBytes, lifetime.Token);
+                await using var target = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, useAsync: true);
+                await source.CopyToAsync(target, lifetime.Token);
+                if (target.Length != file.Size)
+                    throw new IOException("Incomplete artwork upload.");
+            }
+            if (disposed) return;
+            // Commit the batch only after every file has arrived. A failed
+            // replacement must not discard the previous pending replacement.
+            if (replacementPath is not null)
+            {
+                foreach (var previous in pendingArtworks.Where(x => x.ReplacesPath == replacementPath).ToList())
+                    RemovePending(previous);
+                removedPaths.Remove(replacementPath);
                 replacingPath = null;
             }
+            pendingArtworks.AddRange(batch);
+            batch.Clear();
+        }
+        catch (InvalidOperationException ex) { localError = ex.Message; }
+        catch (JSException) { localError = Text("Artwork selection changed during upload. Select the affected files again.", "انتخاب فایل هنگام بارگذاری تغییر کرد. فایل‌های مورد نظر را دوباره انتخاب کنید."); }
+        catch (IOException) { localError = Text("Artwork upload could not be completed. Try again or contact your administrator to check server storage.", "بارگذاری فایل طرح کامل نشد. دوباره تلاش کنید یا برای بررسی فضای سرور با مدیر تماس بگیرید."); }
+        catch (UnauthorizedAccessException) { localError = Text("The server cannot write temporary artwork files. Contact your administrator.", "سرور امکان نوشتن فایل‌های موقت طرح را ندارد. با مدیر تماس بگیرید."); }
+        catch (OperationCanceledException) when (disposed) { }
+        finally
+        {
+            foreach (var pending in batch) DeleteTempFile(pending.TempPath);
+            IsReceiving = false;
+            if (disposed) DeleteTempDirectory();
             else
             {
-                foreach (var file in files)
-                    pendingArtworks.Add(new PendingArtwork(file, null));
+                // A fresh InputFile permits selecting the same filename again.
+                inputVersion++;
+                await ReceivingChanged.InvokeAsync();
             }
         }
-        catch (InvalidOperationException ex)
-        {
-            localError = ex.Message;
-        }
+    }
+
+    private static void DeleteTempFile(string path)
+    {
+        try { File.Delete(path); }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
+
+    private void DeleteTempDirectory()
+    {
+        try { if (Directory.Exists(tempDirectory)) Directory.Delete(tempDirectory, recursive: true); }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        lifetime.Cancel();
+        foreach (var pending in pendingArtworks) DeleteTempFile(pending.TempPath);
+        if (!IsReceiving) DeleteTempDirectory();
+        lifetime.Dispose();
     }
 
     /// <summary>
@@ -222,20 +314,8 @@
         if (!CanEdit)
             throw new InvalidOperationException("Artwork is locked for this job.");
 
-        const long maxBytes = 25L * 1024 * 1024;
-        var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { ".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".webp" };
-
-        foreach (var pending in pendingArtworks)
-        {
-            var extension = Path.GetExtension(pending.File.Name);
-            if (pending.File.Size > maxBytes)
-                throw new InvalidOperationException(
-                    string.Format(LocalizationService["ArtworkMaxSize"], pending.File.Name));
-            if (!allowed.Contains(extension))
-                throw new InvalidOperationException(
-                    string.Format(LocalizationService["UnsupportedArtworkFormat"], pending.File.Name));
-        }
+        if (IsReceiving)
+            throw new InvalidOperationException(Text("Wait until artwork uploads finish before saving.", "پیش از ذخیره منتظر پایان بارگذاری فایل طرح بمانید."));
 
         var updated = ExistingFiles
             .Where(x => !removedPaths.Contains(x.RelativePath) &&
@@ -250,19 +330,19 @@
         {
             foreach (var pending in pendingArtworks)
             {
-                var extension = Path.GetExtension(pending.File.Name).ToLowerInvariant();
+                var extension = Path.GetExtension(pending.Name).ToLowerInvariant();
                 var safeName = $"request-{requestId}-{Guid.NewGuid():N}{extension}";
                 var fullPath = Path.Combine(folder, safeName);
                 freshlyWrittenPaths.Add(fullPath);
 
-                await using (var source = pending.File.OpenReadStream(maxBytes))
-                await using (var target = File.Create(fullPath))
+                await using (var source = new FileStream(pending.TempPath, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, useAsync: true))
+                await using (var target = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 65536, useAsync: true))
                     await source.CopyToAsync(target);
 
                 updated.Add(new JobArtworkFile
                 {
                     RelativePath = $"/uploads/job-artwork/{safeName}",
-                    OriginalFileName = Path.GetFileName(pending.File.Name)
+                    OriginalFileName = Path.GetFileName(pending.Name)
                 });
             }
             return updated;
@@ -277,7 +357,9 @@
     public void CompleteSave()
     {
         freshlyWrittenPaths.Clear();
+        foreach (var pending in pendingArtworks) DeleteTempFile(pending.TempPath);
         pendingArtworks.Clear();
+        DeleteTempDirectory();
         removedPaths.Clear();
         replacingPath = null;
         localError = null;
