@@ -9,6 +9,8 @@
 @inject NavigationManager Navigation
 @inject LocalizationService LocalizationService
 @inject ILogger<ExistingJobTitlePrompt> Logger
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
 
 @* Reuse old specifications, NOT the historical request or its quantity.
    All input occurs through ordinary Blazor events; no JS callback/navigation
@@ -136,6 +138,10 @@
         {
             isCopying = true;
             copyError = null;
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.Edit"))
+                throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+
             using var scope = ScopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await ExistingSalesJobLookup.CopySpecificationsIntoDraftAsync(

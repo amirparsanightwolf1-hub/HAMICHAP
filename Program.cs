@@ -34,7 +34,11 @@ builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<IAuthorizationHandler, EmployeePermissionHandler>();
 builder.Services.AddAuthorization(options =>
 {
-    foreach (var permission in new[] { "Sales.Requests.View", "Sales.Requests.Create" })
+    foreach (var permission in new[]
+    {
+        "Inventory.Documents.View", "Inventory.Documents.Create",
+        "Sales.Requests.View", "Sales.Requests.Create"
+    })
         options.AddPolicy(permission, policy => policy.RequireAuthenticatedUser()
             .AddRequirements(new EmployeePermissionRequirement(permission)));
 });

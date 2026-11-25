@@ -1,4 +1,5 @@
 ﻿@page "/inventory/documents/create"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Inventory.Documents.Create")]
 
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
@@ -6,12 +7,12 @@
 @using HamiChap_MES_ERP.Models.Shared
 @using HamiChap_MES_ERP.Models.Customers
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
 @using HamiChap_MES_ERP.Models.Administration
 @using HamiChap_MES_ERP.Services
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject UserManager<ApplicationUser> UserManager
+@inject PermissionService Permissions
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
@@ -153,7 +154,10 @@
             </div></div>
             <div class="mt-3 d-flex flex-wrap justify-content-end gap-2">
                 <button type="button" class="btn btn-outline-primary" @onclick="() => Save(false)"><i class="bi bi-save" aria-hidden="true"></i> @LocalizationService["SaveDraft"]</button>
-                <button type="button" class="btn btn-success" @onclick="() => Save(true)"><i class="bi bi-check2-circle" aria-hidden="true"></i> @T("Save and post", "ذخیره و ثبت نهایی")</button>
+                @if (canPost)
+                {
+                    <button type="button" class="btn btn-success" @onclick="() => Save(true)"><i class="bi bi-check2-circle" aria-hidden="true"></i> @T("Save and post", "ذخیره و ثبت نهایی")</button>
+                }
             </div>
         </fieldset>
     }
@@ -167,6 +171,7 @@
     private List<InventoryLocation> locations = new();
     private int? defaultCustomerId;
     private bool isSaving;
+    private bool canPost;
     private long? savedDraftId;
     private string? errorMessage;
 
@@ -182,6 +187,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+        canPost = await Permissions.HasPermissionAsync(principal, "Inventory.Documents.Post");
         items = await Db.Items.AsNoTracking().Include(x => x.Unit).Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
         customers = await Db.Customers.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
         locations = await Db.InventoryLocations.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync();
@@ -272,22 +279,29 @@
         isSaving = true;
         try
         {
-            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = await UserManager.GetUserAsync(auth.User);
-            if (user is null) throw new InvalidOperationException(T("Authenticated user was not found.", "کاربر احراز هویت شده یافت نشد."));
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId) ||
+                !await Permissions.HasPermissionAsync(principal, "Inventory.Documents.Create") ||
+                (post && !await Permissions.HasPermissionAsync(principal, "Inventory.Documents.Post")))
+                throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+
             // Separate short-lived contexts keep failed posting changes out of the draft form.
             await using (var db = await DbFactory.CreateDbContextAsync())
             {
                 document.DocumentNumber = await new NumberSeriesService(db).GetNextNumberAsync(InventoryDocumentNumbering.SeriesFor(document.DocumentType));
-                document.UserId = user.Id;
+                document.UserId = userId;
                 db.InventoryDocuments.Add(document);
                 await db.SaveChangesAsync();
                 savedDraftId = document.Id;
             }
             if (post)
             {
+                if (!await Permissions.HasPermissionAsync(principal, "Inventory.Documents.Post"))
+                    throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+
                 await using var db = await DbFactory.CreateDbContextAsync();
-                await new InventoryPostingService(db).PostAsync(document.Id, user.Id);
+                await new InventoryPostingService(db).PostAsync(document.Id, userId);
                 Navigation.NavigateTo("/inventory/documents");
             }
             else Navigation.NavigateTo($"/inventory/documents/edit/{document.Id}");

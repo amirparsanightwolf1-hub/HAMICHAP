@@ -1,5 +1,5 @@
 @page "/sales/requests/proof/{RequestId:long}"
-@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Sales.Requests.View")]
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider Auth
 @inject PermissionService Permissions
@@ -35,9 +35,12 @@
             <button class="btn btn-outline-secondary" @onclick="BackToJob">
                 @LocalizationService["BackToJob"]
             </button>
-            <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow" disabled="@(isOpeningQuotation || proofState?.Accepted != true)">
-                @LocalizationService["ContinueToQuotation"]
-            </button>
+            @if (canContinueSalesWorkflow)
+            {
+                <button class="btn btn-outline-primary" @onclick="ContinueSalesWorkflow" disabled="@(isOpeningQuotation || proofState?.Accepted != true)">
+                    @LocalizationService["ContinueToQuotation"]
+                </button>
+            }
             <button class="btn btn-primary" disabled="@isPreparingPrint" @onclick="PrintProof">
                 @if (isPreparingPrint)
                 {
@@ -564,6 +567,7 @@
         {
             var principal = (await Auth.GetAuthenticationStateAsync()).User;
             canRecordProof = await Permissions.HasPermissionAsync(principal, "Sales.Requests.Edit");
+            canContinueSalesWorkflow = await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation");
             canCancelProofJob = canRecordProof && !await Db.Quotations.AsNoTracking().AnyAsync(q => q.SalesRequestId == RequestId || q.Lines.Any(x => x.SourceRequestId == RequestId));
             proofState = await ProofService.ReadAsync(RequestId);
             displayedFingerprint = SalesProofService.Fingerprint(request);
@@ -781,6 +785,7 @@
     }
 
     private bool isOpeningQuotation;
+    private bool canContinueSalesWorkflow;
     private string? quotationError;
 
     private async Task ContinueSalesWorkflow()
@@ -791,17 +796,18 @@
         try
         {
             isOpeningQuotation = true;
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
             // Reuses an existing quote when the job has already been attached.
             // Draft requests go straight to quoting (no duplicate Submit step).
             if (TargetQuotationId.HasValue)
             {
                 await QuotationService.AddRequestToQuotationAsync(
-                    TargetQuotationId.Value, RequestId);
+                    TargetQuotationId.Value, RequestId, principal);
                 Navigation.NavigateTo($"/sales/quotations/edit/{TargetQuotationId.Value}");
             }
             else
             {
-                var quotation = await QuotationService.CreateFromRequestAsync(RequestId);
+                var quotation = await QuotationService.CreateFromRequestAsync(RequestId, principal);
                 Navigation.NavigateTo($"/sales/quotations/edit/{quotation.Id}");
             }
         }

@@ -20,7 +20,8 @@ public class InventoryPostingService
     public async Task PostAsync(
     long documentId,
     string userId,
-    bool useTransaction = true, bool allowProductionConsumption = false, bool allowSalesDelivery = false)
+    bool useTransaction = true, bool allowProductionConsumption = false, bool allowSalesDelivery = false,
+    byte[]? expectedRowVersion = null)
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new InvalidOperationException(
@@ -28,7 +29,7 @@ public class InventoryPostingService
 
         if (!useTransaction)
         {
-            await PostInternalAsync(documentId, userId, allowProductionConsumption, allowSalesDelivery);
+            await PostInternalAsync(documentId, userId, allowProductionConsumption, allowSalesDelivery, expectedRowVersion);
 
             return;
         }
@@ -38,7 +39,7 @@ public class InventoryPostingService
 
         try
         {
-            await PostInternalAsync(documentId, userId, allowProductionConsumption, allowSalesDelivery);
+            await PostInternalAsync(documentId, userId, allowProductionConsumption, allowSalesDelivery, expectedRowVersion);
 
             await transaction.CommitAsync();
         }
@@ -58,11 +59,15 @@ public class InventoryPostingService
         }
     }
 
-    private async Task PostInternalAsync(long documentId, string userId, bool allowProductionConsumption, bool allowSalesDelivery)
+    private async Task PostInternalAsync(long documentId, string userId, bool allowProductionConsumption,
+        bool allowSalesDelivery, byte[]? expectedRowVersion)
     {
         var document =
             await LoadDocumentAsync(
                 documentId);
+
+        if (expectedRowVersion is not null && !document.RowVersion.SequenceEqual(expectedRowVersion))
+            throw new InvalidOperationException("The inventory document changed. Reload it before posting.");
 
         ValidateDocument(document);
         if (document.DocumentType == InventoryDocumentType.ProductionConsumption && !allowProductionConsumption)

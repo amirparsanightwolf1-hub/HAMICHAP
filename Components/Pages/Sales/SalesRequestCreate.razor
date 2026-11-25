@@ -10,13 +10,11 @@
 @using HamiChap_MES_ERP.Services
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Identity
 
 @inject ApplicationDbContext Db
 @inject SalesRequestService SalesRequestService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject UserManager<ApplicationUser> UserManager
 @inject LocalizationService LocalizationService
 
 <PageTitle>@LocalizationService["CreateJob"]</PageTitle>
@@ -342,10 +340,7 @@
             var authenticationState =
                 await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
-            var user = await UserManager.GetUserAsync(authenticationState.User);
-
-            if (user is not { IsActive: true } ||
-                !await Permissions.HasPermissionAsync(authenticationState.User, "Sales.Requests.Create"))
+            if (!await Permissions.HasPermissionAsync(authenticationState.User, "Sales.Requests.Create"))
             {
                 throw new InvalidOperationException(
                     LocalizationService["UserNotAuthenticated"]);
@@ -377,7 +372,7 @@
 
             var request = await SalesRequestService.CreateRequestAsync(
                 customerId,
-                user.Id,
+                authenticationState.User,
                 selectedJobType);
 
             var route = selectedJobType == SalesJobType.Roll
