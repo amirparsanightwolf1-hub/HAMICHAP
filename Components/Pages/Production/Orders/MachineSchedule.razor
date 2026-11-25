@@ -1163,17 +1163,18 @@
                 }
                 var deadline = DeliveryDeadline(order);
                 var end = deadline.HasValue && deadline.Value < horizon ? deadline.Value : horizon;
+                if (stageList.Sum(OperationMinutes) != order.EstimatedDurationMinutes)
+                {
+                    ShowError(HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(order) + ": " +
+                        T("Stage durations must match the CEO's estimated duration.", "مدت مراحل باید با مدت برآوردشده مدیرعامل برابر باشد."));
+                    return;
+                }
                 if (!ProductionAutomaticScheduler.TryBuild(order, stageList, availableMachines, existing,
                         CompatibleWithStage, out var plan, out var error, now, end))
                 {
-                    // Do not silently push a promised date or commit only part of a queue.
-                    string extra = "";
-                    if (deadline.HasValue && end < horizon &&
-                        ProductionAutomaticScheduler.TryBuild(order, stageList, availableMachines, existing,
-                            CompatibleWithStage, out var laterPlan, out _, now, horizon))
-                        extra = " " + T("Earliest feasible finish with this queue:", "زودترین پایان ممکن با این صف:") +
-                            " " + FormatDateTime(laterPlan.Max(x => x.End));
-                    ShowError(HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(order) + ": " + T("Cannot fit the queue. Review estimates, priorities or negotiate delivery.", "صف قابل زمان‌بندی نیست. زمان‌ها، اولویت‌ها یا تاریخ تحویل را بررسی کنید.") + extra + " " + error);
+                    ShowError(HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionLabel(order) + ": " +
+                        T("The queue does not fit within the approved production window and delivery deadline.",
+                          "صف در بازه تأییدشده تولید و مهلت تحویل جا نمی‌شود.") + " " + error);
                     return;
                 }
                 plans.Add((order, stageList, plan));
@@ -1206,9 +1207,6 @@
                         Status = ScheduleStatus.Planned
                     });
                 }
-                entry.Order.EstimatedDurationMinutes = entry.Steps.Sum(OperationMinutes);
-                entry.Order.PlannedStartDate = entry.Plan.Min(x => x.Start);
-                entry.Order.PlannedEndDate = entry.Plan.Max(x => x.End);
                 entry.Order.OperationsSequenceSignature = OperationSequenceSignature(entry.Order.EstimatedDurationMinutes, entry.Steps);
                 entry.Order.OperationsSequenceConfirmedAt = DateTime.UtcNow;
                 entry.Order.OperationsSequenceConfirmedBy = approver;

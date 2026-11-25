@@ -1,6 +1,6 @@
 ﻿@page "/production/quality-inspections"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = QualityInspectionService.ViewPermission)]
 
-@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
 @using HamiChap_MES_ERP.Data
@@ -14,6 +14,7 @@
 @inject QualityInspectionService QualityInspectionService
 @inject ProductionQualityPostingService ProductionQualityPostingService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject PermissionService Permissions
 
 <PageTitle>@LocalizationService["QualityInspections"]</PageTitle>
 
@@ -24,9 +25,12 @@
             <h3 class="erp-page-title">@LocalizationService["QualityInspections"]</h3>
             <p class="erp-page-subtitle">@LocalizationService["QualityInspectionsDescription"]</p>
         </div>
-        <button class="btn btn-primary" @onclick="() => showCreate = !showCreate">
-            @(showCreate ? LocalizationService["Cancel"] : LocalizationService["CreateInspection"])
-        </button>
+        @if (canEditInspections)
+        {
+            <button class="btn btn-primary" @onclick="() => showCreate = !showCreate">
+                @(showCreate ? LocalizationService["Cancel"] : LocalizationService["CreateInspection"])
+            </button>
+        }
     </div>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -47,7 +51,7 @@
         </div>
     }
 
-    @if (showCreate)
+    @if (canEditInspections && showCreate)
     {
         <div class="card mb-4 operational-card">
             <div class="card-header"><strong>@LocalizationService["CreateInspection"]</strong></div>
@@ -220,7 +224,7 @@
             </div>
         </div>
 
-        @if (CanEdit(selected.Status))
+        @if (canEditInspections && CanEdit(selected.Status))
         {
             <div class="card mb-4 operational-card">
                 <div class="card-header"><strong>@LocalizationService["AddInspectionResult"]</strong></div>
@@ -251,7 +255,7 @@
             </div>
         }
 
-        @if (IsCompleted(selected.Status) && !qualityResultAlreadyPosted)
+        @if (canPostResults && IsCompleted(selected.Status) && !qualityResultAlreadyPosted)
         {
             <div class="card mb-4 operational-card">
                 <div class="card-header"><strong>@LocalizationService["PostQualityResultToInventory"]</strong></div>
@@ -316,10 +320,15 @@
     private int finishedGoodsLocationId;
     private int wasteLocationId;
     private int reworkLocationId;
+    private bool canEditInspections;
+    private bool canPostResults;
 
     protected override async Task OnInitializedAsync()
     {
-        productionOrders = await Db.ProductionOrders.Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+        var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+        canEditInspections = await Permissions.HasPermissionAsync(user, QualityInspectionService.EditPermission);
+        canPostResults = await Permissions.HasPermissionAsync(user, ProductionQualityPostingService.PostPermission);
+        productionOrders = await Db.ProductionOrders.AsNoTracking().Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
             .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest).AsSplitQuery().OrderByDescending(x => x.CreatedDate).ToListAsync();
         items = await Db.Items.OrderBy(x => x.Name).ToListAsync();
         itemLabels = items.ToDictionary(x => x.Id, x => $"{x.Code} - {x.Name}");
@@ -343,7 +352,8 @@
         try
         {
             busy = true;
-            var created = await QualityInspectionService.CreateInspectionAsync(newProductionOrderId, newItemId, newQuantity);
+            var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            var created = await QualityInspectionService.CreateInspectionAsync(newProductionOrderId, newItemId, newQuantity, user);
             showCreate = false;
             await LoadInspectionsAsync();
             await SelectInspectionAsync(created.Id);
@@ -356,7 +366,7 @@
     private async Task SelectInspectionAsync(long id)
     {
         errorMessage = successMessage = null;
-        selected = await Db.QualityInspections.Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
+        selected = await Db.QualityInspections.AsNoTracking().Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
             .Include(x => x.ProductionOrder).ThenInclude(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest).AsSplitQuery().Include(x => x.Results).FirstOrDefaultAsync(x => x.Id == id);
         qualityResultAlreadyPosted = selected != null && await Db.InventoryDocuments
             .AsNoTracking()
@@ -377,7 +387,8 @@
         try
         {
             busy = true;
-            await QualityInspectionService.AddResultAsync(selected.Id, parameterName.Trim(), measuredValue, minimumValue, maximumValue, string.IsNullOrWhiteSpace(textValue) ? null : textValue.Trim(), resultNotes);
+            var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            await QualityInspectionService.AddResultAsync(selected.Id, parameterName.Trim(), measuredValue, minimumValue, maximumValue, string.IsNullOrWhiteSpace(textValue) ? null : textValue.Trim(), resultNotes, user);
             parameterName = resultNotes = ""; measuredValue = minimumValue = maximumValue = null; textValue = null;
             await SelectInspectionAsync(selected.Id);
             await LoadInspectionsAsync();
@@ -396,7 +407,8 @@
         try
         {
             busy = true;
-            await QualityInspectionService.CompleteInspectionAsync(selected.Id, acceptedQuantity, rejectedQuantity, reworkQuantity);
+            var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            await QualityInspectionService.CompleteInspectionAsync(selected.Id, acceptedQuantity, rejectedQuantity, reworkQuantity, user);
             await SelectInspectionAsync(selected.Id);
             await LoadInspectionsAsync();
             successMessage = LocalizationService["InspectionCompleted"];
@@ -413,10 +425,8 @@
         try
         {
             busy = true;
-            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var userId = auth.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userId)) { errorMessage = LocalizationService["UserNotAuthenticated"]; return; }
-            await ProductionQualityPostingService.PostQualityResultAsync(selected.Id, productionLocationId, finishedGoodsLocationId, wasteLocationId, reworkLocationId, userId);
+            var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            await ProductionQualityPostingService.PostQualityResultAsync(selected.Id, productionLocationId, finishedGoodsLocationId, wasteLocationId, reworkLocationId, user);
             await SelectInspectionAsync(selected.Id);
             successMessage = LocalizationService["QualityResultPosted"];
         }

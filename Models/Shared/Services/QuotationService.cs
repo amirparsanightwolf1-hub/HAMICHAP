@@ -5,6 +5,7 @@ using HamiChap_MES_ERP.Models.Shared;
 using HamiChap_MES_ERP.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HamiChap_MES_ERP.Models.Shared.Services;
 
@@ -13,22 +14,31 @@ public class QuotationService
     private readonly ApplicationDbContext _db;
     private readonly NumberSeriesService _numberSeries;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly PermissionService _permissions;
 
     public QuotationService(
         ApplicationDbContext db,
         NumberSeriesService numberSeries,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        PermissionService permissions)
     {
         _db = db;
         _numberSeries = numberSeries;
         _userManager = userManager;
+        _permissions = permissions;
+    }
+
+    private async Task RequireQuotationPermissionAsync(ClaimsPrincipal principal)
+    {
+        if (!await _permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation"))
+            throw new UnauthorizedAccessException("Quotation permission required.");
     }
 
     /// <summary>
     /// One-step job-to-quotation flow: no separate request submission required.
     /// Existing associations are reused instead of creating duplicate quotes.
     /// </summary>
-    public async Task<Quotation> CreateFromRequestAsync(long salesRequestId)
+    public async Task<Quotation> CreateFromRequestAsync(long salesRequestId, ClaimsPrincipal principal)
     {
         var existingFromLine = await _db.QuotationLines
             .Where(x => x.SourceRequestId == salesRequestId)
@@ -43,6 +53,7 @@ public class QuotationService
         if (legacy != null)
             return legacy;
 
+        await RequireQuotationPermissionAsync(principal);
         var request = await _db.SalesRequests
             .Include(x => x.Lines)
             .FirstOrDefaultAsync(x => x.Id == salesRequestId)
@@ -82,7 +93,7 @@ public class QuotationService
     /// Multiple requests must belong to the SAME customer. Each line keeps
     /// its SourceRequestId, allowing separate customer approval proofs.
     /// </summary>
-    public async Task AddRequestToQuotationAsync(long quotationId, long salesRequestId)
+    public async Task AddRequestToQuotationAsync(long quotationId, long salesRequestId, ClaimsPrincipal principal)
     {
         var quotation = await _db.Quotations
             .Include(x => x.Lines)
@@ -96,6 +107,7 @@ public class QuotationService
             quotation.Lines.Any(x => x.SourceRequestId == salesRequestId))
             return; // idempotent add
 
+        await RequireQuotationPermissionAsync(principal);
         var linkedElsewhere =
             await _db.Quotations.AnyAsync(x => x.SalesRequestId == salesRequestId) ||
             await _db.QuotationLines.AnyAsync(x => x.SourceRequestId == salesRequestId);

@@ -1,4 +1,5 @@
 @page "/sales/requests/roll/edit/{RequestId:long}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Sales.Requests.View")]
 
 @using System.Text.Json
 @using System.Text.Json.Nodes
@@ -19,6 +20,8 @@
 @inject IWebHostEnvironment HostEnvironment
 @inject LocalizationService LocalizationService
 @inject QuotationService QuotationService
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
 
 <PageTitle>@LocalizationService["RollJobSpecification"]</PageTitle>
 
@@ -120,9 +123,12 @@
                                     <option value="@customer.Id">@customer.Code - @customer.Name</option>
                                 }
                             </select>
-                            <button type="button" class="btn btn-link px-0" disabled="@(TargetQuotationId.HasValue || request.Status != SalesRequestStatus.Draft)" @onclick="StartNewCustomer">
-                                @LocalizationService["CreateNewCustomer"]
-                            </button>
+                            @if (canCreateCustomer)
+                            {
+                                <button type="button" class="btn btn-link px-0" disabled="@(TargetQuotationId.HasValue || request.Status != SalesRequestStatus.Draft)" @onclick="StartNewCustomer">
+                                    @LocalizationService["CreateNewCustomer"]
+                                </button>
+                            }
                         }
                         else
                         {
@@ -142,13 +148,16 @@
 
                     <label class="form-label"><i class="bi bi-tag app-field-icon" aria-hidden="true"></i> @LocalizationService["JobTitle"]</label>
                     <InputText class="form-control" @bind-Value="spec.JobTitle" />
-                    <div style="grid-column: 1 / -1;">
-                        <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
-                                                CustomerId="@(isCreatingCustomer ? 0 : selectedCustomerId)"
-                                                JobType="SalesJobType.Roll"
-                                                JobTitle="@spec.JobTitle"
-                                                TargetQuotationId="@TargetQuotationId" />
-                    </div>
+                    @if (canEditSpecifications)
+                    {
+                        <div style="grid-column: 1 / -1;">
+                            <ExistingJobTitlePrompt CurrentRequestId="@RequestId"
+                                                    CustomerId="@(isCreatingCustomer ? 0 : selectedCustomerId)"
+                                                    JobType="SalesJobType.Roll"
+                                                    JobTitle="@spec.JobTitle"
+                                                    TargetQuotationId="@TargetQuotationId" />
+                        </div>
+                    }
 
                 </div>
             </div>
@@ -495,6 +504,7 @@
     private JobArtworkEditor? artworkEditor;
     private bool canEditArtwork;
     private bool canEditSpecifications;
+    private bool canCreateCustomer;
     private HashSet<string> frontCmykColors = new(StringComparer.OrdinalIgnoreCase);
     private int PlateCount => frontCmykColors.Count + (spec.PantoneColors?.Count ?? 0);
     private int? EditablePlateCount
@@ -532,6 +542,11 @@
         errorMessage = null;
         successMessage = null;
 
+        var principal = (await Auth.GetAuthenticationStateAsync()).User;
+        var canEdit = await Permissions.HasPermissionAsync(principal, "Sales.Requests.Edit");
+        canCreateCustomer = canEdit && await Permissions.HasPermissionAsync(principal, "Customers.Create");
+        canEditSpecifications = false;
+        canEditArtwork = false;
 
         customers = await Db.Customers
             .Where(x => x.IsActive)
@@ -556,9 +571,9 @@
                 .FirstOrDefaultAsync();
             var quoteIsEditable = linkedQuoteStatus is
                 QuotationStatus.Draft or QuotationStatus.RevisionRequired;
-            canEditSpecifications = request.Status == SalesRequestStatus.Draft ||
-                (request.Status == SalesRequestStatus.QuotationCreated && quoteIsEditable);
-            canEditArtwork = request.Status != SalesRequestStatus.Cancelled &&
+            canEditSpecifications = canEdit && (request.Status == SalesRequestStatus.Draft ||
+                (request.Status == SalesRequestStatus.QuotationCreated && quoteIsEditable));
+            canEditArtwork = canEdit && request.Status != SalesRequestStatus.Cancelled &&
                 (!linkedQuoteStatus.HasValue || quoteIsEditable);
         }
 
@@ -687,6 +702,10 @@
             isSaving = true;
             errorMessage = null;
 
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.Edit"))
+                throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+
             // Recheck approval state immediately before writing: a quotation
             // could have become approved since the job editor was opened.
             var locked = await Db.Quotations.AsNoTracking().AnyAsync(q =>
@@ -753,8 +772,9 @@
             {
                 try
                 {
+                    var principal = (await Auth.GetAuthenticationStateAsync()).User;
                     await QuotationService.AddRequestToQuotationAsync(
-                        TargetQuotationId.Value, RequestId);
+                        TargetQuotationId.Value, RequestId, principal);
                 }
                 catch (Exception ex)
                 {
@@ -836,6 +856,11 @@
         {
             isSaving = true;
             errorMessage = null;
+
+            var principal = (await Auth.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.Edit") ||
+                (isCreatingCustomer && !await Permissions.HasPermissionAsync(principal, "Customers.Create")))
+                throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
 
             // Keep customer creation/selection, item creation/reuse, and specifications in one transaction.
             await using var transaction = await Db.Database.BeginTransactionAsync();

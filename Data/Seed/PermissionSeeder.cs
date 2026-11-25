@@ -1,6 +1,7 @@
 ﻿using HamiChap_MES_ERP.Data;
 using HamiChap_MES_ERP.Models.Administration;
 using Microsoft.EntityFrameworkCore;
+using HamiChap_MES_ERP.Services;
 
 namespace HamiChap_MES_ERP.Data.Seed;
 
@@ -403,6 +404,10 @@ public static class PermissionSeeder
                 Description = "Approve or reject sales quotations"
             },
 
+
+            new() { Name = QualityInspectionService.ViewPermission, Description = "View production quality inspections" },
+            new() { Name = QualityInspectionService.EditPermission, Description = "Create and record production quality inspections" },
+            new() { Name = ProductionQualityPostingService.PostPermission, Description = "Post quality results to inventory" },
 
             new() { Name = "Sales.Invoices.View", Description = "View sales invoices" },
             new() { Name = "Sales.Invoices.ConfirmPayment", Description = "Confirm full payment of a sales invoice" },

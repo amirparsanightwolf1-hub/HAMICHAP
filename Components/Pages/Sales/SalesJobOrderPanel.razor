@@ -6,13 +6,13 @@
 @using HamiChap_MES_ERP.Services
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
 
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject SalesRequestService SalesRequestService
 @inject QuotationService QuotationService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject UserManager<ApplicationUser> UserManager
+@inject PermissionService Permissions
 @inject LocalizationService LocalizationService
 @inject NavigationManager Navigation
 
@@ -23,7 +23,7 @@
             <strong id="order-items-heading">@LocalizationService["ItemsInThisOrder"]</strong>
             <span class="job-order-items-count">@jobs.Count</span>
         </div>
-        @if (linkedQuotationId.HasValue && !canAdd)
+        @if (linkedQuotationId.HasValue && !(canAdd && canManageQuotation))
         {
             <a class="btn btn-sm btn-outline-secondary" href="@($"/sales/quotations/edit/{linkedQuotationId.Value}")">
                 @LocalizationService["ContinueToQuotation"]
@@ -69,13 +69,16 @@
                         <a class="btn btn-sm btn-outline-primary" href="@GetProofUrl(job)">
                             <i class="bi bi-file-earmark-check" aria-hidden="true"></i> @LocalizationService["OpenApprovalProof"]
                         </a>
-                        <button type="button" class="btn btn-sm btn-outline-success" disabled="@busy" @onclick="() => SelectRepeatJob(job.Id)">
-                            <i class="bi bi-arrow-repeat" aria-hidden="true"></i> @LocalizationService["RepeatThisItem"]
-                        </button>
+                        @if (canCreateJob)
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-success" disabled="@busy" @onclick="() => SelectRepeatJob(job.Id)">
+                                <i class="bi bi-arrow-repeat" aria-hidden="true"></i> @LocalizationService["RepeatThisItem"]
+                            </button>
+                        }
                     }
                 </div>
             </article>
-            @if (repeatSourceId == job.Id)
+            @if (canCreateJob && repeatSourceId == job.Id)
             {
                 <div class="rounded border p-3 my-2 bg-light">
                     <div class="small mb-2">@LocalizationService["ReuseOldJobNewQuantityHelp"]</div>
@@ -100,19 +103,22 @@
             }
         }
 
-        @if (canAdd)
+        @if (canAdd && canManageQuotation)
         {
             <div class="job-order-items-footer">
-                <div class="job-order-add-actions">
-                    <button type="button" class="btn btn-outline-primary"
-                            disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Sheet)">
-                        <i class="bi bi-file-earmark-plus" aria-hidden="true"></i> @LocalizationService["AddSheetItem"]
-                    </button>
-                    <button type="button" class="btn btn-outline-primary"
-                            disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Roll)">
-                        <i class="bi bi-disc" aria-hidden="true"></i> @LocalizationService["AddRollItem"]
-                    </button>
-                </div>
+                @if (canCreateJob)
+                {
+                    <div class="job-order-add-actions">
+                        <button type="button" class="btn btn-outline-primary"
+                                disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Sheet)">
+                            <i class="bi bi-file-earmark-plus" aria-hidden="true"></i> @LocalizationService["AddSheetItem"]
+                        </button>
+                        <button type="button" class="btn btn-outline-primary"
+                                disabled="@busy" @onclick="() => AddItemAsync(SalesJobType.Roll)">
+                            <i class="bi bi-disc" aria-hidden="true"></i> @LocalizationService["AddRollItem"]
+                        </button>
+                    </div>
+                }
                 <button type="button" class="btn btn-primary job-order-continue"
                         disabled="@busy" @onclick="OpenQuotationAsync">
                     <i class="bi bi-receipt" aria-hidden="true"></i> @LocalizationService["ContinueToQuotation"]
@@ -136,6 +142,8 @@
     private List<SalesRequest> jobs = new();
     private long? linkedQuotationId;
     private bool canAdd;
+    private bool canCreateJob;
+    private bool canManageQuotation;
     private bool busy;
     private long? repeatSourceId;
     private int? repeatQuantity;
@@ -153,6 +161,10 @@
 
     private async Task RefreshAsync()
     {
+        var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+        canCreateJob = await Permissions.HasPermissionAsync(principal, "Sales.Requests.Create");
+        canManageQuotation = await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation");
+
         await using var db = await DbFactory.CreateDbContextAsync();
         var current = await db.SalesRequests.AsNoTracking()
             .Include(x => x.Lines)
@@ -211,8 +223,11 @@
             .ToListAsync();
     }
 
-    private async Task<long> EnsureCurrentLinkedAsync()
+    private async Task<long> EnsureCurrentLinkedAsync(ClaimsPrincipal principal)
     {
+        if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation"))
+            throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+
         if (!await SaveCurrentAsync())
             throw new InvalidOperationException(LocalizationService["SaveJobBeforeAddingItem"]);
 
@@ -224,7 +239,7 @@
 
         if (linkedQuotationId.HasValue)
         {
-            await QuotationService.AddRequestToQuotationAsync(linkedQuotationId.Value, RequestId);
+            await QuotationService.AddRequestToQuotationAsync(linkedQuotationId.Value, RequestId, principal);
             return linkedQuotationId.Value;
         }
 
@@ -247,7 +262,7 @@
             return existingQuoteId.Value;
         }
 
-        var quote = await QuotationService.CreateFromRequestAsync(current.Id);
+        var quote = await QuotationService.CreateFromRequestAsync(current.Id, principal);
         return quote.Id;
     }
 
@@ -268,15 +283,14 @@
         busy = true;
         try
         {
-            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = await UserManager.GetUserAsync(auth.User)
-                ?? throw new InvalidOperationException(LocalizationService["UserNotAuthenticated"]);
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
 
             // Repeats of accepted/closed orders ALWAYS create a separate draft
             // order. If this quote is still editable, repeat may join it.
-            var attachToQuote = canAdd ? linkedQuotationId : null;
+            var attachToQuote = canAdd && linkedQuotationId.HasValue &&
+                await Permissions.HasPermissionAsync(principal, "Sales.Requests.CreateQuotation") ? linkedQuotationId : null;
             var newJob = await SalesRequestService.CreateRequestAsync(
-                source.CustomerId, user.Id, source.JobType);
+                source.CustomerId, principal, source.JobType);
 
             await using (var db = await DbFactory.CreateDbContextAsync())
             {
@@ -309,17 +323,18 @@
         busy = true;
         try
         {
-            var quotationId = await EnsureCurrentLinkedAsync();
-            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = await UserManager.GetUserAsync(auth.User)
-                ?? throw new InvalidOperationException(LocalizationService["UserNotAuthenticated"]);
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            if (!await Permissions.HasPermissionAsync(principal, "Sales.Requests.Create"))
+                throw new UnauthorizedAccessException(LocalizationService["AccessDenied"]);
+
+            var quotationId = await EnsureCurrentLinkedAsync(principal);
 
             await using var db = await DbFactory.CreateDbContextAsync();
             var customerId = await db.Quotations.AsNoTracking()
                 .Where(q => q.Id == quotationId)
                 .Select(q => q.CustomerId).FirstAsync();
 
-            var newJob = await SalesRequestService.CreateRequestAsync(customerId, user.Id, type);
+            var newJob = await SalesRequestService.CreateRequestAsync(customerId, principal, type);
             var segment = type == SalesJobType.Roll ? "roll" : "sheet";
             Navigation.NavigateTo($"/sales/requests/{segment}/edit/{newJob.Id}?quotationId={quotationId}");
         }
@@ -343,7 +358,8 @@
         busy = true;
         try
         {
-            var quotationId = await EnsureCurrentLinkedAsync();
+            var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+            var quotationId = await EnsureCurrentLinkedAsync(principal);
             Navigation.NavigateTo($"/sales/quotations/edit/{quotationId}");
         }
         catch (Exception ex)

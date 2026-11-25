@@ -4,6 +4,7 @@ using HamiChap_MES_ERP.Models.Sales.Enums;
 using HamiChap_MES_ERP.Models.Shared;
 using HamiChap_MES_ERP.Models.Shared.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HamiChap_MES_ERP.Services;
 
@@ -12,24 +13,30 @@ public class SalesRequestService
     private readonly ApplicationDbContext _db;
     private readonly NumberSeriesService _numberSeries;
     private readonly QuotationService _quotationService;
+    private readonly PermissionService _permissions;
 
     public SalesRequestService(
         ApplicationDbContext db,
         NumberSeriesService numberSeries,
-        QuotationService quotationService)
+        QuotationService quotationService,
+        PermissionService permissions)
     {
         _db = db;
         _numberSeries = numberSeries;
         _quotationService = quotationService;
+        _permissions = permissions;
     }
 
 
 
     public async Task<SalesRequest> CreateRequestAsync(
     int customerId,
-    string userId,
+    ClaimsPrincipal principal,
     SalesJobType jobType = SalesJobType.Roll)
     {
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId) || !await _permissions.HasPermissionAsync(principal, "Sales.Requests.Create"))
+            throw new UnauthorizedAccessException("Sales request creation permission required.");
 
         var number =
             await _numberSeries
@@ -139,9 +146,9 @@ public class SalesRequestService
 
 
 
-    public async Task CreateQuotationAsync(long requestId)
+    public async Task CreateQuotationAsync(long requestId, ClaimsPrincipal principal)
     {
-        await _quotationService.CreateFromRequestAsync(requestId);
+        await _quotationService.CreateFromRequestAsync(requestId, principal);
     }
 
 }

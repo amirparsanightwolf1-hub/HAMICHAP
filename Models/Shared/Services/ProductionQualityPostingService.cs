@@ -1,4 +1,5 @@
-﻿using HamiChap_MES_ERP.Data;
+using System.Security.Claims;
+using HamiChap_MES_ERP.Data;
 using HamiChap_MES_ERP.Models.Inventory;
 using HamiChap_MES_ERP.Models.Production;
 using HamiChap_MES_ERP.Models.Production.Quality;
@@ -7,321 +8,81 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HamiChap_MES_ERP.Services;
 
-public class ProductionQualityPostingService
+public sealed class ProductionQualityPostingService(
+    IDbContextFactory<ApplicationDbContext> factory, PermissionService permissions)
 {
-    private readonly ApplicationDbContext _db;
-    private readonly InventoryPostingService _inventoryPosting;
-    private readonly NumberSeriesService _numberSeries;
-
-    public ProductionQualityPostingService(
-        ApplicationDbContext db,
-        InventoryPostingService inventoryPosting,
-        NumberSeriesService numberSeries)
-    {
-        _db = db;
-        _inventoryPosting = inventoryPosting;
-        _numberSeries = numberSeries;
-    }
-
-    // =========================================================
-    // Accepted quantity -> Finished Goods
-    // =========================================================
-
-    public async Task PostAcceptedQuantityAsync(
-        long inspectionId,
-        int productionLocationId,
-        int finishedGoodsLocationId,
-        string userId)
-    {
-        var inspection =
-            await LoadInspectionAsync(inspectionId);
-
-        if (inspection.AcceptedQuantity <= 0)
-            return;
-
-        await CreateAndPostDocumentAsync(
-            inspection,
-            InventoryDocumentType.ProductionReceipt,
-            NumberSeriesType.ProductionReceipt,
-            productionLocationId,
-            finishedGoodsLocationId,
-            inspection.AcceptedQuantity,
-            "Accepted by Quality Control",
-            userId);
-    }
-
-    // =========================================================
-    // Rejected quantity -> Waste
-    // =========================================================
-
-    public async Task PostRejectedQuantityAsync(
-        long inspectionId,
-        int productionLocationId,
-        int wasteLocationId,
-        string userId)
-    {
-        var inspection =
-            await LoadInspectionAsync(inspectionId);
-
-        if (inspection.RejectedQuantity <= 0)
-            return;
-
-        await CreateAndPostDocumentAsync(
-            inspection,
-            InventoryDocumentType.ProductionScrap,
-            NumberSeriesType.ProductionScrap,
-            productionLocationId,
-            wasteLocationId,
-            inspection.RejectedQuantity,
-            "Rejected by Quality Control",
-            userId);
-    }
-
-    // =========================================================
-    // Rework quantity -> Rework Area
-    // =========================================================
-
-    public async Task PostReworkQuantityAsync(
-        long inspectionId,
-        int productionLocationId,
-        int reworkLocationId,
-        string userId)
-    {
-        var inspection =
-            await LoadInspectionAsync(inspectionId);
-
-        if (inspection.ReworkQuantity <= 0)
-            return;
-
-        await CreateAndPostDocumentAsync(
-            inspection,
-            InventoryDocumentType.MaterialTransfer,
-            NumberSeriesType.MaterialTransfer,
-            productionLocationId,
-            reworkLocationId,
-            inspection.ReworkQuantity,
-            "Sent to rework by Quality Control",
-            userId);
-    }
-
-    // =========================================================
-    // Post complete QC result
-    // =========================================================
+    public const string PostPermission = "Production.Quality.Post";
 
     public async Task PostQualityResultAsync(
-        long inspectionId,
-        int productionLocationId,
-        int finishedGoodsLocationId,
-        int wasteLocationId,
-        int reworkLocationId,
-        string userId)
+        long inspectionId, int productionLocationId, int finishedGoodsLocationId,
+        int wasteLocationId, int reworkLocationId, ClaimsPrincipal user)
     {
-        await using var transaction =
-            await _db.Database.BeginTransactionAsync();
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId) || !await permissions.HasPermissionAsync(user, PostPermission))
+            throw new UnauthorizedAccessException("Quality inventory posting permission is required.");
 
-        try
-        {
-            var inspection =
-                await LoadInspectionAsync(inspectionId);
+        await using var db = await factory.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync();
 
-            ValidateInspectionForPosting(inspection);
+        // Serialize all posting attempts for this inspection until stock and documents commit.
+        var inspection = await db.QualityInspections
+            .FromSqlInterpolated($"""
+                SELECT * FROM [QualityInspections] WITH (UPDLOCK, HOLDLOCK)
+                WHERE [Id] = {inspectionId}
+                """)
+            .SingleOrDefaultAsync() ?? throw new InvalidOperationException("Quality inspection not found.");
 
-            if (inspection.AcceptedQuantity > 0)
-            {
-                await CreateAndPostDocumentAsync(
-                    inspection,
-                    InventoryDocumentType.ProductionReceipt,
-                    NumberSeriesType.ProductionReceipt,
-                    productionLocationId,
-                    finishedGoodsLocationId,
-                    inspection.AcceptedQuantity,
-                    "Accepted by Quality Control",
-                    userId,
-                    useTransaction: false);
-            }
-
-            if (inspection.RejectedQuantity > 0)
-            {
-                await CreateAndPostDocumentAsync(
-                    inspection,
-                    InventoryDocumentType.ProductionScrap,
-                    NumberSeriesType.ProductionScrap,
-                    productionLocationId,
-                    wasteLocationId,
-                    inspection.RejectedQuantity,
-                    "Rejected by Quality Control",
-                    userId,
-                    useTransaction: false);
-            }
-
-            if (inspection.ReworkQuantity > 0)
-            {
-                await CreateAndPostDocumentAsync(
-                    inspection,
-                    InventoryDocumentType.MaterialTransfer,
-                    NumberSeriesType.MaterialTransfer,
-                    productionLocationId,
-                    reworkLocationId,
-                    inspection.ReworkQuantity,
-                    "Sent to rework by Quality Control",
-                    userId,
-                    useTransaction: false);
-            }
-
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-    }
-
-    // =========================================================
-    // Create and post one inventory document
-    // =========================================================
-
-    private async Task CreateAndPostDocumentAsync(
-        QualityInspection inspection,
-        InventoryDocumentType documentType,
-        NumberSeriesType numberSeriesType,
-        int fromLocationId,
-        int toLocationId,
-        decimal quantity,
-        string notes,
-        string userId,
-        bool useTransaction = true)
-    {
-        if (quantity <= 0)
+        if (await db.InventoryDocuments.AnyAsync(d =>
+            d.QualityInspectionId == inspectionId && d.Status == InventoryDocumentStatus.Posted))
             return;
 
-        var unitId =
-            await GetItemUnitIdAsync(
-                inspection.ItemId);
+        ValidateInspectionForPosting(inspection);
+        var unitId = await db.Items.Where(x => x.Id == inspection.ItemId).Select(x => x.UnitId).SingleAsync();
+        var numbering = new NumberSeriesService(db);
+        var posting = new InventoryPostingService(db);
 
-        var document = new InventoryDocument
+        var movements = new[]
         {
-            DocumentNumber =
-        await _numberSeries.GetNextNumberAsync(
-            numberSeriesType),
-
-            DocumentType =
-        documentType,
-
-            DocumentDate =
-        inspection.InspectionDate,
-
-            FromLocationId =
-        fromLocationId,
-
-            ToLocationId =
-        toLocationId,
-
-            ProductionOrderId =
-        inspection.ProductionOrderId,
-
-            QualityInspectionId =
-        inspection.Id,
-
-            Status =
-        InventoryDocumentStatus.Draft,
-
-            UserId =
-        userId,
-
-            Notes =
-        $"QC inspection {inspection.Id}: {notes}"
+            (inspection.AcceptedQuantity, finishedGoodsLocationId, InventoryDocumentType.ProductionReceipt,
+                NumberSeriesType.ProductionReceipt, "Accepted by Quality Control"),
+            (inspection.RejectedQuantity, wasteLocationId, InventoryDocumentType.ProductionScrap,
+                NumberSeriesType.ProductionScrap, "Rejected by Quality Control"),
+            (inspection.ReworkQuantity, reworkLocationId, InventoryDocumentType.MaterialTransfer,
+                NumberSeriesType.MaterialTransfer, "Sent to rework by Quality Control")
         };
+        foreach (var (quantity, destination, type, series, notes) in movements)
+        {
+            if (quantity == 0)
+                continue;
 
-        document.Lines.Add(
-            new InventoryDocumentLine
+            var document = new InventoryDocument
             {
-                ItemId =
-                    inspection.ItemId,
-
-                Quantity =
-                    quantity,
-
-                UnitId =
-                    unitId,
-
-                Notes =
-                    notes
-            });
-
-        _db.InventoryDocuments.Add(document);
-
-        await _db.SaveChangesAsync();
-
-        await _inventoryPosting.PostAsync(
-            document.Id,
-            userId,
-            useTransaction);
-    }
-
-    // =========================================================
-    // Validation
-    // =========================================================
-
-    private static void ValidateInspectionForPosting(
-        QualityInspection inspection)
-    {
-        if (inspection.Status != QualityInspectionStatus.Passed &&
-            inspection.Status != QualityInspectionStatus.PartiallyPassed &&
-            inspection.Status != QualityInspectionStatus.Failed)
-        {
-            throw new InvalidOperationException(
-                "The quality inspection has not been completed.");
+                DocumentNumber = await numbering.GetNextNumberAsync(series),
+                DocumentType = type,
+                DocumentDate = inspection.InspectionDate,
+                FromLocationId = productionLocationId,
+                ToLocationId = destination,
+                ProductionOrderId = inspection.ProductionOrderId,
+                QualityInspectionId = inspection.Id,
+                UserId = userId,
+                Notes = $"QC inspection {inspection.Id}: {notes}",
+                Lines = [new InventoryDocumentLine { ItemId = inspection.ItemId, Quantity = quantity, UnitId = unitId, Notes = notes }]
+            };
+            db.InventoryDocuments.Add(document);
+            await db.SaveChangesAsync();
+            await posting.PostAsync(document.Id, userId, useTransaction: false);
         }
-
-        var total =
-            inspection.AcceptedQuantity +
-            inspection.RejectedQuantity +
-            inspection.ReworkQuantity;
-
-        if (total != inspection.InspectedQuantity)
-        {
-            throw new InvalidOperationException(
-                "Accepted, rejected and rework quantities must equal the inspected quantity.");
-        }
+        await transaction.CommitAsync();
     }
 
-    // =========================================================
-    // Load inspection
-    // =========================================================
-
-    private async Task<QualityInspection> LoadInspectionAsync(
-        long inspectionId)
+    private static void ValidateInspectionForPosting(QualityInspection inspection)
     {
-        var inspection =
-            await _db.QualityInspections
-                .FirstOrDefaultAsync(x =>
-                    x.Id == inspectionId);
+        if (inspection.Status is not (QualityInspectionStatus.Passed or QualityInspectionStatus.PartiallyPassed or QualityInspectionStatus.Failed))
+            throw new InvalidOperationException("The quality inspection has not been completed.");
 
-        if (inspection == null)
-            throw new InvalidOperationException(
-                "Quality inspection not found.");
-
-        return inspection;
-    }
-
-    // =========================================================
-    // Item unit
-    // =========================================================
-
-    private async Task<int> GetItemUnitIdAsync(
-        int itemId)
-    {
-        var unitId =
-            await _db.Items
-                .Where(x => x.Id == itemId)
-                .Select(x => (int?)x.UnitId)
-                .FirstOrDefaultAsync();
-
-        if (unitId == null)
-            throw new InvalidOperationException(
-                "Item unit was not found.");
-
-        return unitId.Value;
+        if (inspection.InspectedQuantity <= 0 || inspection.AcceptedQuantity < 0 ||
+            inspection.RejectedQuantity < 0 || inspection.ReworkQuantity < 0 ||
+            inspection.AcceptedQuantity + inspection.RejectedQuantity + inspection.ReworkQuantity != inspection.InspectedQuantity)
+            throw new InvalidOperationException("Accepted, rejected and rework quantities must equal the inspected quantity.");
     }
 }

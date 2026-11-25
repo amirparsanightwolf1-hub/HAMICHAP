@@ -2,27 +2,40 @@
 using HamiChap_MES_ERP.Models.Production;
 using HamiChap_MES_ERP.Models.Production.Quality;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HamiChap_MES_ERP.Services;
 
-public class QualityInspectionService
+public sealed class QualityInspectionService(
+    IDbContextFactory<ApplicationDbContext> factory, PermissionService permissions)
 {
-    private readonly ApplicationDbContext _db;
+    public const string ViewPermission = "Production.Quality.View";
+    public const string EditPermission = "Production.Quality.Edit";
 
-    public QualityInspectionService(
-        ApplicationDbContext db)
+    private async Task RequireEditAsync(ClaimsPrincipal user)
     {
-        _db = db;
+        if (!await permissions.HasPermissionAsync(user, EditPermission))
+            throw new UnauthorizedAccessException("Quality inspection editing permission is required.");
+    }
+
+    private static void RequireOpenInspection(QualityInspection inspection)
+    {
+        if (inspection.Status is not (QualityInspectionStatus.Pending or QualityInspectionStatus.InProgress))
+            throw new InvalidOperationException("Only open quality inspections can be edited.");
     }
 
     public async Task<QualityInspection>
         CreateInspectionAsync(
             long productionOrderId,
             int itemId,
-            decimal quantity)
+            decimal quantity, ClaimsPrincipal user)
     {
+        await RequireEditAsync(user);
+        await using var db = await factory.CreateDbContextAsync();
+        if (quantity <= 0)
+            throw new InvalidOperationException("Inspected quantity must be positive.");
         var order =
-            await _db.ProductionOrders
+            await db.ProductionOrders
                 .FirstOrDefaultAsync(x =>
                     x.Id == productionOrderId);
 
@@ -46,9 +59,9 @@ public class QualityInspectionService
                     QualityInspectionStatus.Pending
             };
 
-        _db.QualityInspections.Add(inspection);
+        db.QualityInspections.Add(inspection);
 
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
 
         return inspection;
     }
@@ -60,17 +73,21 @@ public class QualityInspectionService
         decimal? measuredValue,
         decimal? minimumValue,
         decimal? maximumValue,
-        string? textValue = null,
-        string notes = "")
+        string? textValue,
+        string notes, ClaimsPrincipal user)
     {
+        await RequireEditAsync(user);
+        await using var db = await factory.CreateDbContextAsync();
         var inspection =
-            await _db.QualityInspections
+            await db.QualityInspections
                 .FirstOrDefaultAsync(x =>
                     x.Id == inspectionId);
 
         if (inspection == null)
             throw new Exception(
                 "Quality inspection not found.");
+
+        RequireOpenInspection(inspection);
 
         bool passed;
 
@@ -90,7 +107,7 @@ public class QualityInspectionService
         inspection.Status =
             QualityInspectionStatus.InProgress;
 
-        _db.QualityInspectionResults.Add(
+        db.QualityInspectionResults.Add(
             new QualityInspectionResult
             {
                 QualityInspectionId =
@@ -118,16 +135,18 @@ public class QualityInspectionService
                     notes
             });
 
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
     }
     public async Task CompleteInspectionAsync(
     long inspectionId,
     decimal acceptedQuantity,
     decimal rejectedQuantity,
-    decimal reworkQuantity)
+    decimal reworkQuantity, ClaimsPrincipal user)
     {
+        await RequireEditAsync(user);
+        await using var db = await factory.CreateDbContextAsync();
         var inspection =
-            await _db.QualityInspections
+            await db.QualityInspections
                 .Include(x => x.Results)
                 .FirstOrDefaultAsync(x =>
                     x.Id == inspectionId);
@@ -135,6 +154,8 @@ public class QualityInspectionService
         if (inspection == null)
             throw new InvalidOperationException(
                 "Quality inspection not found.");
+
+        RequireOpenInspection(inspection);
 
         if (acceptedQuantity < 0 ||
             rejectedQuantity < 0 ||
@@ -149,11 +170,11 @@ public class QualityInspectionService
             rejectedQuantity +
             reworkQuantity;
 
-        if (totalProcessed >
+        if (totalProcessed !=
             inspection.InspectedQuantity)
         {
             throw new InvalidOperationException(
-                "Accepted, rejected and rework quantities exceed inspected quantity.");
+                "Accepted, rejected and rework quantities must equal the inspected quantity.");
         }
 
         inspection.AcceptedQuantity =
@@ -194,6 +215,6 @@ public class QualityInspectionService
                 QualityInspectionStatus.Failed;
         }
 
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
     }
 }

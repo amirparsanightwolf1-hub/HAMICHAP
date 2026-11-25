@@ -5,7 +5,10 @@
 @using HamiChap_MES_ERP.Models.Customers
 @using HamiChap_MES_ERP.Data
 @attribute [Authorize]
-@inject ApplicationDbContext Db
+@using HamiChap_MES_ERP.Services
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider Auth
+@inject PermissionService Permissions
 @inject NavigationManager Navigation
 @inject HamiChap_MES_ERP.Services.LocalizationService LocalizationService
 
@@ -58,12 +61,31 @@
     private string Heading => CustomerId.HasValue ? T("Edit customer", "ویرایش مشتری") : LocalizationService["CreateCustomer"];
     private string T(string en, string fa) => LocalizationService.IsPersian ? fa : en;
 
+    private async Task<bool> CanAccessAsync(int? customerId)
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        return customerId.HasValue
+            ? await Permissions.HasPermissionAsync(user, "Customers.View") &&
+                await Permissions.HasPermissionAsync(user, "Customers.Edit")
+            : await Permissions.HasPermissionAsync(user, "Customers.Create");
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         loading = true;
         errorMessage = null;
-        customer = CustomerId.HasValue
-            ? await Db.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == CustomerId.Value)
+        customer = null;
+        var customerId = CustomerId;
+        if (!await CanAccessAsync(customerId))
+        {
+            errorMessage = LocalizationService["AccessDenied"];
+            loading = false;
+            return;
+        }
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        customer = customerId.HasValue
+            ? await db.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == customerId.Value)
             : new Customer { CustomerType = CustomerType.Natural };
         if (customer is null) errorMessage = T("Customer not found.", "مشتری یافت نشد.");
         loading = false;
@@ -71,45 +93,52 @@
 
     private async Task Save()
     {
-        if (isSaving || customer is null) return;
+        var form = customer;
+        var customerId = CustomerId;
+        if (isSaving || form is null || form.Id != customerId.GetValueOrDefault()) return;
         errorMessage = null;
-        if (customer.CustomerType is not (CustomerType.Natural or CustomerType.Legal))
+        if (form.CustomerType is not (CustomerType.Natural or CustomerType.Legal))
         {
             errorMessage = T("Select customer type.", "نوع مشتری را انتخاب کنید.");
             return;
         }
-        if (string.IsNullOrWhiteSpace(customer.Name))
+        if (string.IsNullOrWhiteSpace(form.Name))
         {
             errorMessage = LocalizationService["CustomerNameIsRequired"];
             return;
         }
-        Customer? target = null;
         try
         {
             isSaving = true;
-            if (CustomerId.HasValue)
+            if (!await CanAccessAsync(customerId))
             {
-                target = await Db.Customers.FirstOrDefaultAsync(x => x.Id == CustomerId.Value);
-                if (target is null) throw new InvalidOperationException(T("Customer not found.", "مشتری یافت نشد."));
-                Db.Entry(target).Property(x => x.RowVersion).OriginalValue = customer.RowVersion;
+                errorMessage = LocalizationService["AccessDenied"];
+                return;
+            }
+
+            await using var db = await DbFactory.CreateDbContextAsync();
+            Customer target;
+            if (customerId.HasValue)
+            {
+                target = await db.Customers.FirstOrDefaultAsync(x => x.Id == customerId.Value)
+                    ?? throw new InvalidOperationException(T("Customer not found.", "مشتری یافت نشد."));
+                db.Entry(target).Property(x => x.RowVersion).OriginalValue = form.RowVersion;
             }
             else
             {
-                target = new Customer { Code = await CustomerCodeGenerator.GenerateAsync(Db) };
-                Db.Customers.Add(target);
+                target = new Customer { Code = await CustomerCodeGenerator.GenerateAsync(db) };
+                db.Customers.Add(target);
             }
-            customer.CopyProfileTo(target);
-            await Db.SaveChangesAsync();
+            form.CopyProfileTo(target);
+            await db.SaveChangesAsync();
             Navigation.NavigateTo("/customers");
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (target is not null) Db.Entry(target).State = EntityState.Detached;
             errorMessage = T("Customer was changed elsewhere. Reload before editing.", "اطلاعات مشتری تغییر کرده است. صفحه را دوباره بارگذاری کنید.");
         }
         catch (Exception)
         {
-            if (target is not null) Db.Entry(target).State = EntityState.Detached;
             errorMessage = T("Customer could not be saved. Please try again.", "ذخیره مشتری انجام نشد. دوباره تلاش کنید.");
         }
         finally { isSaving = false; }

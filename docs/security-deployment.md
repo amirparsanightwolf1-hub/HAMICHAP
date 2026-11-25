@@ -6,6 +6,7 @@ Before deploying:
 - On first installation only, configure `BootstrapAdmin__Email` and `BootstrapAdmin__Password` (at least 16 characters, Identity complexity requirements) via server environment/secret store. Remove these configuration values after provisioning. Existing active administrators are preserved and not automatically reset.
 - Accounts are provisioned by administrators. Public registration and its development email-confirmation page are disabled. Real email delivery and self-service recovery are not configured.
 - Assign Sales.Requests.View and Sales.Requests.Create explicitly to appropriate employee roles. Customers.Create is needed for inline customer creation; Sales.Requests.CreateQuotation is needed when attaching a new job to a quotation.
+- Grant Production.Quality.View, Production.Quality.Edit and Production.Quality.Post to the roles responsible for viewing, recording and posting inspections. Reserved material issues require Inventory.Documents.Post. Quotation pricing requires Sales.Requests.CreateQuotation.
 - Verify anonymous business routes redirect to login, signed-in users without sales permissions cannot view/create jobs, inactive users cannot sign in, failed password attempts trigger lockout, and authenticated artwork previews continue working. Test role-specific actions and existing accounts before production rollout.
 - Anonymous access to legacy /uploads URLs is blocked. Active authenticated users can still access files by URL; per-job permissions and moving artwork outside the web root are separate follow-up changes.
 

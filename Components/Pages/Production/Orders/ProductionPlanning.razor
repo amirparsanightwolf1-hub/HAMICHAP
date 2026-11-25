@@ -7,7 +7,8 @@
 @using HamiChap_MES_ERP.Models.Production
 @using Microsoft.EntityFrameworkCore
 
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject AuthenticationStateProvider Auth
 
 <PageTitle>@L["Production Planning"]</PageTitle>
 
@@ -55,7 +56,7 @@
                         @foreach (var order in orderQueue)
                         {
                             <div class="queue-order @(selectedOrderId == order.Id ? "queue-order-selected" : "")"
-                                 draggable="true"
+                                 draggable="@(canEditPlan ? "true" : "false")"
                                  @ondragstart="() => StartDrag(order.Id)"
                                  @onclick="() => SelectOrder(order.Id)">
                                 <div class="d-flex justify-content-between gap-2">
@@ -86,17 +87,20 @@
                             <div class="mb-3">
                                 <strong>@HamiChap_MES_ERP.Models.Sales.JobReferences.ProductionTitle(selectedOrder)</strong><small class="text-muted d-block">@selectedOrder.OrderNumber</small>
                                 <label class="form-label mt-2">@L["Estimated duration (hours)"]</label>
-                                <input type="number" class="form-control" min="0.25" step="0.25" @bind="estimatedDurationHours" />
+                                <input type="number" class="form-control" min="0.25" step="0.25" @bind="estimatedDurationHours" disabled="@(!canEditPlan || isSavingPlan)" />
                             </div>
                             <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="avoidOvertime" @bind="avoidOvertime" />
+                                <input class="form-check-input" type="checkbox" id="avoidOvertime" @bind="avoidOvertime" disabled="@(!canEditPlan || isSavingPlan)" />
                                 <label class="form-check-label" for="avoidOvertime">@L["Avoid overtime (17:00–22:00)"]</label>
                             </div>
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="avoidNight" @bind="avoidNightShift" />
+                                <input class="form-check-input" type="checkbox" id="avoidNight" @bind="avoidNightShift" disabled="@(!canEditPlan || isSavingPlan)" />
                                 <label class="form-check-label" for="avoidNight">@L["Avoid night shift (22:00–08:00)"]</label>
                             </div>
-                            <button class="btn btn-outline-primary btn-sm w-100" @onclick="SaveOrderSettings">@L["Save settings"]</button>
+                            @if (canEditPlan)
+                            {
+                                <button class="btn btn-outline-primary btn-sm w-100" @onclick="SaveOrderSettings" disabled="@isSavingPlan">@L["Save settings"]</button>
+                            }
                             <div class="small text-muted mt-2">@L["The lunch break is always excluded. Prohibited shifts are skipped and are not shown as active production time."]</div>
                         }
                     </div>
@@ -146,7 +150,7 @@
                                 @foreach (var order in OrdersForDate(date))
                                 {
                                     <div class="month-order-chip @OrderColor(order)"
-                                         draggable="true"
+                                         draggable="@(canEditPlan ? "true" : "false")"
                                          title="@OrderTooltip(order)"
                                          @ondragstart="() => StartDrag(order.Id)"
                                          @onclick:stopPropagation="true"
@@ -187,7 +191,7 @@
                                         @foreach (var order in slotOrders)
                                         {
                                             <div class="timeline-order @OrderColor(order)"
-                                                 draggable="true"
+                                                 draggable="@(canEditPlan ? "true" : "false")"
                                                  title="@OrderTooltip(order)"
                                                  @ondragstart="() => StartDrag(order.Id)"
                                                  @onclick:stopPropagation="true"
@@ -224,6 +228,8 @@
     private DateTime displayMonth = DateTime.Today;
     private DateTime displayDate = DateTime.Today;
     private long? selectedOrderId;
+    private bool canEditPlan;
+    private bool isSavingPlan;
     private long? draggedOrderId;
     private decimal estimatedDurationHours = 1m;
     private bool avoidOvertime;
@@ -257,7 +263,23 @@
         }
     }
 
-    protected override async Task OnInitializedAsync() => await LoadAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        canEditPlan = await CanEditPlanAsync();
+        await LoadAsync();
+    }
+
+    private async Task<bool> CanEditPlanAsync()
+    {
+        var user = (await Auth.GetAuthenticationStateAsync()).User;
+        return user.Identity?.IsAuthenticated == true &&
+            (user.IsInRole("Administrator") || user.IsInRole("CEO") || user.IsInRole("Ceo") || user.IsInRole("Manager"));
+    }
+
+    private static async Task<bool> HasBookingsAsync(ApplicationDbContext db, long orderId) =>
+        await db.ProductionSchedules.AnyAsync(x =>
+            x.ProductionOperation.ProductionOrderId == orderId && x.Status != ScheduleStatus.Cancelled) ||
+        await db.ProductionOperations.AnyAsync(x => x.ProductionOrderId == orderId && x.OutsourcedPlannedStart.HasValue);
 
     private async Task LoadAsync()
     {
@@ -295,57 +317,66 @@
 
     private async Task SaveOrderSettings()
     {
-        if (selectedOrderId == null || estimatedDurationHours < 0.25m) return;
+        if (selectedOrderId is not long orderId || estimatedDurationHours < 0.25m || isSavingPlan) return;
 
         errorMessage = null;
         successMessage = null;
-        var entity = await Db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == selectedOrderId.Value);
-        if (entity == null) return;
-
-        var minutes = (int)Math.Round(estimatedDurationHours * 60m, MidpointRounding.AwayFromZero);
-        var changed = entity.EstimatedDurationMinutes != minutes ||
-                      entity.AvoidOvertime != avoidOvertime ||
-                      entity.AvoidNightShift != avoidNightShift;
-        var steps = await Db.ProductionOperations.Where(x => x.ProductionOrderId == entity.Id)
-            .OrderBy(x => x.Sequence).ToListAsync();
-        var stepIds = steps.Select(x => x.Id).ToList();
-        var hasScheduledSteps = stepIds.Count > 0 && await Db.ProductionSchedules.AnyAsync(
-            x => stepIds.Contains(x.ProductionOperationId) && x.Status != ScheduleStatus.Cancelled);
-
-        if (changed && hasScheduledSteps)
+        isSavingPlan = true;
+        try
         {
-            errorMessage = L["This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions."];
-            return;
-        }
-        if (steps.Count > minutes)
-        {
-            errorMessage = L["The CEO duration must allow at least one minute for each machine operation."];
-            return;
-        }
+            if (!await CanEditPlanAsync()) throw new UnauthorizedAccessException(L["AccessDenied"]);
 
-        entity.EstimatedDurationMinutes = minutes;
-        entity.AvoidOvertime = avoidOvertime;
-        entity.AvoidNightShift = avoidNightShift;
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var entity = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == orderId);
+            if (entity == null) return;
 
-        if (steps.Count > 0 && changed)
-        {
-            var allocation = ProductionPlanningTime.AllocateOperationMinutes(minutes, steps.Select(x => x.PlannedHours).ToArray());
-            for (var i = 0; i < steps.Count; i++)
-                steps[i].PlannedHours = Math.Round(allocation[i] / 60m, 6);
+            var minutes = (int)Math.Round(estimatedDurationHours * 60m, MidpointRounding.AwayFromZero);
+            var changed = entity.EstimatedDurationMinutes != minutes ||
+                          entity.AvoidOvertime != avoidOvertime ||
+                          entity.AvoidNightShift != avoidNightShift;
+            if (!changed) return;
+
+            if (await HasBookingsAsync(db, orderId))
+            {
+                errorMessage = L["This order has machine operations scheduled. Unschedule them in Machine Schedule before changing the CEO duration or shift restrictions."];
+                return;
+            }
+
+            var steps = await db.ProductionOperations.Where(x => x.ProductionOrderId == orderId)
+                .OrderBy(x => x.Sequence).ToListAsync();
+            if (steps.Count > minutes)
+            {
+                errorMessage = L["The CEO duration must allow at least one minute for each machine operation."];
+                return;
+            }
+
+            entity.EstimatedDurationMinutes = minutes;
+            entity.AvoidOvertime = avoidOvertime;
+            entity.AvoidNightShift = avoidNightShift;
+
+            if (steps.Count > 0)
+            {
+                var allocation = ProductionPlanningTime.AllocateOperationMinutes(minutes, steps.Select(x => x.PlannedHours).ToArray());
+                for (var i = 0; i < steps.Count; i++)
+                    steps[i].PlannedHours = Math.Round(allocation[i] / 60m, 6);
+            }
+
+            if (entity.PlannedStartDate is DateTime previousStart)
+            {
+                var start = ProductionPlanningTime.NextAllowedProductionMinute(previousStart, avoidOvertime, avoidNightShift);
+                entity.PlannedStartDate = start;
+                entity.PlannedEndDate = ProductionPlanningTime.CalculateEndDateTime(start, minutes, avoidOvertime, avoidNightShift);
+            }
+
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+            await ReloadQueueAsync();
+            SelectOrder(orderId);
+            successMessage = L["CEO duration, machine-step allocations and permitted shifts are consistent."];
         }
-
-        if (entity.PlannedStartDate.HasValue && changed)
-        {
-            entity.PlannedStartDate = ProductionPlanningTime.NextAllowedProductionMinute(
-                entity.PlannedStartDate.Value, avoidOvertime, avoidNightShift);
-            entity.PlannedEndDate = ProductionPlanningTime.CalculateEndDateTime(
-                entity.PlannedStartDate.Value, minutes, avoidOvertime, avoidNightShift);
-        }
-
-        await Db.SaveChangesAsync();
-        await ReloadQueueAsync();
-        SelectOrder(entity.Id);
-        successMessage = L["CEO duration, machine-step allocations and permitted shifts are consistent."];
+        catch (Exception ex) { errorMessage = ex.Message; }
+        finally { isSavingPlan = false; }
     }
 
     private void StartDrag(long orderId)
@@ -376,23 +407,25 @@
 
     private async Task ScheduleOrderAsync(long orderId, DateTime requestedStart)
     {
+        if (!canEditPlan || isSavingPlan) return;
+        isSavingPlan = true;
         try
         {
             errorMessage = null;
             successMessage = null;
-            var entity = await Db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == orderId);
+            if (!await CanEditPlanAsync()) throw new UnauthorizedAccessException(L["AccessDenied"]);
+
+            await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var entity = await db.ProductionOrders.FirstOrDefaultAsync(x => x.Id == orderId);
             if (entity == null) return;
 
             var duration = Math.Max(1, entity.EstimatedDurationMinutes);
             var actualStart = ProductionPlanningTime.NextAllowedProductionMinute(requestedStart, entity.AvoidOvertime, entity.AvoidNightShift);
             var end = ProductionPlanningTime.CalculateEndDateTime(actualStart, duration, entity.AvoidOvertime, entity.AvoidNightShift);
 
-            var operationIds = await Db.ProductionOperations.Where(x => x.ProductionOrderId == orderId)
-                .Select(x => x.Id).ToListAsync();
-            if (operationIds.Count > 0 &&
-                (entity.PlannedStartDate != actualStart || entity.PlannedEndDate != end) &&
-                await Db.ProductionSchedules.AnyAsync(x => operationIds.Contains(x.ProductionOperationId)
-                    && x.Status != ScheduleStatus.Cancelled))
+            if ((entity.PlannedStartDate != actualStart || entity.PlannedEndDate != end) &&
+                await HasBookingsAsync(db, orderId))
             {
                 errorMessage = L["This order has scheduled machine operations. Unschedule its machine steps before moving it on the CEO calendar."];
                 return;
@@ -400,16 +433,18 @@
 
             entity.PlannedStartDate = actualStart;
             entity.PlannedEndDate = end;
-            await Db.SaveChangesAsync();
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             await ReloadQueueAsync();
             SelectOrder(orderId);
-            successMessage = $"{entity.OrderNumber} scheduled: {FormatJalaliDateTime(requestedStart)} – {FormatJalaliDateTime(end)}. Break time is excluded.";
+            successMessage = $"{entity.OrderNumber} scheduled: {FormatJalaliDateTime(actualStart)} – {FormatJalaliDateTime(end)}. Break time is excluded.";
         }
         catch (Exception ex)
         {
             errorMessage = ex.InnerException?.Message ?? ex.Message;
         }
+        finally { isSavingPlan = false; }
     }
 
     private List<ProductionOrder> OrdersForDate(DateTime date)
@@ -492,7 +527,8 @@
 
     private async Task ReloadQueueAsync()
     {
-        orderQueue = await Db.ProductionOrders.AsNoTracking()
+        await using var db = await DbFactory.CreateDbContextAsync();
+        orderQueue = await db.ProductionOrders.AsNoTracking()
             .Include(x => x.SalesOrder).ThenInclude(x => x.Customer)
             .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.SalesRequest)
             .Include(x => x.SalesOrder).ThenInclude(x => x.Quotation).ThenInclude(x => x.Lines).ThenInclude(x => x.SourceRequest).AsSplitQuery()
