@@ -21,6 +21,7 @@
 @inject LocalizationService LocalizationService
 @inject SalesOrderService SalesOrderService
 @inject PermissionService Permissions
+@inject IConfiguration Configuration
 
 <HeadContent>
     <link rel="stylesheet" href="css/quotationEdit.css" />
@@ -98,6 +99,9 @@
 
                 @if (CanEditPricing)
                 {
+                    <button type="button" class="btn btn-outline-primary" disabled="@IsWriting" @onclick="SaveAndPreviewAsync">
+                        <i class="bi bi-file-earmark-pdf"></i> @VatText("Generate quotation", "ایجاد پیش‌فاکتور")
+                    </button>
                     <button type="button"
                             class="btn btn-primary"
                             @onclick="SaveAsync"
@@ -217,6 +221,22 @@
             <div class="card-body quotation-card-body">
 
                 <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="quotation-type">@VatText("Quotation type", "نوع پیش‌فاکتور")</label>
+                        @if (CanEditPricing)
+                        {
+                            <InputSelect TValue="QuotationType?" id="quotation-type" class="form-select" style="max-width: 360px" @bind-Value="quotation.QuotationType">
+                                <option value="">@VatText("Select quotation type", "انتخاب نوع پیش‌فاکتور")</option>
+                                <option value="Formal">@QuotationDocument.Label(QuotationType.Formal, LocalizationService.IsPersian)</option>
+                                <option value="Informal">@QuotationDocument.Label(QuotationType.Informal, LocalizationService.IsPersian)</option>
+                            </InputSelect>
+                            <div class="form-text">@VatText("Formal shows registered buyer and seller details and item tax identifiers. Informal uses a simpler commercial layout. Both retain the same VAT and agreed totals.", "رسمی شامل اطلاعات ثبتی خریدار و فروشنده و شناسه مالیاتی اقلام است. غیررسمی قالب تجاری ساده‌تری دارد. مالیات و مبالغ توافق‌شده در هر دو یکسان است.")</div>
+                        }
+                        else
+                        {
+                            <strong class="d-block">@QuotationDocument.Label(quotation.QuotationType, LocalizationService.IsPersian)</strong>
+                        }
+                    </div>
 
                     <div class="col-md-3">
 
@@ -759,6 +779,20 @@
         return request.RequestNumber;
     }
 
+    private async Task SaveAndPreviewAsync()
+    {
+        if (quotation == null || !CanEditPricing || IsWriting) return;
+        try
+        {
+            CalculateFinalAmount();
+            QuotationDocument.Capture(quotation, quotation.Customer, Configuration);
+        }
+        catch (Exception ex) { errorMessage = ex.Message; return; }
+        await SaveAsync();
+        if (errorMessage == null && successMessage != null)
+            OpenPreview();
+    }
+
     private async Task SaveAsync()
     {
         if (quotation == null || !IsEditable || IsWriting)
@@ -819,7 +853,7 @@
                 ValidateQuotation();
                 NormalizeUnitPrices();
                 CalculateFinalAmount();
-                InvoiceVat.Validate(quotation);
+                QuotationDocument.Capture(quotation, quotation.Customer, Configuration);
                 var pricingUser = await GetCurrentUserAsync();
                 await Db.SaveChangesAsync();
                 await QuotationService.AssignPricingUserAsEvaluatorAsync(quotation.Id, pricingUser.Id);

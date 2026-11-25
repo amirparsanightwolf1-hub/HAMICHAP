@@ -52,6 +52,10 @@ public class Quotation : BaseEntity
     public decimal FinalAmount { get; set; }
     public string? CurrencyCode { get; set; }
 
+    // Null only for legacy quotations and drafts not yet classified.
+    public QuotationType? QuotationType { get; set; }
+    public string? DocumentPartiesJson { get; set; }
+
 
 
     public int EstimatedDeliveryDays { get; set; }

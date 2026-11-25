@@ -15,17 +15,19 @@ public class QuotationService
     private readonly NumberSeriesService _numberSeries;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly PermissionService _permissions;
+    private readonly IConfiguration _configuration;
 
     public QuotationService(
         ApplicationDbContext db,
         NumberSeriesService numberSeries,
         UserManager<ApplicationUser> userManager,
-        PermissionService permissions)
+        PermissionService permissions, IConfiguration configuration)
     {
         _db = db;
         _numberSeries = numberSeries;
         _userManager = userManager;
         _permissions = permissions;
+        _configuration = configuration;
     }
 
     private async Task RequireQuotationPermissionAsync(ClaimsPrincipal principal)
@@ -219,15 +221,16 @@ public class QuotationService
     public async Task SendToCustomerAsync(long quotationId)
     {
         await using var tx = await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
-        var quotation = await _db.Quotations.Include(x => x.Lines).FirstAsync(x => x.Id == quotationId);
+        var quotation = await _db.Quotations.Include(x => x.Lines).Include(x => x.Customer).FirstAsync(x => x.Id == quotationId);
         if (quotation.Status is not (QuotationStatus.Draft or QuotationStatus.RevisionRequired or
             QuotationStatus.PendingApproval or QuotationStatus.Approved or QuotationStatus.ReadyToSend or QuotationStatus.CustomerNegotiation))
             throw new InvalidOperationException("This quotation cannot be sent.");
         if (quotation.Lines.Count == 0 || quotation.Lines.Any(x => x.Quantity <= 0 || x.UnitPrice <= 0))
             throw new InvalidOperationException("Complete pricing and quantities before sending.");
-        InvoiceVat.Validate(quotation);
+        var parties = QuotationDocument.Capture(quotation, quotation.Customer, _configuration);
         quotation.FinalAmount = InvoiceVat.Gross(quotation);
         await SalesProofService.RequireAcceptedProofsAsync(_db, quotationId);
+        quotation.DocumentPartiesJson = QuotationDocument.Serialize(parties);
         quotation.Status = QuotationStatus.SentToCustomer;
         await _db.SaveChangesAsync();
         await tx.CommitAsync();

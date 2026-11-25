@@ -1664,6 +1664,8 @@ namespace HamiChap_MES_ERP.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CurrencyCode").HasMaxLength(3).HasColumnType("nvarchar(3)");
+                    b.Property<int?>("QuotationType").HasColumnType("int");
+                    b.Property<string>("DocumentPartiesJson").HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

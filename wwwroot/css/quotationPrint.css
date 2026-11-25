@@ -324,3 +324,46 @@
     .hc-quote-footer { margin-top: 18pt; }
     .hc-quote-job a { color: #24588a !important; }
 }
+
+
+/* A4 document system: formal registration panel or lighter commercial quote. */
+.hc-quote-document { max-width: 210mm; padding: 10mm; font-size: 12px; }
+.hc-quote-document[dir="rtl"] { font-family: "YekanBakh", Tahoma, Arial, sans-serif; }
+.hc-quote-header { gap: 16px; padding-bottom: 16px; }
+.hc-quote-heading h1 { font-size: 21px; }
+.hc-quote-logo { width: 60px; height: 60px; }
+.hc-quote-brand-name { font-size: 19px; }
+.hc-quote-parties { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin: 16px 0 10px; }
+.hc-quote-bill-to { padding: 12px 14px; }
+.hc-quote-formal .hc-quote-bill-to { background: #fff; border: 1px solid #bac7d5; }
+.hc-quote-informal .hc-quote-bill-to { border: 0; border-inline-start: 3px solid #c8d6e4; }
+.hc-quote-notice { border: 1px solid #a87528; color: #75501b; padding: 6px 10px; margin-top: 12px; font-weight: 700; text-align: center; }
+.hc-quote-facts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border: 1px solid var(--quote-line); margin: 12px 0; }
+.hc-quote-facts > div { padding: 8px 12px; border-inline-end: 1px solid var(--quote-line); min-width: 0; }
+.hc-quote-facts > div:last-child { border-inline-end: 0; }
+.hc-quote-facts span, .hc-quote-facts strong { display: block; }
+.hc-quote-facts span { font-size: 10px; color: var(--quote-muted); }
+.hc-quote-items { min-width: 720px; table-layout: auto; font-size: 11px; }
+.hc-quote-items th, .hc-quote-items td { padding: 8px 6px; }
+.hc-quote-items .hc-quote-product { min-width: 125px; width: 26%; }
+.hc-quote-items .hc-quote-num { white-space: normal; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.hc-quote-informal .hc-quote-items thead th { background: #eef3f8; color: var(--quote-navy); border-color: #dce4ec; }
+.hc-quote-summary { width: min(100%, 340px); border: 1px solid var(--quote-line); }
+.hc-quote-summary-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--quote-line); }
+.hc-quote-total { width: 100%; padding: 12px; }
+.hc-quote-total-amount { font-size: 17px; white-space: normal; overflow-wrap: anywhere; }
+.hc-quote-total-amount small { font-size: 11px; }
+.hc-quote-signatures { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 18px; }
+.hc-quote-signatures > div { min-height: 66px; padding: 10px; border: 1px solid var(--quote-line); font-size: 11px; color: var(--quote-muted); }
+@media (max-width: 700px) { .hc-quote-document { padding: 16px; } .hc-quote-parties { grid-template-columns: 1fr; } .hc-quote-facts > div { padding: 6px; } }
+@media print {
+    .hc-workspace-body { display: block !important; margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; }
+    .hc-quote-document { font-size: 9pt; }
+    .hc-quote-header { flex-wrap: nowrap; }
+    .hc-quote-parties { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .hc-quote-items { font-size: 7.7pt; min-width: 0 !important; }
+    .hc-quote-items .hc-quote-product { min-width: 0; }
+    .hc-quote-items th, .hc-quote-items td { padding: 5pt 3pt !important; }
+    .hc-quote-parties, .hc-quote-facts, .hc-quote-summary, .hc-quote-signatures { break-inside: avoid; page-break-inside: avoid; }
+    .hc-quote-total-amount { font-size: 13pt; }
+}

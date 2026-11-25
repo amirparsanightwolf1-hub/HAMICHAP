@@ -46,6 +46,8 @@ public class SalesInvoiceService
         await ShipmentReadiness.ValidateAsync(_db, delivery, null);
         var order = delivery.SalesOrder;
         var quotation = order.Quotation;
+        if (QuotationDocument.InvoiceType(quotation.QuotationType) is { } agreedType && agreedType != invoiceType)
+            throw new InvalidOperationException("Invoice type must match the accepted quotation type.");
         if (quotation.Status != QuotationStatus.Accepted)
             throw new InvalidOperationException("The linked quotation must be accepted before invoicing.");
         if (quotation.CustomerId != delivery.CustomerId || order.CustomerId != delivery.CustomerId)

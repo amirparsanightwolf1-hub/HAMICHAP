@@ -131,7 +131,7 @@
             <section class="card mb-3">
                 <div class="card-body">
                     <label for="invoice-type" class="form-label fw-semibold">@Text("Invoice type", "نوع فاکتور")</label>
-                    <select id="invoice-type" class="form-select" style="max-width:360px" @bind="invoiceTypeChoice" disabled="@(isPosting || isSaving)">
+                    <select id="invoice-type" class="form-select" style="max-width:360px" @bind="invoiceTypeChoice" disabled="@(isPosting || isSaving || QuotationDocument.InvoiceType(delivery.SalesOrder?.Quotation?.QuotationType) != null)">
                         <option value="">@Text("Select invoice type", "انتخاب نوع فاکتور")</option>
                         <option value="Formal">@Text("Formal", "رسمی")</option>
                         <option value="Informal">@Text("Informal", "غیررسمی")</option>
@@ -598,6 +598,8 @@
             }
 
             linkedInvoice = await Db.SalesInvoices.AsNoTracking().FirstOrDefaultAsync(x => x.SalesDeliveryId == Id);
+            if (QuotationDocument.InvoiceType(delivery.SalesOrder?.Quotation?.QuotationType) is { } quoteType)
+                invoiceTypeChoice = quoteType.ToString();
             finishedGoodsLocations =
                 await Db.InventoryLocations
                 .Where(x =>

@@ -159,7 +159,7 @@
                                         aria-expanded="@(expandedQuotationId == quotation.Id)"
                                         @onclick="() => ToggleDetails(quotation.Id)"
                                         @onkeydown="args => HandleRowKeyDown(args, quotation.Id)">
-                                        <td class="fw-semibold"><div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(quotation, quotation.QuotationNumber)</div><small class="text-muted d-block">@quotation.QuotationNumber</small></td>
+                                        <td class="fw-semibold"><div class="job-reference-primary">@HamiChap_MES_ERP.Models.Sales.JobReferences.Titles(quotation, quotation.QuotationNumber)</div><small class="text-muted d-block">@quotation.QuotationNumber</small><small class="text-muted d-block">@QuotationDocument.Label(quotation.QuotationType, LocalizationService.IsPersian)</small></td>
                                         <td>@(quotation.Customer?.Name ?? "-")</td>
                                         <td>
                                             @if (quotation.SalesRequest != null)
